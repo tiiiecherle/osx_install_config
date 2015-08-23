@@ -1,0 +1,2 @@
+~/Library/Application Support/Adobe/Color/Settings
+color_sync_adobe_cs.csf

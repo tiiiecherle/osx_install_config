@@ -1,0 +1,21 @@
+~/Library/Application Support
+AddressBook
+iCal
+Firefox
+GarageSale
+Google Earth
+iBackup
+Skype
+Overflow
+Transmission
+Backuplist
+Backups
+MobileSync
+ProSaldo
+Unified Remote
+Winston
+iMazing
+Tunnelblick
+Chromium
+Plex Media Server
+Telegram

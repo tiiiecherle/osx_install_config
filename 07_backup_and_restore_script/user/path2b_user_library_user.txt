@@ -1,0 +1,8 @@
+~/Library
+Mail
+jameica
+Address Book Plug-Ins
+Calendars
+Keychains
+Accounts
+VirtualBox

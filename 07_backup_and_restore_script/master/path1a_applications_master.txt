@@ -1,0 +1,79 @@
+/Applications
+2Do.app
+Alfred 2.app
+AppCleaner.app
+Audio Splitter.app
+AudioBookBinder.app
+AudioSwitcher.app
+backupList+.app
+Bluefish.app
+Burn.app
+Caffeine.app
+Checksum.app
+Chromium.app
+coconutBattery.app
+Cog.app
+Command-C.app
+Cyberduck.app
+Deluge.app
+Dialectic.app
+Disk Inventory X.app
+Double Commander.app
+EagleFiler.app
+EasyFind.app
+Editra.app
+FileZilla.app
+Firefox.app
+GeburtstagsChecker.app
+Google Earth.app
+HandBrake.app
+Hotspot Shield.app
+iBackup.app
+InsomniaX.app
+iPack.app
+iphone
+iStat Menus.app
+iTerm.app
+iTweaX.app
+jameica.app
+JDownloader.app
+KeePassX.app
+KeepingYouAwake.app
+Keka.app
+LibreOffice.app
+LiquidCD.app
+LiteIcon.app
+MacPass.app
+MacUpdate Desktop.app
+Mail Archiver X
+MonKey Office 2015.app
+Ondesoft AudioBook Converter.app
+OnyX.app
+Overflow.app
+Pages4.app
+PasswordWallet.app
+PDF Shrink.app
+PDF Unlock.app
+Print Window.app
+RealPlayer.app
+Remote Buddy.app
+Rename.app
+ResizeIt.app
+SMARTReporter.app
+SoundSource.app
+SyncTwoFolders.app
+TextWrangler.app
+The Unarchiver.app
+TNEF's Enough.app
+Transmission.app
+trolCommander.app
+Tunnelblick.app
+UnHidden.app
+VideoMonkey.app
+VirtualBox Menulet.app
+VLC.app
+VNC Viewer.app
+VOX.app
+X-Lite.app
+XnConvert.app
+Zipeg.app

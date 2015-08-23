@@ -1,0 +1,2 @@
+~/Library/Application Support/Adobe/Adobe PDF/Settings
+ebook.joboptions

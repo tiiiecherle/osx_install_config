@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.tom.run_script_on_network_change</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>osascript</string>
+		<string>/Users/tom/Library/Scripts/unified_remote_restart.scpt</string>
+	</array>
+	<key>WatchPaths</key>
+	<array>
+		<string>/Library/Preferences/SystemConfiguration/preferences.plist</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>
