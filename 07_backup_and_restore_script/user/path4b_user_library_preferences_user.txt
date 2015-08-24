@@ -26,3 +26,5 @@ com.plexapp.plexmediaserver.plist
 ru.keepcoder.Telegram.plist
 org.corecode.SMARTReporter.plist
 com.corecode.SMARTReporter.plist
+com.github.GitHub.plist
+com.uranusjr.macdown.plist
