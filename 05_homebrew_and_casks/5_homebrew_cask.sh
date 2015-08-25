@@ -9,7 +9,7 @@
 sudo -v
 
 # keep-alive: update existing 'sudo' time stamp until script is finished
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+while true; do sudo -n true; sleep 1200; kill -0 "$$" || exit; done 2>/dev/null &
 
 # creating directory and adjusting permissions
 echo "creating directory..."
