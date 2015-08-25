@@ -93,14 +93,27 @@ With OS X 11.10 El Capitan Apple introduces a new security feature named system 
 
 As I want and need to do some changes to the system with the following scripts I switch it off. Before you do that make sure you know what you are doing.
 
-If script 1b is not working (which is currently the case) do the following steps to disable system integrity protection manually.
+As of now the system integrity protection has to be deactivated manually in the recovery with two possible options.
+
+##### Terminal
 
 0. Reboot your mac to recovery mode (reboot with command + R pressed).
-0. Open utilities.
+0. Open Utilities.
+0. Open Terminal.
+0. `sudo csrutil status`
+0. `sudo csrutil disable`
+0. `sudo csrutil status`
+0. Reboot
+
+To re-enable it, reboot to recovery and type `sudo csrutil enable`.
+
+##### GUI
+
+0. Reboot your mac to recovery mode (reboot with command + R pressed).
+0. Open Utilities.
 0. Open security configuration.
 0. Disable enforce system integrity protection
 0. Reboot
-
 
 2	Network Configuration
 -----
