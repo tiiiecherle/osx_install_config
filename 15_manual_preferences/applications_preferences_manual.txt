@@ -1,0 +1,112 @@
+APPLICATIONS PREFERENCES
+
+Finder
+	Seitenleiste
+		alles an außer
+			Alle meine Dateien
+			iCloud Drive
+			Airdrop
+
+			zugang zu meinem mac
+			Bonjour Computer
+
+			gerätename
+
+			tags
+
+Adobe Photoshop
+	Bearbeiten - Farbeinstellungen - color_sync_adobe_cs
+
+Adobe Indesign
+	Bearbeiten - Farbeinstellungen - color_sync_adobe_cs
+	Dialog schließen
+	Bearbeiten - Farbeinstellungen - sollte nun synchronisiert anzeigen
+	Fenster - Arbeitsbereich - Typografie
+	Indesign - Voreinstellungen - Anzeigeleistung
+		Standardansicht		Hohe Qualität
+		Text ausgrauen unter		1 pt
+
+Adobe Reader
+	nicht als Standard für pdfs verwenden
+
+AppCleaner
+	Einstellungen - SmartDelete - ein
+
+BackupList+
+	Liste und Script überprüfen
+
+Dialectic
+	run "Configure for Snom IP Phone.app" for establishing the connection
+
+Facetime
+	Account an- oder abmelden
+	only activate number for being reachable
+
+Github Desktop
+	Re-Setup git with
+	git config --global user.name "YOUR NAME"
+	and
+	git config --global user.email "YOUR EMAIL ADDRESS"
+
+iStatMenues
+	alles aus, Time an
+	Sortierung vornehmen rechts von anderen menu bar items - combined wieder deaktivieren
+
+Kalender
+	Kalender und Sync prüfen
+	Erinnerungen pro Mac anpassen
+
+Kontakte
+	Kontakte und Sync prüfen
+
+Mail
+	Postfächer einblenden
+	Preferences
+		Signaturen
+			Signaturen den Accounts zuweisen / Signatur auswählen
+
+Microsoft Excel
+	Ansicht - Symbolleisten - Format
+
+Microsoft Word
+	Ansicht - Symbolleisten - Format
+
+Nachrichten
+	Account an- oder abmelden
+
+Overflow
+	Bedienungshilfen in Systemeinstellungen - Sicherheit - Privatsphäre aktivieren
+
+The Unarchiver
+	Formate - alle auswählen - es werden nicht alle markiert, aber ist o.k.
+	Extrahieren - extrahierten Ordner öffnen
+
+Witch
+	Witch aktivieren
+
+	Einstellungen als Bedienungshilfe bestätigen
+		Systemsteuerung - Sicherheit - Privatsphäre - Bedienungshilfen - Witch.app
+		Systemsteuerung - Sicherheit - Privatsphäre - Bedienungshilfen - witchdaemon.app from /Applications/Witch.app/Contents/PlugIns/Witch.prefPane/Contents/Helpers/witchdaemon.app
+
+	Einstellungen als Bedienungshilfe aktivieren
+			Witch.app
+		x	witchdaemon.app	
+	
+Virtualbox
+	Einstellungen
+		Zusatzpakete - install extension pack from ~/Library/VirtualBox/NAME_OF_LATEST_EXTPACK or from the website
+
+XtraFinder
+	Tabs
+		Tabs
+		Ordner in neuem Tab öffnen
+	Funktionen
+		Ausschneiden & Einfügen
+	Elemente zum Findermenü hinzufügen
+		Pfad kopieren - Standard - Terminal Pfad
+		in neuem Fenster öffnen
+		aktualisieren
+		symbolischen Link erzeugen
+		
+
+

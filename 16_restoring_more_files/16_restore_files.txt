@@ -1,0 +1,11 @@
+RESTORE FILES FROM BACKUP
+
+~/Music
+~/Pictures
+~/Desktop/desktop
+~/Desktop/down
+~/Desktop/backup
+~/Desktop/_TS_MACBOOK
+~/github
+
+~/virtualbox

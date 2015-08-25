@@ -1,0 +1,20 @@
+TERMINAL
+
+Reboot your mac to recovery mode (reboot with command + R pressed).
+Open Utilities.
+Open Terminal.
+csrutil status
+csrutil disable
+csrutil status
+Reboot
+
+To re-enable it, reboot to recovery and type `sudo csrutil enable`.
+
+
+GUI
+
+Reboot your mac to recovery mode (reboot with command + R pressed).
+Open Utilities.
+Open security configuration.
+Disable enforce system integrity protection
+Reboot

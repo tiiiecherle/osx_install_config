@@ -1,0 +1,30 @@
+NETWORK SETTINGS
+macbook pro (late 2013)
+
+
+thunderbolt to ethernet adapter in an irgendeinem thunderbolt port anschließen
+
+
+umgebung
+office_lan
+preferences - virtuelle anschlüsse verwalten
+Thunderbolt-Bridge			bridge0
+	WLAN				deactivate
+	Thunderbolt 2			activate
+	Thunderbolt 1			activate
+	Thunderbolt Ethernet		activate
+delete all interfaces
+add (+)
+Thunderbolt Bridge
+configure static ip
+
+
+virtualbox configuration
+virtual machine preferences
+network
+device 1		active
+			network bridge
+			Thunderbolt Etehrnet
+device 2		activate
+			network bridge
+			WLAN
