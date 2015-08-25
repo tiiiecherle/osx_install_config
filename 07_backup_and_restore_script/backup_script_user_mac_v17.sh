@@ -269,6 +269,11 @@ if [[ "$OPTION" == "RESTORE" ]];
     done
     echo "done ;)"
 
+    # repairing file permissions in user ~/ folder
+    echo "repairing file permissions in user ~/ folder..."
+    chown -R $SELECTEDUSER /$HOME/*
+    echo "done ;)"
+
 else
     :
 fi
