@@ -100,12 +100,12 @@ As of now the system integrity protection has to be deactivated manually in the 
 0. Reboot your mac to recovery mode (reboot with command + R pressed).
 0. Open Utilities.
 0. Open Terminal.
-0. `sudo csrutil status`
-0. `sudo csrutil disable`
-0. `sudo csrutil status`
+0. `csrutil status`
+0. `csrutil disable`
+0. `csrutil status`
 0. Reboot
 
-To re-enable it, reboot to recovery and type `sudo csrutil enable`.
+To re-enable it, reboot to recovery and type `csrutil enable`.
 
 ##### GUI
 
