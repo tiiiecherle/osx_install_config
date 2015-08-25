@@ -236,7 +236,7 @@ And of course any help to make this better and easier is appreciated here, too.
 
 8	Java 6
 -----
-Some applications still use java 6 on OS X, e.g. adobe cs 5.5.
+Some applications still use java 6 on OS X.
 
 To make them work without installing apple java run this script.
 
