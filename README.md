@@ -304,7 +304,6 @@ The following preferences are not yet configurable with the script and any help 
 * preferences - keyboard - keyboard - show keyboard in menu bar
 * preferences - sound - input - ambient noise reduction
 * preferences - mac app store - download all bought apps on other macs automatically
-* 
 
 12 Licenses
 -----

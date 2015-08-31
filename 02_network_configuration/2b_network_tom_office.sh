@@ -96,7 +96,7 @@ sleep 3
 sudo networksetup -createnetworkservice "WLAN" Wi-Fi
 #sudo networksetup -createnetworkservice WLAN en0
 sleep 3
-sudo networksetup -setmanual "WLAN" 192.168.0.205 255.255.255.0 192.168.0.1
+sudo networksetup -setmanual "WLAN" 192.168.0.202 255.255.255.0 192.168.0.1
 sleep 3
 sudo networksetup -setdnsservers "WLAN" 192.168.0.1
 sleep 3
