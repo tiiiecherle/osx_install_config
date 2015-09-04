@@ -2,7 +2,7 @@
 
 # checking if the script is run as root
 if [ $EUID != 0 ]; then
-    sudo "$0" "$@"
+    sudo sh "$0" "$@"
     exit $?
 fi
 sudo echo password correct, running script...
