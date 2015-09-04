@@ -24,6 +24,7 @@ sudo /usr/sbin/softwareupdate --set-catalog https://swscan.apple.com/content/cat
 softwareupdate --list
 
 softwareupdate -d "name of update behind the *"
+# with quotes around name if it contains spaces
 
 
 
