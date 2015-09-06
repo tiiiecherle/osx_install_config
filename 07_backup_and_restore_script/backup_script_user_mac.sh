@@ -46,9 +46,9 @@ else
     :
 fi
 
-select SELECTEDUSER in $SYSTEMUSERS
+select SELECTEDUSER in "$SYSTEMUSERS"
   do
-  echo You selected user $SELECTEDUSER.
+  echo You selected user "$SELECTEDUSER".
     break
 done
 
@@ -70,19 +70,19 @@ else
 fi
 
 # user home folder
-HOME=Users/$SELECTEDUSER
+HOME=Users/"$SELECTEDUSER"
 
 # checking if user directory exists
 if [ -d "/$HOME" ]; then
     echo "user home directory exists - running script..."
 
 # path to current working directory
-CURRENT_DIR=$(pwd)
-#echo $CURRENT_DIR
+CURRENT_DIR="$(pwd)"
+echo current directory is "$CURRENT_DIR"
 
 # path to running script directory
-SCRIPT_DIR=$(dirname $0)
-#echo $SCRIPT_DIR
+SCRIPT_DIR="$(dirname $0)"
+echo script directory is "$SCRIPT_DIR"
 
 ###
 ### backup
@@ -94,73 +94,70 @@ if [[ "$OPTION" == "BACKUP" ]];
     echo "running backup..."
     
     # backup destination
-    DESTINATION=$HOME/Desktop/backup_"$SELECTEDUSER"_"$DATE"
-    mkdir -p /$DESTINATION
+    DESTINATION="$HOME"/Desktop/backup_"$SELECTEDUSER"_"$DATE"
+    mkdir -p /"$DESTINATION"
 
-    SAVEIFS=$IFS
-    IFS=$(echo -en "\n\b")
     # master directory
-    cd $SCRIPT_DIR/master
+    cd "$SCRIPT_DIR"/master
     for TEXTFILES in *.txt
         do
-        cd $SCRIPT_DIR/master
+        cd "$SCRIPT_DIR"/master
         # read first line of textfile and cd to it
-        PATH1=$(head -n 1 $TEXTFILES | sed 's"~"/'$HOME'"')
+        PATH1=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/$HOME"'|')
         if [ -d "$PATH1" ]
             then
-            cd $PATH1
-            echo backing up master $PATH1/...
-            cd $SCRIPT_DIR/master
+            cd "$PATH1"
+            echo backing up master "$PATH1"/...
+            cd "$SCRIPT_DIR"/master
             # read all lines, starting from line 2 and cat them to a list
-            SOURCELIST1=$(tail -n +2 $TEXTFILES | cat)
-            for ENTRIES in $SOURCELIST1
-                do
-                if [ -d "$PATH1/$ENTRIES" ] || [ -f "$PATH1/$ENTRIES" ]
+            cat "$TEXTFILES" | sed 1d | while read -r ENTRIES
+            do
+#                IFS=$'\n'
+                if [ -d "$PATH1"/"$ENTRIES" ] || [ -f "$PATH1"/"$ENTRIES" ]
                     then
-                    cd $PATH1
-                    mkdir -p /$DESTINATION$PATH1
-                    rsync -a "$ENTRIES" /$DESTINATION$PATH1
-                    else
+                    cd "$PATH1"
+                    mkdir -p /"$DESTINATION$PATH1"
+                    echo "   ""$ENTRIES"
+                    rsync -a "$ENTRIES" /"$DESTINATION$PATH1"
+                else
                     :
                 fi
             done
         else
-        echo $PATH1 is not a directory, skipping $TEXTFILES
+        echo "$PATH1" is not a directory, skipping "$TEXTFILES"
         fi
     done
     # user directory
-    cd $SCRIPT_DIR/user
+    cd "$SCRIPT_DIR"/user
     for TEXTFILES in *.txt
         do
-        cd $SCRIPT_DIR/user
+        cd "$SCRIPT_DIR"/user
         # read first line of textfile and cd to it
-        PATH1=$(head -n 1 $TEXTFILES | sed 's"~"/'$HOME'"')
+        PATH1=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/$HOME"'|')
         if [ -d "$PATH1" ]
             then
-            cd $PATH1
-            echo backing up user $PATH1/...
-            cd $SCRIPT_DIR/user
+            cd "$PATH1"
+            echo backing up user "$PATH1"/...
+            cd "$SCRIPT_DIR"/user
             # read all lines, starting from line 2 and cat them to a list
-            SOURCELIST1=$(tail -n +2 $TEXTFILES | cat)
-            for ENTRIES in $SOURCELIST1
-                do
-                if [ -d "$PATH1/$ENTRIES" ] || [ -f "$PATH1/$ENTRIES" ]
+            cat "$TEXTFILES" | sed 1d | while read -r ENTRIES
+            do
+#                IFS=$'\n'
+                if [ -d "$PATH1"/"$ENTRIES" ] || [ -f "$PATH1"/"$ENTRIES" ]
                     then
-                    cd $PATH1
-                    mkdir -p /$DESTINATION$PATH1
-                    rsync -a "$ENTRIES" /$DESTINATION$PATH1
-                    else
+                    cd "$PATH1"
+                    mkdir -p /"$DESTINATION$PATH1"
+                    echo "   ""$ENTRIES"
+                    rsync -a "$ENTRIES" /"$DESTINATION$PATH1"
+                else
                     :
                 fi
             done
         else
-        echo $PATH1 is not a directory, skipping $TEXTFILES
+        echo "$PATH1" is not a directory, skipping "$TEXTFILES"
         fi
     done
-    
-    IFS=$SAVEIFS
     echo "backup done ;)"
-    
 else
     :
 fi
@@ -173,9 +170,9 @@ fi
 # /Users/USERNAME/Desktop/restore/master/backup_directories (Applications, Library, User)
 # /Users/USERNAME/Desktop/restore/user/backup_directories (Applications, Library, User)
 
-RESTOREDIR=/$HOME/Desktop/restore
-RESTOREMASTERDIR=$RESTOREDIR/master
-RESTOREUSERDIR=$RESTOREDIR/user
+RESTOREDIR=/"$HOME"/Desktop/restore
+RESTOREMASTERDIR="$RESTOREDIR"/master
+RESTOREUSERDIR="$RESTOREDIR"/user
 
 #RESTORETO=/$HOME/Desktop/testrestore
 #mkdir -p $RESTORETO
@@ -187,73 +184,72 @@ if [[ "$OPTION" == "RESTORE" ]];
     echo "running restore..."
 
     # master user restore directory
-    MASTERUSER=$(ls $RESTOREDIR/master/Users | head -n 1)
-    echo masteruser for restore is $MASTERUSER
+    MASTERUSER=$(ls "$RESTOREDIR"/master/Users | head -n 1)
+    echo masteruser for restore is "$MASTERUSER"
 
     # running restore
-    SAVEIFS=$IFS
-    IFS=$(echo -en "\n\b")
+
     # master directory
-    cd $SCRIPT_DIR/master
+    cd "$SCRIPT_DIR"/master
     for TEXTFILES in *.txt
         do
-        cd $SCRIPT_DIR/master
+        cd "$SCRIPT_DIR"/master
         # read first line of textfile, create directory if it does not exist and cd to it
-        PATH1=$(head -n 1 $TEXTFILES | sed 's"~"/'$HOME'"')
-        PATH2=$(head -n 1 $TEXTFILES | sed 's"~"/'Users/$MASTERUSER'"')
+        PATH1=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/$HOME"'|')
+        PATH2=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/Users/$MASTERUSER"'|')
         mkdir -p "$PATH1"
         if [ -d "$PATH1" ]
             then
-            echo restoring master $PATH1/...
-            cd $SCRIPT_DIR/master
+            echo restoring master "$PATH1"/...
+            cd "$SCRIPT_DIR"/master
             # read all lines, starting from line 2 and cat them to a list
-            SOURCELIST1=$(tail -n +2 $TEXTFILES | cat)
-            for ENTRIES in $SOURCELIST1
-                do
-                if [ -d "$RESTOREMASTERDIR$PATH2/$ENTRIES" ] || [ -f "$RESTOREMASTERDIR$PATH2/$ENTRIES" ]
+            cat "$TEXTFILES" | sed 1d | while read -r ENTRIES
+            do
+#                IFS=$'\n'
+                if [ -d "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ] || [ -f "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ]
                     then
-                    cd $RESTORETO$PATH1
+                    cd "$RESTORETO$PATH1"
                     rm -rf "$ENTRIES"
-                    cd $RESTOREMASTERDIR$PATH2
-                    mkdir -p $RESTORETO$PATH1
-                    rsync -a "$ENTRIES" $RESTORETO$PATH1
-                    else
-                    echo no $ENTRIES in master backup - skipping...
+                    cd "$RESTOREMASTERDIR$PATH2"
+                    mkdir -p "$RESTORETO$PATH1"
+                    rsync -a "$ENTRIES" "$RESTORETO$PATH1"
+                else
+                    echo no "$ENTRIES" in master backup - skipping...
                 fi
             done
         else
-        echo $PATH1 is not a directory, skipping $TEXTFILES
+        echo "$PATH1" is not a directory, skipping "$TEXTFILES"
         fi
     done
     # user directory
-    cd $SCRIPT_DIR/user
+    cd "$SCRIPT_DIR"/user
     for TEXTFILES in *.txt
         do
-        cd $SCRIPT_DIR/user
+        cd "$SCRIPT_DIR"/user
         # read first line of textfile and cd to it
-        PATH1=$(head -n 1 $TEXTFILES | sed 's"~"/'$HOME'"')
-        PATH2=$(head -n 1 $TEXTFILES | sed 's"~"/'Users/$MASTERUSER'"')
+        PATH1=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/$HOME"'|')
+        PATH2=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/Users/$MASTERUSER"'|')
         if [ -d "$PATH1" ]
             then
-            echo restoring user $PATH1/...
-            cd $SCRIPT_DIR/user
+            echo restoring user "$PATH1"/...
+            cd "$SCRIPT_DIR"/user
             # read all lines, starting from line 2 and cat them to a list
-            SOURCELIST1=$(tail -n +2 $TEXTFILES | cat)
-            for ENTRIES in $SOURCELIST1
-                do
-                if [ -d "$RESTOREUSERDIR$PATH1/$ENTRIES" ] || [ -f "$RESTOREUSERDIR$PATH1/$ENTRIES" ]
+            cat "$TEXTFILES" | sed 1d | while read -r ENTRIES
+            do
+#                IFS=$'\n'
+                if [ -d "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ] || [ -f "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ]
                     then
-                    cd $RESTORETO$PATH1
+                    cd "$RESTORETO$PATH1"
                     rm -rf "$ENTRIES"
-                    cd $RESTOREUSERDIR$PATH1
-                    mkdir -p $RESTORETO$PATH1
-                    rsync -a "$ENTRIES" $RESTORETO$PATH1
-                    else
-                    echo no $ENTRIES in user backup - skipping...
+                    cd "$RESTOREMASTERDIR$PATH2"
+                    mkdir -p "$RESTORETO$PATH1"
+                    rsync -a "$ENTRIES" "$RESTORETO$PATH1"
+                else
+                    echo no "$ENTRIES" in master backup - skipping...
                 fi
             done
         else
-        echo $PATH1 is not a directory, skipping $TEXTFILES
+        echo "$PATH1" is not a directory, skipping "$TEXTFILES"
         fi
     done
 
@@ -262,16 +258,16 @@ if [[ "$OPTION" == "RESTORE" ]];
 
     # cleaning up old unused files after restore
     echo "cleaning up some files..."
-    find /$HOME/Library/VirtualBox -name "*.log.*" -type f -print0 | xargs -0 sudo rm
-    VBOXEXTENSIONS=$(find /$HOME/Library/VirtualBox -name "*.vbox-extpack" -type f -print0 | xargs -0 ls -m -t -1 | tail -n +2)
-    for extension in ${VBOXEXTENSIONS//\\n/}; do
-        sudo rm $extension
+    find /"$HOME"/Library/VirtualBox -name "*.log.*" -type f -print0 | xargs -0 sudo rm
+    VBOXEXTENSIONS=$(find /"$HOME"/Library/VirtualBox -name "*.vbox-extpack" -type f -print0 | xargs -0 ls -m -t -1 | cat | sed 1d)
+    for extension in "${VBOXEXTENSIONS//\\n/}"; do
+        sudo rm "$extension"
     done
     echo "done ;)"
 
     # repairing file permissions in user ~/ folder
     echo "repairing file permissions in user ~/ folder..."
-    chown -R $SELECTEDUSER /$HOME/*
+    chown -R "$SELECTEDUSER" /"$HOME"/*
     echo "done ;)"
 
 else
