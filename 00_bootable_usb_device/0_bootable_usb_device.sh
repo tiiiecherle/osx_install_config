@@ -2,7 +2,10 @@
 
 # format usb drive with guid partition table
 # format partition with OS X Extended (Journaled) and name it "Untitled" and leave it mounted
-# download installer to /Applications/
+# download installer to some directory and put the POSIX PAth in the variable
 # adjust installer name and run the following command in terminal and enter admin password
 
-sudo /Applications/Install\ OS\ X\ 10.11\ Developer\ Beta.app/Contents/Resources/createinstallmedia --volume /Volumes/Untitled --applicationpath /Applications/Install\ OS\ X\ 10.11\ Developer\ Beta.app --nointeraction
+INSTALLERPATH="/Users/tom/Desktop/Install OS X El Capitan Developer Beta.app"
+VOLUMEPATH="/Volumes/Untitled"
+
+sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --applicationpath "$INSTALLERPATH" --nointeraction
