@@ -25,7 +25,7 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 ### enable script
 
-# launchctl unload /Users/tom/Library/LaunchAgents/com.tom.run_script_on_network_change.plist
-launchctl load /Users/tom/Library/LaunchAgents/com.tom.run_script_on_network_change.plist
+# launchctl unload /Users/tom/Library/LaunchAgents/com.run_script_on_network_change.plist
+launchctl load /Users/tom/Library/LaunchAgents/com.run_script_on_network_change.plist
 
 echo "done"
