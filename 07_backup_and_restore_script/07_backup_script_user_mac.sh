@@ -1,5 +1,9 @@
 #!/bin/bash
 
+###
+### backup / restore script v23
+###
+
 # checking if the script is run as root
 if [ $EUID != 0 ]; then
     sudo sh "$0" "$@"
@@ -110,7 +114,7 @@ if [[ "$OPTION" == "BACKUP" ]];
             echo backing up master "$PATH1"/...
             cd "$SCRIPT_DIR"/master
             # read all lines, starting from line 2 and cat them to a list
-            cat "$TEXTFILES" | sed 1d | while read -r ENTRIES
+            cat "$TEXTFILES" | sed 1,1d | while read -r ENTRIES
             do
 #                IFS=$'\n'
                 if [ -d "$PATH1"/"$ENTRIES" ] || [ -f "$PATH1"/"$ENTRIES" ]
@@ -140,7 +144,7 @@ if [[ "$OPTION" == "BACKUP" ]];
             echo backing up user "$PATH1"/...
             cd "$SCRIPT_DIR"/user
             # read all lines, starting from line 2 and cat them to a list
-            cat "$TEXTFILES" | sed 1d | while read -r ENTRIES
+            cat "$TEXTFILES" | sed 1,1d | while read -r ENTRIES
             do
 #                IFS=$'\n'
                 if [ -d "$PATH1"/"$ENTRIES" ] || [ -f "$PATH1"/"$ENTRIES" ]
@@ -203,7 +207,7 @@ if [[ "$OPTION" == "RESTORE" ]];
             echo restoring master "$PATH1"/...
             cd "$SCRIPT_DIR"/master
             # read all lines, starting from line 2 and cat them to a list
-            cat "$TEXTFILES" | sed 1d | while read -r ENTRIES
+            cat "$TEXTFILES" | sed 1,1d | while read -r ENTRIES
             do
 #                IFS=$'\n'
                 if [ -d "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ] || [ -f "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ]
@@ -234,7 +238,7 @@ if [[ "$OPTION" == "RESTORE" ]];
             echo restoring user "$PATH1"/...
             cd "$SCRIPT_DIR"/user
             # read all lines, starting from line 2 and cat them to a list
-            cat "$TEXTFILES" | sed 1d | while read -r ENTRIES
+            cat "$TEXTFILES" | sed 1,1d | while read -r ENTRIES
             do
 #                IFS=$'\n'
                 if [ -d "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ] || [ -f "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ]
@@ -256,16 +260,61 @@ if [[ "$OPTION" == "RESTORE" ]];
     IFS=$SAVEIFS
     echo "restore done ;)"
 
-    # cleaning up old unused files after restore
-    echo "cleaning up some files..."
-    find /"$HOME"/Library/VirtualBox -name "*.log.*" -type f -print0 | xargs -0 sudo rm
-    VBOXEXTENSIONS=$(find /"$HOME"/Library/VirtualBox -name "*.vbox-extpack" -type f -print0 | xargs -0 ls -m -t -1 | cat | sed 1d)
-    for extension in "${VBOXEXTENSIONS//\\n/}"; do
-        sudo rm "$extension"
-    done
-    echo "done ;)"
+    ### cleaning up old unused files after restore
 
-    # repairing file permissions in user ~/ folder
+    echo "cleaning up some files..."
+
+    # virtualbox extpack
+    find /"$HOME"/Library/VirtualBox -name "*.vbox-extpack" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r VBOXEXTENSIONS
+    do
+        sudo rm "$VBOXEXTENSIONS"
+    done
+
+    # virtualbox logs
+    find /"$HOME"/Library/VirtualBox -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r VBOXLOGS
+    do
+        sudo rm "$VBOXLOGS"
+    done
+
+    # fonts
+    find /"$HOME"/Library/Fonts \( -name "*.dir" -o -name "*.list" -o -name "*.scale" \) -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r FONTSFILES
+    do
+        sudo rm "$FONTSFILES"
+    done
+
+    # jameica backups
+    find /"$HOME"/Library/jameica -name "jameica-backup-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r JAMEICABACKUPS
+    do
+        sudo rm "$JAMEICABACKUPS"
+    done
+
+    # jameica logs
+    find /"$HOME"/Library/jameica -name "jameica.log-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r JAMEICALOGS
+    do
+        sudo rm "$JAMEICALOGS"
+    done
+
+    # address book migration
+    find /"$HOME"/Library/"Application Support"/AddressBook -name "Migration*.abbu.tbz" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r ADDRESSBOOKMIGRATION
+    do
+        sudo rm "$ADDRESSBOOKMIGRATION"
+    done
+
+    # 2do
+    find /"$HOME"/Library/"Application Support"/Backups -name "*.db" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,2d | while read -r TODOBACKUPS
+    do
+        sudo rm "$TODOBACKUPS"
+    done
+
+    # unified remote
+    find /"$HOME"/Library/"Application Support"/"Unified Remote" -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r UNIFIEDREMOTELOGS
+    do
+        sudo rm "$UNIFIEDREMOTELOGS"
+    done
+
+    echo "cleaning done ;)"
+
+    ### repairing file permissions in user ~/ folder
     echo "repairing file permissions in user ~/ folder..."
     chown -R "$SELECTEDUSER" /"$HOME"/*
     echo "done ;)"
