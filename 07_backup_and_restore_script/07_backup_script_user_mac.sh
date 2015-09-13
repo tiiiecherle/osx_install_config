@@ -162,6 +162,7 @@ if [[ "$OPTION" == "BACKUP" ]];
         fi
     done
     echo "backup done ;)"
+    osascript -e 'tell application "Keka.app" to activate'
 else
     :
 fi
