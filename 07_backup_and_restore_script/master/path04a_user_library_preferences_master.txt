@@ -4,7 +4,7 @@ com.adobe.InDesign.plist
 com.alfredapp.Alfred.plist
 com.aone.keka.plist
 com.apago.PDFShrink.plist
-com.apple.print.custompresets.forprinter.RICOH_Aficio_MP_C305__00267361D9D4_.plist
+com.apple.print.custompresets.forprinter.canon_ir_adv_c3325if.plist
 com.barebones.textwrangler.plist
 com.bjango.istatmenus.plist
 com.bjango.istatmenus5.extras.plist
