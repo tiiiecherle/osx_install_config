@@ -759,8 +759,14 @@ defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
 #defaults write com.AppleMultitouchTrackpad FirstClickThreshold -int 1
 #defaults write com.AppleMultitouchTrackpad SecondClickThreshold -int 1
 
-# cursor Speed
+# trackpad cursor speed
 defaults write NSGlobalDomain com.apple.trackpad.scaling -float 0.875
+
+# mouse cursor speed
+# 0-5 with 5 being the fastest
+defaults write -g com.apple.mouse.scaling 0.875
+# default mouse cursor speed
+# defaults delete -g com.apple.mouse.scaling
 
 # disable smooth scrolling
 #defaults write -g AppleScrollAnimationEnabled -bool false
