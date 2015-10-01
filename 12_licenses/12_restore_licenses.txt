@@ -1,11 +1,13 @@
 RESTORE LICENSES
 
-manual restore
+
+
+MANUAL RESTORE
+
 microsoft office
 adobe cs
 ondesoft audiobook converter
 extfs mac
-# totalfinder
 
 
 
@@ -19,4 +21,5 @@ istat menus
 overflow
 pdf shrink
 password wallet
+totalfinder
 
