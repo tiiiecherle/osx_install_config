@@ -260,9 +260,25 @@ defaults write com.apple.dock expose-group-apps -bool true
 ##
 defaults write com.apple.spaces spans-displays -bool false
 
-# disable dashboard
+# dashboard as setting
+# 1 = disabled
+# 2 = enabled as space
+# 3 = enabled as overlay
+
+defaults write com.apple.dashboard dashboard-enabled-state -int 1
+
+sleep 2
+
+if [ "$USER" == "wolfgang" ]
+then
+    defaults write com.apple.dashboard dashboard-enabled-state -int 2
+else
+    :
+fi
+
+# disable dashboard completetly (must be reenabled on the command line, reboot and then enabled in the system preferences to work again)
 ##
-defaults write com.apple.dashboard mcx-disabled -bool true
+#defaults write com.apple.dashboard mcx-disabled -bool true
 
 # expose
 #
@@ -726,6 +742,21 @@ defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 ###
 
 echo "preferences mouse & trackpad"
+
+### mouse
+
+# secondary click:
+# possible values: OneButton, TwoButton, TwoButtonSwapped
+defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string OneButton
+
+sleep 2
+
+if [ "$USER" == "carolin" ] || [ "$USER" == "wolfgang" ]
+then
+    defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string TwoButton
+else
+    :
+fi
 
 # trackpad: enable tap to click for this user and for the login screen
 #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
@@ -1715,7 +1746,7 @@ defaults write NSGlobalDomain NSPersonNameDefaultShortNameFormat -integer 0
 # prefer nicknames
 # 1=yes, 0=no
 ##
-defaults write NSGlobalDomain NSPersonNameDefaultShouldPreferNicknamesPreference -integer 1
+defaults write NSGlobalDomain NSPersonNameDefaultShouldPreferNicknamesPreference -integer 0
 
 # show contacts found in mail
 ##
