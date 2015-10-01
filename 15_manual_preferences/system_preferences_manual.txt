@@ -12,7 +12,7 @@ Drucker
 		download and install (apple) printer driver
 		add printer (+)
 		standard
-		select correct driver (not airprint)
+		select correct driver (not airprint) - select software - canon 3325 ppd
 		check restored printer settings
 
 iCloud

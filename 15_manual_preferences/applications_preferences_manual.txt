@@ -29,6 +29,10 @@ Adobe Indesign
 Adobe Reader
 	nicht als Standard für pdfs verwenden
 
+Adobe Acrobat Pro
+	updates
+	nicht als Standard für pdfs verwenden
+
 AppCleaner
 	Einstellungen - SmartDelete - ein
 
@@ -52,11 +56,19 @@ iStatMenues
 	alles aus, Time an
 	Sortierung vornehmen rechts von anderen menu bar items - combined wieder deaktivieren
 
+iTunes
+	connect Iphone
+	activate	sync this phone over wifi
+	activate	manage music and video manually
+	select sync stuff - sync
+	backup
+
 Kalender
 	Kalender und Sync prüfen
 	Erinnerungen pro Mac anpassen
 
 Kontakte
+	Ansicht - Gruppen einblenden
 	Kontakte und Sync prüfen
 
 Mail
@@ -66,20 +78,33 @@ Mail
 			Signaturen den Accounts zuweisen / Signatur auswählen
 
 Microsoft Excel
-	Ansicht - Symbolleisten - Format
+	Einstellungen - Allgemein
+		Arbeitsmappenkatalog beim Start anzeigen	aus
+		Linealeinheiten					Zentimeter
+		Benutzername					USERNAME
+		Design						Klassisch
+	Save new file		on my mac		e.g. desktop
 
 Microsoft Word
-	Ansicht - Symbolleisten - Format
+	Einstellungen - Allgemein
+		Arbeitsmappenkatalog beim Start anzeigen	aus
+		Linealeinheiten					Zentimeter
+		Benutzername					USERNAME
+		Design						Klassisch
+	Save new file		on my mac		e.g. desktop
 
 Nachrichten
 	Account an- oder abmelden
+	enable text message forwarding on iphone
 
 Overflow
 	Bedienungshilfen in Systemeinstellungen - Sicherheit - Privatsphäre aktivieren
 
 The Unarchiver
-	Formate - alle auswählen - es werden nicht alle markiert, aber ist o.k.
 	Extrahieren - extrahierten Ordner öffnen
+
+Totalfinder
+	
 
 Witch
 	Witch aktivieren
@@ -95,6 +120,9 @@ Witch
 Virtualbox
 	Einstellungen
 		Zusatzpakete - install extension pack from ~/Library/VirtualBox/NAME_OF_LATEST_EXTPACK or from the website
+
+VNC Viewer
+	Optionen - Erweitert - Eingaben - 2 Tasten Maus aktivieren
 
 XtraFinder
 	Tabs
