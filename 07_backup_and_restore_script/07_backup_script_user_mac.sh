@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v23
+### backup / restore script v24
 ###
 
 # checking if the script is run as root
@@ -242,15 +242,15 @@ if [[ "$OPTION" == "RESTORE" ]];
             cat "$TEXTFILES" | sed 1,1d | while read -r ENTRIES
             do
 #                IFS=$'\n'
-                if [ -d "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ] || [ -f "$RESTOREMASTERDIR$PATH2"/"$ENTRIES" ]
+                if [ -d "$RESTOREUSERDIR$PATH1"/"$ENTRIES" ] || [ -f "$RESTOREUSERDIR$PATH1"/"$ENTRIES" ]
                     then
                     cd "$RESTORETO$PATH1"
                     rm -rf "$ENTRIES"
-                    cd "$RESTOREMASTERDIR$PATH2"
+                    cd "$RESTOREUSERDIR$PATH1"
                     mkdir -p "$RESTORETO$PATH1"
                     rsync -a "$ENTRIES" "$RESTORETO$PATH1"
                 else
-                    echo no "$ENTRIES" in master backup - skipping...
+                    echo no "$ENTRIES" in user backup - skipping...
                 fi
             done
         else
