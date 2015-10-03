@@ -46,6 +46,9 @@ Facetime
 	Account an- oder abmelden
 	only activate number for being reachable
 
+Geburtstagschecker
+	falls nicht aktiviert, Ablage - Geburtstagslistenfenster zeigen
+
 Github Desktop
 	Re-Setup git with
 	git config --global user.name "YOUR NAME"

@@ -4,6 +4,9 @@ Sicherheit
 	Privatsphäre
 		Bedienungshilfen - Overflow aktivieren
 
+Spotlight
+	Bing Websuche deaktivieren
+
 Monitore
 	Auflösung und Farbprofil wählen
 
