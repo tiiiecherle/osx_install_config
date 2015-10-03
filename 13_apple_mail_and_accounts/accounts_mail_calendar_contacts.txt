@@ -1,16 +1,16 @@
 restore script
 
 delete all accounts
-	rm /Users/tom/Library/Accounts/Accounts3.sqlite
-	rm /Users/tom/Library/Accounts/Accounts3.sqlite-shm
-	rm /Users/tom/Library/Accounts/Accounts3.sqlite-wal
-	rm /Users/tom/Library/Preferences/MobileMeAccounts.plist
+	rm ~/Library/Accounts/Accounts3.sqlite
+	rm ~/Users/tom/Library/Accounts/Accounts3.sqlite-shm
+	rm ~/Library/Accounts/Accounts3.sqlite-wal
+	rm ~/Library/Preferences/MobileMeAccounts.plist
 
 reboot
 
 run migrate accounts script
 
-delete all old and deactivated accounts
+delete all old and deactivated accounts in system preferences - internet accounts
 
 re-add icloud accounts and activate sync
 	private
@@ -28,4 +28,4 @@ open mail for converting V2 to V3 and check if everything works
 open calendar, contacts for checking if everything works
 
 delete old mail files
-	rm -rf /Users/tom/Library/Mail/V2
+	rm -rf ~/Library/Mail/V2
