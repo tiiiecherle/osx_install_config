@@ -1385,8 +1385,15 @@ defaults write com.apple.Safari NewTabBehavior -int 1
 defaults write com.apple.Safari HomePage -string "about:blank"
 
 # set safari download path
-mkdir -p ~/Desktop/down
-defaults write com.apple.Safari DownloadsPath -string ~/Desktop/down
+defaults write com.apple.Safari DownloadsPath -string ~/Downloads
+
+if [ "$USER" == "tom" ]
+then
+    mkdir -p ~/Desktop/down
+    defaults write com.apple.Safari DownloadsPath -string ~/Desktop/down
+else
+    :
+fi
 
 # remove downloads list items
 # 0 = manually
