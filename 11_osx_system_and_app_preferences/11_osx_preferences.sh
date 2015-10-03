@@ -1337,8 +1337,8 @@ defaults write com.apple.finder FXInfoPanesExpanded -dict \
 
 echo "totalfinder"
 
-# do not restore windows and tabs after reboot
-defaults write com.apple.finder TotalFinderDontRestoreTabsState -bool yes
+# do not restore windows and tabs after reboot (does not exist in version 1.7.3 and above)
+#defaults write com.apple.finder TotalFinderDontRestoreTabsState -bool yes
 
 
 
