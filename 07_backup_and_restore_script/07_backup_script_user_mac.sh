@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v24
+### backup / restore script v25
 ###
 
 # checking if the script is run as root
@@ -30,6 +30,9 @@ fi
 ###
 ### defining the variables
 ###
+
+# starting a function to tee a record to a logfile
+function backup_restore {
 
 # backupdate
 DATE=$(date +%F)
@@ -217,6 +220,7 @@ if [[ "$OPTION" == "RESTORE" ]];
                     rm -rf "$ENTRIES"
                     cd "$RESTOREMASTERDIR$PATH2"
                     mkdir -p "$RESTORETO$PATH1"
+                    echo "   ""$ENTRIES"
                     rsync -a "$ENTRIES" "$RESTORETO$PATH1"
                 else
                     echo no "$ENTRIES" in master backup - skipping...
@@ -248,6 +252,7 @@ if [[ "$OPTION" == "RESTORE" ]];
                     rm -rf "$ENTRIES"
                     cd "$RESTOREUSERDIR$PATH1"
                     mkdir -p "$RESTORETO$PATH1"
+                    echo "   ""$ENTRIES"
                     rsync -a "$ENTRIES" "$RESTORETO$PATH1"
                 else
                     echo no "$ENTRIES" in user backup - skipping...
@@ -328,4 +333,9 @@ else
     echo "user home directory does not exist - exiting script..."
     exit
 fi
+
+}
+
+# running function to tee a record to a logfile
+backup_restore | tee ~/Desktop/backup_restore_log.txt
 
