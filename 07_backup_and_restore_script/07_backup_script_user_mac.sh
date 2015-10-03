@@ -125,6 +125,7 @@ if [[ "$OPTION" == "BACKUP" ]];
                     cd "$PATH1"
                     mkdir -p /"$DESTINATION$PATH1"
                     echo "   ""$ENTRIES"
+#                    echo "   ""$PATH1"/"$ENTRIES"
                     rsync -a "$ENTRIES" /"$DESTINATION$PATH1"
                 else
                     :
@@ -155,6 +156,7 @@ if [[ "$OPTION" == "BACKUP" ]];
                     cd "$PATH1"
                     mkdir -p /"$DESTINATION$PATH1"
                     echo "   ""$ENTRIES"
+#                    echo "   ""$PATH1"/"$ENTRIES"
                     rsync -a "$ENTRIES" /"$DESTINATION$PATH1"
                 else
                     :
@@ -220,7 +222,8 @@ if [[ "$OPTION" == "RESTORE" ]];
                     rm -rf "$ENTRIES"
                     cd "$RESTOREMASTERDIR$PATH2"
                     mkdir -p "$RESTORETO$PATH1"
-                    echo "   ""$ENTRIES"
+#                    echo "   ""$ENTRIES"
+                    echo "   ""$RESTORETO$PATH1"/"$ENTRIES"
                     rsync -a "$ENTRIES" "$RESTORETO$PATH1"
                 else
                     echo no "$ENTRIES" in master backup - skipping...
@@ -252,7 +255,8 @@ if [[ "$OPTION" == "RESTORE" ]];
                     rm -rf "$ENTRIES"
                     cd "$RESTOREUSERDIR$PATH1"
                     mkdir -p "$RESTORETO$PATH1"
-                    echo "   ""$ENTRIES"
+                    echo "   ""$RESTORETO$PATH1"/"$ENTRIES"
+#                    echo "   ""$ENTRIES"
                     rsync -a "$ENTRIES" "$RESTORETO$PATH1"
                 else
                     echo no "$ENTRIES" in user backup - skipping...
