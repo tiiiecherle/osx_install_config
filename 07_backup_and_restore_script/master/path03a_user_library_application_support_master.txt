@@ -1,7 +1,6 @@
 ~/Library/Application Support
 Cyberduck
 Apago
-Dialectic
 Editra
 Backups
 Alfred 2

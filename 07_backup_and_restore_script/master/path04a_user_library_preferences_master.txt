@@ -16,8 +16,6 @@ com.googlecode.iterm2.plist
 com.guidedways.TodoMac.plist
 com.hicknhacksoftware.MacPass.plist
 com.iSlayer.iStatMenusPreferences.plist
-com.jen.dialectic.dialer.snomipphone.plist
-com.jen.dialectic.plist
 com.kiwifruitware.VirtualBox_Menulet.plist
 com.mothsoftware.mailarchiverx.plist
 com.realvnc.vncviewer.plist

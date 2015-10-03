@@ -12,6 +12,8 @@ com.prosaldo.monkeyoffice2014.plist
 com.rdutoit.backupList.plist
 com.DigiDNA.iMazingMac.plist
 com.DigiDNA.SharedPreferences.plist
+com.jen.dialectic.dialer.snomipphone.plist
+com.jen.dialectic.plist
 com.ondesoft.audiobookconverter.plist
 com.selznick.PasswordWallet.plist
 com.apple.dashboard.client.plist

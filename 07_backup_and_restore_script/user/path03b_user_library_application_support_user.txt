@@ -1,6 +1,7 @@
 ~/Library/Application Support
 AddressBook
 iCal
+Dialectic
 Firefox
 GarageSale
 Google Earth
