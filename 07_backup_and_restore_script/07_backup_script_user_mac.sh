@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v25
+### backup / restore script v26
 ###
 
 # checking if the script is run as root
@@ -194,10 +194,17 @@ if [[ "$OPTION" == "RESTORE" ]];
     echo "running restore..."
 
     # master user restore directory
-    MASTERUSER=$(ls "$RESTOREDIR"/master/Users | head -n 1)
+    MASTERUSER=$(ls "$RESTOREMASTERDIR"/Users | head -n 1)
     echo masteruser for restore is "$MASTERUSER"
 
-    # running restore
+    # user from restore directory
+    USERUSER=$(ls "$RESTOREUSERDIR"/Users | head -n 1)
+    echo user for restore is "$USERUSER"
+
+    # user to restore to
+    echo user to restore to is "$SELECTEDUSER"
+
+    ### running restore
 
     # master directory
     cd "$SCRIPT_DIR"/master
@@ -222,8 +229,10 @@ if [[ "$OPTION" == "RESTORE" ]];
                     rm -rf "$ENTRIES"
                     cd "$RESTOREMASTERDIR$PATH2"
                     mkdir -p "$RESTORETO$PATH1"
-#                    echo "   ""$ENTRIES"
-                    echo "   ""$RESTORETO$PATH1"/"$ENTRIES"
+                    echo "   ""$RESTOREMASTERDIR$PATH2"/"$ENTRIES"
+                    echo "   ""to ""$RESTORETO$PATH1"/"$ENTRIES"
+                    echo "   "
+                    #echo "   ""$ENTRIES"
                     rsync -a "$ENTRIES" "$RESTORETO$PATH1"
                 else
                     echo no "$ENTRIES" in master backup - skipping...
@@ -240,7 +249,8 @@ if [[ "$OPTION" == "RESTORE" ]];
         cd "$SCRIPT_DIR"/user
         # read first line of textfile and cd to it
         PATH1=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/$HOME"'|')
-        PATH2=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/Users/$MASTERUSER"'|')
+        PATH2=$(head -n 1 "$TEXTFILES" | sed 's|~|'"/Users/$USERUSER"'|')
+        mkdir -p "$PATH1"
         if [ -d "$PATH1" ]
             then
             echo restoring user "$PATH1"/...
@@ -249,14 +259,16 @@ if [[ "$OPTION" == "RESTORE" ]];
             cat "$TEXTFILES" | sed 1,1d | while read -r ENTRIES
             do
 #                IFS=$'\n'
-                if [ -d "$RESTOREUSERDIR$PATH1"/"$ENTRIES" ] || [ -f "$RESTOREUSERDIR$PATH1"/"$ENTRIES" ]
+                if [ -d "$RESTOREUSERDIR$PATH2"/"$ENTRIES" ] || [ -f "$RESTOREUSERDIR$PATH2"/"$ENTRIES" ]
                     then
                     cd "$RESTORETO$PATH1"
                     rm -rf "$ENTRIES"
-                    cd "$RESTOREUSERDIR$PATH1"
+                    cd "$RESTOREUSERDIR$PATH2"
                     mkdir -p "$RESTORETO$PATH1"
-                    echo "   ""$RESTORETO$PATH1"/"$ENTRIES"
-#                    echo "   ""$ENTRIES"
+                    echo "   ""$RESTOREUSERDIR$PATH2"/"$ENTRIES"
+                    echo "   ""to ""$RESTORETO$PATH1"/"$ENTRIES"
+                    echo "   "
+                    #echo "   ""$ENTRIES"
                     rsync -a "$ENTRIES" "$RESTORETO$PATH1"
                 else
                     echo no "$ENTRIES" in user backup - skipping...
@@ -267,7 +279,7 @@ if [[ "$OPTION" == "RESTORE" ]];
         fi
     done
 
-    IFS=$SAVEIFS
+#    IFS=$SAVEIFS
     echo "restore done ;)"
 
     ### cleaning up old unused files after restore
