@@ -1796,14 +1796,16 @@ defaults write com.apple.TextEdit PlainTextEncoding -int 4
 defaults write com.apple.TextEdit PlainTextEncodingForWrite -int 4
 
 # enable smart links in textedit
-defaults write com.apple.TextEdit SmartLinks -bool true
+#defaults write com.apple.TextEdit SmartLinks -bool true            # no longer working in 10.11
+defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartLinks -bool true
 
 # disable smart quotes in textedit
-defaults write com.apple.TextEdit SmartQuotes -bool false
+#defaults write com.apple.TextEdit SmartQuotes -bool true
+defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartQuotes -bool false
 
 # disable smart dashes in textedit
-defaults write com.apple.TextEdit SmartDashes -bool false
-
+#defaults write com.apple.TextEdit SmartDashes -bool false
+defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartDashes -bool false
 
 
 ###
