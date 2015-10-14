@@ -1807,6 +1807,15 @@ defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/
 #defaults write com.apple.TextEdit SmartDashes -bool false
 defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartDashes -bool false
 
+###
+### preview
+###
+
+echo "preview"
+
+# antialias preview of documents (text and lines)
+defaults write ~/Library/Containers/com.apple.Preview/Data/Library/Preferences/com.apple.Preview.plist PVPDFAntiAliasOption -bool false
+
 
 ###
 ### disk utility
