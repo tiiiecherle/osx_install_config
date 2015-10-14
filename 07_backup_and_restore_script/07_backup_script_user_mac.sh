@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v26
+### backup / restore script v27
 ###
 
 # checking if the script is run as root
@@ -99,7 +99,49 @@ echo script directory is "$SCRIPT_DIR"
 if [[ "$OPTION" == "BACKUP" ]]; 
     then
     echo "running backup..."
-    
+    sleep 1
+
+    # running contacts backup applescript
+    read -p "do you want to run an address book backup (y/n)?" CONT1
+    if [ "$CONT1" == "y" ]
+    then
+        echo running contacts backup... please wait...
+        open "$SCRIPT_DIR"/addressbook/contacts_backup.app
+        #PID=$(ps aux | grep contacts_backup | grep -v grep | awk "{ print \$2 }")
+        #echo $PID
+        # waiting for the process to finish
+        while ps aux | grep contacts_backup | grep -v grep > /dev/null; do sleep 1; done
+        # cleaning up old backups (only keeping the latest 3)
+        find /"$HOME"/Documents/backup/addressbook -type d -maxdepth 0 -print0 | xargs -0 ls -m -1 | cat | sed 1,3d | while read -r ADDRESSBOOKBACKUPS
+        do
+            sudo rm -rf /"$HOME"/Documents/backup/addressbook/"$ADDRESSBOOKBACKUPS"
+        done
+        osascript -e 'tell application "Terminal" to activate'
+    else
+        :
+    fi
+
+    # running calendars backup applescript
+    read -p "do you want to run an calendars backup (y/n)?" CONT2
+    if [ "$CONT2" == "y" ]
+    then
+        echo "running calendars backup... please do not touch your computer until the calendar app quits..."
+        sleep 3
+        open "$SCRIPT_DIR"/calendar/calendars_backup.app
+        #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
+        #echo $PID
+        # waiting for the process to finish
+        while ps aux | grep calendars_backup | grep -v grep > /dev/null; do sleep 1; done
+        # cleaning up old backups (only keeping the latest 3)
+        find /"$HOME"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls -m -1 | cat | sed 1,3d | while read -r CALENDARSBACKUPS
+        do
+            sudo rm -rf /"$HOME"/Documents/backup/addressbook/"$CALENDARSBACKUPS"
+        done
+        osascript -e 'tell application "Terminal" to activate'
+    else
+        :
+    fi
+
     # backup destination
     DESTINATION="$HOME"/Desktop/backup_"$SELECTEDUSER"_"$DATE"
     mkdir -p /"$DESTINATION"

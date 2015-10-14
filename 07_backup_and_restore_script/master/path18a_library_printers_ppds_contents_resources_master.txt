@@ -1,2 +1,2 @@
 /Library/Printers/PPDs/Contents/Resources
-CNADVC3325X1.PPD.gz
+CNMCIRAC3325S2.ppd.gz
