@@ -3,11 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.tom.run_script_on_network_change</string>
+	<string>com.run_script_on_network_change</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>osascript</string>
-		<string>/Users/tom/Library/Scripts/unified_remote_restart.scpt</string>
+		<string>sh</string>
+		<string>-c</string>
+		<string>osascript ~/Library/Scripts/run_on_network_change.scpt</string>
 	</array>
 	<key>WatchPaths</key>
 	<array>
