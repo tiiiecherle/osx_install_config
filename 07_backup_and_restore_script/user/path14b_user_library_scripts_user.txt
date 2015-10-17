@@ -1,2 +1,2 @@
 ~/Library/Scripts
-unified_remote_restart.scpt
+run_on_network_change.scpt
