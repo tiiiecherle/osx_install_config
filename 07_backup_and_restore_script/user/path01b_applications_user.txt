@@ -7,3 +7,4 @@ Unified Remote.app
 Telegram.app
 GitHub Desktop.app
 MacDown.app
+ChitChat.app
