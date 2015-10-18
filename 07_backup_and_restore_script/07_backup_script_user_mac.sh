@@ -209,7 +209,10 @@ if [[ "$OPTION" == "BACKUP" ]];
         fi
     done
     echo "backup done ;)"
+    # opening keka for archiving
     osascript -e 'tell application "Keka.app" to activate'
+    # moving log to backup directory
+    mv /"$HOME"/Desktop/backup_restore_log.txt /"$DESTINATION"/_backup_restore_log.txt
 else
     :
 fi
