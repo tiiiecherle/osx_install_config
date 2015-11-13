@@ -106,6 +106,9 @@ if [[ "$OPTION" == "BACKUP" ]];
     if [ "$CONT1" == "y" ]
     then
         echo running contacts backup... please wait...
+        # service entry for for contacts backup
+        sudo sqlite3 "/"$HOME"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.contacts-backup',0,1,1,NULL,NULL);"
+        sleep 2
         open "$SCRIPT_DIR"/addressbook/contacts_backup.app
         #PID=$(ps aux | grep contacts_backup | grep -v grep | awk "{ print \$2 }")
         #echo $PID
@@ -126,7 +129,11 @@ if [[ "$OPTION" == "BACKUP" ]];
     if [ "$CONT2" == "y" ]
     then
         echo "running calendars backup... please do not touch your computer until the calendar app quits..."
-        sleep 3
+        # accessibility entry for calendar backup
+        sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
+        # service entry for for calendar backup
+        sudo sqlite3 "/"$HOME"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
+        sleep 2
         open "$SCRIPT_DIR"/calendar/calendars_backup.app
         #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
         #echo $PID

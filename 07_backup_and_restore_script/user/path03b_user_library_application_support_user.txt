@@ -22,3 +22,4 @@ Plex Media Server
 Telegram
 GitHub for Mac
 MacDown
+KeepingYouAwake
