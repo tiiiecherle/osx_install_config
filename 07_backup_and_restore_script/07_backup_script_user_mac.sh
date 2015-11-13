@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v27
+### backup / restore script v28
 ###
 
 # checking if the script is run as root
@@ -109,16 +109,17 @@ if [[ "$OPTION" == "BACKUP" ]];
         # service entry for for contacts backup
         sudo sqlite3 "/"$HOME"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.contacts-backup',0,1,1,NULL,NULL);"
         sleep 2
+        # cleaning up old backups (only keeping the latest 4)
+        find /"$HOME"/Documents/backup/addressbook -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r ADDRESSBOOKBACKUPS
+        do
+            sudo rm -rf /"$HOME"/Documents/backup/addressbook/"$ADDRESSBOOKBACKUPS"
+        done
+        # running contacts backup
         open "$SCRIPT_DIR"/addressbook/contacts_backup.app
         #PID=$(ps aux | grep contacts_backup | grep -v grep | awk "{ print \$2 }")
         #echo $PID
         # waiting for the process to finish
         while ps aux | grep contacts_backup | grep -v grep > /dev/null; do sleep 1; done
-        # cleaning up old backups (only keeping the latest 3)
-        find /"$HOME"/Documents/backup/addressbook -type d -maxdepth 0 -print0 | xargs -0 ls -m -1 | cat | sed 1,3d | while read -r ADDRESSBOOKBACKUPS
-        do
-            sudo rm -rf /"$HOME"/Documents/backup/addressbook/"$ADDRESSBOOKBACKUPS"
-        done
         osascript -e 'tell application "Terminal" to activate'
     else
         :
@@ -134,16 +135,17 @@ if [[ "$OPTION" == "BACKUP" ]];
         # service entry for for calendar backup
         sudo sqlite3 "/"$HOME"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
         sleep 2
+        # cleaning up old backups (only keeping the latest 4)
+        find /"$HOME"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CALENDARSBACKUPS
+        do
+            sudo rm -rf /"$HOME"/Documents/backup/addressbook/"$CALENDARSBACKUPS"
+        done
+        # running calendar backup
         open "$SCRIPT_DIR"/calendar/calendars_backup.app
         #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
         #echo $PID
         # waiting for the process to finish
         while ps aux | grep calendars_backup | grep -v grep > /dev/null; do sleep 1; done
-        # cleaning up old backups (only keeping the latest 3)
-        find /"$HOME"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls -m -1 | cat | sed 1,3d | while read -r CALENDARSBACKUPS
-        do
-            sudo rm -rf /"$HOME"/Documents/backup/addressbook/"$CALENDARSBACKUPS"
-        done
         osascript -e 'tell application "Terminal" to activate'
     else
         :
