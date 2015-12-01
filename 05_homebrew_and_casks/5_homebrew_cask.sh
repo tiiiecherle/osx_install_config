@@ -167,7 +167,7 @@ echo "done ;)"
 #brew cleanup
 #brew cask cleanup
 
-#brew update && brew upgrade brew-cask && brew upgrade --all && brew cleanup && brew cask cleanup
+#brew update && brew upgrade --all && brew cleanup && brew cask cleanup
 
 
 
