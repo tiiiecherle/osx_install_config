@@ -40,7 +40,7 @@ brew prune
 echo "installing cask..."
 
 brew tap caskroom/cask
-brew install brew-cask
+#brew install brew-cask
 #brew install caskroom/cask/brew-cask
 #brew upgrade brew-cask
 
