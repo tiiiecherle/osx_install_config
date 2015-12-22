@@ -30,3 +30,4 @@ org.corecode.SMARTReporter.plist
 com.corecode.SMARTReporter.plist
 com.github.GitHub.plist
 com.uranusjr.macdown.plist
+info.marcel-dierkes.KeepingYouAwake.plist
