@@ -138,7 +138,7 @@ if [[ "$OPTION" == "BACKUP" ]];
         # cleaning up old backups (only keeping the latest 4)
         find /"$HOME"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CALENDARSBACKUPS
         do
-            sudo rm -rf /"$HOME"/Documents/backup/addressbook/"$CALENDARSBACKUPS"
+            sudo rm -rf /"$HOME"/Documents/backup/calendar/"$CALENDARSBACKUPS"
         done
         # running calendar backup
         open "$SCRIPT_DIR"/calendar/calendars_backup.app
