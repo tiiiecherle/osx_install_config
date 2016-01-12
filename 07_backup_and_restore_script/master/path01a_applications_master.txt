@@ -46,7 +46,7 @@ LiteIcon.app
 MacPass.app
 MacUpdate Desktop.app
 Mail Archiver X
-MonKey Office 2015.app
+MonKey Office 2016.app
 Ondesoft AudioBook Converter.app
 OnyX.app
 Overflow.app

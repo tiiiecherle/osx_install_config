@@ -8,7 +8,7 @@ ch.grapefruit.iBackup.plist
 com.skype.skype.plist
 com.stuntsoftware.Overflow.plist
 org.m0k.transmission.plist
-com.prosaldo.monkeyoffice2014.plist
+com.prosaldo.monkeyoffice2016.plist
 com.rdutoit.backupList.plist
 com.DigiDNA.iMazingMac.plist
 com.DigiDNA.SharedPreferences.plist
