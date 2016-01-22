@@ -8,3 +8,4 @@ Telegram.app
 GitHub Desktop.app
 MacDown.app
 ChitChat.app
+Progressive Downloader.app

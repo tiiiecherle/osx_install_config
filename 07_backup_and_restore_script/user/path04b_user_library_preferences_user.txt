@@ -31,3 +31,7 @@ com.corecode.SMARTReporter.plist
 com.github.GitHub.plist
 com.uranusjr.macdown.plist
 info.marcel-dierkes.KeepingYouAwake.plist
+com.samstone.ChitChat.plist
+com.PS.PSD.plist
+Adobe InDesign
+Adobe Photoshop CS5.1 Settings
