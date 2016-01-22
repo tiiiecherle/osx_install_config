@@ -44,6 +44,10 @@ brew tap caskroom/cask
 #brew install caskroom/cask/brew-cask
 #brew upgrade brew-cask
 
+# switching to the new system
+brew uninstall --force brew-cask
+brew update
+
 
 # installing some homebrew packages
 echo "installing homebrew packages..."
@@ -82,7 +86,7 @@ casks_apps_with_installer=(
 adobe-reader
 teamviewer
 virtualbox
-#totalfinder
+totalfinder
 xtrafinder
 # divxplayer (not available yet)
 )
@@ -120,8 +124,9 @@ done
 # cleaning up
 echo "cleaning up..."
 
-brew cask cleanup
+brew update
 brew cleanup
+brew cask cleanup
 
 for installedcasks_installer in ${casks_apps_with_installer[@]}; do
 rm -rf /Applications/$installedcasks_installer
