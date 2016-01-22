@@ -8,4 +8,4 @@
 3	copy over backup files for restore script
 	copy over other backup files
 	copy over licenses
-	copy over installer for adobe cs, office and divx
+	copy over installer for adobe cs and office
