@@ -3,7 +3,7 @@ RESTORE FILES FROM BACKUP
 ~/Music
 ~/Pictures
 ~/Desktop/desktop
-~/Desktop/down
+~/Desktop/files
 ~/Desktop/backup
 ~/_TS_MACBOOK
 ~/github

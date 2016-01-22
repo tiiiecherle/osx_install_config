@@ -23,7 +23,7 @@ Adobe Indesign
 	Bearbeiten - Farbeinstellungen - sollte nun synchronisiert anzeigen
 	Fenster - Arbeitsbereich - Typografie
 	Indesign - Voreinstellungen - Anzeigeleistung
-		Standardansicht		Hohe Qualität
+		Standardansicht			Hohe Qualität
 		Text ausgrauen unter		1 pt
 
 Adobe Reader
@@ -35,12 +35,17 @@ Adobe Acrobat Pro
 
 AppCleaner
 	Einstellungen - SmartDelete - ein
+	Einstellungen - Updates - ein
 
 BackupList+
 	Liste und Script überprüfen
 
-Dialectic
-	run "Configure for Snom IP Phone.app" for establishing the connection
+ChitChat
+	change app icon
+	chitchat - do not show status icon
+
+#Dialectic
+#	run "Configure for Snom IP Phone.app" for establishing the connection
 
 Facetime
 	Account an- oder abmelden
@@ -81,16 +86,18 @@ Mail
 			Signaturen den Accounts zuweisen / Signatur auswählen
 
 Microsoft Excel
+	Dokumentkatalog						Abmelden 
 	Einstellungen - Allgemein
-		Arbeitsmappenkatalog beim Start anzeigen	aus
+		Dokumentkatalog beim Start anzeigen		aus
 		Linealeinheiten					Zentimeter
 		Benutzername					USERNAME
 		Design						Klassisch
 	Save new file		on my mac		e.g. desktop
 
 Microsoft Word
+	Dokumentkatalog						Abmelden 
 	Einstellungen - Allgemein
-		Arbeitsmappenkatalog beim Start anzeigen	aus
+		Dokumentkatalog beim Start anzeigen		aus
 		Linealeinheiten					Zentimeter
 		Benutzername					USERNAME
 		Design						Klassisch
