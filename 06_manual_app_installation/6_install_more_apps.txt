@@ -1,7 +1,6 @@
 INSTALL ADDITIONAL APPS
 
 microsoft office
-divx player
 adobe creative suite 5.5 (select needed installers including all components)
 	flash
 	acrobat
