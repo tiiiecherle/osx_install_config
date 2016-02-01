@@ -47,6 +47,7 @@ MacPass.app
 MacUpdate Desktop.app
 Mail Archiver X
 MonKey Office 2016.app
+NameChanger.app
 Ondesoft AudioBook Converter.app
 OnyX.app
 Overflow.app
