@@ -1,5 +1,4 @@
 ~/Library/Application Support
-Cyberduck
 Apago
 Editra
 Backups
