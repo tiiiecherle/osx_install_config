@@ -55,6 +55,8 @@ echo "installing homebrew packages..."
 homebrewpackages=(
 #ffmpeg
 git
+rename
+pv
 )
 
 brew install ${homebrewpackages[@]}
