@@ -57,6 +57,7 @@ homebrewpackages=(
 git
 rename
 pv
+wget
 )
 
 brew install ${homebrewpackages[@]}
