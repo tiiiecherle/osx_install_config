@@ -1385,6 +1385,9 @@ defaults write com.apple.Safari NewTabBehavior -int 1
 # set safaris home page to `about:blank` for faster loading
 defaults write com.apple.Safari HomePage -string "about:blank"
 
+# days of keeping history
+defaults write com.apple.Safari HistoryAgeInDaysLimit -int 1
+
 # set safari download path
 defaults write com.apple.Safari DownloadsPath -string ~/Downloads
 
@@ -1554,8 +1557,8 @@ defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebK
 #defaults write com.apple.Safari WebKitTabToLinksPreferenceKey -bool true
 
 # set default encoding
-defaults write com.apple.Safari WebKitDefaultTextEncodingName -string 'utf-8'
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DefaultTextEncodingName -string 'utf-8'
+defaults write com.apple.Safari WebKitDefaultTextEncodingName -string 'iso-8859-1'
+defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DefaultTextEncodingName -string 'iso-8859-1'
 
 # enable the develop menu and the web inspector
 defaults write com.apple.Safari IncludeDevelopMenu -bool true
