@@ -58,6 +58,8 @@ git
 rename
 pv
 wget
+pigz
+htop
 )
 
 brew install ${homebrewpackages[@]}
