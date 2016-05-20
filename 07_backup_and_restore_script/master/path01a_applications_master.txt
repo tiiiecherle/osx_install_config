@@ -1,6 +1,6 @@
 /Applications
 2Do.app
-Alfred 2.app
+Alfred 3.app
 AppCleaner.app
 Audio Splitter.app
 AudioBookBinder.app
