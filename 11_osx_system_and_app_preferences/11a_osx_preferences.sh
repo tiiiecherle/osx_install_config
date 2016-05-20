@@ -938,7 +938,7 @@ osascript -e 'tell application "System Events" to make login item at end with pr
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"Dialectic", path:"/Applications/Dialectic.app", hidden:false}'
 #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Caffeine", path:"/Applications/Caffeine.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"KeepingYouAwake", path:"/Applications/KeepingYouAwake.app", hidden:false}'
-osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 2", path:"/Applications/Alfred 2.app", hidden:false}'
+osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 3", path:"/Applications/Alfred 3.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"/Applications/GeburtstagsChecker.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"AppCleaner Helper", path:"/Applications/AppCleaner Helper.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"SMARTReporter", path:"/Applications/SMARTReporter.app", hidden:false}'
