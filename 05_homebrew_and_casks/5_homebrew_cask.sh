@@ -29,6 +29,7 @@ fi
 
 
 # checking installation and updating homebrew
+#echo 'export PATH="/usr/local/sbin:$PATH"' >> ~/.bash_profile
 brew doctor
 #cd /usr/local/Library && git stash && git clean -d -f
 brew update
@@ -56,10 +57,12 @@ homebrewpackages=(
 #ffmpeg
 git
 rename
-pv
 wget
+pv
 pigz
 htop
+pigz
+coreutils
 )
 
 brew install ${homebrewpackages[@]}
@@ -92,12 +95,13 @@ adobe-reader
 teamviewer
 virtualbox
 totalfinder
-xtrafinder
+# xtrafinder
 # divxplayer (not available yet)
 )
 
 #brew cask install --force --caskroom="/Applications" ${casks_apps_with_installer[@]}
 for installedcasks_installer in ${casks_apps_with_installer[@]}; do
+#brew cask install --force --caskroom="/Applications" $installedcasks_installer
 brew cask install --force --caskroom="/Applications" $installedcasks_installer
 done
 
@@ -115,7 +119,8 @@ the-unarchiver
 
 #brew cask install --force --caskroom="/Applications" ${casks_apps_without_installer[@]}
 for installedcasks_noinstaller in ${casks_apps_without_installer[@]}; do
-brew cask install --force --caskroom="/Applications" $installedcasks_noinstaller
+#brew cask install --force --caskroom="/Applications" $installedcasks_noinstaller
+brew cask install --force $installedcasks_noinstaller
 done
 
 for installedcasks_noinstaller in ${casks_apps_without_installer[@]}; do
@@ -181,9 +186,4 @@ echo "done ;)"
 
 
 
-# uninstalling homebrew and all casks
-# https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/FAQ.md
-#ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
-#sudo rm -rf /opt/homebrew-casks
-#sudo chmod 0755 /usr/local
-#sudo chgrp wheel /usr/local
+

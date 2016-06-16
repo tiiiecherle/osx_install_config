@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v28
+### backup / restore script v29
 ###
 
 # checking if the script is run as root
@@ -218,8 +218,21 @@ if [[ "$OPTION" == "BACKUP" ]];
         fi
     done
     echo "backup done ;)"
-    # opening keka for archiving
-    osascript -e 'tell application "Keka.app" to activate'
+    # opening app for archiving
+    #osascript -e 'tell application "Keka.app" to activate'
+    #sudo -u $(users)
+    sudo su $(who | grep console | awk '{print $1}') -c 'brew doctor'
+    sudo su $(who | grep console | awk '{print $1}') -c 'brew update'
+    sudo su $(who | grep console | awk '{print $1}') -c 'brew upgrade --all'
+    sudo su $(who | grep console | awk '{print $1}') -c 'brew cleanup'
+    sudo su $(who | grep console | awk '{print $1}') -c 'brew cask cleanup'
+    sudo su $(who | grep console | awk '{print $1}') -c 'brew install pigz coreutils pv'
+
+    #sudo su $(who | grep console | awk '{print $1}') -c '"'$SCRIPT_DIR'"/homebrew_update.sh'
+    open -g -a "$SCRIPT_DIR"/archive/archive_tar_gz.app
+    #osascript -e 'display dialog "backup finished, starting archiving..."'
+    #osascript -e 'tell application "'"$SCRIPT_DIR"'/archive/archive_tar_gz.app" to activate'
+
     # moving log to backup directory
     mv /"$HOME"/Desktop/backup_restore_log.txt /"$DESTINATION"/_backup_restore_log.txt
 else
