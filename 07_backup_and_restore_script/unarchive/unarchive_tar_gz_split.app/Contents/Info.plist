@@ -11,11 +11,11 @@
 	<key>CFBundleIconFile</key>
 	<string>applet</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.apple.ScriptEditor.id.archive-tar-gz</string>
+	<string>com.apple.ScriptEditor.id.unarchive-tar-gz</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>archive_tar_gz</string>
+	<string>unarchive_tar_gz</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -44,9 +44,9 @@
 		<key>positionOfDivider</key>
 		<real>539</real>
 		<key>savedFrame</key>
-		<string>277 128 1273 790 0 0 1680 1027 </string>
+		<string>74 98 1273 790 0 0 1680 1027 </string>
 		<key>selectedTab</key>
-		<string>result</string>
+		<string>description</string>
 	</dict>
 </dict>
 </plist>
