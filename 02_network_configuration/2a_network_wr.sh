@@ -42,9 +42,9 @@ sudo networksetup -switchtolocation "office_lan"
 sleep 3
 sudo networksetup -createnetworkservice "Ethernet" "Ethernet"
 sleep 3
-sudo networksetup -setmanual "Ethernet" 192.168.1.8 255.255.255.0 192.168.1.1
+sudo networksetup -setmanual "Ethernet" 172.16.1.8 255.255.255.0 172.16.1.1
 sleep 3
-sudo networksetup -setdnsservers "Ethernet" 192.168.1.1
+sudo networksetup -setdnsservers "Ethernet" 172.16.1.1
 sleep 3
 
 # deleting created preferences backup file

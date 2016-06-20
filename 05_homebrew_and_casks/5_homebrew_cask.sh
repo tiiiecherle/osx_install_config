@@ -95,6 +95,7 @@ adobe-reader
 teamviewer
 virtualbox
 totalfinder
+owncloud
 # xtrafinder
 # divxplayer (not available yet)
 )

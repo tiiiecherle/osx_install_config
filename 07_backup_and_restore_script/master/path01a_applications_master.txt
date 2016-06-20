@@ -30,7 +30,6 @@ HandBrake.app
 Hotspot Shield.app
 iBackup.app
 InsomniaX.app
-iPack.app
 iphone
 iStat Menus.app
 iTerm.app
@@ -64,6 +63,7 @@ SMARTReporter.app
 SoundSource.app
 SyncTwoFolders.app
 TextWrangler.app
+The Archive Browser.app
 The Unarchiver.app
 TNEF's Enough.app
 Transmission.app

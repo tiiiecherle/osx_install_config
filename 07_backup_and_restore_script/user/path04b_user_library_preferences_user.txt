@@ -35,3 +35,4 @@ com.samstone.ChitChat.plist
 com.PS.PSD.plist
 Adobe InDesign
 Adobe Photoshop CS5.1 Settings
+WhatsApp.plist

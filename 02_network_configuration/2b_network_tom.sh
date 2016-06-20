@@ -67,9 +67,9 @@ sleep 3
 sudo networksetup -createnetworkservice "WLAN" Wi-Fi
 #sudo networksetup -createnetworkservice WLAN en0
 sleep 3
-sudo networksetup -setmanual "WLAN" 192.168.2.2 255.255.255.0 192.168.2.1
+sudo networksetup -setmanual "WLAN" 172.16.2.2 255.255.255.0 172.16.2.1
 sleep 3
-sudo networksetup -setdnsservers "WLAN" 192.168.2.1
+sudo networksetup -setdnsservers "WLAN" 172.16.2.1
 sleep 3
 
 
@@ -82,9 +82,9 @@ sleep 3
 sudo networksetup -createnetworkservice "Thunderbolt-Ethernet" "Thunderbolt Ethernet"
 #sudo networksetup -createnetworkservice Thunderbolt-Bridge bridge0
 sleep 3
-sudo networksetup -setmanual "Thunderbolt-Ethernet" 192.168.1.4 255.255.255.0 192.168.1.1
+sudo networksetup -setmanual "Thunderbolt-Ethernet" 172.16.1.4 255.255.255.0 172.16.1.1
 sleep 3
-sudo networksetup -setdnsservers "Thunderbolt-Ethernet" 192.168.1.1
+sudo networksetup -setdnsservers "Thunderbolt-Ethernet" 172.16.1.1
 sleep 3
 
 # creating new location mozart_wlan
@@ -96,9 +96,23 @@ sleep 3
 sudo networksetup -createnetworkservice "WLAN" Wi-Fi
 #sudo networksetup -createnetworkservice WLAN en0
 sleep 3
-sudo networksetup -setmanual "WLAN" 192.168.0.202 255.255.255.0 192.168.0.1
+sudo networksetup -setmanual "WLAN" 192.168.1.202 255.255.255.0 192.168.1.1
 sleep 3
-sudo networksetup -setdnsservers "WLAN" 192.168.0.1
+sudo networksetup -setdnsservers "WLAN" 192.168.1.1
+sleep 3
+
+# creating new location berente_wlan
+echo adding location berente_wlan
+sudo networksetup -createlocation "berente_wlan"
+sleep 3
+sudo networksetup -switchtolocation "berente_wlan"
+sleep 3
+sudo networksetup -createnetworkservice "WLAN" Wi-Fi
+#sudo networksetup -createnetworkservice WLAN en0
+sleep 3
+sudo networksetup -setmanual "WLAN" 192.168.2.202 255.255.255.0 192.168.2.1
+sleep 3
+sudo networksetup -setdnsservers "WLAN" 192.168.2.1
 sleep 3
 
 # deleting _temp network location, not necessary when deleting preferences.plist

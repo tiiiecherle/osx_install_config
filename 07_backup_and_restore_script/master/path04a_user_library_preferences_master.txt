@@ -47,3 +47,4 @@ org.corecode.SMARTReporter.plist
 com.apple.Safari.plist
 trolCommander
 com.binaryage.totalfinder.plist
+cx.c3.thearchivebrowser.plist

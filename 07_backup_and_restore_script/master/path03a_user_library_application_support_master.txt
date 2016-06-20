@@ -5,3 +5,4 @@ Backups
 Alfred 2
 Dialectic
 Witch
+ownCloud
