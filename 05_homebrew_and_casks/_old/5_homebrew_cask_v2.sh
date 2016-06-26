@@ -27,9 +27,10 @@ if [ ! -x /usr/local/bin/brew ]; then
 yes '' | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
 
+# including homebrew commands in PATH
+echo 'export PATH="/usr/local/sbin:$PATH"' >> ~/.bash_profile
 
 # checking installation and updating homebrew
-#echo 'export PATH="/usr/local/sbin:$PATH"' >> ~/.bash_profile
 brew doctor
 #cd /usr/local/Library && git stash && git clean -d -f
 brew update
@@ -61,7 +62,6 @@ wget
 pv
 pigz
 htop
-pigz
 coreutils
 )
 
