@@ -51,13 +51,13 @@ if [ "$SELECTEDUSER" == "tom" ];
 then
 
     BACKUPDIRS=(
-   "/Users/$USER/Pictures"
-   "/Users/$USER/Music"
+    "/Users/$USER/Pictures"
+    "/Users/$USER/Music"
     "/Users/$USER/Desktop/desktop"
-   "/Users/$USER/Desktop/backup"
-   "/Users/$USER/github"
-   "/Users/$USER/Desktop/files"
-   "/Users/$USER/Documents"
+    "/Users/$USER/Desktop/backup"
+    "/Users/$USER/github"
+    "/Users/$USER/Desktop/files"
+    "/Users/$USER/Documents"
     )
 
 else
@@ -84,12 +84,10 @@ fi
 
 ###
 
-DATE=$(date +%F)
-TARGZLOG="$TARGZSAVEDIR"/targz_file_log_"$DATE".txt
 
 echo ""
-if [[ -f "$TARGZLOG" ]]; then rm "$TARGZLOG"; else :; fi
-touch "$TARGZLOG"
+if [[ -f "$TARGZSAVEDIR"/targz_file_log.txt ]]; then rm "$TARGZSAVEDIR"/targz_file_log.txt; else :; fi
+touch "$TARGZSAVEDIR"/targz_file_log.txt
 
 
 function targz_and_progress {
@@ -97,7 +95,7 @@ function targz_and_progress {
     BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}')
     echo archiving "$DIRS" to "$TARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
     pushd "$(dirname "$DIRS")"; tar --exclude='dccrecv' -cf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz --best > "$TARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz; popd
-    echo "$TARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz >> "$TARGZLOG"
+    echo "$TARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz >> "$TARGZSAVEDIR"/targz_file_log.txt
     echo ""
 
 }
@@ -149,7 +147,7 @@ echo "testing integrity of file(s) in "$TARGZSAVEDIR"/..."
 echo ""
 #
 IFS=$'\n'
-for TOCHECK in $(cat "$TARGZLOG");
+for TOCHECK in $(cat "$TARGZSAVEDIR"/targz_file_log.txt);
 do
 #echo $TOCHECK
 
