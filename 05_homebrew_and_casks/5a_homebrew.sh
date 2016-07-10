@@ -47,6 +47,7 @@ rename
 wget
 pv
 pigz
+gnu-tar
 htop
 coreutils
 )

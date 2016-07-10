@@ -226,7 +226,7 @@ if [[ "$OPTION" == "BACKUP" ]];
     sudo su $(who | grep console | awk '{print $1}') -c 'brew upgrade --all'
     sudo su $(who | grep console | awk '{print $1}') -c 'brew cleanup'
     sudo su $(who | grep console | awk '{print $1}') -c 'brew cask cleanup'
-    sudo su $(who | grep console | awk '{print $1}') -c 'brew install pigz coreutils pv'
+    sudo su $(who | grep console | awk '{print $1}') -c 'brew install pigz gnu-tar coreutils pv'
 
     #sudo su $(who | grep console | awk '{print $1}') -c '"'$SCRIPT_DIR'"/homebrew_update.sh'
     open -g -a "$SCRIPT_DIR"/archive/archive_tar_gz.app
