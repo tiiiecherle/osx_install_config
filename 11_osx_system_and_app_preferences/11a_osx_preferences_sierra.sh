@@ -196,6 +196,10 @@ defaults write com.apple.dock orientation -string "bottom"
 ##
 defaults write com.apple.dock mineffect -string "genie"
 
+# prefer tabs when opening documents
+# always, fullscreen or manual
+defaults write -g AppleWindowTabbingMode -string always
+
 # minimize windows into their applications icon
 ##
 defaults write com.apple.dock minimize-to-application -bool false
@@ -828,6 +832,43 @@ defaults write NSGlobalDomain com.apple.sound.beep.feedback -integer 1
 # increase sound quality for Bluetooth headphones/headsets
 defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
 
+
+###
+### preferences - siri
+###
+
+echo "preferences siri"
+# config files
+# /Users/tom/Library/Preferences/com.apple.assistant.support.plist
+# /Users/tom/Library/Preferences/com.apple.assistant.backedup.plist
+# /Users/tom/Library/Preferences/com.apple.Siri.plist
+
+# enable / disable siri 
+defaults write com.apple.assistant.support "Assistant Enabled" -boolean false
+
+# if enabled (true), settings
+# language
+defaults write com.apple.assistant.backedup "Session Language" -string de-DE
+# output voice language
+/usr/libexec/PlistBuddy -c "Set :'Output Voice':Custom YES" ~/Library/Preferences/com.apple.assistant.backedup.plist
+/usr/libexec/PlistBuddy -c "Set :'Output Voice':Language de-DE" ~/Library/Preferences/com.apple.assistant.backedup.plist
+/usr/libexec/PlistBuddy -c "Set :'Output Voice':Name com.apple.speech.synthesis.voice.custom.helena" ~/Library/Preferences/com.apple.assistant.backedup.plist
+/usr/libexec/PlistBuddy -c "Set :'Output Voice':Gender 2" ~/Library/Preferences/com.apple.assistant.backedup.plist
+
+# speech output
+# 2 = yes, 3 = no
+defaults write com.apple.assistant.backedup "Use device speaker for TTS" -integer 2
+
+# micro input (automatic)
+/usr/libexec/PlistBuddy -c "Delete :PreferredMicrophoneIdentifier" ~/Library/Preferences/com.apple.Siri.plist
+
+# hotkey
+# 0 = off, 2 = hold cmd+space, 3 = hold fn+space
+defaults write com.apple.Siri HotkeyTag -integer 0
+#/usr/libexec/PlistBuddy -c "Set :AppleSymbolicHotKeys:176:enabled NO" ~/Library/Preferences/com.apple.symbolichotkeys.plist
+
+# menu bar icon
+defaults write com.apple.Siri StatusMenuVisible -bool false
 
 
 ###
