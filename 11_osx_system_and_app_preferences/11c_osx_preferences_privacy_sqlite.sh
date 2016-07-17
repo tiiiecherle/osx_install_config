@@ -35,7 +35,9 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 # example
 # /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/Overflow.app/Contents/Info.plist
 # com.stuntsoftware.Overflow
-
+# example2
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "/Applications/System Preferences.app/Contents/Info.plist"
+# com.apple.systempreferences
 
 
 ### privacy - accessibility
@@ -43,6 +45,7 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 # 	x 	calendars backup			com.apple.ScriptEditor.id.calendars-backup
 #	x	overflow					com.stuntsoftware.Overflow
 #	x	script-editor				com.apple.ScriptEditor2
+#   x   system-preferences          com.apple.systempreferences
 #	x	witch						com.manytricks.WitchWrapper
 #	x	witchdaemon                 com.manytricks.witchdaemon
 
@@ -71,6 +74,7 @@ ACCESSIBILITYAPPS=(
 com.apple.ScriptEditor.id.calendars-backup
 com.stuntsoftware.Overflow
 com.apple.ScriptEditor2
+com.apple.systempreferences
 com.manytricks.WitchWrapper
 com.manytricks.witchdaemon
 )
@@ -87,7 +91,7 @@ done
 #	x	terminal					com.apple.Terminal
 #	x	iterm2                      com.googlecode.iterm2
 #	x	dialectic					com.jen.dialectic
-#	x	alfred 2					com.runningwithcrayons.Alfred-2
+#	x	alfred 3					com.runningwithcrayons.Alfred-3
 #	x	geburtstagschecker			earthlingsoft.GeburtstagsChecker
 
 # add application to accessibility
@@ -108,7 +112,7 @@ com.apple.ScriptEditor.id.contacts-backup
 com.apple.Terminal
 com.googlecode.iterm2
 com.jen.dialectic
-com.runningwithcrayons.Alfred-2
+com.runningwithcrayons.Alfred-3
 earthlingsoft.GeburtstagsChecker
 )
 

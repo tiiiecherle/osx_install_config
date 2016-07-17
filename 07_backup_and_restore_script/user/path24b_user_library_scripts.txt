@@ -1,0 +1,3 @@
+~/Library/Scripts
+run_on_network_change.app
+run_on_network_change_login.app

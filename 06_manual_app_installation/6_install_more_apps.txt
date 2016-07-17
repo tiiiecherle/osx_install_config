@@ -1,6 +1,8 @@
 INSTALL ADDITIONAL APPS
 
 microsoft office
+	no dock symbols
+	no automator actions
 adobe creative suite 5.5 (select needed installers including all components)
 	flash
 	acrobat
@@ -8,3 +10,11 @@ adobe creative suite 5.5 (select needed installers including all components)
 	illustrator
 	indesign
 	photoshop
+
+	updates
+	first run	open indesign - updates - adobe application manager update
+			force quit indesign
+	second run	open indesign - all other updates
+			force quit indesign
+
+	/Appliactions/Adobe Creative Cloud/ uninstall

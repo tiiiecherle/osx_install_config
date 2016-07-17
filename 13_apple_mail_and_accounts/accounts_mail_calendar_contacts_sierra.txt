@@ -1,0 +1,18 @@
+restore script el capitan to sierra
+
+restore 
+	~/Library/Accounts/
+	~/Library/Preferences/MobileMeAccounts.plist
+	done by restore script
+
+reboot
+
+delete all old and deactivated accounts in system preferences - internet accounts
+
+delete old accounts (new is Accounts4)
+	rm ~/Library/Accounts/Accounts3.sqlite*
+
+open mail for converting V3 to V4 and check if everything works
+	re-attach the default signatures
+
+open calendar, contacts for checking if everything works

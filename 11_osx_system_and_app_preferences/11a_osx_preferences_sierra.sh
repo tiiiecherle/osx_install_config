@@ -996,7 +996,9 @@ then
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"VirtualBox Menulet", path:"/Applications/VirtualBox Menulet.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"Telegram", path:"/Applications/Telegram.app", hidden:true}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"Unified Remote", path:"/Applications/Unified Remote.app", hidden:false}'
-osascript -e 'tell application "System Events" to make login item at end with properties {name:"ChitChat", path:"/Applications/ChitChat.app", hidden:true}'
+#osascript -e 'tell application "System Events" to make login item at end with properties {name:"ChitChat", path:"/Applications/ChitChat.app", hidden:true}'
+#osascript -e 'tell application "System Events" to make login item at end with properties {name:"Whatsapp", path:"/Applications/Whatsapp.app", hidden:true}'
+osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_network_change_login", path:"/Users/'$USER'/Library/Scripts/run_on_network_change_login.app", hidden:true}'
 else
 :
 fi

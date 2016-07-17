@@ -16,8 +16,8 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 /usr/libexec/PlistBuddy -c 'delete favoriteservers:CustomListItems' ~/Library/Preferences/com.apple.sidebarlists.plist
 /usr/libexec/PlistBuddy -c 'add favoriteservers:CustomListItems array' ~/Library/Preferences/com.apple.sidebarlists.plist
 /usr/libexec/PlistBuddy -c 'add favoriteservers:Controller string "CustomListItems"' ~/Library/Preferences/com.apple.sidebarlists.plist
-/usr/libexec/PlistBuddy -c 'add favoriteservers:CustomListItems:0:Name string "smb://192.168.1.200"' ~/Library/Preferences/com.apple.sidebarlists.plist
-/usr/libexec/PlistBuddy -c 'add favoriteservers:CustomListItems:0:URL string "smb://192.168.1.200"' ~/Library/Preferences/com.apple.sidebarlists.plist
+/usr/libexec/PlistBuddy -c 'add favoriteservers:CustomListItems:0:Name string "smb://172.16.1.200"' ~/Library/Preferences/com.apple.sidebarlists.plist
+/usr/libexec/PlistBuddy -c 'add favoriteservers:CustomListItems:0:URL string "smb://172.16.1.200"' ~/Library/Preferences/com.apple.sidebarlists.plist
 
 #for adding more servers replace 0 with 1, 2, 3...
 

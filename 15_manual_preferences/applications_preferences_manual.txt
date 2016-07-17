@@ -1,5 +1,11 @@
 APPLICATIONS PREFERENCES
 
+
+all Browser
+	google.com
+	privacy settings
+	
+
 Finder
 	Seitenleiste
 		alles an außer
@@ -133,6 +139,9 @@ Virtualbox
 
 VNC Viewer
 	Optionen - Erweitert - Eingaben - 2 Tasten Maus aktivieren
+
+Xcode
+	Preferences - Fonts & Colors - custom
 
 XtraFinder
 	Tabs

@@ -43,6 +43,7 @@ paragon-extfs
 adobe-reader
 teamviewer
 virtualbox
+virtualbox-extension-pack
 totalfinder
 owncloud
 keka

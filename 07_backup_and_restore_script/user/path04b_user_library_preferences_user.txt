@@ -36,3 +36,4 @@ com.PS.PSD.plist
 Adobe InDesign
 Adobe Photoshop CS5.1 Settings
 WhatsApp.plist
+MobileMeAccounts.plist
