@@ -17,24 +17,24 @@ APP_TAIL="</string><key>_CFURLStringType</key><integer>0</integer></dict></dict>
 
 function set_dock_apps () {
 
-  $DEF_W $DOCK 'checked-for-launchpad' -bool true
+    $DEF_W $DOCK 'checked-for-launchpad' -bool true
   
-  # clear the dock of existing apps
-  $DEF_W $DOCK 'persistent-apps' -array ''
-  $DEF_W $DOCK 'persistent-others' -array ''
+    # clear the dock of existing apps
+    $DEF_W $DOCK 'persistent-apps' -array ''
+    $DEF_W $DOCK 'persistent-others' -array ''
  
-  # add some apps
+    # add some apps
 
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Chromium.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Chromium.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Firefox.app/$APP_TAIL"
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Safari.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Safari.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Mail.app/$APP_TAIL"
@@ -46,44 +46,43 @@ function set_dock_apps () {
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Calendar.app/$APP_TAIL"
+    
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Adobe Acrobat Reader DC.app/$APP_TAIL"
+    
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Preview.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
-
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Pages.app/$APP_TAIL"
-
+    
 ### office 2016
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Microsoft Word.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Microsoft Word.app/$APP_TAIL"
 
-#    $DEF_W $DOCK 'persistent-apps' \
-#    -array-add "$APP_HEAD/Applications/Microsoft PowerPoint.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Microsoft PowerPoint.app/$APP_TAIL"
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Microsoft Excel.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Microsoft Excel.app/$APP_TAIL"
 
 ### office 2011
 
-#    $DEF_W $DOCK 'persistent-apps' \
-#    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Word.app/$APP_TAIL"
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Excel.app/$APP_TAIL"
+
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Word.app/$APP_TAIL"
 
 #    $DEF_W $DOCK 'persistent-apps' \
 #    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft PowerPoint.app/$APP_TAIL"
 
-#    $DEF_W $DOCK 'persistent-apps' \
-#    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Excel.app/$APP_TAIL"
-
-###
-
-    $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
-
     $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/MacPass.app/$APP_TAIL"
-
+    -array-add "$APP_HEAD/Applications/Pages.app/$APP_TAIL"
+    
     $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Cyberduck.app/$APP_TAIL"
-
+    -array-add "$APP_HEAD/Applications/OpenOffice.app/$APP_TAIL"
+    
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
     $DEF_W $DOCK 'persistent-apps' \
@@ -95,19 +94,28 @@ function set_dock_apps () {
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Adobe Dreamweaver CS5.5/Adobe Dreamweaver CS5.5.app/$APP_TAIL"
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Adobe Fireworks CS5.1/Adobe Fireworks CS5.1.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Adobe Fireworks CS5.1/Adobe Fireworks CS5.1.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
     $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/MonKey Office 2015.app/$APP_TAIL"
-
+    -array-add "$APP_HEAD/Applications/Cyberduck.app/$APP_TAIL"
+    
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Keka.app/$APP_TAIL"
+    
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/MacPass.app/$APP_TAIL"
+
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/MonKey Office 2016.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/PDF Shrink.app/$APP_TAIL"
+    
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/System Preferences.app/$APP_TAIL"
 

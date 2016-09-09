@@ -1,37 +1,40 @@
 #!/bin/bash
 
 #echo "script"
-#echo $TARGZSAVEDIR
-#echo $APPLESCRIPTDIR
-
+#echo $FILESTARGZSAVEDIR
+#echo $FILESAPPLESCRIPTDIR
 
 ###
 
-
-# users on the system without ".localized" and "Shared"
-SYSTEMUSERS=$(ls /Users | egrep -v "^[.]" | egrep -v "Shared")
-
-# user profile for backup
-export PS3="Please select user profile for file backup by typing the number: "
-select SELECTEDUSER in "$SYSTEMUSERS"
-  do
-  echo You selected user "$SELECTEDUSER".
-    break
-done
-
-# check1 if a valid user was selected
-USERCHECK=$(find /Users -maxdepth 1 -name "$SELECTEDUSER" -exec basename {} \;)
-if [ "$SELECTEDUSER" != "$USERCHECK" ]; then
-    echo "no valid user selected - exiting script because of no real username..."
-    exit
-else
-    :
-fi
-
-# check2 if a valid user was selected
-if [ "$SELECTEDUSER" == "" ]; then
-    echo "no valid user selected - exiting script because of empty username..."
-    exit
+if [ "$SELECTEDUSER" == "" ]
+then
+    # users on the system without ".localized" and "Shared"
+    SYSTEMUSERS=$(ls /Users | egrep -v "^[.]" | egrep -v "Shared")
+    
+    # user profile for backup
+    export PS3="Please select user profile for file backup by typing the number: "
+    select SELECTEDUSER in "$SYSTEMUSERS"
+      do
+      echo You selected user "$SELECTEDUSER".
+        break
+    done
+    
+    # check1 if a valid user was selected
+    USERCHECK=$(find /Users -maxdepth 1 -name "$SELECTEDUSER" -exec basename {} \;)
+    if [ "$SELECTEDUSER" != "$USERCHECK" ]; then
+        echo "no valid user selected - exiting script because of no real username..."
+        exit
+    else
+        :
+    fi
+    
+    # check2 if a valid user was selected
+    if [ "$SELECTEDUSER" == "" ]; then
+        echo "no valid user selected - exiting script because of empty username..."
+        exit
+    else
+        :
+    fi
 else
     :
 fi
@@ -51,13 +54,13 @@ if [ "$SELECTEDUSER" == "tom" ];
 then
 
     BACKUPDIRS=(
-   "/Users/$USER/Pictures"
-   "/Users/$USER/Music"
+    "/Users/$USER/Pictures"
+    "/Users/$USER/Music"
     "/Users/$USER/Desktop/desktop"
-   "/Users/$USER/Desktop/backup"
-   "/Users/$USER/github"
-   "/Users/$USER/Desktop/files"
-   "/Users/$USER/Documents"
+    "/Users/$USER/Desktop/backup"
+    "/Users/$USER/github"
+    "/Users/$USER/Desktop/files"
+    "/Users/$USER/Documents"
     )
 
 else
@@ -85,19 +88,19 @@ fi
 ###
 
 DATE=$(date +%F)
-TARGZLOG="$TARGZSAVEDIR"/targz_file_log_"$DATE".txt
+FILESTARGZLOG="$FILESTARGZSAVEDIR"/targz_file_log_"$DATE".txt
 
 echo ""
-if [[ -f "$TARGZLOG" ]]; then rm "$TARGZLOG"; else :; fi
-touch "$TARGZLOG"
+if [[ -f "$FILESTARGZLOG" ]]; then rm "$FILESTARGZLOG"; else :; fi
+touch "$FILESTARGZLOG"
 
 
 function targz_and_progress {
 
     BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}')
-    echo archiving "$DIRS" to "$TARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
-    pushd "$(dirname "$DIRS")"; tar --exclude='dccrecv' -cf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz --best > "$TARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz; popd
-    echo "$TARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz >> "$TARGZLOG"
+    echo archiving "$DIRS" to "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
+    pushd "$(dirname "$DIRS")"; tar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz --best > "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz; popd
+    echo "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz >> "$FILESTARGZLOG"
     echo ""
 
 }
@@ -118,7 +121,7 @@ do
     then
 
         # checking if file exists
-        SAVEFILE="$TARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
+        SAVEFILE="$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
         if [[ -f "$SAVEFILE" ]];
         then
             # asking for deleting existing file
@@ -145,11 +148,11 @@ done
 
 
 #echo ""
-echo "testing integrity of file(s) in "$TARGZSAVEDIR"/..."
+echo "testing integrity of file(s) in "$FILESTARGZSAVEDIR"/..."
 echo ""
 #
 IFS=$'\n'
-for TOCHECK in $(cat "$TARGZLOG");
+for TOCHECK in $(cat "$FILESTARGZLOG");
 do
 #echo $TOCHECK
 
@@ -164,4 +167,4 @@ do
     fi
 done
 unset IFS
-echo ""
+echo 'backing up files done ;)'

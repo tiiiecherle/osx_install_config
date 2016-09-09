@@ -1,2 +1,0 @@
-/Library/Printers/PPDs/Contents/Resources
-CNMCIRAC3325S2.ppd.gz

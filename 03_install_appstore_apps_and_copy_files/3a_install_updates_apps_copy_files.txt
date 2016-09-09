@@ -1,0 +1,43 @@
+1	do all system updates
+	softwareupdate --list && softwareupdate -i -a --verbose
+	sudo reboot
+	softwareupdate --list && softwareupdate -i -a --verbose
+	...
+
+2	connect to the app store and download all your bought apps
+
+3	install XCode from installer or appstore
+	needed for homebrew to work 
+	sudo xcode-select --switch /Applications/Xcode.app
+	sudo xcodebuild -license accept
+
+4	copy over backup for restoring with script 
+	and unpack with unarchive script unarchive_tar_gz_perms_onboard.app
+	# this is important or it will loose ownership and permissions
+
+5	copy over other backup files, unpack and restore to right location
+	# needs to be done before restore script (sets permissions)
+    	~/Pictures
+    	~/Music
+    	~/Desktop/desktop
+    	~/Desktop/backup
+   	~/github
+   	~/Desktop/files
+   	~/Documents
+	~/virtualbox
+	#
+	~/Pictures
+    	~/Music
+    	~/Desktop/desktop
+    	~/_WS_IMAC
+   	~/Eigene_Dateien_
+   	~/Documents
+	~/Downloads
+
+6	copy over licenses
+
+7	copy over installer for adobe cs and office
+
+
+
+

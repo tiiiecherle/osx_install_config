@@ -46,14 +46,15 @@ virtualbox
 virtualbox-extension-pack
 totalfinder
 owncloud
-keka
+#keka
 the-unarchiver
 #the-archive-browser
+#xtrafinder
 )
 
 #brew cask install --force ${casks[@]}
 for caskstoinstall in ${casks[@]}; do
-brew cask install --force $caskstoinstall
+	brew cask install --force $caskstoinstall
 done
 
 open "/opt/homebrew-cask/Caskroom/paragon-extfs/latest/FSinstaller.app" &

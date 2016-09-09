@@ -1,64 +1,25 @@
 APPLICATIONS PREFERENCES
 
-
 all Browser
 	google.com
 	privacy settings
-	
-
-Finder
-	Seitenleiste
-		alles an außer
-			Alle meine Dateien
-			iCloud Drive
-			Airdrop
-
-			zugang zu meinem mac
-			Bonjour Computer
-
-			gerätename
-
-			tags
-
-Adobe Photoshop
-	Bearbeiten - Farbeinstellungen - color_sync_adobe_cs
-
-Adobe Indesign
-	Bearbeiten - Farbeinstellungen - color_sync_adobe_cs
-	Dialog schließen
-	Bearbeiten - Farbeinstellungen - sollte nun synchronisiert anzeigen
-	Fenster - Arbeitsbereich - Typografie
-	Indesign - Voreinstellungen - Anzeigeleistung
-		Standardansicht			Hohe Qualität
-		Text ausgrauen unter		1 pt
 
 Adobe Reader
 	nicht als Standard für pdfs verwenden
 
 Adobe Acrobat Pro
-	updates
 	nicht als Standard für pdfs verwenden
 
 AppCleaner
 	Einstellungen - SmartDelete - ein
 	Einstellungen - Updates - ein
-
-BackupList+
-	Liste und Script überprüfen
-
-ChitChat
-	change app icon
-	chitchat - do not show status icon
-
-#Dialectic
-#	run "Configure for Snom IP Phone.app" for establishing the connection
+	
+Bartender 2
+	install components at first start
 
 Facetime
 	Account an- oder abmelden
-	only activate number for being reachable
-
-Geburtstagschecker
-	falls nicht aktiviert, Ablage - Geburtstagslistenfenster zeigen
+	only activate number for being reachable, deactivate email
 
 Github Desktop
 	Re-Setup git with
@@ -67,8 +28,10 @@ Github Desktop
 	git config --global user.email "YOUR EMAIL ADDRESS"
 
 iStatMenues
+	install components at first start
 	alles aus, Time an
-	Sortierung vornehmen rechts von anderen menu bar items - combined wieder deaktivieren
+	Sortierung vornehmen rechts von anderen menu bar items - combined wieder deaktivieren, v.r.n.l. notification center, date & time, spotlight, battery, ...
+	hold command to drag menu bar items
 
 iTunes
 	connect Iphone
@@ -89,71 +52,34 @@ Mail
 	Postfächer einblenden
 	Preferences
 		Signaturen
-			Signaturen den Accounts zuweisen / Signatur auswählen
+			Signaturen den Accounts zuweisen / Signatur auswählen	
 
-Microsoft Excel
-	Dokumentkatalog						Abmelden 
+Microsoft Excel 2011 und 2016
+	Dokumentkatalog (nur 2016)				Abmelden 
 	Einstellungen - Allgemein
 		Dokumentkatalog beim Start anzeigen		aus
 		Linealeinheiten					Zentimeter
 		Benutzername					USERNAME
 		Design						Klassisch
-	Save new file		on my mac		e.g. desktop
+	Save new file (nur 2016)	on my mac		e.g. desktop
+	Ansicht (nur 2011) - Symbolleisten - Format		
 
-Microsoft Word
-	Dokumentkatalog						Abmelden 
+Microsoft Word 2011 und 2016
+	Dokumentkatalog	(nur 2016)				Abmelden 
 	Einstellungen - Allgemein
 		Dokumentkatalog beim Start anzeigen		aus
 		Linealeinheiten					Zentimeter
 		Benutzername					USERNAME
 		Design						Klassisch
-	Save new file		on my mac		e.g. desktop
+	Save new file (nur 2016)	on my mac		e.g. desktop
+	Ansicht (nur 2011) - Symbolleisten - Format		
 
 Nachrichten
 	Account an- oder abmelden
 	enable text message forwarding on iphone
 
-Overflow
-	Bedienungshilfen in Systemeinstellungen - Sicherheit - Privatsphäre aktivieren
-
 The Unarchiver
 	Extrahieren - extrahierten Ordner öffnen
 
-Totalfinder
-	
-
-Witch
-	Witch aktivieren
-
-	Einstellungen als Bedienungshilfe bestätigen
-		Systemsteuerung - Sicherheit - Privatsphäre - Bedienungshilfen - Witch.app
-		Systemsteuerung - Sicherheit - Privatsphäre - Bedienungshilfen - witchdaemon.app from /Applications/Witch.app/Contents/PlugIns/Witch.prefPane/Contents/Helpers/witchdaemon.app
-
-	Einstellungen als Bedienungshilfe aktivieren
-			Witch.app
-		x	witchdaemon.app	
-	
-Virtualbox
-	Einstellungen
-		Zusatzpakete - install extension pack from ~/Library/VirtualBox/NAME_OF_LATEST_EXTPACK or from the website
-
-VNC Viewer
-	Optionen - Erweitert - Eingaben - 2 Tasten Maus aktivieren
-
 Xcode
 	Preferences - Fonts & Colors - custom
-
-XtraFinder
-	Tabs
-		Tabs
-		Ordner in neuem Tab öffnen
-	Funktionen
-		Ausschneiden & Einfügen
-	Elemente zum Findermenü hinzufügen
-		Pfad kopieren - Standard - Terminal Pfad
-		in neuem Fenster öffnen
-		aktualisieren
-		symbolischen Link erzeugen
-		
-
-

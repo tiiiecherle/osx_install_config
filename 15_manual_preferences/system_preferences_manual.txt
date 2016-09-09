@@ -1,12 +1,5 @@
 Systemeinstellungen
 
-Sicherheit
-	Privatsphäre
-		Bedienungshilfen - Overflow aktivieren
-
-Spotlight
-	Bing Websuche deaktivieren
-
 Monitore
 	Auflösung und Farbprofil wählen
 
@@ -17,13 +10,3 @@ Drucker
 		standard
 		select correct driver (not airprint) - select software - canon 3325 ppd
 		check restored printer settings
-
-iCloud
-	aktivieren und Passwort eingeben - nur Kontakte und Kalender
-
-Internet Accounts
-	Vollständigkeit prüfen
-
-Netzwerk
-	Überprüfung
-	gehe zu - mit Server verbinden - Server Favoriten hinzufügen

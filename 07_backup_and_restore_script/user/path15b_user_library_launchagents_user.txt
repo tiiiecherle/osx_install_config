@@ -1,2 +1,0 @@
-~/Library/LaunchAgents
-com.run_script_on_network_change.plist

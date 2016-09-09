@@ -1,2 +1,0 @@
-/Library/Internet Plug-Ins
-Google Earth Web Plug-in.plugin

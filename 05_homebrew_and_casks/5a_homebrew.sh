@@ -17,8 +17,8 @@ echo "creating directory..."
 if [ ! -d /usr/local ]; then
 sudo mkdir /usr/local
 fi
-sudo chown -R $USER:staff /usr/local
-
+#sudo chown -R $USER:staff /usr/local
+sudo chown -R $(whoami) /usr/local
 
 # installing homebrew without pressing enter at the beginning
 echo "installing homebrew..."
@@ -27,15 +27,32 @@ if [ ! -x /usr/local/bin/brew ]; then
 yes '' | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
 
+# permissions
+sudo chown -R $(whoami) /usr/local
+
 # including homebrew commands in PATH
 echo 'export PATH="/usr/local/sbin:$PATH"' >> ~/.bash_profile
 
 # checking installation and updating homebrew
+brew analytics off
 brew doctor
 #cd /usr/local/Library && git stash && git clean -d -f
 brew update
 brew upgrade
 brew prune
+
+# updating command line tools and system
+echo ""
+echo "checking for command line tools update..."
+COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
+if [ "$COMMANDLINETOOLUPDATE" == "" ]
+then
+	echo "no update for command line tools available..."
+else
+	echo "update for command line tools available, updating..."
+	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
+fi
+#softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
 
 # installing some homebrew packages
 echo "installing homebrew packages..."
@@ -50,6 +67,7 @@ pigz
 gnu-tar
 htop
 coreutils
+duti
 )
 
 brew install ${homebrewpackages[@]}

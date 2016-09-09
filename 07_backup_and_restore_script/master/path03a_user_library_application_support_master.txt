@@ -1,8 +1,0 @@
-~/Library/Application Support
-Apago
-Editra
-Backups
-Alfred 2
-Dialectic
-Witch
-ownCloud

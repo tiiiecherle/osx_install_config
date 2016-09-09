@@ -17,13 +17,13 @@ APP_TAIL="</string><key>_CFURLStringType</key><integer>0</integer></dict></dict>
 
 function set_dock_apps () {
 
-  $DEF_W $DOCK 'checked-for-launchpad' -bool true
+    $DEF_W $DOCK 'checked-for-launchpad' -bool true
   
-  # clear the dock of existing apps
-  $DEF_W $DOCK 'persistent-apps' -array ''
-  $DEF_W $DOCK 'persistent-others' -array ''
+    # clear the dock of existing apps
+    $DEF_W $DOCK 'persistent-apps' -array ''
+    $DEF_W $DOCK 'persistent-others' -array ''
  
-  # add some apps
+    # add some apps
 
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
@@ -55,6 +55,11 @@ function set_dock_apps () {
  
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Preview.app/$APP_TAIL"
+    
+    $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
+    
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Calculator.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Maps.app/$APP_TAIL"
@@ -72,28 +77,28 @@ function set_dock_apps () {
 
 ### office 2016
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Microsoft Word.app/$APP_TAIL"
+#    $DEF_W $DOCK 'persistent-apps' \
+#    -array-add "$APP_HEAD/Applications/Microsoft Word.app/$APP_TAIL"
 
 #    $DEF_W $DOCK 'persistent-apps' \
 #    -array-add "$APP_HEAD/Applications/Microsoft PowerPoint.app/$APP_TAIL"
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Microsoft Excel.app/$APP_TAIL"
+#    $DEF_W $DOCK 'persistent-apps' \
+#    -array-add "$APP_HEAD/Applications/Microsoft Excel.app/$APP_TAIL"
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Google Earth.app/$APP_TAIL"
+#    $DEF_W $DOCK 'persistent-apps' \
+#    -array-add "$APP_HEAD/Applications/Google Earth Pro.app/$APP_TAIL"
 
 ### office 2011
 
-#    $DEF_W $DOCK 'persistent-apps' \
-#    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Word.app/$APP_TAIL"
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Word.app/$APP_TAIL"
 
 #    $DEF_W $DOCK 'persistent-apps' \
 #    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft PowerPoint.app/$APP_TAIL"
 
-#    $DEF_W $DOCK 'persistent-apps' \
-#    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Excel.app/$APP_TAIL"
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Excel.app/$APP_TAIL"
 
 ###
 

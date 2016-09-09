@@ -1,2 +1,0 @@
-~/Library/Containers/ru.keepcoder.Telegram/Data/Library/Preferences/
-ru.keepcoder.Telegram.plist

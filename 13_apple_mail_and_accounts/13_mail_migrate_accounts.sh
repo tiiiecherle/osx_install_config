@@ -15,7 +15,29 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 ### be careful of the order of the steps to take for that (see separate file)
 ###
 
-# run the file with the scritp or by double clicking
-sudo open /System/Library/InternetAccounts/internetAccountsMigrator
+# el capitan
+#sudo open /System/Library/InternetAccounts/internetAccountsMigrator
+
+# sierra
+echo "deleting ~/Library/Accounts/Accounts3.sqlite*..."
+rm ~/Library/Accounts/Accounts3.sqlite*
+
+# rebuilding mail index on next run
+echo "deleting files to rebuild the mailindex at next start of mail..."
+if [ -e ~/Library/Mail/V3/MailData/ ]
+then
+	find ~/Library/Mail/V3/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm
+	find ~/Library/Mail/V3/MailData/ -type f -name "ExternalUpdates.*" -print0 | xargs -0 rm
+else
+	:
+fi
+
+if [ -e ~/Library/Mail/V4/MailData/ ]
+then
+	find ~/Library/Mail/V4/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm
+	find ~/Library/Mail/V4/MailData/ -type f -name "ExternalUpdates.*" -print0 | xargs -0 rm
+else
+	:
+fi
 
 echo "done"

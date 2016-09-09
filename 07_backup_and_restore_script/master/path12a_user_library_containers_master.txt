@@ -1,2 +1,0 @@
-~/Library/Containers/com.guidedways.TodoMac/Data/Library/Preferences
-com.guidedways.TodoMac.plist

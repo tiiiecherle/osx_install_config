@@ -1,2 +1,0 @@
-~/Library/Scripts
-run_on_network_change.scpt

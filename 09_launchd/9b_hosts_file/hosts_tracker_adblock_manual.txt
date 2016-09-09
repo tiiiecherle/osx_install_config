@@ -1,0 +1,54 @@
+safari hosts file, tracker and adblock settings
+
+1	launchd (/etc/hosts)
+	https://github.com/StevenBlack/hosts
+	http://alvinalexander.com/mac-os-x/mac-osx-startup-crontab-launchd-jobs
+
+	run install script
+	install_hosts_and_launchdservice.sh
+	to install
+		- hosts file generator
+		- update script
+		- launchdservice
+
+
+2	Ghostery
+	preferences
+	-	do not send usage data
+	-	enable auto update tracker lists
+	-	enable all tracker blocker
+		except
+			advertising	Perform Group
+			advertising	LiveRail
+			widgets 	twitter button
+			widgets		twitter syndication
+	-	whitelist
+		nothing yet
+	-	do not show warnings
+
+	advanced
+		- disable all viewing options
+		- disable also replace social buttons
+
+
+3	AdBlock (betafish)
+	preferences
+	- disable allow acceptable ads
+	- enable use safari content blocking
+	- enable right click
+	- enable advanced settings
+
+	filter lists
+	- disable all
+
+	custom filters
+	- add manually or by right clicking on the websites
+	- current list see separate file (add and save)
+
+
+4	remove icons from toolbar
+
+5	restart safari
+
+
+

@@ -1,2 +1,0 @@
-~/Library/Containers/com.microsoft.rdc.mac/Data/Library/Preferences
-com.microsoft.rdc.mac.plist

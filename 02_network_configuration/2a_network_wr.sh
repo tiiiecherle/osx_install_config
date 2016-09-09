@@ -24,12 +24,12 @@ sudo -v
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # deleting all network locations
-echo please ignore error about missing preferences.plist file, it will be created automatically
-sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist
+#echo please ignore error about missing preferences.plist file, it will be created automatically
+sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist >/dev/null 2>&1
 
 # creating new location automatic
 echo adding location automatic
-sudo networksetup -createlocation "Automatisch" populate
+sudo networksetup -createlocation "Automatisch" populate >/dev/null 2>&1
 sleep 3
 sudo networksetup -switchtolocation "Automatisch"
 sleep 3
@@ -49,7 +49,7 @@ sleep 3
 
 # deleting created preferences backup file
 sleep 3
-sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old
+sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old >/dev/null 2>&1
 
 # echo script finished
 echo "all network locations created ;)"

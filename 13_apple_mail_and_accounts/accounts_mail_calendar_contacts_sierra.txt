@@ -4,10 +4,12 @@ restore
 	~/Library/Accounts/
 	~/Library/Preferences/MobileMeAccounts.plist
 	done by restore script
+	
+	# 13_mail_migrate_accounts.sh does not have to be run
 
 reboot
 
-delete all old and deactivated accounts in system preferences - internet accounts
+delete all not needed and deactivated accounts in system preferences - internet accounts
 
 delete old accounts (new is Accounts4)
 	rm ~/Library/Accounts/Accounts3.sqlite*

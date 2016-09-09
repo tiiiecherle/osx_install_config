@@ -1,8 +1,18 @@
 INSTALL ADDITIONAL APPS
 
-microsoft office
+# microsoft office
 	no dock symbols
 	no automator actions
+
+"/Library/Application Support/Microsoft/MAU2.0/Microsoft AutoUpdate.app/Contents/MacOS/Microsoft AutoUpdate"
+
+
+# adobe cs 5.5
+pkill -9 SafariPlugInUpdateNotifier		# needed for adobe cs5 installer
+
+# if the installer refuses to start when double clicking, run it from terminal
+/Volumes/CS5_5\ Design\ Prm/Adobe\ CS5_5\ Design\ Premium/Install.app/Contents/MacOS/Install
+
 adobe creative suite 5.5 (select needed installers including all components)
 	flash
 	acrobat
@@ -12,9 +22,19 @@ adobe creative suite 5.5 (select needed installers including all components)
 	photoshop
 
 	updates
-	first run	open indesign - updates - adobe application manager update
-			force quit indesign
-	second run	open indesign - all other updates
-			force quit indesign
+	1	open /Library/Application\ Support/Adobe/OOBE/PDApp/core/Adobe\ Application\ Manager.app
+		updates - all
 
-	/Appliactions/Adobe Creative Cloud/ uninstall
+	2	open /Library/Application\ Support/Adobe/OOBE/PDApp/core/Adobe\ Application\ Manager.app
+
+	3	open /Applications/Adobe\ Creative\ Cloud/Uninstall\ Adobe\ Creative\ Cloud
+
+	4	#open /Applications/Adobe\ InDesign\ CS5.5/Adobe\ InDesign\ CS5.5.app
+		#help - updates - all
+		#pkill -9 InDesign		# or force quit via gui
+
+	5	open /Applications/Adobe\ Acrobat\ X\ Pro/Adobe\ Acrobat\ Pro.app
+		# if update server does not respond, download and install update manually
+
+ 
+
