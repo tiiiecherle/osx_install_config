@@ -9,6 +9,7 @@ delete all accounts
 reboot
 
 run migrate accounts script
+sudo open /System/Library/InternetAccounts/internetAccountsMigrator
 
 delete all old and deactivated accounts in system preferences - internet accounts
 

@@ -2,11 +2,3 @@ Systemeinstellungen
 
 Monitore
 	Auflösung und Farbprofil wählen
-
-Drucker
-	Drucker hinzufügen
-		download and install (apple) printer driver
-		add printer (+)
-		standard
-		select correct driver (not airprint) - select software - canon 3325 ppd
-		check restored printer settings
