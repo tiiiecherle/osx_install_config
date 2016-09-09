@@ -47,6 +47,7 @@ default_open_with=(
 "LSHandlerContentType           org.gnu.gnu-zip-archive                     cx.c3.theunarchiver"            # .tar.gz
 "LSHandlerContentType           org.7-zip.7-zip-archive                     cx.c3.theunarchiver"            # .7z
 "LSHandlerContentType           public.tar-archive                          cx.c3.theunarchiver"            # .tar
+"LSHandlerContentType           net.daringfireball.markdown                 com.uranusjr.macdown"           # .md
 )
 
 # libreoffice instead of openoffice

@@ -3,7 +3,7 @@ macOS Scripting for Configuration, Backup and Restore
 
 Hey to every macOS user ;)
 
-I am not a developer but an apple user and admin for more than 10 years. I realized that a clean install on every major macOS update is the best way to avoid many bugs and get rid of old, no longer needed files in the system. But unfortunately every install took a lot of time and I have more than one mac to admin... That`s why I did this project: to make clean installations on macOS as easy, individual and fast as possible.
+I am not a developer but an apple user and admin for more than 10 years. I realized that a clean install on every major macOS update is the best way to avoid many bugs and get rid of old, no longer needed files in the system. But unfortunately every install took a lot of time and I have more than one mac to admin... That`s why I started this project: to make clean installations and macOS configurations as easy, individual and fast as possible.
 
 Of course you can customize and run the commands and scripts on existing systems that did not lately get a clean install, too.
 
@@ -63,7 +63,7 @@ And yes, it is intentional that all the content of the files is written in small
 
 Before you delete everything on your drive and start a clean macOS install be sure you have at least one working backup of all relevant files.
 
-I do so with [my backup script ](#7---backup-and-restore-script) and [backuplist+](http://rdutoit.home.comcast.net/~rdutoit/pub/robsoft/pages/softw.html).
+I do so with [my backup script ](#7---backup-and-restore-script).
 
 
 0	Bootable usb device
@@ -92,7 +92,7 @@ With macOS 11.10 El Capitan Apple introduces a new security feature named system
 
 As I want and need to do some changes to the system with the following scripts I switch it off. Before you do that make sure you know what you are doing.
 
-As of now the system integrity protection has to be deactivated manually in the recovery with two possible options.
+As of now the system integrity protection has to be deactivated manually in the recovery.
 
 ##### Terminal
 
@@ -106,17 +106,9 @@ As of now the system integrity protection has to be deactivated manually in the 
 
 To re-enable it, reboot to recovery and type `csrutil enable`.
 
-##### GUI
-
-0. Reboot your mac to recovery mode (reboot with command + R pressed).
-0. Open Utilities.
-0. Open security configuration.
-0. Disable enforce system integrity protection
-0. Reboot
-
 2	Network Configuration
 -----
-As there were a lot of problems lately with network configurations, especially wifi, this script deletes all locations and adds them in a new clean configuration file.
+As there were a lot of problems in earlier macOS versions with network configurations, especially wifi, this script deletes all locations and adds them in a new clean configuration file.
 
 Adjust to your needs and run it.
 
@@ -133,7 +125,7 @@ sudo reboot
 
 3	Install AppStore apps and copy files
 -----
-File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts, e.g. installing Xcode and copying over your backup files for later restoring. It also suggests installing Xcode.app that is needed for the next steps.
+File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts, e.g. installing Xcode and copying over your backup files for later restoring.
 
 
 4	SSD Optimizations
@@ -168,17 +160,17 @@ This is just a checklist of apps I have to install manually (besides the restore
 
 7	Backup and restore script
 -----
-When I was looking for a highly configurable backup / restore tool I could not find one that was fitting my needs and working reliable. That`s why I wrote this script which is working very well for over a year (with multiple backups and restores and different macs) now.
+When I was looking for a highly configurable backup / restore tool I could not find one that was fitting my needs and working reliable. That`s why I wrote this script which is working very well for over two years (with multiple backups and restores and different macs) now.
 
 At a first glance it seems a bit complicated but it isn`t ;)
 
-There is the scritp itself and a bunch of `.txt` files where the files and folders for the backup are specified. The backup will be saved to `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why macOS could ask for your password when trying to delete the backup folder. I use .tar.gz to store the backup to another volume without loosing file permissions. 
+There is the scritp itself and a `.txt` file where the files and folders for the backup are specified. You will be prompted by an applescript to choose a directory for saving the backup. In the meanwhile the backup will temporary be done in `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why macOS could ask for your password when trying to delete the backup folder. The script then creates a .tar.gz file of the backup folder (also on the Desktop) and checks the file integrity. As the check is passed successfully the file will be moved to the speciefied location and the temporary files will be deleted.
 
 The lines in the .../list/backup_restore_list.txt specify the files and folders to be backed up or restored.
 
 All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check at the beginning. Commented lines are ignored and the echo lines will be displayed in the Terminal while running.
 
-Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings I splitted it up to a master and user backup. In the following I also split up the manual for single mac use and master / user implementation.
+Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings. That`s why I splitted it up to a master and user backup. Everything that is marked as master will be restored from my backup, all user entries from the user backup of the same mac.
 
 ##### restore
 
@@ -189,7 +181,7 @@ mkdir -p ~/Desktop/restore/master
 mkdir -p ~/Desktop/restore/user
 ```
 
-and place all respective backup folders and files in the master directory, for example
+and make sure all respective backup folders and files are in the directories, for example
 
 ```ruby
 ~/Desktop/restore/master/Applications
@@ -197,7 +189,7 @@ and place all respective backup folders and files in the master directory, for e
 ~/Desktop/restore/master/Users
 ```
 
-If you do not use a master / user structure just set all entries to m (master) and run the restore script. You wouldn`t need the user restore folder in this case.
+If you do not use a master / user structure just set all entries in the backup / restore list to m (master) and run the restore script. You wouldn`t need the user restore folder in this case.
 
 Then run the script to restore.
 
@@ -205,7 +197,7 @@ Then run the script to restore.
 
 This gives you a highly configurable way to backup and restore only the files and folders you want.
 
-It also resets and takes care of the permissions in the `/Applications` and `/Users/$USER` folder and for homebrew. If you add files or folders to your backup / restore list that are not in the User folder make sure to add the permissions in the permissions script for restore.
+It also resets and takes care of the permissions in the `/Applications` and `/Users/$USER` folder and for homebrew. If you add files or folders to your backup / restore list that are not in the User folder make sure to add the permissions in the `.../permissions/ownerships_and_permissions_restore.sh` script for restore.
 
 Sounds more complicated than it is, if there are any questions feel free to ask me.
 
@@ -228,11 +220,7 @@ Before running the script download and install the latest version of java jre fr
 
 As I use a MacBook Pro I change network locations very often. Some services and apps require a restart after that to work. This launchd service keeps looking for changing the network config and performs some operations in this case.
 
-Here it restarts Unified Remote, which I love to control my mac through my phone and restarts the Whatsapp.app Desktop app. 
-
-If you don`t use unified remote you can skip this script.
-
-As I use static IPs and different locations with my macbook I need the unified remote server to restart for getting the right IP every time I change the location in the network preferences. I solved this by writing a script that monitors the change of network locations and restart the app. It is installed and used like this.
+Here it restarts Unified Remote.app, which I love to control my mac through my phone and restarts the Whatsapp.app Desktop app. 
 
 ```ruby
 1. copy to 
@@ -249,7 +237,7 @@ As I use static IPs and different locations with my macbook I need the unified r
 
 ##### AdBlocking by extensions and /etc/hosts
 
-As Adblocking is a big thing in the internet I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a service that keeps it up to date.
+As Adblocking is a big thing in the internet I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the /etc/hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a launchd service that keeps it up to date.
 
 
 10 Dock apps
@@ -329,7 +317,7 @@ This manual tells you how to set the correct update catalog for the appstore and
 Disclaimer
 -----------
 
-I am not responsible for any problems, damages, file loss or data corruption that may occure because of using any of this. Most of the commands are tested, but some (that I don`t use) are untested. So use everything here completely at your own risk.
+I am not responsible for any problems, damages, file loss or data corruption that may occure because of using any of this. Most of the commands are tested, but some are not or maybe some things changed after my last use. So use everything here completely at your own risk.
 
 Do some research if you have any concerns about commands or procedures that are included in any of the files BEFORE using them. 
 

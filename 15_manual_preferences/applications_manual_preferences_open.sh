@@ -24,6 +24,7 @@ applications_to_open=(
 "/Applications/Messages.app"
 "/Applications/The Unarchiver.app"
 "/Applications/Xcode.app"
+"/Applications/iphone/iMazing.app"
 )
 
 for i in "${applications_to_open[@]}"

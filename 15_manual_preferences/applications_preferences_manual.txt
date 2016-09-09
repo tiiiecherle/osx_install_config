@@ -27,6 +27,9 @@ Github Desktop
 	and
 	git config --global user.email "YOUR EMAIL ADDRESS"
 
+iMazing
+	open, attach iphone via usb and trust on both devices
+
 iStatMenues
 	install components at first start
 	alles aus, Time an
