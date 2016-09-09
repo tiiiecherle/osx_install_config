@@ -1,17 +1,17 @@
-macOS Scripting for Configurations, Backup and Restore
+macOS Scripting for Configuration, Backup and Restore
 =============
 
-Hey to every OS X user ;)
+Hey to every macOS user ;)
 
-I am not a developer but an apple user and admin for more than 10 years. I realized that a clean install on every major OS X update is the best way to avoid many bugs and get rid of old, no longer needed files in the system. But unfortunately every install took a lot of time and I have more than one mac to admin... That`s why I did this project: to make clean installations on OS X as easy, individual and fast as possible.
+I am not a developer but an apple user and admin for more than 10 years. I realized that a clean install on every major macOS update is the best way to avoid many bugs and get rid of old, no longer needed files in the system. But unfortunately every install took a lot of time and I have more than one mac to admin... That`s why I did this project: to make clean installations on macOS as easy, individual and fast as possible.
 
 Of course you can customize and run the commands and scripts on existing systems that did not lately get a clean install, too.
 
-It`s kind of a walkthrough of a clean OS X install with manuals, scripts, comments and a lot of OS X know how that I gathered.
+It`s kind of a walkthrough of a clean macOS install with manuals, scripts, comments and a lot of macOS know how that I gathered.
 
 I wrote a [backup and restore script](#7---backup-and-restore-script) for all my third party apps and their preferences files. But restoring old OS system files on a clean new OS install is not recommended.
 
-That`s why one of the intentions is to make the complete OS X System Preferences highly customizable by script. There were already a lot of existing scripts. Those built the basis and the idea for mine. That's why a lot of [credit](#credits) goes to their authors. I tried to make their scripts more complete with a lot of my own additions and even tried making them better and clearer by giving them a structure according to the OS X System Preferences and the apple apps that ship with the OS (Safari, Calendar, Contacts, ...).
+That`s why one of the intentions is to make the complete macOS System Preferences highly customizable by script. There were already a lot of existing scripts. Those built the basis and the idea for mine. That's why a lot of [credit](#credits) goes to their authors. I tried to make their scripts more complete with a lot of my own additions and even tried making them better and clearer by giving them a structure according to the macOS System Preferences and the apple apps that ship with the OS (Safari, Calendar, Contacts, ...).
 
 At first it was intented only for my personal use. But then I decided to publish everything here because it took me so many hours and I would have loved to find anything like this when I started. So I hope it helps anyone ;)
 
@@ -37,7 +37,7 @@ Table of contents
 [8	Java 6](#8---java-6)  
 [9	launchd](#9---launchd)  
 [10 Dock apps](#10-dock-apps)  
-[11 OS X System and app Preferences](#11-os-x-system-and-app-preferences)  
+[11 System and app Preferences](#11-system-and-app-preferences)  
 [12 Licenses](#12-licenses)  
 [13 Apple Mail and Accounts](#13-apple-mail-and-accounts)  
 [14 Samba](#14-samba)  
@@ -61,18 +61,18 @@ The files are numbered and ment to be used in this order because some scripts or
 
 And yes, it is intentional that all the content of the files is written in small letters for easier maintenance.
 
-Before you delete everything on your drive and start a clean OS X install be sure you have at least one working backup of all relevant files.
+Before you delete everything on your drive and start a clean macOS install be sure you have at least one working backup of all relevant files.
 
 I do so with [my backup script ](#7---backup-and-restore-script) and [backuplist+](http://rdutoit.home.comcast.net/~rdutoit/pub/robsoft/pages/softw.html).
 
 
 0	Bootable usb device
 -----
-Before starting with a clean install of OS X a bootable usb device is needed. This is how you create it.
+Before starting with a clean install of macOS a bootable usb device is needed. This is how you create it.
 
 0. Format usb drive with guid partition table in disc utility.
-0. Create a new partition (at least 10 GB) and format the partition on the drive with OS X Extended (Journaled), name it "Untitled" and leave it mounted.
-0. Download the OS X installer to /Applications/.
+0. Create a new partition (at least 10 GB) and format the partition on the drive with macOS Extended (Journaled), name it "Untitled" and leave it mounted.
+0. Download the macOS installer to /Applications/.
 0. Adjust the installer name and path in the script and run the script afterwards.
 
 You will end up with a bootable usb device.
@@ -81,14 +81,14 @@ For the next step boot your mac from this created usb device by restarting and h
 
 Select the usb device as device to install from.
 
-When formatting your drive be sure to select OS X Extended (Journaled) for best compatibility. I always rename my drives for easier use of the terminal with a name without spaces. So all scripts from me are using `macintosh_hd` as name for the main partition.
+When formatting your drive be sure to select macOS Extended (Journaled) for best compatibility. I always rename my drives for easier use of the terminal with a name without spaces. So all scripts from me are using `macintosh_hd` as name for the main partition.
 
 
 1	NVRAM and system integrity protection
 -----
 Script 1a adjusts NVRAM parameters. Adjust to your needs and run it.
 
-With OS X 11.10 El Capitan Apple introduces a new security feature named system integrity protection which prevents you from getting root and making changes to the system.
+With macOS 11.10 El Capitan Apple introduces a new security feature named system integrity protection which prevents you from getting root and making changes to the system.
 
 As I want and need to do some changes to the system with the following scripts I switch it off. Before you do that make sure you know what you are doing.
 
@@ -145,7 +145,7 @@ Do not run it if your volume is not an ssd.
 
 5	Homebrew and Casks
 -----
-Homebrew is a really nice project and a package manager for OS X. In addition with homebrew cask it allows you to install and update software packages, players, plugins and apps on OS X.
+Homebrew is a really nice project and a package manager for macOS. In addition with homebrew cask it allows you to install and update software packages, players, plugins and apps on macOS.
 
 You will find more information here:
 
@@ -172,7 +172,7 @@ When I was looking for a highly configurable backup / restore tool I could not f
 
 At a first glance it seems a bit complicated but it isn`t ;)
 
-There is the scritp itself and a bunch of `.txt` files where the files and folders for the backup are specified. The backup will be saved to `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why OS X could ask for your password when trying to delete the backup folder. I use .tar.gz to store the backup to another volume without loosing file permissions. 
+There is the scritp itself and a bunch of `.txt` files where the files and folders for the backup are specified. The backup will be saved to `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why macOS could ask for your password when trying to delete the backup folder. I use .tar.gz to store the backup to another volume without loosing file permissions. 
 
 The lines in the .../list/backup_restore_list.txt specify the files and folders to be backed up or restored.
 
@@ -214,7 +214,7 @@ And of course any help to make this better and easier is appreciated here, too.
 
 8	Java 6
 -----
-Some applications still use java 6 on OS X.
+Some applications still use java 6 on macOS.
 
 To make them work without installing apple java run this script.
 
@@ -259,9 +259,9 @@ This script completely wipes your dock and adds new entries including apps and s
 Adjust to your needs and run it.
 
 
-11 OS X System and app Preferences
+11 System and app Preferences
 -----
-These are the main scripts described in the beginning of the readme that makes it possible to adjust almost all of the OS X System and app Preferences.
+These are the main scripts described in the beginning of the readme that makes it possible to adjust almost all of the macOS System and app Preferences.
 
 Adjust to your needs and run them. Start with 11a or some parts of the rest will not work as it activates applescript gui-scripting by the terminal.
 
@@ -321,7 +321,7 @@ Despite all the automation, not everything can be done by the scripts yet. Those
 
 16 Seed update configuration
 -----
-There are a lot of beta and developer seed users of OS X out there. As I am a public beta user, too, I use OS X beta on a second partition for testing.
+There are a lot of beta and developer seed users of macOS out there. As I am a public beta user, too, I use macOS beta on a second partition for testing.
 
 This manual tells you how to set the correct update catalog for the appstore and tells you how to download update files for saving them for later use.
 
