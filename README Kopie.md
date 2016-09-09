@@ -1,4 +1,4 @@
-macOS Scripting for Configurations, Backup and Restore
+Manuals and Scripts for backup / restore and clean OS X installation
 =============
 
 Hey to every OS X user ;)
@@ -35,14 +35,15 @@ Table of contents
 [6	Manual app installation](#6---manual-app-installation)  
 [7	Backup and restore script](#7---backup-and-restore-script)  
 [8	Java 6](#8---java-6)  
-[9	launchd](#9---launchd)  
+[9	Unified Remote](#9---unified-remote)  
 [10 Dock apps](#10-dock-apps)  
 [11 OS X System and app Preferences](#11-os-x-system-and-app-preferences)  
 [12 Licenses](#12-licenses)  
 [13 Apple Mail and Accounts](#13-apple-mail-and-accounts)  
 [14 Samba](#14-samba)  
 [15 Manual Preferences](15-manual-preferences)  
-[16 Seed update configuration](#16-seed-update-configuration)  
+[16 Restoring more files](#16-restoring-more-files)  
+[17 Seed update configuration](#17-seed-update-configuration)  
 [Disclaimer](#disclaimer)  
 [Credits](#credits)  
 
@@ -52,10 +53,10 @@ Usage
 Just download all files, adjust everything to your needs and follow the instructions and manuals. All `.sh` script files contain additional information as comments and are ment to be run by opening a terminal and typing
 
 ```ruby
-/path/to/name-of-script.sh
+sh /path/to/name-of-script.sh
 ```
 
-All `.txt` files contain information, manuals and comments.
+All `.rtf` files contain information, manuals and comments.
 
 The files are numbered and ment to be used in this order because some scripts or manuals need tools or other stuff from one or more steps before.
 
@@ -133,7 +134,9 @@ sudo reboot
 
 3	Install AppStore apps and copy files
 -----
-File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts, e.g. installing Xcode and copying over your backup files for later restoring. It also suggests installing Xcode.app that is needed for the next steps.
+File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts, e.g. installing Xcode and copying over your backup files for later restoring.
+
+Script 3b opens Xcode.app to install the command line tools (components) that are needed for the next steps. Run it after installing Xcode.app or open XCode.app by double clicking on it in the /Applications folder.
 
 
 4	SSD Optimizations
@@ -172,16 +175,28 @@ When I was looking for a highly configurable backup / restore tool I could not f
 
 At a first glance it seems a bit complicated but it isn`t ;)
 
-There is the scritp itself and a bunch of `.txt` files where the files and folders for the backup are specified. The backup will be saved to `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why OS X could ask for your password when trying to delete the backup folder. I use .tar.gz to store the backup to another volume without loosing file permissions. 
+There is the scritp itself and a bunch of `.txt` files where the files and folders for the backup are specified. The backup will be saved to `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why OS X could ask for your password when trying to delete the backup folder. I use .zip or .7z to store the backup to another volume without loosing file permissions. 
 
-The lines in the .../list/backup_restore_list.txt specify the files and folders to be backed up or restored.
+The first line in each `.txt` file specifies a directory. In the following lines (only one entry per line) the files and folders that are supposed to be backed up from this particular directory are listed. For example the content of the following `.txt` file backups the file `Bookmarks.plist` and the complete folder `Extensions` from the `~/Library/Safari` folder. Only the first line accepts subfolders and paths. You will need another `.txt` file for every directory containing files or folders you want to backup.
 
-All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check at the beginning. Commented lines are ignored and the echo lines will be displayed in the Terminal while running.
+```ruby
+~/Library/Safari
+Bookmarks.plist
+Extensions
+```
+
+The scripts uses all `.txt` documents in the two folders (master and user) automatically. So `.txt` files can be added, deleted and edited as long as the structure is preserved.
 
 Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings I splitted it up to a master and user backup. In the following I also split up the manual for single mac use and master / user implementation.
 
-##### restore
+##### single / separate mac usage
 
+If you only use one mac or a few macs that do not have files / folders that are kept up to date by a "master" or admin just put all `.txt` documents with your backup entries in the master folder and delete all `.txt` documents from the user folder, but keep the user folder itself. It will output an error in the end of the backup and the restore, but you can safely ignore that.
+
+```ruby
+head: *.txt: No such file or directory
+is not a directory, skipping *.txt
+```
 Please only restore files and folders like this that were backed up with this script so they have the right structure. For a restore create the following directories on your desktop 
 
 ```ruby
@@ -197,15 +212,35 @@ and place all respective backup folders and files in the master directory, for e
 ~/Desktop/restore/master/Users
 ```
 
-If you do not use a master / user structure just set all entries to m (master) and run the restore script. You wouldn`t need the user restore folder in this case.
+Then run the script to restore.
+
+##### master / user usage
+
+In this context it makes no difference for the backup, but when restoring all entries that exist in the master directory (apps and preferences that are equal on every of the macs and the master keeps them up to date during the year) are restored from the master backup and all user related files and folders from the user directory.
+
+Please only restore files and folders like this that were backed up with this script so they have the right structure. For a restore create the following directories on your desktop
+
+```ruby
+mkdir -p ~/Desktop/restore/master
+mkdir -p ~/Desktop/restore/user
+```
+
+and place all respective backup folders and files in the master directory, for example
+
+```ruby
+~/Desktop/restore/master/Applications
+~/Desktop/restore/master/Library
+~/Desktop/restore/master/Users
+~/Desktop/restore/user/Applications
+~/Desktop/restore/user/Library
+~/Desktop/restore/user/Users
+```
 
 Then run the script to restore.
 
 ##### general
 
 This gives you a highly configurable way to backup and restore only the files and folders you want.
-
-It also resets and takes care of the permissions in the `/Applications` and `/Users/$USER` folder and for homebrew. If you add files or folders to your backup / restore list that are not in the User folder make sure to add the permissions in the permissions script for restore.
 
 Sounds more complicated than it is, if there are any questions feel free to ask me.
 
@@ -221,36 +256,22 @@ To make them work without installing apple java run this script.
 Before running the script download and install the latest version of java jre from [java.com](http://www.java.com) or through homebrew cask.
 
 
-9	launchd
+9	Unified Remote
 -----
-
-##### run on network change
-
-As I use a MacBook Pro I change network locations very often. Some services and apps require a restart after that to work. This launchd service keeps looking for changing the network config and performs some operations in this case.
-
-Here it restarts Unified Remote, which I love to control my mac through my phone and restarts the Whatsapp.app Desktop app. 
+I love to control my mac through my phone. There are multiple possibilities to do that. I very much like [Unified Remote](https://www.unifiedremote.com).
 
 If you don`t use unified remote you can skip this script.
 
 As I use static IPs and different locations with my macbook I need the unified remote server to restart for getting the right IP every time I change the location in the network preferences. I solved this by writing a script that monitors the change of network locations and restart the app. It is installed and used like this.
 
 ```ruby
-1. copy to 
-	/Users/$USER/Library/Scripts/run_on_network_change_login.app
-	/Users/$USER/Library/Scripts/run_on_network_change.app
-	chmod 755 /Users/$USER/Library/Scripts/run_on_network_change_login.app
-	chmod 755 /Users/$USER/Library/Scripts/run_on_network_change.app
+1. Copy unified_remote_restart.scpt to
+~/Library/Scripts/unified_remote_restart.scpt
 2. change username in com.run_script_on_network_change.plist in program arguments and copy the file to 
-	~/Library/LaunchAgents/com.run_script_on_network_change.plist
-	chmod 644 ~/Library/LaunchAgents/com.run_script_on_network_change.plist
-	Do not copy it to /Library/LaunchAgents/ or the app will not be restartable when quit through the script.
+~/Library/LaunchAgents/com.run_script_on_network_change.plist
+Do not copy it to /Library/LaunchAgents/ or the app will not be restartable when quit through the script.
 3. Run the script to enable the service.
 ```
-
-##### AdBlocking by extensions and /etc/hosts
-
-As Adblocking is a big thing in the internet I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a service that keeps it up to date.
-
 
 10 Dock apps
 -----
@@ -261,12 +282,12 @@ Adjust to your needs and run it.
 
 11 OS X System and app Preferences
 -----
-These are the main scripts described in the beginning of the readme that makes it possible to adjust almost all of the OS X System and app Preferences.
+This is the main script described in the beginning of the readme that makes it possible to adjust almost all of the OS X System and app Preferences.
 
-Adjust to your needs and run them. Start with 11a or some parts of the rest will not work as it activates applescript gui-scripting by the terminal.
+Adjust to your needs and run it.
 
 
-11b Unsolved Preferences
+11a Unsolved Preferences
 -----------
 
 The following preferences are not yet configurable with the script and any help to add the functionality is appreciated.
@@ -300,9 +321,42 @@ In 10.11 apple moves all remaining internet accounts from
 to
 ~/Library/Accounts/Accounts3.sqlite
 ```
+If you are doing a clean install of 10.11 to update from 10.10 you need to run this script to update accounts and make them match with the restored mail data. Be careful, please follow these steps in this order to make it work.
 
-Please read the manual files in the folder for further instructions and run the script after the required steps.
+* Run [restore script](#7---backup-and-restore-script) or copy your maildata to `~/Library/Mail/` manually.
+* Delete all accounts. All internet accounts (including iCloud) from the System Preferences will be gone and OS X will start with a fresh `.sqlite` database.
 
+```ruby
+	rm /Users/tom/Library/Accounts/Accounts3.sqlite
+	rm /Users/tom/Library/Accounts/Accounts3.sqlite-shm
+	rm /Users/tom/Library/Accounts/Accounts3.sqlite-wal
+	rm /Users/tom/Library/Preferences/MobileMeAccounts.plist
+```
+* Reboot.
+* Run migrate accounts script.
+* Delete all old and deactivated accounts in the System Preferences.
+* Re-add iCloud accounts and activate sync.
+
+```ruby
+this list is just a personal example
+	private
+		calendars
+		contacts
+		reminders
+		notes
+	office
+		calendars
+		contacts
+```
+
+* Open mail for converting the data from V2 to V3 and check if everything works.
+* Re-attach the default signatures in mail.
+* Open calendar and contacts and check if everything works.
+* Delete old mail folder.
+
+```ruby
+	rm -rf ~/Library/Mail/V2
+```
 
 14 Samba
 -----
@@ -318,8 +372,15 @@ and puts the needed entries in it. All other entries in the file will be deleted
 -----
 Despite all the automation, not everything can be done by the scripts yet. Those files (for apple apps and system preferences) just give me a checklist of all preferences to be set manually. Every help to make this list shorter and add the settings to a script is welcome.
 
+In addition I had some trouble to configure some virtualbox machines for working internet connections in different locations on my macbook. This is why I added a file with the manual for a working configuration.
 
-16 Seed update configuration
+
+16 Restoring more files
+-----
+As this is a matter of personal taste I use the [backup script](#7---backup-and-restore-script) more for apps, mails and settings. For big folders with a lot of files I use [backuplist+](http://rdutoit.home.comcast.net/~rdutoit/pub/robsoft/pages/softw.html) to back them up. It`s now time to restore those files to their location and this is a checklist of those files. You can of course use my backup / restore script, too.
+
+
+17 Seed update configuration
 -----
 There are a lot of beta and developer seed users of OS X out there. As I am a public beta user, too, I use OS X beta on a second partition for testing.
 

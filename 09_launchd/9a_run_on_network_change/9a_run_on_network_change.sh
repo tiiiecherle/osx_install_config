@@ -20,6 +20,7 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 # chmod 755 /Users/$USER/Library/Scripts/run_on_network_change_login.app
 # chmod 755 /Users/$USER/Library/Scripts/run_on_network_change.app
 
+# change username in file and
 # copy to ~/Library/LaunchAgents/
 # com.run_script_on_network_change.plist
 # chmod 644 ~/Library/LaunchAgents/com.run_script_on_network_change.plist
