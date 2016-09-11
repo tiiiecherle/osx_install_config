@@ -319,13 +319,13 @@ m	~/Library/Preferences/com.hicknhacksoftware.MacPass.plist
 echo MacUpdate Desktop
 m	/Applications/MacUpdate Desktop.app
 
-# Mobile Sync
-echo Mobile Sync
-u	~/Library/Application Support/MobileSync
-
 # Mail
 echo Mail
 u	~/Library/Mail
+
+# Mobile Sync
+echo Mobile Sync
+u	~/Library/Application Support/MobileSync
 
 # MonKey Office 2016.app
 echo MonKey Office 2016.app

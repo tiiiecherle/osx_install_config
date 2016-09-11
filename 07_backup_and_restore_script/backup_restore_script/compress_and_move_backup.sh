@@ -10,7 +10,8 @@ TARGZFILE="$DESKTOPBACKUPFOLDER".tar.gz
 #echo "TARGZFILE is "$TARGZFILE""
 
 # trapping script to kill subprocesses when script is stopped
-trap "echo "" && trap - SIGTERM >/dev/null 2>&1 && kill -- -$$ >/dev/null 2>&1" SIGINT SIGTERM EXIT
+#trap "echo "" && trap - SIGTERM >/dev/null 2>&1 && kill -- -$$ >/dev/null 2>&1" SIGINT SIGTERM EXIT
+trap "echo "" && killall background >/dev/null 2>&1" EXIT
 set -e
 
 # compressing and checking integrity of backup folder on desktop
@@ -30,8 +31,8 @@ function archiving_tar_gz {
 
 if [ -e "$TARGZFILE" ]
 then
-    read -p "file \"$TARGZFILE\" already exist, overwrite it (y/N)?" CONT1
-    if [ "$CONT1" == "y" ]
+    read -p "file \"$TARGZFILE\" already exist, overwrite it (y/N)? " CONT_COMP1
+    if [ "$CONT_COMP1" == "y" ]
     then
         rm "$TARGZFILE"
         archiving_tar_gz
@@ -53,8 +54,8 @@ else
     then
         if [ -e "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]
         then
-            read -p "file \"$TARGZSAVEDIR"/"$(basename "$TARGZFILE")\" already exist, overwrite it (y/N)?" CONT2
-            if [ "$CONT2" == "y" ]
+            read -p "file \"$TARGZSAVEDIR"/"$(basename "$TARGZFILE")\" already exist, overwrite it (y/N)? " CONT_COMP2
+            if [ "$CONT_COMP2" == "y" ]
             then
                 rm "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")"
                 pv "$TARGZFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && rm "$TARGZFILE" && echo "backup file successfully moved... this is OK"

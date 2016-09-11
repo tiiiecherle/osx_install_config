@@ -18,9 +18,9 @@ sudo echo password correct, running script...
 echo ""
 
 # trapping script to kill subprocesses when script is stopped
-#trap 'echo "" $$ kill $(jobs -rp) >/dev/null 2>&1' SIGINT SIGTERM EXIT
-#trap "echo "" && killall background >/dev/null 2>&1" EXIT
-trap "echo "" && trap - SIGTERM >/dev/null 2>&1 && kill -- -$$ >/dev/null 2>&1" SIGINT SIGTERM EXIT
+#trap 'echo "" && kill $(jobs -rp) >/dev/null 2>&1' SIGINT SIGTERM EXIT
+trap "echo "" && killall background >/dev/null 2>&1" EXIT
+#trap "echo "" && trap - SIGTERM >/dev/null 2>&1 && kill -- -$$ >/dev/null 2>&1" SIGINT SIGTERM EXIT
 set -e
 
 # choosing the backup and defining $BACKUP variable
@@ -113,7 +113,7 @@ BACKUP_RESTORE_LIST="$SCRIPT_DIR"/list/backup_restore_list.txt
 echo ""
 SYNTAXERRORS=0
 LINENUMBER=0
-while IFS= read -r line
+while IFS='' read -r line || [[ -n "$line" ]]
 do
     LINENUMBER=$(($LINENUMBER+1))
 	if [ ! "$line" == "" ] && [[ ! $line =~ ^[\#] ]] && [[ ! $line =~ ^m[[:blank:]] ]] && [[ ! $line =~ ^u[[:blank:]] ]] && [[ ! $line =~ ^echo[[:blank:]] ]]
@@ -165,7 +165,7 @@ if [[ "$OPTION" == "BACKUP" ]];
     # virtualbox backup
     if [ "$SELECTEDUSER" == tom ]
     then
-            read -p "do you want to backup virtualbox images (y/N)?" CONT1
+            read -p "do you want to backup virtualbox images (y/N)? " CONT1
             if [ "$CONT1" == "y" ]
             then
                 echo "running virtualbox backup..."
@@ -180,8 +180,8 @@ if [[ "$OPTION" == "BACKUP" ]];
     # files backup
     if [ "$SELECTEDUSER" == tom ] || [ "$SELECTEDUSER" == bobby ]
     then
-            read -p "do you want to backup local files (y/N)?" CONT4
-            if [ "$CONT4" == "y" ]
+            read -p "do you want to backup local files (y/N)? " CONT2
+            if [ "$CONT2" == "y" ]
             then
                 echo "running files backup..."
                 export FILESTARGZSAVEDIR="$TARGZSAVEDIR"
@@ -198,8 +198,8 @@ if [[ "$OPTION" == "BACKUP" ]];
     fi
 
     # running contacts backup applescript
-    read -p "do you want to run an address book backup (y/N)?" CONT2
-    if [ "$CONT2" == "y" ]
+    read -p "do you want to run an address book backup (y/N)? " CONT3
+    if [ "$CONT3" == "y" ]
     then
         echo running contacts backup... please wait...
         # service entry for for contacts backup
@@ -222,8 +222,8 @@ if [[ "$OPTION" == "BACKUP" ]];
     fi
 
     # running calendars backup applescript
-    read -p "do you want to run an calendars backup (y/N)?" CONT3
-    if [ "$CONT3" == "y" ]
+    read -p "do you want to run an calendars backup (y/N)? " CONT4
+    if [ "$CONT4" == "y" ]
     then
         echo "running calendars backup... please do not touch your computer until the calendar app quits..."
         # accessibility entry for calendar backup
@@ -257,8 +257,16 @@ if [[ "$OPTION" == "BACKUP" ]];
     echo "starting backup..."
     #    
     BACKUP_RESTORE_LIST="$SCRIPT_DIR"/list/backup_restore_list.txt
-    while IFS= read -r line
+    #STTY_ORIG=$(stty -g)
+    #TERMINALWIDTH=$(echo $COLUMNS)
+    #TERMINALWIDTH=$(stty size | awk '{print $2}')
+    TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
+    LINENUMBER=0
+    
+    while IFS='' read -r line || [[ -n "$line" ]]
     do
+    	
+    	LINENUMBER=$(($LINENUMBER+1))
     	
         # if starting with one # and whitespace / tab
     	#if [[ $line =~ ^[\#][[:blank:]] ]]
@@ -287,7 +295,8 @@ if [[ "$OPTION" == "BACKUP" ]];
     	if [[ $line =~ ^echo[[:blank:]] ]]
     	then
             OUTPUT=$(echo "$line" | sed 's/^echo*//' | sed -e 's/^[ \t]*//')
-            echo '     '"$OUTPUT"
+			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+            echo "$OUTPUT" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
         else
             :
         fi   
@@ -307,8 +316,9 @@ if [[ "$OPTION" == "BACKUP" ]];
                 mkdir -p /"$DESTINATION$DIRNAME_ENTRY"
                 rsync -a "$BASENAME_ENTRY" /"$DESTINATION$DIRNAME_ENTRY"
             else
+				TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
                 #echo "        ""$ENTRY" does not exist, skipping...
-                echo "        ""$BASENAME_ENTRY" does not exist, skipping...
+                echo "$BASENAME_ENTRY" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/        /g"
             fi
         else
             :
@@ -329,47 +339,64 @@ if [[ "$OPTION" == "BACKUP" ]];
                 mkdir -p /"$DESTINATION$DIRNAME_ENTRY"
                 rsync -a "$BASENAME_ENTRY" /"$DESTINATION$DIRNAME_ENTRY"
             else
+				TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
                 #echo "        ""$ENTRY" does not exist, skipping...
-                echo "        ""$BASENAME_ENTRY" does not exist, skipping...            
+                echo "$BASENAME_ENTRY" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/        /g"           
             fi
         else
             :
         fi
         
     done <"$BACKUP_RESTORE_LIST"
+    
+    # resetting terminal settings or further input will not work
+    #reset
+    #stty "$STTY_ORIG"
+    stty sane
             
     echo "backup done ;)"
     echo ''
     # opening app for archiving
     #osascript -e 'tell application "Keka.app" to activate'
     
-    
-    # homebrew permissions
-    if [ -e "$(brew --prefix)" ]
-    then
-        echo "setting ownerships and permissions for homebrew..."
-        #brew doctor
-        BREWGROUP="admin"
-        BREWPATH=$(brew --prefix)
-        sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
-        #sudo chown -R "$SELECTEDUSER":"$BREWGROUP" "$BREWPATH"
-        #sudo chown -R "$user":"$group" /Library/Caches/Homebrew
-        sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
-        sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
-    else
-        :
-    fi
-
     echo "updating homebrew..."
-    #sudo -u $(users)
-    sudo su $(who | grep console | awk '{print $1}') -c 'brew doctor'
-    sudo su $(who | grep console | awk '{print $1}') -c 'brew update'
-    sudo su $(who | grep console | awk '{print $1}') -c 'brew upgrade --all'
-    sudo su $(who | grep console | awk '{print $1}') -c 'brew cleanup'
-    sudo su $(who | grep console | awk '{print $1}') -c 'brew cask cleanup'
-    sudo su $(who | grep console | awk '{print $1}') -c 'brew install pigz gnu-tar coreutils pv'
-
-    #sudo su $(who | grep console | awk '{print $1}') -c '"'$SCRIPT_DIR'"/homebrew_update.sh'
+    # checking if online
+    #wget -q --tries=1 --timeout=4 --spider google.com > /dev/null 2>&1
+    ping -c 3 google.com > /dev/null 2>&1
+    if [ $? -eq 0 ]
+    then 
+        # online
+        
+        # homebrew permissions
+        if [ -e "$(brew --prefix)" ]
+        then
+            echo "setting ownerships and permissions for homebrew..."
+            #brew doctor
+            BREWGROUP="admin"
+            BREWPATH=$(brew --prefix)
+            sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
+            #sudo chown -R "$SELECTEDUSER":"$BREWGROUP" "$BREWPATH"
+            #sudo chown -R "$user":"$group" /Library/Caches/Homebrew
+            sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
+            sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
+        else
+            :
+        fi
+    
+        echo "running brew update commands..."
+        #sudo -u $(users)
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew doctor'
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew update'
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew upgrade --all'
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew cleanup'
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew cask cleanup'
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew install pigz gnu-tar coreutils pv'
+    
+        #sudo su $(who | grep console | awk '{print $1}') -c '"'$SCRIPT_DIR'"/homebrew_update.sh'
+    else
+        echo "not online, skipping homebrew update..."
+    fi
+    
     #open -g -a "$SCRIPT_DIR"/archive/archive_tar_gz.app
     #osascript -e 'display dialog "backup finished, starting archiving..."'
     #osascript -e 'tell application "'"$SCRIPT_DIR"'/archive/archive_tar_gz.app" to activate'
@@ -398,7 +425,8 @@ if [[ "$OPTION" == "BACKUP" ]];
     echo "deleting backup folder on desktop..."
     if [ -e /"$DESTINATION" ]
     then
-        rm -rf /"$DESTINATION"
+        :
+        #rm -rf /"$DESTINATION"
     else
         :
     fi
@@ -423,9 +451,9 @@ RESTOREDIR=/"$HOMEFOLDER"/Desktop/restore
 RESTOREMASTERDIR="$RESTOREDIR"/master
 RESTOREUSERDIR="$RESTOREDIR"/user
 
-#RESTORETO=/"$HOMEFOLDER"/Desktop/testrestore
-#mkdir -p "$RESTORETO"
-RESTORETO=""
+#RESTORETODIR=/"$HOMEFOLDER"/Desktop/testrestore
+#mkdir -p "$RESTORETODIR"
+RESTORETODIR=""
 
 # checking if restore option was selected
 if [[ "$OPTION" == "RESTORE" ]]; 
@@ -449,8 +477,16 @@ if [[ "$OPTION" == "RESTORE" ]];
 
     ### running restore
     BACKUP_RESTORE_LIST="$SCRIPT_DIR"/list/backup_restore_list.txt
-    while IFS= read -r line
+    #STTY_ORIG=$(stty -g)
+    #TERMINALWIDTH=$(echo $COLUMNS)
+    #TERMINALWIDTH=$(stty size | awk '{print $2}')
+    TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
+    LINENUMBER=0
+    
+    while IFS='' read -r line || [[ -n "$line" ]]
     do
+        
+        LINENUMBER=$(($LINENUMBER+1))
     	
         # if starting with one # and whitespace / tab
     	#if [[ $line =~ ^[\#][[:blank:]] ]]
@@ -479,7 +515,8 @@ if [[ "$OPTION" == "RESTORE" ]];
     	if [[ $line =~ ^echo[[:blank:]] ]]
     	then
             OUTPUT=$(echo "$line" | sed 's/^echo*//' | sed -e 's/^[ \t]*//')
-            echo '     '"$OUTPUT"
+			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+            echo "$OUTPUT" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
         else
             :
         fi
@@ -495,7 +532,7 @@ if [[ "$OPTION" == "RESTORE" ]];
             ENTRY_FROM=$(echo "$line" | cut -f2 | sed 's|~|'"/Users/$SECTIONUSER"'|' | sed -e 's/[ /]\{2,\}/\//')
             #
             RESTORE_FROM=$(echo "$RESTORESECTIONDIR$ENTRY_FROM" | sed -e 's/[ /]\{2,\}/\//')
-            RESTORE_TO=$(echo "$ENTRY_TO" | sed -e 's/[ /]\{2,\}/\//')
+            RESTORE_TO=$(echo "$RESTORETODIR$ENTRY_TO" | sed -e 's/[ /]\{2,\}/\//')
             #
             DIRNAME_RESTORE_FROM=$(dirname "$RESTORE_FROM")
             #echo "$DIRNAME_RESTORE_FROM"
@@ -519,16 +556,17 @@ if [[ "$OPTION" == "RESTORE" ]];
                         :
                     fi
                     cd "$DIRNAME_RESTORE_FROM"
-                    echo '     '"$RESTORE_FROM" | fmt
-                    echo '     '"to ""$RESTORE_TO" | fmt
+					TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+                    echo "$RESTORE_FROM" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
+                    echo "to ""$RESTORE_TO" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
                     echo '     '
                     sudo rsync -a "$BASENAME_RESTORE_FROM" "$DIRNAME_RESTORE_TO"
                 else
-                    echo '     'no "$ENTRY_FROM" in "$LOWERCASESECTION" backup - skipping...
+                    echo "no "$ENTRY_FROM" in "$LOWERCASESECTION" backup - skipping..." | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
                     echo ''
                 fi
             else
-                echo '     '"$DIRNAME_RESTORE_TO" does not exist, skipping...
+                echo "$DIRNAME_RESTORE_TO" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
             fi
         else
             :
@@ -545,7 +583,7 @@ if [[ "$OPTION" == "RESTORE" ]];
             ENTRY_FROM=$(echo "$line" | cut -f2 | sed 's|~|'"/Users/$SECTIONUSER"'|' | sed -e 's/[ /]\{2,\}/\//')
             #
             RESTORE_FROM=$(echo "$RESTORESECTIONDIR$ENTRY_FROM" | sed -e 's/[ /]\{2,\}/\//')
-            RESTORE_TO=$(echo "$ENTRY_TO" | sed -e 's/[ /]\{2,\}/\//')
+            RESTORE_TO=$(echo "$RESTORETODIR$ENTRY_TO" | sed -e 's/[ /]\{2,\}/\//')
             #
             DIRNAME_RESTORE_FROM=$(dirname "$RESTORE_FROM")
             #echo "$DIRNAME_RESTORE_FROM"
@@ -569,22 +607,28 @@ if [[ "$OPTION" == "RESTORE" ]];
                         :
                     fi
                     cd "$DIRNAME_RESTORE_FROM"
-                    echo '     '"$RESTORE_FROM" | fmt
-                    echo '     '"to ""$RESTORE_TO" | fmt
+					TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+                    echo "$RESTORE_FROM" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
+                    echo "to ""$RESTORE_TO" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
                     echo '     '
                     sudo rsync -a "$BASENAME_RESTORE_FROM" "$DIRNAME_RESTORE_TO"
                 else
-                    echo '     'no "$ENTRY_FROM" in "$LOWERCASESECTION" backup - skipping...
+                    echo "no "$ENTRY_FROM" in "$LOWERCASESECTION" backup - skipping..." | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
                     echo ''
                 fi
             else
-                echo '     '"$DIRNAME_RESTORE_TO" does not exist, skipping...
+                echo "$DIRNAME_RESTORE_TO" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/     /g"
             fi
         else
             :
         fi
         
     done <"$BACKUP_RESTORE_LIST"
+    
+    # resetting terminal settings or further input will not work
+    #reset
+    #stty "$STTY_ORIG"
+    stty sane
 
     #echo ""
     echo "restore done ;)"
