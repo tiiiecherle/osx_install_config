@@ -452,6 +452,12 @@ m	/Library/Scripts/custom
 u	~/Library/Scripts/run_on_network_change.app
 u	~/Library/Scripts/run_on_network_change_login.app
 
+# Services User and Services Keyboard Shortcuts
+echo Services and Shortcuts
+u	~/Library/Services/Run as Applescript.workflow
+u	~/Library/Services/Run in Terminal.workflow
+u	~/Library/Preferences/pbs.plist
+
 # Skype
 echo Skype
 u	~/Library/Application Support/Skype
@@ -516,7 +522,6 @@ echo Tunnelblick
 m	/Applications/Tunnelblick.app
 m	~/Library/Preferences/net.tunnelblick.tunnelblick.plist
 u	~/Library/Application Support/Tunnelblick
-
 
 # Unified Remote
 echo Unified Remote

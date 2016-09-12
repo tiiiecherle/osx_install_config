@@ -167,6 +167,8 @@ sudo chmod 755 /Users
 sudo chmod 755 /"$HOMEFOLDER"
 sudo chmod 777 /"$HOMEFOLDER"/Public
 sudo chmod 733 /"$HOMEFOLDER"/Public/Drop\ Box
+sudo chmod 700 /"$HOMEFOLDER"/Library/Services/*
+sudo find /"$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path "/"$HOMEFOLDER"/Desktop/restore/*" ! -name "*.app" -name "*.sh" -type f -print0 | sudo xargs -0 chmod 700
 
 # homebrew permissions
 
