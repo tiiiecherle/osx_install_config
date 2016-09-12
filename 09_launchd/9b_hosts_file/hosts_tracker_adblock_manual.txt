@@ -20,8 +20,13 @@ safari hosts file, tracker and adblock settings
 		except
 			advertising	Perform Group
 			advertising	LiveRail
+			advertising	Brand.net
+			advertising	Amazon Associates  
+			analytics	Aurea ClickTracks
+			widgets		Disqus
 			widgets 	twitter button
 			widgets		twitter syndication
+			widgets		Google AJAX Search API  
 	-	whitelist
 		nothing yet
 	-	do not show warnings
