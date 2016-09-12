@@ -7,5 +7,5 @@ sudo rm -rf /opt/homebrew-cask
 sudo rm -rf /usr/local/Caskroom
 sudo rm -rf /usr/local/lib/librtmp.dylib
 sudo chmod 0755 /usr/local
-sudo chgrp wheel /usr/local
+sudo chown root:wheel /usr/local
 sed -i '' '\|/usr/local/sbin:$PATH|d' ~/.bash_profile

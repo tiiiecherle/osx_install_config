@@ -688,8 +688,11 @@ if [[ "$OPTION" == "RESTORE" ]];
 
     echo "cleaning done ;)"
     
-    # starting services
+    # post restore operations
+    echo ""
+    echo "running post restore operations..."
     sudo launchctl start org.cups.cupsd
+    /System/Library/CoreServices/pbs -flush
 
     ### ownership and permissions
     echo ""

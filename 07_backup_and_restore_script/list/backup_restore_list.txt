@@ -454,9 +454,10 @@ u	~/Library/Scripts/run_on_network_change_login.app
 
 # Services User and Services Keyboard Shortcuts
 echo Services and Shortcuts
-u	~/Library/Services/Run as Applescript.workflow
+u	~/Library/Services/Run as Shellscript.workflow
 u	~/Library/Services/Run in Terminal.workflow
 u	~/Library/Preferences/pbs.plist
+# /System/Library/CoreServices/pbs -flush
 
 # Skype
 echo Skype

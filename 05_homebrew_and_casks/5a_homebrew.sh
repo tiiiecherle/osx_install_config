@@ -20,6 +20,31 @@ fi
 #sudo chown -R $USER:staff /usr/local
 sudo chown -R $(whoami) /usr/local
 
+# installing command line tools
+if xcode-select --install 2>&1 | grep installed >/dev/null
+then
+  	echo command line tools are installed...
+else
+  	echo command line tools are not installed, installing...
+  	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
+  	#sudo xcodebuild -license accept
+fi
+
+sudo xcode-select --switch /Library/Developer/CommandLineTools
+
+# updating command line tools and system
+echo ""
+echo "checking for command line tools update..."
+COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
+if [ "$COMMANDLINETOOLUPDATE" == "" ]
+then
+	echo "no update for command line tools available..."
+else
+	echo "update for command line tools available, updating..."
+	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
+fi
+#softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
+
 # installing homebrew without pressing enter at the beginning
 echo "installing homebrew..."
 
@@ -40,19 +65,6 @@ brew doctor
 brew update
 brew upgrade
 brew prune
-
-# updating command line tools and system
-echo ""
-echo "checking for command line tools update..."
-COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
-if [ "$COMMANDLINETOOLUPDATE" == "" ]
-then
-	echo "no update for command line tools available..."
-else
-	echo "update for command line tools available, updating..."
-	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
-fi
-#softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
 
 # installing some homebrew packages
 echo "installing homebrew packages..."
