@@ -160,10 +160,10 @@ m	/Applications/EasyFind.app
 m	~/Library/Preferences/org.grunenberg.EasyFind.plist
 
 # Editra
-echo Editra
-m	/Applications/Editra.app
-m	~/Library/Application Support/Editra
-m	~/Library/Preferences/org.editra.Editra.plist
+#echo Editra
+#m	/Applications/Editra.app
+#m	~/Library/Application Support/Editra
+#m	~/Library/Preferences/org.editra.Editra.plist
 
 # FileZilla
 echo FileZilla
