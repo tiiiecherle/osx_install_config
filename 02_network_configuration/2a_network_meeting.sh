@@ -32,6 +32,7 @@ echo adding location automatic
 sudo networksetup -createlocation "Automatisch" populate >/dev/null 2>&1
 sleep 3
 sudo networksetup -switchtolocation "Automatisch"
+echo ""
 sleep 3
 
 # creating new location office_lan
@@ -39,6 +40,7 @@ echo adding location office_lan
 sudo networksetup -createlocation "office_lan"
 sleep 3
 sudo networksetup -switchtolocation "office_lan"
+echo ""
 sleep 3
 sudo networksetup -createnetworkservice "Ethernet" "Ethernet"
 sleep 3
@@ -52,9 +54,11 @@ sleep 3
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old >/dev/null 2>&1
 
 # echo script finished
+#echo ""
 echo "all network locations created ;)"
 
 # changing to automatic location
 echo "changing to location automatic" 
 sudo networksetup -switchtolocation "Automatisch"
+echo ""
 echo "done ;)" 

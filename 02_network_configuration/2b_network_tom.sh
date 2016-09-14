@@ -56,6 +56,7 @@ echo adding location automatic
 sudo networksetup -createlocation "Automatisch" populate >/dev/null 2>&1
 sleep 3
 sudo networksetup -switchtolocation "Automatisch"
+echo ""
 sleep 3
 
 # creating new location tom_wlan
@@ -63,6 +64,7 @@ echo adding location tom_wlan
 sudo networksetup -createlocation "tom_wlan"
 sleep 3
 sudo networksetup -switchtolocation "tom_wlan"
+echo ""
 sleep 3
 sudo networksetup -createnetworkservice "WLAN" Wi-Fi
 #sudo networksetup -createnetworkservice WLAN en0
@@ -78,6 +80,7 @@ echo adding location office_lan
 sudo networksetup -createlocation "office_lan"
 sleep 3
 sudo networksetup -switchtolocation "office_lan"
+echo ""
 sleep 3
 sudo networksetup -createnetworkservice "Thunderbolt-Ethernet" "Thunderbolt Ethernet"
 #sudo networksetup -createnetworkservice Thunderbolt-Bridge bridge0
@@ -92,6 +95,7 @@ echo adding location mozart_wlan
 sudo networksetup -createlocation "mozart_wlan"
 sleep 3
 sudo networksetup -switchtolocation "mozart_wlan"
+echo ""
 sleep 3
 sudo networksetup -createnetworkservice "WLAN" Wi-Fi
 #sudo networksetup -createnetworkservice WLAN en0
@@ -106,6 +110,7 @@ echo adding location berente_wlan
 sudo networksetup -createlocation "berente_wlan"
 sleep 3
 sudo networksetup -switchtolocation "berente_wlan"
+echo ""
 sleep 3
 sudo networksetup -createnetworkservice "WLAN" Wi-Fi
 #sudo networksetup -createnetworkservice WLAN en0
@@ -125,11 +130,13 @@ sleep 3
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old >/dev/null 2>&1
 
 # echo script finished
+#echo ""
 echo "all network locations created ;)"
 
 # changing to automatic location
 echo "changing to location automatic" 
 sudo networksetup -switchtolocation "Automatisch"
+echo ""
 echo "done ;)" 
 
 #else
