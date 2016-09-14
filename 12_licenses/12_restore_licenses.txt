@@ -21,5 +21,6 @@ istat menus
 overflow
 pdf shrink
 password wallet
+the archive browser
 totalfinder
 

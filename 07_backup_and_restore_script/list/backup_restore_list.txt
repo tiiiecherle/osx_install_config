@@ -493,6 +493,7 @@ m	~/Library/Preferences/com.barebones.textwrangler.plist
 echo The Archive Browser
 m	/Applications/The Archive Browser.app
 m	~/Library/Preferences/cx.c3.thearchivebrowser.plist
+m	~/Library/Application Support/The Archive Browser
 
 # The Unarchiver
 echo The Unarchiver
