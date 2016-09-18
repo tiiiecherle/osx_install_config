@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# run this script by "sh scriptname.sh" in terminal
-
 # documentation
 # reading globaldomain values
 # defaults read NSGlobalDomain

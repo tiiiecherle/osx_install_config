@@ -324,7 +324,7 @@ Do some research if you have any concerns about commands or procedures that are 
 
 Credits
 ------------
-[mathiasbynens](https://github.com/mathiasbynens/dotfiles/blob/master/.osx)
+[mathiasbynens](https://github.com/mathiasbynens/dotfiles/blob/master/.macos)
 
 [joeyhoer](https://github.com/joeyhoer/starter)
 

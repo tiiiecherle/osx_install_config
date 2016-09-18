@@ -104,6 +104,7 @@ then
     # comment out lines
     # sport1 videos
     sudo sed -i '' '/cdn-static.liverail.com/s/^/#/g' /etc/hosts
+    sudo sed -i '' '/c.amazon-adsystem.com/s/^/#/g' /etc/hosts
     #or
     #sudo awk -i inplace '/cdn-static.liverail.com/ {$0="#"$0}1' /etc/hosts
 
