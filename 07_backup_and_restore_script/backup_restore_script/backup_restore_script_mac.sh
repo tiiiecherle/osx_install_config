@@ -425,8 +425,8 @@ if [[ "$OPTION" == "BACKUP" ]];
     echo "deleting backup folder on desktop..."
     if [ -e /"$DESTINATION" ]
     then
-        :
-        #rm -rf /"$DESTINATION"
+        #:
+        rm -rf /"$DESTINATION"
     else
         :
     fi
