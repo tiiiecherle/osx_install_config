@@ -224,7 +224,7 @@ u	~/Library/Preferences/ch.grapefruit.iBackup.plist
 # iMazing
 echo iMazing
 u	~/Library/Application Support/iMazing
-u	~/Library/Preferences/com.DigiDNA.iMazingMac.plist
+u	~/Library/Preferences/com.DigiDNA.iMazing2Mac.plist
 u	~/Library/Preferences/com.DigiDNA.SharedPreferences.plist
 
 # InsomniaX

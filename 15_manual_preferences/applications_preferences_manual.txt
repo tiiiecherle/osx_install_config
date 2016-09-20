@@ -40,6 +40,7 @@ iTunes
 	account 	login
 	account		authorize this computer
 	connect Iphone
+	activate	only sync selected titles and videos
 	activate	sync this phone over wifi
 	activate	manage music and video manually
 	select sync stuff - sync

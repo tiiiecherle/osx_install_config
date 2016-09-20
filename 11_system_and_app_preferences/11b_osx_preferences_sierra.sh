@@ -980,8 +980,8 @@ osascript -e 'tell application "System Events" to make login item at end with pr
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"/Applications/GeburtstagsChecker.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"AppCleaner Helper", path:"/Applications/AppCleaner Helper.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"SMARTReporter", path:"/Applications/SMARTReporter.app", hidden:false}'
-osascript -e 'tell application "System Events" to make login item at end with properties {name:"TotalFinder", path:"/Applications/TotalFinder.app", hidden:false}'
-#osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"/Applications/XtraFinder.app", hidden:false}'
+#osascript -e 'tell application "System Events" to make login item at end with properties {name:"TotalFinder", path:"/Applications/TotalFinder.app", hidden:false}'
+osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"/Applications/XtraFinder.app", hidden:false}'
 #osascript -e 'tell application "System Events" to make login item at end with properties {name:"iStat Menus", path:"/Applications/iStat Menus.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"witchdaemon", path:"/Users/'$USER'/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app", hidden:false}'
 
@@ -1465,7 +1465,7 @@ then
 	### right click finder plugins
 	
 	# show copy path
-	defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin -bool true
+	#defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin -bool true
 	
 	# path type options
 	# 0 = path, 3 = hfs path, 4 = terminal path

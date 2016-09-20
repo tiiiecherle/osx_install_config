@@ -45,11 +45,11 @@ teamviewer
 virtualbox
 virtualbox-extension-pack
 totalfinder
+xtrafinder
 owncloud
 #keka
 the-unarchiver
 #the-archive-browser
-#xtrafinder
 )
 
 #brew cask install --force ${casks[@]}
