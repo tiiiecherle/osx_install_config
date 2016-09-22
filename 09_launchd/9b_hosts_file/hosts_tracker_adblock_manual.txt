@@ -23,6 +23,7 @@ safari hosts file, tracker and adblock settings
 			advertising	Brand.net
 			advertising	Amazon Associates  
 			analytics	Aurea ClickTracks
+			beacons		Omniture (Adobe Analytics)
 			widgets		Disqus
 			widgets 	twitter button
 			widgets		twitter syndication
