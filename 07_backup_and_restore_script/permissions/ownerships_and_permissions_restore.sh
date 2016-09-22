@@ -9,6 +9,10 @@ if [ "$SELECTEDUSER" == "" ]
 then
     #SELECTEDUSER="$USER"
     SELECTEDUSER="$(who | grep console | awk '{print $1}')"
+    # asking for the administrator password upfront
+    sudo -v
+    # keep-alive: update existing 'sudo' time stamp until script is finished
+    while true; do sudo -n true; sleep 600; kill -0 "$$" || exit; done 2>/dev/null &
     #echo "user is $SELECTEDUSER"
 else
     #echo "SELECTEDUSER is $SELECTEDUSER"
@@ -20,16 +24,13 @@ HOMEFOLDER=Users/"$SELECTEDUSER"
 # starting a function to tee a record to a logfile
 function backup_restore_permissions {
 
-#
+# app permissions in applications folder
 echo "setting ownerships and permissions in /Applications..."
-#find "/Applications" -maxdepth 1 ! -group wheel -print0 | xargs -0 sudo chmod 775
-find "/Applications" -maxdepth 1 -mindepth 1 ! -group wheel -print0 | xargs -0 sudo chmod 755
-find "/Applications" -maxdepth 1 -mindepth 1 ! -group wheel -print0 | xargs -0 sudo chown root:admin
-find "/Applications" -maxdepth 1 -mindepth 1 -print0 | xargs -0 sudo chown root
-sudo chmod 644 "/Applications/.DS_Store"
-#sudo chmod 755 "/Applications/VirtualBox.app"
+find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | xargs -0 sudo chmod 755
+find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | xargs -0 sudo chown 501:admin
+#sudo chmod 644 "/Applications/.DS_Store"
 
-#
+# color profiles
 echo "setting ownerships and permissions outside the user folder..."
 if [ -e "/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom" ]
 then
@@ -41,7 +42,7 @@ else
     :
 fi
 
-#
+# display profiles
 if [ -e "/Library/ColorSync/Profiles/Displays" ]
 then
     find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 sudo chmod 644
@@ -50,7 +51,7 @@ else
     :
 fi
 
-#
+# google earth web plugin
 if [ -e "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin" ]
 then
     sudo chmod 755 "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
@@ -98,8 +99,7 @@ else
     :
 fi
 
-
-#
+# custom scripts
 if [ -e "/Library/Scripts/custom/" ]
 then
     sudo chown -R root:wheel "/Library/Scripts/custom/"
@@ -108,7 +108,7 @@ else
     :
 fi
 
-#
+# launchd hostsfile
 if [ -e "/Library/LaunchDaemons/com.hostsfile.install_update.plist" ]
 then
     sudo chown root:wheel "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
@@ -117,7 +117,7 @@ else
     :
 fi
 
-#
+# mysides
 if [ -e "/usr/local/bin/mysides" ]
 then
     sudo chown root:wheel "/usr/local/bin/mysides"
@@ -155,6 +155,11 @@ echo "setting ownerships and permissions inside the user folder..."
 
 # setting ownership and permissions
 #sudo chown -R 501:staff /"$HOMEFOLDER"/.*
+
+# apple support advice
+# https://support.apple.com/en-us/HT203538
+#chflags -R nouchg /"$HOMEFOLDER"
+#diskutil resetUserPermissions / `id -u`
 
 sudo find /"$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path "/"$HOMEFOLDER"/Desktop/restore/*" -type f -print0 | sudo xargs -0 chown 501:staff
 sudo find /"$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path "/"$HOMEFOLDER"/Desktop/restore/*" ! -name "*.app" -type d -print0 | sudo xargs -0 chown 501:staff
