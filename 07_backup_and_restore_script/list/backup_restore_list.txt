@@ -376,10 +376,14 @@ m	/Applications/PasswordWallet.app
 u	~/Library/Preferences/com.selznick.PasswordWallet.plist
 
 # PDF Shrink
-echo PDF Shrink
-m	/Applications/PDF Shrink.app
-m	~/Library/Application Support/Apago
-m	~/Library/Preferences/com.apago.PDFShrink.plist
+#echo PDF Shrink
+#m	/Applications/PDF Shrink.app
+#m	~/Library/Application Support/Apago
+#m	~/Library/Preferences/com.apago.PDFShrink.plist
+
+# pdf_shrink
+echo pdf shrink
+m	/Applications/pdf_shrink_ebook.app
 
 # PDF Unlock
 echo PDF Unlock
