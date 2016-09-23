@@ -329,7 +329,7 @@ u	~/Library/Application Support/MobileSync
 
 # MonKey Office 2016.app
 echo MonKey Office 2016.app
-m	/Applications/MonKey Office 2016.app
+u	/Applications/MonKey Office 2016.app
 u	~/Library/Application Support/ProSaldo
 u	~/Library/Preferences/com.prosaldo.monkeyoffice2016.plist
 
