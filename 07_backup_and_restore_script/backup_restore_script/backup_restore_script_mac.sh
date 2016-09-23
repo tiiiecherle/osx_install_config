@@ -426,7 +426,7 @@ if [[ "$OPTION" == "BACKUP" ]];
     if [ -e /"$DESTINATION" ]
     then
         :
-        #rm -rf /"$DESTINATION"
+        rm -rf /"$DESTINATION"
     else
         :
     fi

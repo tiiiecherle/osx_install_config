@@ -114,7 +114,7 @@ function set_dock_apps () {
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
     $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/PDF Shrink.app/$APP_TAIL"
+    -array-add "$APP_HEAD/Applications/pdf_shrink_ebook.app/$APP_TAIL"
     
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/System Preferences.app/$APP_TAIL"
