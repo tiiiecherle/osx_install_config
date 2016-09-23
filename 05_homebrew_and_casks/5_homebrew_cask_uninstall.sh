@@ -6,6 +6,8 @@ yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/m
 sudo rm -rf /opt/homebrew-cask
 sudo rm -rf /usr/local/Caskroom
 sudo rm -rf /usr/local/lib/librtmp.dylib
+sudo rm -rf /usr/local/var/homebrew/
+sudo rm -rf /usr/local/Homebrew/
 sudo chmod 0755 /usr/local
 sudo chown root:wheel /usr/local
 sed -i '' '\|/usr/local/sbin:$PATH|d' ~/.bash_profile

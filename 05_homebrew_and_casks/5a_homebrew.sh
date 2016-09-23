@@ -80,6 +80,7 @@ gnu-tar
 htop
 coreutils
 duti
+ghostscript
 )
 
 brew install ${homebrewpackages[@]}
