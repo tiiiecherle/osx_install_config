@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SELECTEDUSER=$USER
-MASTERUSER=$USER
+MASTERUSER=$(ls /Users/$USER/Desktop/restore/master/Users | egrep -v "^[.]" | egrep -v "Shared")
 RESTOREMASTERDIR=/Users/$USER/Desktop/restore/master
 HOMEFOLDER=Users/$USER
 
@@ -12,7 +12,7 @@ HOMEFOLDER=Users/$USER
 
 EXTENSIONS_PREFERENCESFILE="/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"
 
-if [ -e "$EXTENSIONS_PREFERENCESFILE" ] && [ -e $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Preferences/com.apple.Safari.Extensions.plist ]
+if [ -e $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Preferences/com.apple.Safari.Extensions.plist ]
 then
 	echo "deleting local preferences file and restoring from backup..."
 	rm "$EXTENSIONS_PREFERENCESFILE"
