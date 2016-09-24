@@ -28,6 +28,7 @@ function backup_restore_permissions {
 echo "setting ownerships and permissions in /Applications..."
 find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | xargs -0 sudo chmod 755
 find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | xargs -0 sudo chown 501:admin
+if [ -e /Applications/VirtualBox.app ]; then sudo chown root:admin /Applications/VirtualBox.app; else :; fi
 #sudo chmod 644 "/Applications/.DS_Store"
 
 # color profiles
@@ -174,9 +175,10 @@ sudo chmod 777 /"$HOMEFOLDER"/Public
 sudo chmod 733 /"$HOMEFOLDER"/Public/Drop\ Box
 sudo chmod 700 /"$HOMEFOLDER"/Library/Services/*
 sudo find /"$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path "/"$HOMEFOLDER"/Desktop/restore/*" ! -name "*.app" -name "*.sh" -type f -print0 | sudo xargs -0 chmod 700
+sudo find /"$HOMEFOLDER"/Library/Widgets -type f -print0 | sudo xargs -0 chmod 644
+sudo chmod 755 /"$HOMEFOLDER"/Library/Widgets/*
 
 # homebrew permissions
-
 if [ -e "$(brew --prefix)" ] 
 then
 	echo "setting ownerships and permissions for homebrew..."
