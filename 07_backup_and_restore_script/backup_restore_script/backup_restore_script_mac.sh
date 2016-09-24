@@ -702,9 +702,17 @@ if [[ "$OPTION" == "RESTORE" ]];
     wait
     
     ### safari extensions settings restore
+    # this can not be included in the restore script if the keychain is restored
+    # a reboot is needed after restoring the keychain before running the safari extensions restore script
+    # or the changes to safari would not be kept
     #echo ""
-    #echo "restoring safari extensions settings..."
+    #echo "restoring safari extensions and their settings..."
+    #export SELECTEDUSER
+    #export MASTERUSER
+    #export RESTOREMASTERDIR
+    #export HOMEFOLDER
     #bash -c "export SELECTEDUSER=\"$SELECTEDUSER\"; export MASTERUSER=\"$MASTERUSER\"; export RESTOREMASTERDIR=\"$RESTOREMASTERDIR\"; export HOMEFOLDER=\"$HOMEFOLDER\"; "$SCRIPT_DIR"/safari_extensions/safari_extensions_settings_restore.sh"
+    #bash "$SCRIPT_DIR"/safari_extensions/safari_extensions_settings_restore.sh
     #wait
     
     echo ""
