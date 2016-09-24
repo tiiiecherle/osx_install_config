@@ -13,20 +13,19 @@ HOMEFOLDER=Users/$USER
 EXTENSIONS_PREFERENCESFILE="/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"
 
 if [ -e $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Preferences/com.apple.Safari.Extensions.plist ] && [ -e $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Safari/Extensions ]
-	echo "deleting local preferences file and restoring from backup..."
+then
+	echo "deleting local preferences file and installing extensions from backup..."
 	rm "$EXTENSIONS_PREFERENCESFILE"
 else
-	echo "master backup safari preferences file /Library/Preferences/com.apple.Safari.Extensions.plist does not exist, skipping restore..."
+	echo "master backup safari preferences file /Library/Preferences/com.apple.Safari.Extensions.plist or backup of /Library/Safari/Extensions does not exist, skipping restore..."
 	exit
 fi
 
 cp -a $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Safari/Extensions /$HOMEFOLDER/Desktop/
 rm -rf /$HOMEFOLDER/Library/Safari/Extensions/*
 
-for i in $(find /$HOMEFOLDER/Desktop/Extensions -name "*.safariextz")
-do
-	open "$i"
-	sleep 2
+find /$HOMEFOLDER/Desktop/Extensions -name "*.safariextz" -print0 | while IFS= read -r -d '' file; do
+    open "$file"
 done
 
 cp -a $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Preferences/com.apple.Safari.Extensions.plist /$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist
@@ -36,8 +35,8 @@ chown 501:staff /$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.pli
 sleep 2
 
 open -g /Applications/Safari.app
-sleep 10
+while ps aux | grep 'Safari.app' | grep -v grep > /dev/null; do sleep 1; done
 
-osascript -e 'tell application "Safari" to quit'
+#osascript -e 'tell application "Safari" to quit'
 
 rm -rf /$HOMEFOLDER/Desktop/Extensions
