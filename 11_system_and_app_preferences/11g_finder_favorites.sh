@@ -14,12 +14,4 @@ while true; do sudo -n true; sleep 300; kill -0 "$$" || exit; done 2>/dev/null &
 /usr/bin/sfltool add-item -n "smb://172.16.1.200" com.apple.LSSharedFileList.FavoriteServers "smb://172.16.1.200" && sleep 2
 echo ''
 
-if [[ $USER == wolfgang ]]
-then
-	/usr/bin/sfltool add-item -n "https://cloud.greenenergypeak.de/owncloud/remote.php/webdav/" com.apple.LSSharedFileList.FavoriteServers "https://cloud.greenenergypeak.de/owncloud/remote.php/webdav/" && sleep 2
-	echo ''
-else
-	:
-fi	
-
 echo 'done ;)'
