@@ -125,6 +125,7 @@ u	~/Library/Preferences/widget-com.apple.widget.calendar.plist
 #u	~/Library/Preferences/widget-com.apple.widget.translation.plist
 #u	~/Library/Preferences/widget-com.apple.widget.unitconverter.plist
 u	~/Library/Preferences/widget-com.apple.widget.weather.plist
+u	~/Library/Preferences/widget-ws.merl.widget.wetter.plist
 
 # Defaults open with
 echo Defaults open with
@@ -578,6 +579,10 @@ echo Whatsapp
 u	/Applications/Whatsapp.app
 u	~/Library/Application Support/WhatsApp
 u	~/Library/Preferences/WhatsApp.plist
+
+# Widgets
+echo Widgets
+u	 ~/Library/Widgets/Wetter.wdgt
 
 # Winston
 #echo Winston
