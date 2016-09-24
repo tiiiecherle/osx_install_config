@@ -300,6 +300,14 @@ defaults write com.apple.dock expose-group-apps -bool true
 ##
 defaults write com.apple.spaces spans-displays -bool false
 
+sleep 1
+if [ "$USER" == "wolfgang" ]
+then
+	defaults write com.apple.spaces spans-displays -bool true
+else
+    :
+fi
+
 # dashboard as setting
 # 1 = disabled
 # 2 = enabled as space
@@ -307,8 +315,7 @@ defaults write com.apple.spaces spans-displays -bool false
 
 defaults write com.apple.dashboard dashboard-enabled-state -int 1
 
-sleep 2
-
+sleep 1
 if [ "$USER" == "wolfgang" ]
 then
     defaults write com.apple.dashboard dashboard-enabled-state -int 2
