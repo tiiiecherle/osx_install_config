@@ -99,7 +99,7 @@ function targz_and_progress {
 
     BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}')
     echo archiving "$DIRS" to "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
-    pushd "$(dirname "$DIRS")"; tar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz --best > "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz; popd
+    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz --best > "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz; popd 1> /dev/null
     echo "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz >> "$FILESTARGZLOG"
     echo ""
 
@@ -159,7 +159,7 @@ do
     if [[ -f "$TOCHECK" ]];
     then
 
-        #echo -n "$(basename "$TOCHECK")"'... ' && tar -tzf "$TOCHECK" >/dev/null 2>&1 && echo file is OK || echo file is INVALID
+        #echo -n "$(basename "$TOCHECK")"'... ' && gtar -tzf "$TOCHECK" >/dev/null 2>&1 && echo file is OK || echo file is INVALID
         echo -n "$(basename "$TOCHECK")"'... ' && gtar -tzf "$TOCHECK" >/dev/null 2>&1 && echo file is OK || echo file is INVALID
 
     else

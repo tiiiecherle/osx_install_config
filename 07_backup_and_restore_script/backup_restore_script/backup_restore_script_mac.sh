@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v32
+### backup / restore script v33
 ###
 
 #TARGZSAVEDIR=/Users/tom/Desktop/targz
@@ -41,7 +41,7 @@ else
 fi
 
 ###
-###
+### backup / restore function
 ###
 
 # starting a function to tee a record to a logfile
@@ -91,6 +91,10 @@ else
     :
 fi
 
+###
+### variables and checks
+###
+
 # user home folder
 HOMEFOLDER=Users/"$SELECTEDUSER"
 echo HOMEFOLDER is "$HOMEFOLDER"
@@ -136,6 +140,41 @@ else
 	echo "sytanx of backup / restore list o.k., continuing..."
 	echo ""
 fi
+
+###
+### checking installation of needed tools
+###
+
+echo checking if all needed tools are installed...
+
+# installing command line tools
+if xcode-select --install 2>&1 | grep installed >/dev/null
+then
+  	echo command line tools are installed...
+else
+  	echo command line tools are not installed, installing...
+  	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
+  	#sudo xcodebuild -license accept
+fi
+
+# checking and updating homebrew including tools
+if [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'which brew') != "" ]]
+then
+    echo homebrew is installed...
+    
+    if [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew list' | grep coreutils) == '' ]]
+    then
+        echo at least one needed homebrew tool of gnu-tar, pigz, pv and coreutils is missing, exiting...
+        exit
+    else
+        echo needed homebrew tools are installed...     
+    fi
+else
+    echo homebrew is not installed, exiting...
+    exit
+fi
+
+echo ''
 
 ###
 ### backup
@@ -353,54 +392,60 @@ if [[ "$OPTION" == "BACKUP" ]];
     #reset
     #stty "$STTY_ORIG"
     stty sane
-            
+
+    echo ''            
     echo "backup done ;)"
     echo ''
     # opening app for archiving
     #osascript -e 'tell application "Keka.app" to activate'
     
-    echo "updating homebrew..."
+    #open -g -a "$SCRIPT_DIR"/archive/archive_tar_gz.app
+    #osascript -e 'display dialog "backup finished, starting archiving..."'
+    #osascript -e 'tell application "'"$SCRIPT_DIR"'/archive/archive_tar_gz.app" to activate'
+    
+    # homebrew updates
+    echo "updating homebrew and tools..."
     # checking if online
     #wget -q --tries=1 --timeout=4 --spider google.com > /dev/null 2>&1
     ping -c 3 google.com > /dev/null 2>&1
     if [ $? -eq 0 ]
     then 
         # online
-        
-        # homebrew permissions
-        if [ -e "$(brew --prefix)" ]
-        then
-            echo "setting ownerships and permissions for homebrew..."
-            #brew doctor
-            BREWGROUP="admin"
-            BREWPATH=$(brew --prefix)
-            sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
-            #sudo chown -R "$SELECTEDUSER":"$BREWGROUP" "$BREWPATH"
-            #sudo chown -R "$user":"$group" /Library/Caches/Homebrew
-            sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
-            sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
-        else
-            :
-        fi
-    
         echo "running brew update commands..."
         #sudo -u $(users)
-        sudo su $(who | grep console | awk '{print $1}') -c 'brew doctor'
-        sudo su $(who | grep console | awk '{print $1}') -c 'brew update'
-        sudo su $(who | grep console | awk '{print $1}') -c 'brew upgrade --all'
-        sudo su $(who | grep console | awk '{print $1}') -c 'brew cleanup'
-        sudo su $(who | grep console | awk '{print $1}') -c 'brew cask cleanup'
-        sudo su $(who | grep console | awk '{print $1}') -c 'brew install pigz gnu-tar coreutils pv'
-    
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew update 1> /dev/null'
+        if [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew outdated') == "" ]] > /dev/null 2>&1
+        then
+        	echo "all homebrew packages are up to date..."
+        else
+        	echo "the following homebrew packages are outdated and will now be updated..."
+        	sudo su $(who | grep console | awk '{print $1}') -c 'brew outdated --verbose'
+        fi
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew upgrade --all 1> /dev/null'
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew cleanup 1> /dev/null'
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew cask cleanup 1> /dev/null'
+        #sudo su $(who | grep console | awk '{print $1}') -c 'brew install pigz gnu-tar coreutils pv 1> /dev/null'
+        sudo su $(who | grep console | awk '{print $1}') -c 'brew doctor 1> /dev/null'
         #sudo su $(who | grep console | awk '{print $1}') -c '"'$SCRIPT_DIR'"/homebrew_update.sh'
     else
+        # not online
         echo "not online, skipping homebrew update..."
-    fi
-    
-    #open -g -a "$SCRIPT_DIR"/archive/archive_tar_gz.app
-    #osascript -e 'display dialog "backup finished, starting archiving..."'
-    #osascript -e 'tell application "'"$SCRIPT_DIR"'/archive/archive_tar_gz.app" to activate'
-
+    fi  
+    # homebrew permissions
+    #BREWGROUP="admin"
+    #BREWPATH=$(sudo su $(who | grep console | awk '{print $1}') -c 'brew --prefix') 
+    #eval "echo $BREWPATH" > /dev/null 2>&1
+    #if [ $? -eq 0 ] && [[ "$BREWPATH" != "" ]]
+    #then
+    #    echo "setting ownerships and permissions for homebrew..."
+    #    echo homebrew path is "$BREWPATH"
+    #    sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
+    #    sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
+    #    sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx		
+    #else
+    #    echo homebrew path is empty or invalid, skipping setting ownerships and permissions for homebrew...
+	#fi
+	
     # moving log to backup directory
     mv /"$HOMEFOLDER"/Desktop/backup_restore_log.txt /"$DESTINATION"/_backup_restore_log.txt
 

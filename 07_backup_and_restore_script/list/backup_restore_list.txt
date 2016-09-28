@@ -328,7 +328,7 @@ u	~/Library/Mail
 echo Mobile Sync
 u	~/Library/Application Support/MobileSync
 
-# MonKey Office 2016.app
+# MonKey Office
 echo MonKey Office 2016.app
 u	/Applications/MonKey Office 2016.app
 u	~/Library/Application Support/ProSaldo
@@ -456,6 +456,7 @@ echo Scripts
 m	/Library/Scripts/custom
 u	~/Library/Scripts/run_on_network_change.app
 u	~/Library/Scripts/run_on_network_change_login.app
+u	~/Library/Application Scripts/com.apple.mail
 
 # Services User and Services Keyboard Shortcuts
 echo Services and Shortcuts

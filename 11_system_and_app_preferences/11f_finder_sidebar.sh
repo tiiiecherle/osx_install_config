@@ -14,7 +14,7 @@ while true; do sudo -n true; sleep 300; kill -0 "$$" || exit; done 2>/dev/null &
 # installs to /usr/local/bin/mysides
 # -rwxr-xr-x    1 root  wheel  47724 14 Apr 02:07 mysides
 # https://github.com/mosen/mysides
-MYSIDESVERSION="1.0.0"
+MYSIDESVERSION="1.0.1"
 read -r -p "do you want to install / update to mysides "$MYSIDESVERSION"? [Y/n] " answer
 response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
 #echo $response
@@ -52,13 +52,11 @@ echo "clearing and setting finder sidebare items..."
 # copy build file to /usr/local/bin/mysides
 # sudo chown root:wheel "/usr/local/bin/mysides"
 # sudo chmod 755 "/usr/local/bin/mysides"
-mysides remove all
+#mysides remove all
 #
-#mysides remove All\ My\ Files file:///System/Library/CoreServices/Finder.app/Contents/Resources/MyLibraries/myDocuments.cannedSearch/
-#mysides remove iCloud Drive x-apple-finder:icloud
-#mysides remove AirDrop nwnode://domain-AirDrop
-#mysides remove domain-AirDrop
-#
+mysides remove "Alle meine Dateien"
+mysides remove iCloud
+mysides remove domain-AirDrop
 mysides add Applications file:///Applications
 mysides add Desktop file:///Users/${USER}/Desktop
 mysides add Documents file:///Users/${USER}/Documents

@@ -173,26 +173,45 @@ sudo chmod 755 /Users
 sudo chmod 755 /"$HOMEFOLDER"
 sudo chmod 777 /"$HOMEFOLDER"/Public
 sudo chmod 733 /"$HOMEFOLDER"/Public/Drop\ Box
-sudo chmod 700 /"$HOMEFOLDER"/Library/Services/*
 sudo find /"$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path "/"$HOMEFOLDER"/Desktop/restore/*" ! -name "*.app" -name "*.sh" -type f -print0 | sudo xargs -0 chmod 700
-sudo find /"$HOMEFOLDER"/Library/Widgets -type f -print0 | sudo xargs -0 chmod 644
-sudo chmod 755 /"$HOMEFOLDER"/Library/Widgets/*
+#
+if [ -e /"$HOMEFOLDER"/Library/Services/ ] && [ $(ls -A /"$HOMEFOLDER"/Library/Services/) ]
+then
+    sudo chmod 700 /"$HOMEFOLDER"/Library/Services/*
+else
+    :
+    #echo directory does not exist or is empty...
+fi
+#
+if [ -e /"$HOMEFOLDER"/Library/Widgets/ ] && [ $(ls -A /"$HOMEFOLDER"/Library/Widgets/) ]
+then
+    sudo find /"$HOMEFOLDER"/Library/Widgets -type f -print0 | sudo xargs -0 chmod 644
+    sudo chmod 755 /"$HOMEFOLDER"/Library/Widgets/*
+else
+    :
+    #echo directory does not exist or is empty...
+fi
+#
+if [ -e /"$HOMEFOLDER"/Library/Application\ Scripts/com.apple.mail/ ] && [ $(ls -A /"$HOMEFOLDER"/Library/Application\ Scripts/com.apple.mail/) ]
+then
+    sudo chmod 750 /"$HOMEFOLDER"/Library/Application\ Scripts/com.apple.mail/*
+else
+    :
+    #echo directory does not exist or is empty...
+fi
 
 # homebrew permissions
-if [ -e "$(brew --prefix)" ] 
-then
-	echo "setting ownerships and permissions for homebrew..."
-	#brew doctor
-	BREWGROUP="admin"
-	BREWPATH=$(brew --prefix)
-	sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
-	#sudo chown -R "$SELECTEDUSER":"$BREWGROUP" "$BREWPATH"
-	#sudo chown -R "$user":"$group" /Library/Caches/Homebrew
-	sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
-	sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
-else
-	:
-fi
+#if [ -e "$(brew --prefix)" ] 
+#then
+#	echo "setting ownerships and permissions for homebrew..."
+#	BREWGROUP="admin"
+#	BREWPATH=$(brew --prefix)
+#	sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
+#	sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
+#	sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
+#else
+#	:
+#fi
 
 # script finfished
 echo "done setting ownerships and permissions ;)"

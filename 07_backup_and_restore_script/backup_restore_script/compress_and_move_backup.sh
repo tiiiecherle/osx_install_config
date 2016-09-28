@@ -18,13 +18,13 @@ set -e
 function archiving_tar_gz {
     
     # calculating backup folder size
-    PVSIZE=$(/usr/local/bin/gdu -scb "$DESKTOPBACKUPFOLDER" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo $i*1.0 | bc | cut -d'.' -f1  ) ; done)
+    PVSIZE=$(gdu -scb "$DESKTOPBACKUPFOLDER" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo $i*1.0 | bc | cut -d'.' -f1  ) ; done)
     #echo "PVSIZE is "$PVSIZE""
     
     # compressing and checking integrity of backup folder on desktop
     echo ''
     echo "archiving "$(dirname "$DESKTOPBACKUPFOLDER")"/"$(basename "$DESKTOPBACKUPFOLDER")"/ to "$(echo "$TARGZFILE")""
-    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" >/dev/null; tar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | /usr/local/bin/pigz --best > "$TARGZFILE"; popd >/dev/null && echo '' && echo 'testing integrity of file(s)' && echo -n "$(basename "$TARGZFILE")"'... ' && /usr/local/bin/gtar -tzf "$TARGZFILE" >/dev/null 2>&1 && echo file is OK || echo file is INVALID
+    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz --best > "$TARGZFILE"; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && echo -n "$(basename "$TARGZFILE")"'... ' && gtar -tzf "$TARGZFILE" >/dev/null 2>&1 && echo file is OK || echo file is INVALID
     echo ''
 
 }

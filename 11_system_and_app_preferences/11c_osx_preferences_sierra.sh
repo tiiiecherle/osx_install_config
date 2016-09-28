@@ -594,7 +594,7 @@ echo "preferences monitor"
 
 # display - automatically adjust brightness
 ##
-sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Display Enabled" -bool true
+sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Display Enabled" -bool false
 
 # light compensation (new in 10.11)
 ##
@@ -687,6 +687,9 @@ sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Key
 
 # auto-correct spelling
 defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+
+# auto capitalization
+defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
 
 # smart quotes
 defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
@@ -2178,6 +2181,16 @@ echo "messages"
 
 # disable continuous spell checking
 #defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false
+
+
+
+###
+### pages
+###
+
+echo "pages"
+
+defaults write com.apple.iWork.Pages TSWPAutomaticSpellingCorrection -bool false
 
 
 
