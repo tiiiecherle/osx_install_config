@@ -45,9 +45,12 @@ echo "installing homebrew and homebrew casks..."
 
 echo ''
 # xquartz
-read -p "do you want to install xquartz (Y/n)? " CONT1
+read -p "do you want to install xquartz (Y/n)? " CONT1_BREW
+CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
+
 # casks
-read -p "do you want to install casks packages (Y/n)? " CONT2
+read -p "do you want to install casks packages (Y/n)? " CONT2_BREW
+CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 echo ''
 
 # creating directory and adjusting permissions
@@ -135,18 +138,18 @@ brew cask cleanup
 #rm -rf ~/Applications
 
 # installing xquartz
-if [ "$CONT1" == "n" ]
+if [[ "$CONT1_BREW" == "y" || "$CONT1_BREW" == "yes" || "$CONT1_BREW" == "" ]]
 then
-	:
-else
 	echo "installing cask xquartz..."
-	casks=(
+	casks_pre=(
 	xquartz
 	)
 	#brew cask install --force ${casks[@]}
-	for caskstoinstall in ${casks[@]}; do
-		echo "$SUDOPASSWORD" | sudo -S brew cask install --force $caskstoinstall
+	for caskstoinstall_pre in ${casks_pre[@]}; do
+		echo "$SUDOPASSWORD" | sudo -S brew cask install --force $caskstoinstall_pre
 	done
+else
+	:
 fi
 
 # installing some homebrew packages
@@ -171,10 +174,8 @@ homebrew/x11/xpdf
 echo "$SUDOPASSWORD" | brew install ${homebrewpackages[@]}
 
 # installing casks
-if [ "$CONT2" == "n" ]
+if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
 then
-	:
-else
 	echo "installing casks ..."
 	
 	casks=(
@@ -202,6 +203,8 @@ else
 	done
 	
 	open "/opt/homebrew-cask/Caskroom/paragon-extfs/latest/FSinstaller.app" &
+else
+	:
 fi
 
 # cleaning up
@@ -229,28 +232,28 @@ for homebrewpackage in ${homebrewpackages[@]}; do
     if [[ $(brew info "$homebrewpackage" | grep "Not installed") == "" ]]
     #if [[ $(brew list | grep "$homebrewpackage") != "" ]]
     then
-        printf "%-50s %-10s\n" "$homebrewpackage" "o.k."
+        printf "%-50s %-10s\n" "$homebrewpackage" "ok"
     else
         printf "%-50s %-10s\n" "$homebrewpackage" "FAILED"
     fi
 done
 
 # casks
-if [ "$CONT2" == "n" ]
+if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
 then
-	:
-else
 	echo ''
 	echo checking casks installation...
     for caskstoinstall in ${casks[@]}; do
         if [[ $(brew cask info "$caskstoinstall" | grep "Not installed") == "" ]]
         #if [[ $(brew cask list | grep "$caskstoinstall") != "" ]]
         then
-        	printf "%-50s %-10s\n" "$caskstoinstall" "o.k."
+        	printf "%-50s %-10s\n" "$caskstoinstall" "ok"
         else
         	printf "%-50s %-10s\n" "$caskstoinstall" "FAILED"
         fi
     done
+else
+	:
 fi
 
 # unsetting password

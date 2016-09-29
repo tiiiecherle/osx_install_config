@@ -205,7 +205,8 @@ if [[ "$OPTION" == "BACKUP" ]];
     if [ "$SELECTEDUSER" == tom ]
     then
             read -p "do you want to backup virtualbox images (y/N)? " CONT1
-            if [ "$CONT1" == "y" ]
+            CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
+			if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
             then
                 echo "running virtualbox backup..."
                 open "$SCRIPT_DIR"/vbox_backup/virtualbox_backup.app
@@ -220,7 +221,8 @@ if [[ "$OPTION" == "BACKUP" ]];
     if [ "$SELECTEDUSER" == tom ] || [ "$SELECTEDUSER" == bobby ]
     then
             read -p "do you want to backup local files (y/N)? " CONT2
-            if [ "$CONT2" == "y" ]
+            CONT2="$(echo "$CONT2" | tr '[:upper:]' '[:lower:]')"    # tolower
+            if [[ "$CONT2" == "y" || "$CONT2" == "yes" ]]
             then
                 echo "running files backup..."
                 export FILESTARGZSAVEDIR="$TARGZSAVEDIR"
@@ -238,7 +240,8 @@ if [[ "$OPTION" == "BACKUP" ]];
 
     # running contacts backup applescript
     read -p "do you want to run an address book backup (y/N)? " CONT3
-    if [ "$CONT3" == "y" ]
+    CONT3="$(echo "$CONT3" | tr '[:upper:]' '[:lower:]')"    # tolower
+    if [[ "$CONT3" == "y" || "$CONT3" == "yes" ]]
     then
         echo running contacts backup... please wait...
         # service entry for for contacts backup
@@ -262,7 +265,8 @@ if [[ "$OPTION" == "BACKUP" ]];
 
     # running calendars backup applescript
     read -p "do you want to run an calendars backup (y/N)? " CONT4
-    if [ "$CONT4" == "y" ]
+    CONT4="$(echo "$CONT4" | tr '[:upper:]' '[:lower:]')"    # tolower
+    if [[ "$CONT4" == "y" || "$CONT4" == "yes" ]]
     then
         echo "running calendars backup... please do not touch your computer until the calendar app quits..."
         # accessibility entry for calendar backup

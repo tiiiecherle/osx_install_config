@@ -32,7 +32,8 @@ function archiving_tar_gz {
 if [ -e "$TARGZFILE" ]
 then
     read -p "file \"$TARGZFILE\" already exist, overwrite it (y/N)? " CONT_COMP1
-    if [ "$CONT_COMP1" == "y" ]
+    CONT_COMP1="$(echo "$CONT_COMP1" | tr '[:upper:]' '[:lower:]')"    # tolower
+	if [[ "$CONT_COMP1" == "y" || "$CONT_COMP1" == "yes" ]]
     then
         rm "$TARGZFILE"
         archiving_tar_gz
@@ -55,8 +56,9 @@ else
         if [ -e "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]
         then
             read -p "file \"$TARGZSAVEDIR"/"$(basename "$TARGZFILE")\" already exist, overwrite it (y/N)? " CONT_COMP2
-            if [ "$CONT_COMP2" == "y" ]
-            then
+    		CONT_COMP2="$(echo "$CONT_COMP2" | tr '[:upper:]' '[:lower:]')"    # tolower
+			if [[ "$CONT_COMP2" == "y" || "$CONT_COMP2" == "yes" ]]            
+			then
                 rm "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")"
                 pv "$TARGZFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && rm "$TARGZFILE" && echo "backup file successfully moved... this is OK"
             else
