@@ -176,6 +176,9 @@ echo "$SUDOPASSWORD" | brew install ${homebrewpackages[@]}
 # installing casks
 if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
 then
+    # without this install of flash failed (2016-09)
+    echo "$SUDOPASSWORD" | brew zap --force flash
+    
 	echo "installing casks ..."
 	
 	casks=(
@@ -208,6 +211,7 @@ else
 fi
 
 # cleaning up
+echo ''
 echo "cleaning up..."
 
 brew cleanup
@@ -232,9 +236,9 @@ for homebrewpackage in ${homebrewpackages[@]}; do
     if [[ $(brew info "$homebrewpackage" | grep "Not installed") == "" ]]
     #if [[ $(brew list | grep "$homebrewpackage") != "" ]]
     then
-        printf "%-50s %-10s\n" "$homebrewpackage" "ok"
+        printf "%-50s\e[0;32mok\e[0m%-10s\n" "$homebrewpackage"
     else
-        printf "%-50s %-10s\n" "$homebrewpackage" "FAILED"
+        printf "%-50s\e[0;31mFAILED\e[0m%-10s\n" "$homebrewpackage"
     fi
 done
 
@@ -247,9 +251,9 @@ then
         if [[ $(brew cask info "$caskstoinstall" | grep "Not installed") == "" ]]
         #if [[ $(brew cask list | grep "$caskstoinstall") != "" ]]
         then
-        	printf "%-50s %-10s\n" "$caskstoinstall" "ok"
+        	printf "%-50s\e[0;32mok\e[0m%-10s\n" "$caskstoinstall"
         else
-        	printf "%-50s %-10s\n" "$caskstoinstall" "FAILED"
+        	printf "%-50s\e[0;31mFAILED\e[0m%-10s\n" "$caskstoinstall"
         fi
     done
 else
@@ -262,3 +266,4 @@ unset SUDOPASSWORD
 # done
 echo ''
 echo "done ;)"
+echo ''

@@ -159,7 +159,7 @@ do
     if [[ -f "$TOCHECK" ]];
     then
         #echo -n "$(basename "$TOCHECK")"'... ' && gtar -tzf "$TOCHECK" >/dev/null 2>&1 && echo file is OK || echo file is INVALID
-        printf "%-40s" ""$(basename "$TOCHECK")"... " && gtar -tzf "$TOCHECK" >/dev/null 2>&1 && echo OK || echo INVALID
+        printf "%-40s" ""$(basename "$TOCHECK")"... " && gtar -tzf "$TOCHECK" >/dev/null 2>&1 && echo -e '\033[1;32mOK\033[0m' || echo -e '\033[1;31mINVALID\033[0m'
     else
         :
     fi

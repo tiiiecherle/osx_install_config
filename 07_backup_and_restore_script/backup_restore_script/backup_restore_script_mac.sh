@@ -482,6 +482,7 @@ if [[ "$OPTION" == "BACKUP" ]];
     
     # done
     echo 'script finished ;)'
+    osascript -e 'display notification "complete ;)" with title "Backup Script"'
     exit
 
 else
