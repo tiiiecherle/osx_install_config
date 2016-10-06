@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-
-# asking for the administrator password upfront
-sudo -v
-
-# keep-alive: update existing 'sudo' time stamp until script is finished
-while true; do sudo -n true; sleep 300; kill -0 "$$" || exit; done 2>/dev/null &
-
 # sfltool
 # sfltool restore|add-item|save-lists|test|archive|enable-modern|dump-server-state|clear|disable-modern|dump-storage|list-info [options]
 
@@ -76,7 +69,7 @@ fi
 if [[ $USER == wolfgang ]]
 then
 	echo ''
-	read -r -p $'to add entries form a network volume you have to be connected to the volume.\nplease connect to /Volumes/office/.\nare you connected to /Volumes/office/? [Y/n] ' answer
+	read -r -p $'to add entries form a network volume you have to be connected to the volume as the user that uses the links later.\nplease connect to /Volumes/office/ as the respective user.\nare you connected to /Volumes/office/ as the user that uses the links later? [Y/n] ' answer
 	response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
 	if [[ $response == "y" || $response == "yes" || $response == "" ]]
 	then

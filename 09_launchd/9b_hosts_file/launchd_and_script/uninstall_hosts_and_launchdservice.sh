@@ -1,15 +1,9 @@
 #!/bin/bash
 
-# asking for the administrator password upfront
-sudo -v
-
-# keep-alive: update existing 'sudo' time stamp until script is finished
-while true; do sudo -n true; sleep 300; kill -0 "$$" || exit; done 2>/dev/null &
-
 # moving back original hosts file
 if [ -f /etc/hosts.orig ];
 then
-    cp -a /etc/hosts.orig /etc/hosts
+    sudo cp -a /etc/hosts.orig /etc/hosts
 else
     :
 fi
@@ -58,5 +52,4 @@ fi
 echo "activating changed hosts file..."
 sudo dscacheutil -flushcache
 sudo killall -HUP mDNSResponder
-exit
 

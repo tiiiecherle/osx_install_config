@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 
-
-# asking for the administrator password upfront
-sudo -v
-
-# keep-alive: update existing 'sudo' time stamp until script is finished
-while true; do sudo -n true; sleep 300; kill -0 "$$" || exit; done 2>/dev/null &
-
-
 # credit to
 # http://superuser.com/questions/273756/how-to-change-default-app-for-all-files-of-particular-file-type-through-terminal
 #

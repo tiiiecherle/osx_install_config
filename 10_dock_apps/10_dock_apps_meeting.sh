@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # clears the dock of all apps, then adds your individual dock config
 # config file:

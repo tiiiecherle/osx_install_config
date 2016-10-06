@@ -5,7 +5,8 @@
 #SELECTEDUSER="tom"
 
     # compressing backup files
-    echo "compressing and backing up files..."
+    # sleep 2
+    # echo "compressing and backing up files..."
 
     # checking and defining some variables
 	#echo "FILESTARGZSAVEDIR is "$FILESTARGZSAVEDIR""
@@ -33,5 +34,5 @@ tell application "Terminal"
 end tell
 EOF
 }
-	compress_and_move_files &
-	exit
+	compress_and_move_files
+	# exit

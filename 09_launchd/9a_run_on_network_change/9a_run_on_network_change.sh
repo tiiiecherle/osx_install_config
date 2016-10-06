@@ -1,16 +1,8 @@
 #!/bin/bash
 
-# asking for the administrator password upfront
-sudo -v
-
-# keep-alive: update existing 'sudo' time stamp until script is finished
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-
-
 ###
 ### launchd & applescript to do things when changing network location
 ###
-
 
 ### installation should be done via restore script after first install
 

@@ -53,7 +53,7 @@ done
 sleep 2
 
 #open -g /Applications/Safari.app
-echo "waiting for safari to quit before continuing..."
+echo "safari has to be closed before continuing..."
 while ps aux | grep 'Safari.app' | grep -v grep > /dev/null; do sleep 1; done
 
 #osascript -e 'tell application "Safari" to quit'
