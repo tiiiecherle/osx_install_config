@@ -46,9 +46,6 @@ enter_password_secret()
 # unset the password if the variable was already set
 unset SUDOPASSWORD
 
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
 # making sure no variables are exported
 set +a
 
@@ -76,6 +73,9 @@ do
         exit
     fi
 done
+
+# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
+trap 'unset SUDOPASSWORD' EXIT
 
 # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
 sudo()

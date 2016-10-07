@@ -101,7 +101,7 @@ function targz_and_progress {
     echo archiving "$DIRS" 
     printf "%-10s" "to" "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz && echo
     #echo to "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
-    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz --best > "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz; popd 1> /dev/null
+    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz > "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz; popd 1> /dev/null
     echo "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz >> "$FILESTARGZLOG"
     echo ""
 
@@ -109,7 +109,8 @@ function targz_and_progress {
 
 
 # other commands before starting the actual .tar.gz
-echo "rsync from /Users/$USER/Desktop/ to /Users/$USER/Desktop/desktop/_current/..."
+echo "rsync from /Users/$USER/Desktop/"
+printf "%-11s" "to" "/Users/$USER/Desktop/desktop/_current/..." && echo
 rsync -a -z -v --delete --progress --stats --human-readable --links --exclude files --exclude backup --exclude backup_* --exclude desktop --exclude data --exclude extra --exclude scripts --exclude macintosh_hd /Users/$USER/Desktop/ /Users/$USER/Desktop/desktop/_current/ 1>/dev/null
 echo "done ;)"
 echo ""
@@ -161,10 +162,12 @@ do
     if [[ -f "$TOCHECK" ]];
     then
         #echo -n "$(basename "$TOCHECK")"'... ' && gtar -tzf "$TOCHECK" >/dev/null 2>&1 && echo file is OK || echo file is INVALID
-        printf "%-45s" ""$(basename "$TOCHECK")"... " && gtar -tzf "$TOCHECK" >/dev/null 2>&1 && echo -e '\033[1;32mOK\033[0m' || echo -e '\033[1;31mINVALID\033[0m'
+        printf "%-45s" ""$(basename "$TOCHECK")"... " && unpigz -c "$TOCHECK" | gtar -tvv >/dev/null 2>&1 && echo -e '\033[1;32mOK\033[0m' || echo -e '\033[1;31mINVALID\033[0m'
     else
         :
     fi
 done
 unset IFS
+
+echo ''
 echo 'backing up files done ;)'

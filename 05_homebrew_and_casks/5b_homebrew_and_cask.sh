@@ -20,7 +20,7 @@
 #while true; do sudo -n true; sleep 600; kill -0 "$$" || exit; done 2>/dev/null &
 
 # solution 2
-# working for all commands that require the password (use sudo -k -S for sudo commands)
+# working for all commands that require the password (use sudo -S for sudo commands)
 # working until script is finished or exited
 
 # function for reading secret string (POSIX compliant)
@@ -53,9 +53,6 @@ enter_password_secret()
 # unset the password if the variable was already set
 unset SUDOPASSWORD
 
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
 # making sure no variables are exported
 set +a
 
@@ -83,6 +80,9 @@ do
         exit
     fi
 done
+
+# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
+trap 'unset SUDOPASSWORD' EXIT
 
 # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
 sudo()

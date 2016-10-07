@@ -10,7 +10,8 @@ TARGZFILE="$DESKTOPBACKUPFOLDER".tar.gz
 
 # trapping script to kill subprocesses when script is stopped
 #trap "echo "" && trap - SIGTERM >/dev/null 2>&1 && kill -- -$$ >/dev/null 2>&1" SIGINT SIGTERM EXIT
-trap "echo "" && killall background >/dev/null 2>&1" EXIT
+#trap "killall background && exit >/dev/null 2>&1" SIGHUP SIGINT SIGTERM
+trap "killall background >/dev/null 2>&1; unset SUDOPASSWORD; exit" SIGHUP SIGINT SIGTERM
 set -e
 
 # compressing and checking integrity of backup folder on desktop
@@ -25,7 +26,7 @@ function archiving_tar_gz {
     echo "archiving "$(dirname "$DESKTOPBACKUPFOLDER")"/"$(basename "$DESKTOPBACKUPFOLDER")"/"
     printf "%-10s" "to" "$TARGZFILE" && echo
     #echo "to "$(echo "$TARGZFILE")""
-    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz --best > "$TARGZFILE"; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZFILE")... " && gtar -tzf "$TARGZFILE" >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
+    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz > "$TARGZFILE"; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZFILE")... " && unpigz -c "$TARGZFILE" | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
     echo ''
 
 }

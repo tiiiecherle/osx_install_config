@@ -24,7 +24,7 @@ function archiving_tar_gz {
     echo "archiving "$(dirname "$VBOXMACHINES")"/"$(basename "$VBOXMACHINES")"/"
     printf "%-10s" "to" "$VBOXTARGZFILE" && echo
     #echo "to "$(echo "$VBOXTARGZFILE")""
-    pushd "$(dirname "$VBOXMACHINES")" 1> /dev/null; gtar -cpf - "$(basename "$VBOXMACHINES")" | pv -s "$PVSIZE" | pigz --best > "$VBOXTARGZFILE"; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$VBOXTARGZFILE")... " && gtar -tzf "$VBOXTARGZFILE" >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
+    pushd "$(dirname "$VBOXMACHINES")" 1> /dev/null; gtar -cpf - "$(basename "$VBOXMACHINES")" | pv -s "$PVSIZE" | pigz > "$VBOXTARGZFILE"; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$VBOXTARGZFILE")... " && unpigz -c "$VBOXTARGZFILE" | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
 
 }
 

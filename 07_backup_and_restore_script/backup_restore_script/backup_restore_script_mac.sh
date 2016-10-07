@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v34
+### backup / restore script v35
 ###
 
 
@@ -52,9 +52,6 @@ enter_password_secret()
 # unset the password if the variable was already set
 unset SUDOPASSWORD
 
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
 # making sure no variables are exported
 set +a
 
@@ -83,6 +80,9 @@ do
     fi
 done
 
+# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
+trap 'unset SUDOPASSWORD' EXIT
+
 # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
 sudo()
 {
@@ -91,13 +91,15 @@ sudo()
     #${USE_PASSWORD} | builtin exec sudo --prompt="" -k -S "$@"
 }
 
+
+
 ###
 ### script trap and backup / restore selection
 ###
 
 # trapping script to kill subprocesses when script is stopped
 #trap 'echo "" && kill $(jobs -rp) >/dev/null 2>&1' SIGINT SIGTERM EXIT
-trap "echo "" && killall background >/dev/null 2>&1" EXIT
+trap "killall background >/dev/null 2>&1; unset SUDOPASSWORD; exit" SIGHUP SIGINT SIGTERM
 #trap "echo "" && trap - SIGTERM >/dev/null 2>&1 && kill -- -$$ >/dev/null 2>&1" SIGINT SIGTERM EXIT
 set -e
 
@@ -272,7 +274,7 @@ function backup_restore {
             
             # opening applescript which will ask for saving location of compressed file
             echo "asking for directory to save the backup to..."
-            TARGZSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}') -c 'osascript '"$SCRIPT_DIR"'/backup_restore_script/ask_save_to.scpt' | sed s'/\/$//')
+            TARGZSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_save_to.scpt" | sed s'/\/$//')
             sleep 1
             #echo ''
             # checking if valid path for backup was selected
@@ -479,7 +481,7 @@ function backup_restore {
             stty sane
         
             echo ''            
-            echo 'copying backup data to '"$DESTINATION"' done ;)'
+            echo 'copying backup data to '"$DESTINATION"'/ done ;)'
             echo ''
             # opening app for archiving
             #osascript -e 'tell application "Keka.app" to activate'
@@ -870,9 +872,7 @@ SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
 #FUNC=$(declare -f backup_restore)
 #time bash -c "OPTION=\"$OPTION\"; SCRIPT_DIR=\"$SCRIPT_DIR\"; APPLESCRIPTDIR=\"$APPLESCRIPTDIR\"; $FUNC; backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt"
 
-(time backup_restore) | tee "$HOME"/Desktop/backup_restore_log.txt
-
-
+backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt
 
 ###
 ### unsetting password
