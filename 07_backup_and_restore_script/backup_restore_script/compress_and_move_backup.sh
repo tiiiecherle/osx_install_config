@@ -47,7 +47,7 @@ fi
 
 # moving compressed backup from desktop to selected destination
 echo "moving "$TARGZFILE""
-printf "%-7s" "to" "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")".tar.gz && echo
+printf "%-7s" "to" "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && echo
 #echo "to "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")"..."
 if [ "$TARGZFILE" == "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]
 then
