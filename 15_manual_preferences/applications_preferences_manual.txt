@@ -10,6 +10,10 @@ Adobe Reader
 Adobe Acrobat Pro
 	nicht als Standard für pdfs verwenden
 
+Adobe Photoshop
+	# make saving work (macos 10.12.0)
+	Voreinstellungen - Dateihandhabung - Bildvorschau - nie
+
 AppCleaner
 	Einstellungen - SmartDelete - ein
 	Einstellungen - Updates - ein

@@ -384,7 +384,8 @@ m	~/Library/Preferences/com.apago.PDFShrink.plist
 
 # pdf_shrink
 echo pdf shrink
-m	/Applications/pdf_shrink_ebook.app
+m	/Applications/pdf_ebook_shrink.app
+m	/Applications/pdf_printer_shrink.app
 
 # PDF Unlock
 echo PDF Unlock
@@ -467,6 +468,7 @@ u	~/Library/Preferences/pbs.plist
 
 # Skype
 echo Skype
+u	/Applications/Skype.app
 u	~/Library/Application Support/Skype
 u	~/Library/Preferences/com.skype.skype.plist
 
@@ -521,7 +523,7 @@ m	~/Library/Preferences/org.m0k.transmission.plist
 
 
 # trolCommander
-echo trolCommander
+echo TrolCommander
 m	/Applications/trolCommander.app
 m	~/Library/Preferences/trolCommander
 

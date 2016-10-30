@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# http://brew.sh
+# http://braumeister.org
+# http://caskroom.io
+# http://caskroom.io/search
+
+
+
 ###
 ### asking password upfront
 ###
@@ -88,39 +95,66 @@ sudo()
 
 
 ###
-### homebrew uninstall
+### starting installation
 ###
 
-# uninstalling homebrew and all casks
-# https://github.com/Homebrew/brew/blob/master/share/doc/homebrew/FAQ.md
+echo ''
+echo "installing homebrew and homebrew casks..."
 
-# redefining sudo so it is possible to run homebrew without entering the password again
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo --prompt="" -S "$@"
-}
-# giving the sudo passoword and keeping it alive for sleep x seconds
-sudo -v
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-# homebrew installation
-yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
-# forcing sudo to forget the sudo password (can still be used with ${USE_PASSWORD})
+echo ''
+
+# creating directory and adjusting permissions
+echo "creating directory..."
+
+if [ ! -d /usr/local ]; then
+sudo mkdir /usr/local
+fi
+#sudo chown -R $USER:staff /usr/local
+sudo chown -R $(whoami) /usr/local
+
+# installing command line tools
+if xcode-select --install 2>&1 | grep installed >/dev/null
+then
+  	echo command line tools are installed...
+else
+  	echo command line tools are not installed, installing...
+  	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
+  	#sudo xcodebuild -license accept
+fi
+
+sudo xcode-select --switch /Library/Developer/CommandLineTools
+
+# updating command line tools and system
+#echo ""
+echo "checking for command line tools update..."
+COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
+if [ "$COMMANDLINETOOLUPDATE" == "" ]
+then
+	echo "no update for command line tools available..."
+else
+	echo "update for command line tools available, updating..."
+	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
+fi
+#softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
+
+brew tap buo/cask-upgrade
+
+brew update
+brew upgrade
+brew prune
+brew doctor
+
+
 sudo -K
-# redefining sudo back for the rest of the script
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo --prompt="" -k -S "$@"
-}
-#
-sudo rm -rf /opt/homebrew-cask
-sudo rm -rf /usr/local/Caskroom
-sudo rm -rf /usr/local/lib/librtmp.dylib
-sudo rm -rf /usr/local/var/homebrew/
-sudo rm -rf /usr/local/var/cache/
-sudo rm -rf /usr/local/Homebrew/
-sudo chmod 0755 /usr/local
-sudo chown root:wheel /usr/local
-sed -i '' '\|/usr/local/sbin:$PATH|d' ~/.bash_profile
+sudo echo 1
+#brew cask install --force chromium
+#brew cu --all
+
+brew cu --all
+
+# done
+echo ''
+echo "homebrew script done ;)"
 echo ''
 
 
