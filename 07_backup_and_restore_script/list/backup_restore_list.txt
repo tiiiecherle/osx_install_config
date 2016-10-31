@@ -138,6 +138,7 @@ m	/Applications/Deluge.app
 # Dialectic
 echo Dialectic
 m	/Applications/Dialectic.app
+m	/Applications/dialectic_login
 u	~/Library/Application Support/Dialectic
 u	~/Library/Preferences/com.jen.dialectic.dialer.snomipphone.plist
 u	~/Library/Preferences/com.jen.dialectic.plist
@@ -384,8 +385,9 @@ m	~/Library/Preferences/com.apago.PDFShrink.plist
 
 # pdf_shrink
 echo pdf shrink
-m	/Applications/pdf_ebook_shrink.app
-m	/Applications/pdf_printer_shrink.app
+m	/Applications/pdf_200dpi_shrink.app
+#m	/Applications/pdf_ebook_shrink.app
+#m	/Applications/pdf_printer_shrink.app
 
 # PDF Unlock
 echo PDF Unlock
@@ -439,7 +441,8 @@ m	/Applications/Rename.app
 
 # rename_photos
 echo rename_photos
-m	/Applications/rename_photos.app
+m	/Applications/rename_date_photos.app
+#m	/Applications/rename_number_photos.app
 
 # ResizeIt
 echo ResizeIt
