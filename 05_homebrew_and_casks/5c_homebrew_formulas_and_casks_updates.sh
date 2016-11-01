@@ -99,7 +99,7 @@ sudo()
 ###
 
 echo ''
-echo "installing homebrew and homebrew casks..."
+echo "updating homebrew, formulas and casks..."
 
 echo ''
 
@@ -137,58 +137,96 @@ else
 fi
 #softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
 
-# Will exclude these apps from updating. Pass in params to fit your needs. Use the exact brew/cask name and separate names with a pipe |
+# will exclude these apps from updating
+# pass in params to fit your needs
+# use the exact brew/cask name and separate names with a pipe |
 BREW_EXCLUDES="${1:-}"
 CASK_EXCLUDES="${2:-}"
 
 cleanup-all() {
-    echo -e "Cleaning up..."
-    brew analytics off && brew update && brew upgrade && brew prune && brew doctor && brew cleanup && brew cask cleanup
-    echo -e "Clean finished.\n\n"
+    echo ''
+    echo "cleaning up..."
+    brew analytics off && brew update && brew prune && brew doctor && brew cleanup && brew cask cleanup
+    echo 'cleaning finished ;)'
 }
 
-# Upgrade all the Homebrew apps
+# upgrading all homebrew formulas
 brew-upgrade() {
-    log-info "Updating Brew apps..."
+    echo "updating brew formulas..."
 
     printf '=%.0s' {1..80}
     printf '\n'
     printf "%-35s | %-20s | %-5s\n" "BREW NAME" "LATEST VERSION" "LATEST INSTALLED"
     printf '=%.0s' {1..80}
     printf '\n'
-
+    
+    TMP_DIR=/tmp/brew_updates
+    if [ "$(ls -A $TMP_DIR/)" ]
+    then
+        rm "$TMP_DIR"/*    
+    else
+        :
+    fi
+    mkdir -p $TMP_DIR/
+    DATE_LIST_FILE=$(echo "brew_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    touch "$TMP_DIR"/"$DATE_LIST_FILE"
 
     for item in $(brew list); do
         local BREW_INFO=$(brew info $item)
         local BREW_NAME="$item"
         local NEW_VERSION=$(echo "$BREW_INFO" | grep -e "$BREW_NAME: .*" | cut -d" " -f3 | sed 's/,//g')
-        local IS_CURRENT_VERSION_INSTALLED=$(echo "$BREW_INFO" | grep -q ".*/Cellar/$BREW_NAME/$NEW_VERSION.*" 2>&1 && echo true )
+        local IS_CURRENT_VERSION_INSTALLED=$(echo "$BREW_INFO" | grep -q ".*/Cellar/$BREW_NAME/$NEW_VERSION.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m' )
 
         printf "%-35s | %-20s | %-15s\n" "$BREW_NAME" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
-
-        # Install if not up-to-date and not excluded
-        if [[ "$CURRENT_VERSION_INSTALLED" == false ]] && [[ ${BREW_EXCLUDES} != *"$BREW_NAME"* ]]; then
-            brew upgrade $item
+        
+        # installing if not up-to-date and not excluded
+        if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e '\033[1;31mfalse\033[0m')" ]] && [[ ${CASK_EXCLUDES} != *"$BREW_NAME"* ]]
+        then
+            echo "$BREW_NAME" >> "$TMP_DIR"/"$DATE_LIST_FILE"
         fi
 
         BREW_INFO=""
         NEW_VERSION=""
         IS_CURRENT_VERSION_INSTALLED=""
     done
-
-    log-info "Brew upgrades finished.\n"
+    
+    echo ''
+    
+    while IFS='' read -r line || [[ -n "$line" ]]
+    do
+        echo 'updating '"$line"'...'
+        ${USE_PASSWORD} | brew upgrade "$line"
+        echo 'removing old installed versions of '"$line"'...'
+        ${USE_PASSWORD} | brew cleanup "$line"
+        echo ''
+    done <"$TMP_DIR"/"$DATE_LIST_FILE"
+    
+    echo 'brew formulas updates finished ;)'
 }
 
-# Selectively upgrade casks
+# selectively upgrade casks
 cask-upgrade() {
-    log-info "Updating Cask apps..."
+    echo "updating casks..."
 
     printf '=%.0s' {1..80}
     printf '\n'
     printf "%-35s | %-20s | %-5s\n" "CASK NAME" "LATEST VERSION" "LATEST INSTALLED"
     printf '=%.0s' {1..80}
     printf '\n'
-
+    
+    TMP_DIR=/tmp/cask_updates
+    if [ "$(ls -A $TMP_DIR/)" ]
+    then
+        rm "$TMP_DIR"/*    
+    else
+        :
+    fi
+    mkdir -p $TMP_DIR/
+    DATE_LIST_FILE=$(echo "casks_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    DATE_LIST_FILE_LATEST=$(echo "casks_update_latest"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    touch "$TMP_DIR"/"$DATE_LIST_FILE"
+    touch "$TMP_DIR"/"$DATE_LIST_FILE_LATEST"
+    
     for c in $(brew cask list); do
         local CASK_INFO=$(brew cask info $c)
         local CASK_NAME=$(echo "$c" | cut -d ":" -f1 | xargs)
@@ -200,56 +238,66 @@ cask-upgrade() {
         #fi
         #local INSTALLED_VERSION=$(plutil -p "/Applications/$APPNAME/Contents/Info.plist" | grep "CFBundleShortVersionString" | awk '{print $NF}' | sed 's/"//g')
         local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//' )
-        local IS_CURRENT_VERSION_INSTALLED=$(echo "$CASK_INFO" | grep -q ".*/Caskroom/$CASK_NAME/$NEW_VERSION.*" 2>&1 && echo true )
+        local IS_CURRENT_VERSION_INSTALLED=$(echo "$CASK_INFO" | grep -q ".*/Caskroom/$CASK_NAME/$NEW_VERSION.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m')
 
         printf "%-35s | %-20s | %-15s\n" "$CASK_NAME" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
-
-        CASK_INFO=""
-        NEW_VERSION=""
-        IS_CURRENT_VERSION_INSTALLED=""
-    done
-
-    echo ""
-    
-    for c in $(brew cask list); do
-        local CASK_INFO=$(brew cask info $c)
-        local CASK_NAME=$(echo "$c" | cut -d ":" -f1 | xargs)
-        local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//' )
-        local IS_CURRENT_VERSION_INSTALLED=$(echo "$CASK_INFO" | grep -q ".*/Caskroom/$CASK_NAME/$NEW_VERSION.*" 2>&1 && echo true )
-
-        # Install if not up-to-date and not excluded
-        if [[ "$IS_CURRENT_VERSION_INSTALLED" == false ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
+        
+        # installing if not up-to-date and not excluded
+        if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e '\033[1;31mfalse\033[0m')" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
         then
-            sudo brew cask install "$CASK_NAME" --force
+            echo "$CASK_NAME" >> "$TMP_DIR"/"$DATE_LIST_FILE"
         fi
         
-        #if [[ "$NEW_VERSION" == latest ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
-        #then
-        #    sudo brew cask install "$CASK_NAME" --force
-        #fi
+        if [[ "$NEW_VERSION" == "latest" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
+        then
+            echo "$CASK_NAME" >> "$TMP_DIR"/"$DATE_LIST_FILE_LATEST"
+        fi
 
         CASK_INFO=""
         NEW_VERSION=""
         IS_CURRENT_VERSION_INSTALLED=""
     done
 
+    echo ''
+    
+    while IFS='' read -r line || [[ -n "$line" ]]
+    do
+        echo 'updating '"$line"'...'
+        sudo brew cask uninstall "$line" --force
+        sudo brew cask install "$line" --force
+        echo ''
+    done <"$TMP_DIR"/"$DATE_LIST_FILE"
+    
+    read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
+    CONT_LATEST="$(echo "$CONT_LATEST" | tr '[:upper:]' '[:lower:]')"    # tolower
+	if [[ "$CONT_LATEST" == "y" || "$CONT_LATEST" == "yes" ]]
+    then
+        echo 'updating all installed casks that show "latest" as version...'
+        echo ''
+        while IFS='' read -r line || [[ -n "$line" ]]
+        do
+            echo 'updating '"$line"'...'
+            sudo brew cask uninstall "$line" --force
+            sudo brew cask install "$line" --force
+            echo ''
+        done <"$TMP_DIR"/"$DATE_LIST_FILE_LATEST"
+    else
+        echo 'skipping all installed casks that show "latest" as version...'
+        echo ''
+    fi
 
-    log-info "Cask upgrades finished.\n"
-}
-
-log-info() {
-    echo -e "INFO:  $1"
+    echo 'casks updates finished ;)'
 }
 
 cleanup-all
-
+echo ''
 brew-upgrade
-
+echo ''
 cask-upgrade
 
 # done
 echo ''
-echo "homebrew script done ;)"
+echo "script done ;)"
 echo ''
 
 
