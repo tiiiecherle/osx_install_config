@@ -194,7 +194,7 @@ brew analytics off
 brew update
 brew upgrade
 # temp fix for no plain text file error
-cd "$(brew --repository)" && git checkout master && git pull origin master && cd -
+#cd "$(brew --repository)" && git checkout master && git pull origin master && cd -
 brew prune
 brew doctor
 
@@ -252,6 +252,7 @@ coreutils
 duti
 ghostscript
 homebrew/x11/xpdf
+#imagemagick
 )
 
 ${USE_PASSWORD} | brew install ${homebrewpackages[@]}

@@ -143,10 +143,18 @@ fi
 BREW_EXCLUDES="${1:-}"
 CASK_EXCLUDES="${2:-}"
 
+
+homebrew-update() {
+    echo ''
+    echo "updating homebrew..."
+    brew analytics off 1> /dev/null && brew update 1> /dev/null && brew prune 1> /dev/null && brew doctor 1> /dev/null
+    echo 'updating homebrew finished ;)'
+}
+
 cleanup-all() {
     echo ''
     echo "cleaning up..."
-    brew analytics off && brew update && brew prune && brew doctor && brew cleanup && brew cask cleanup
+    brew cleanup && brew cask cleanup 1> /dev/null
     echo 'cleaning finished ;)'
 }
 
@@ -161,9 +169,14 @@ brew-upgrade() {
     printf '\n'
     
     TMP_DIR=/tmp/brew_updates
-    if [ "$(ls -A $TMP_DIR/)" ]
+    if [ -e "$TMP_DIR" ]
     then
-        rm "$TMP_DIR"/*    
+        if [ "$(ls -A $TMP_DIR/)" ]
+        then
+            rm "$TMP_DIR"/*    
+        else
+            :
+        fi
     else
         :
     fi
@@ -215,9 +228,14 @@ cask-upgrade() {
     printf '\n'
     
     TMP_DIR=/tmp/cask_updates
-    if [ "$(ls -A $TMP_DIR/)" ]
+    if [ -e "$TMP_DIR" ]
     then
-        rm "$TMP_DIR"/*    
+        if [ "$(ls -A $TMP_DIR/)" ]
+        then
+            rm "$TMP_DIR"/*    
+        else
+            :
+        fi
     else
         :
     fi
@@ -268,7 +286,8 @@ cask-upgrade() {
         echo ''
     done <"$TMP_DIR"/"$DATE_LIST_FILE"
     
-    read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
+    #read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
+    CONT_LATEST="N"
     CONT_LATEST="$(echo "$CONT_LATEST" | tr '[:upper:]' '[:lower:]')"    # tolower
 	if [[ "$CONT_LATEST" == "y" || "$CONT_LATEST" == "yes" ]]
     then
@@ -289,11 +308,14 @@ cask-upgrade() {
     echo 'casks updates finished ;)'
 }
 
-cleanup-all
+homebrew-update
 echo ''
 brew-upgrade
 echo ''
 cask-upgrade
+
+cleanup-all
+
 
 # done
 echo ''
