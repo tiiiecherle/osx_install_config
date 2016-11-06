@@ -9,6 +9,7 @@ chown 501:admin /Applications/"$BREW_CASKS_UPDATE_APP".app
 chown -R 501:admin /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/
 chmod 755 /Applications/"$BREW_CASKS_UPDATE_APP".app
 chmod 770 /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/"$BREW_CASKS_UPDATE_APP".sh
+xattr -dr com.apple.quarantine /Applications/"$BREW_CASKS_UPDATE_APP".app
 
 open /Applications/"$BREW_CASKS_UPDATE_APP".app
 
