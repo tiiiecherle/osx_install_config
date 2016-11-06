@@ -42,10 +42,8 @@ do
 		:
 	fi
 	
-	# non writable
-	#hdiutil create -volname "$BREW_CASKS_UPDATE_VERSION" -srcfolder "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/ -ov -format UDZO "$SCRIPT_DIR"/"$BREW_CASKS_UPDATE_VERSION".dmg
-	# writable (because of the unquarantine script)
-	hdiutil create -volname "$BREW_CASKS_UPDATE_VERSION" -srcfolder "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/ -ov "$SCRIPT_DIR"/"$BREW_CASKS_UPDATE_VERSION".dmg
+	# non writable dmg
+	hdiutil create -volname "$BREW_CASKS_UPDATE_VERSION" -srcfolder "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/ -ov -format UDZO "$SCRIPT_DIR"/"$BREW_CASKS_UPDATE_VERSION".dmg
 
 
 done
