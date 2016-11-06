@@ -868,6 +868,7 @@ function backup_restore {
 }
 
 SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+APPLESCRIPTDIR="$SCRIPT_DIR"
 
 #FUNC=$(declare -f backup_restore)
 #time bash -c "OPTION=\"$OPTION\"; SCRIPT_DIR=\"$SCRIPT_DIR\"; APPLESCRIPTDIR=\"$APPLESCRIPTDIR\"; $FUNC; backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt"
