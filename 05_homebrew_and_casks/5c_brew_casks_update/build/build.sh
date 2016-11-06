@@ -29,9 +29,15 @@ do
 	#echo opening app...
 	#open "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
 	
-	echo copying app to /Applications and dmg...
+	echo copying app to dmg...
 	#cp -a "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app /Applications/
 	mkdir -p "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/
+	if [ -e "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/app/"$BREW_CASKS_UPDATE_VERSION".app ]
+	then
+		rm -rf "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/app/"$BREW_CASKS_UPDATE_VERSION".app
+	else
+		:
+	fi
 	cp -a "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/app/"$BREW_CASKS_UPDATE_VERSION".app
 	
 	echo building dmg...
