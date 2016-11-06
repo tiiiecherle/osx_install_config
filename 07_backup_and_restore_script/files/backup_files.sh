@@ -9,11 +9,11 @@
 if [ "$SELECTEDUSER" == "" ]
 then
     # users on the system without ".localized" and "Shared"
-    SYSTEMUSERS=$(ls /Users | egrep -v "^[.]" | egrep -v "Shared")
+    SYSTEMUSERS=$(ls -1 /Users/ | egrep -v "^[.]" | egrep -v "Shared" | egrep -v "Guest")
     
     # user profile for backup
     export PS3="Please select user profile for file backup by typing the number: "
-    select SELECTEDUSER in "$SYSTEMUSERS"
+    select SELECTEDUSER in ""$SYSTEMUSERS""
       do
       echo You selected user "$SELECTEDUSER".
         break
@@ -47,6 +47,7 @@ if [ "$SELECTEDUSER" == "tom" ] || [ "$SELECTEDUSER" == "bobby" ];
 then
     :
 else
+    echo "there is no valid files backup set for the selected user, exiting..."
     exit
 fi
 

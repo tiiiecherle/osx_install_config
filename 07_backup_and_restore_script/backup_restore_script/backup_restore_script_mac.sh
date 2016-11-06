@@ -105,7 +105,7 @@ set -e
 
 echo ""
 # choosing the backup and defining $BACKUP variable
-export PS3="Please select option by typing the number: "
+PS3="Please select option by typing the number: "
 select OPTION in BACKUP RESTORE
 do
     echo You selected option $OPTION.
@@ -133,24 +133,25 @@ function backup_restore {
     DATE=$(date +%F)
     
     # users on the system without ".localized" and "Shared"
-    SYSTEMUSERS=$(ls /Users | egrep -v "^[.]" | egrep -v "Shared")
+    #SYSTEMUSERS=$(pushd /Users/ >/dev/null 2>&1; printf "%s " * | egrep -v "^[.]" | egrep -v "Guest"; popd >/dev/null 2>&1)
+    SYSTEMUSERS=$(ls -1 /Users/ | egrep -v "^[.]" | egrep -v "Shared" | egrep -v "Guest")
     
     # user directory
     if [ "$OPTION" == "BACKUP" ]
     then
-        export PS3="Please select user to backup by typing the number: "
+        PS3="Please select user to backup by typing the number: "
     else
         :
     fi
     
     if [ "$OPTION" == "RESTORE" ]
     then
-        export PS3="Please select user to restore to by typing the number: "
+        PS3="Please select user to restore to by typing the number: "
     else
         :
     fi
     
-    select SELECTEDUSER in "$SYSTEMUSERS"
+    select SELECTEDUSER in ""$SYSTEMUSERS""
     do
         echo You selected user "$SELECTEDUSER".
         echo ""
@@ -304,19 +305,14 @@ function backup_restore {
             fi
             
             # files backup
-            if [ "$SELECTEDUSER" == tom ] || [ "$SELECTEDUSER" == bobby ]
+            read -p "do you want to backup local files (y/N)? " CONT2
+            CONT2="$(echo "$CONT2" | tr '[:upper:]' '[:lower:]')"    # tolower
+            if [[ "$CONT2" == "y" || "$CONT2" == "yes" ]]
             then
-                    read -p "do you want to backup local files (y/N)? " CONT2
-                    CONT2="$(echo "$CONT2" | tr '[:upper:]' '[:lower:]')"    # tolower
-                    if [[ "$CONT2" == "y" || "$CONT2" == "yes" ]]
-                    then
-                        FILESTARGZSAVEDIR="$TARGZSAVEDIR"
-                        FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
-                        echo "running local files backup..."
-                        . "$SCRIPT_DIR"/files/run_files_backup.sh
-                    else
-                        :
-                    fi
+                FILESTARGZSAVEDIR="$TARGZSAVEDIR"
+                FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
+                echo "running local files backup..."
+                . "$SCRIPT_DIR"/files/run_files_backup.sh
             else
                 :
             fi
