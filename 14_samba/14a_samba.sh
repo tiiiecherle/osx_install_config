@@ -9,9 +9,9 @@
 if [ -f "~/Library/Preferences/nsmb.conf" ]
 then 
 	:
-	#echo ""~/Library/Preferences/nsmb.conf" does not exist, will be created..."
+	echo ""~/Library/Preferences/nsmb.conf" does not exist, will be created..."
 else 
-	#echo ""~/Library/Preferences/nsmb.conf" exists will be deleted and recreated..."
+	echo ""~/Library/Preferences/nsmb.conf" exists will be deleted and recreated..."
 	rm -f ~/Library/Preferences/nsmb.conf
 fi
 

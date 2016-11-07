@@ -6,8 +6,8 @@ PNG_NAME=brew
 
 # Force all images to sRGB with alpha
 # brew install imagemagick
-mogrify -alpha on "$SCRIPT_DIR"/"$PNG_NAME".png
-convert "$SCRIPT_DIR"/"$PNG_NAME".png -colorspace srgb "$SCRIPT_DIR"/"$PNG_NAME".png
+#mogrify -alpha on "$SCRIPT_DIR"/"$PNG_NAME".png
+#convert "$SCRIPT_DIR"/"$PNG_NAME".png -colorspace srgb "$SCRIPT_DIR"/"$PNG_NAME".png
 #sips -g all /Users/tom/Desktop/"$PNG_NAME".png
 
 mkdir -p "$SCRIPT_DIR"/"$ICNS_NAME".iconset

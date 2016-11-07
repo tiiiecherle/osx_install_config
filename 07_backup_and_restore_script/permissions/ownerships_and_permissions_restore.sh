@@ -91,10 +91,11 @@ then
     # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
     sudo()
     {
-        ${USE_PASSWORD} | builtin command sudo --prompt="" -k -S "$@"
-        #${USE_PASSWORD} | builtin command -p sudo --prompt="" -k -S "$@"
-        #${USE_PASSWORD} | builtin exec sudo --prompt="" -k -S "$@"
+    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
+    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
+    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
     }
+
     
     # unset password if script is run seperately
     UNSET_PASSWORD="YES"

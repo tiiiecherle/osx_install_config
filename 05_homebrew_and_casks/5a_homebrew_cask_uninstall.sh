@@ -80,9 +80,9 @@ trap 'unset SUDOPASSWORD' EXIT
 # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
 sudo()
 {
-    ${USE_PASSWORD} | builtin command sudo --prompt="" -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo --prompt="" -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo --prompt="" -k -S "$@"
+    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
+    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
+    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
 }
 
 
@@ -97,7 +97,7 @@ sudo()
 # redefining sudo so it is possible to run homebrew without entering the password again
 sudo()
 {
-    ${USE_PASSWORD} | builtin command sudo --prompt="" -S "$@"
+    ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
 }
 # giving the sudo passoword and keeping it alive for sleep x seconds
 sudo -v
@@ -109,7 +109,7 @@ sudo -K
 # redefining sudo back for the rest of the script
 sudo()
 {
-    ${USE_PASSWORD} | builtin command sudo --prompt="" -k -S "$@"
+    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
 }
 #
 sudo rm -rf /opt/homebrew-cask
