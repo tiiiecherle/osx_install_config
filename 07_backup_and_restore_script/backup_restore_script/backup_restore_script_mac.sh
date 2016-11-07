@@ -245,11 +245,11 @@ function backup_restore {
         fi
         
         # checking and updating homebrew including tools
-        if [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'which brew') != "" ]]
+        if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'which brew') != "" ]]
         then
             echo homebrew is installed...
             
-            if [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew list' | grep coreutils) == '' ]]
+            if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]]
             then
                 echo at least one needed homebrew tool of gnu-tar, pigz, pv and coreutils is missing, exiting...
                 exit
@@ -275,7 +275,7 @@ function backup_restore {
             
             # opening applescript which will ask for saving location of compressed file
             echo "asking for directory to save the backup to..."
-            TARGZSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_save_to.scpt" | sed s'/\/$//')
+            TARGZSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_save_to.scpt" | sed s'/\/$//')
             sleep 1
             #echo ''
             # checking if valid path for backup was selected
@@ -496,27 +496,27 @@ function backup_restore {
                 # online
                 echo "running brew update commands..."
                 #sudo -u $(users)
-                sudo su $(who | grep console | awk '{print $1}') -c 'brew update 1> /dev/null'
-                if [[ $(sudo su $(who | grep console | awk '{print $1}') -c 'brew outdated') == "" ]] > /dev/null 2>&1
+                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew update 1> /dev/null'
+                if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew outdated') == "" ]] > /dev/null 2>&1
                 then
                 	echo "all homebrew packages are up to date..."
                 else
                 	echo "the following homebrew packages are outdated and will now be updated..."
-                	sudo su $(who | grep console | awk '{print $1}') -c 'brew outdated --verbose'
+                	sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew outdated --verbose'
                 fi
-                sudo su $(who | grep console | awk '{print $1}') -c "${USE_PASSWORD} | brew upgrade 1> /dev/null"
-                sudo su $(who | grep console | awk '{print $1}') -c 'brew cleanup 1> /dev/null'
-                sudo su $(who | grep console | awk '{print $1}') -c 'brew cask cleanup 1> /dev/null'
-                #sudo su $(who | grep console | awk '{print $1}') -c 'brew install pigz gnu-tar coreutils pv 1> /dev/null'
-                sudo su $(who | grep console | awk '{print $1}') -c 'brew doctor 1> /dev/null'
-                #sudo su $(who | grep console | awk '{print $1}') -c '"'$SCRIPT_DIR'"/homebrew_update.sh'
+                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "${USE_PASSWORD} | brew upgrade 1> /dev/null"
+                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew cleanup 1> /dev/null'
+                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew cask cleanup 1> /dev/null'
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew install pigz gnu-tar coreutils pv 1> /dev/null'
+                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew doctor 1> /dev/null'
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c '"'$SCRIPT_DIR'"/homebrew_update.sh'
             else
                 # not online
                 echo "not online, skipping homebrew update..."
             fi  
             # homebrew permissions
             #BREWGROUP="admin"
-            #BREWPATH=$(sudo su $(who | grep console | awk '{print $1}') -c 'brew --prefix') 
+            #BREWPATH=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew --prefix') 
             #eval "echo $BREWPATH" > /dev/null 2>&1
             #if [ $? -eq 0 ] && [[ "$BREWPATH" != "" ]]
             #then

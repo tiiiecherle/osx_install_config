@@ -8,7 +8,7 @@
 if [ "$SELECTEDUSER" == "" ]
 then
     #SELECTEDUSER="$USER"
-    SELECTEDUSER="$(who | grep console | awk '{print $1}')"
+    SELECTEDUSER="$(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser')"
     #echo "user is $SELECTEDUSER"
 
     ###
