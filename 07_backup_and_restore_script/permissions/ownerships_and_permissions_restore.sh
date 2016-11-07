@@ -250,10 +250,10 @@ function backup_restore_permissions {
     #chflags -R nouchg /"$HOMEFOLDER"
     #diskutil resetUserPermissions / `id -u`
     
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$HOMEFOLDER"'/Desktop/restore/* -type f -print0 | xargs -0 chown 501:staff'
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$HOMEFOLDER"'/Desktop/restore/* ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff'
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$HOMEFOLDER"'/Desktop/restore/* -type f -print0 | xargs -0 chmod 600'
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$HOMEFOLDER"'/Desktop/restore/* ! -name "*.app" -type d -print0 | xargs -0 chmod 700'
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" -type f -print0 | xargs -0 chown 501:staff'
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff'
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" -type f -print0 | xargs -0 chmod 600'
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type d -print0 | xargs -0 chmod 700'
     
     #sudo chmod -R u+rwX /"$HOMEFOLDER"/.*
     sudo chown root:wheel /Users
@@ -261,7 +261,7 @@ function backup_restore_permissions {
     sudo chmod 755 "$HOMEFOLDER"
     sudo chmod 777 "$HOMEFOLDER"/Public
     sudo chmod 733 "$HOMEFOLDER"/Public/"Drop Box"
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$HOMEFOLDER"'/Desktop/restore/* ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700'
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700'
     #
     if [[ -e "$HOMEFOLDER"/Library/Services/ ]] && [[ $(ls -A "$HOMEFOLDER"/Library/Services/) ]]
     then
