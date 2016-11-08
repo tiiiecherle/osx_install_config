@@ -261,7 +261,10 @@ function backup_restore_permissions {
     sudo chmod 755 "$HOMEFOLDER"
     sudo chmod 777 "$HOMEFOLDER"/Public
     sudo chmod 733 "$HOMEFOLDER"/Public/"Drop Box"
+    # sh files
     sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700'
+    # bash files without extension
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done'
     #
     if [[ -e "$HOMEFOLDER"/Library/Services/ ]] && [[ $(ls -A "$HOMEFOLDER"/Library/Services/) ]]
     then
