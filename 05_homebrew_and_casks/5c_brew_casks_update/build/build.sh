@@ -12,6 +12,7 @@ do
 	echo ''
 	printf "\033[1m%s\033[00m %s\n" "processing $BREW_CASKS_UPDATE_VERSION"
 	# setting icons
+	chmod 770 "$SCRIPT_DIR"/icons/icon_set.py
 	"$SCRIPT_DIR"/icons/icon_set.py "$SCRIPT_DIR"/icons/brew_casks_update.icns "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
 	cp -a "$SCRIPT_DIR"/icons/brew_casks_update.icns "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app/Contents/Resources/applet.icns
 	
@@ -24,11 +25,12 @@ do
 	chown -R 501:admin "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app/custom_files/
 	chmod 755 "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
 	chmod 770 "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app/custom_files/"$BREW_CASKS_UPDATE_VERSION".sh
+	chmod 770 "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/run_to_install
 	
 	# this is to suppress warning on first start
 	#echo opening app...
 	#open "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
-	
+		
 	echo copying app to dmg...
 	#cp -a "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app /Applications/
 	mkdir -p "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/
