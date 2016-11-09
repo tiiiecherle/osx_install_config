@@ -316,7 +316,7 @@ then
 	jdownloader
 	keepassx
 	keepingyouawake
-	#keka
+	keka
 	libreoffice
 	liteicon
 	macdown
