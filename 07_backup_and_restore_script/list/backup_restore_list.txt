@@ -466,6 +466,7 @@ u	~/Library/Application Scripts/com.apple.mail
 echo Services and Shortcuts
 u	~/Library/Services/Run as Shellscript.workflow
 u	~/Library/Services/Run in Terminal.workflow
+m	~/Library/Services/Create Symlink.workflow
 u	~/Library/Preferences/pbs.plist
 # /System/Library/CoreServices/pbs -flush
 
