@@ -183,8 +183,11 @@ fi
 
 # do not show cds, dvds, but keep showing dmgs (removables have to be enabled)
 NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print systemitems:VolumesList" ~/Library/Preferences/com.apple.sidebarlists.plist | awk '/^[[:blank:]]*Dict {/' | wc -l)
-NUMBER_OF_ENTRIES=$(($NUMBER_OF_ENTRIES-1))
-for i in $(seq 1 $NUMBER_OF_ENTRIES)
+#echo $NUMBER_OF_ENTRIES
+# -1 because counting of items starts with 0, not with 1
+LISTED_ENTRIES=$(($NUMBER_OF_ENTRIES-1))
+#echo $LISTED_ENTRIES
+for i in $(seq 0 $LISTED_ENTRIES)
 do 
     if [[ $(/usr/libexec/PlistBuddy -c "Print systemitems:VolumesList:$i" ~/Library/Preferences/com.apple.sidebarlists.plist | grep "Remote Disc") != "" ]]
     then
@@ -192,9 +195,9 @@ do
         NEEDED_ENTRY=$i
     else
         :
+        #echo $i
     fi
 done
-
 if [[ $NEEDED_ENTRY != "" ]]
 then
     /usr/libexec/PlistBuddy -c "Add systemitems:VolumesList:$NEEDED_ENTRY:Visibility string NeverVisible" ~/Library/Preferences/com.apple.sidebarlists.plist
