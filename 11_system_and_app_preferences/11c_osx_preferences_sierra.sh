@@ -1567,7 +1567,7 @@ then
 	defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin_Default -integer 0
 	
 	# show make symbolic link
-	defaults write com.apple.finder XtraFinder_XFMakeSymbolicLinkActionPlugin -bool true
+	defaults write com.apple.finder XtraFinder_XFMakeSymbolicLinkActionPlugin -bool false
 	
 	# show open in new window
 	defaults write com.apple.finder XtraFinder_XFOpenInNewWindowPlugin -bool true
