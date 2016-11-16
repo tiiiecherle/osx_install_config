@@ -186,11 +186,11 @@ brew-upgrade() {
 
     for item in $(brew list); do
         local BREW_INFO=$(brew info $item)
-        local BREW_NAME="$item"
-        local NEW_VERSION=$(echo "$BREW_INFO" | grep -e "$BREW_NAME: .*" | cut -d" " -f3 | sed 's/,//g')
-        local IS_CURRENT_VERSION_INSTALLED=$(echo "$BREW_INFO" | grep -q ".*/Cellar/$BREW_NAME/$NEW_VERSION.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m' )
+        local BREW_NAME=$(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f1 | sed 's/://g')
+        local NEW_VERSION=$(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f3 | sed 's/,//g')
+        local IS_CURRENT_VERSION_INSTALLED=$(echo "$BREW_INFO" | grep -q ".*/Cellar/$item/$NEW_VERSION.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m' )
 
-        printf "%-35s | %-20s | %-15s\n" "$BREW_NAME" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
+        printf "%-35s | %-20s | %-15s\n" "$item" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
         
         # installing if not up-to-date and not excluded
         if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e '\033[1;31mfalse\033[0m')" ]] && [[ ${CASK_EXCLUDES} != *"$BREW_NAME"* ]]
@@ -281,8 +281,10 @@ cask-upgrade() {
     while IFS='' read -r line || [[ -n "$line" ]]
     do
         echo 'updating '"$line"'...'
-        sudo brew cask uninstall "$line" --force
-        sudo brew cask install "$line" --force
+        #sudo brew cask uninstall "$line" --force
+        ${USE_PASSWORD} | brew cask uninstall "$line" --force
+        #sudo brew cask install "$line" --force
+        ${USE_PASSWORD} | brew cask install "$line" --force
         echo ''
     done <"$TMP_DIR"/"$DATE_LIST_FILE"
     
@@ -296,8 +298,10 @@ cask-upgrade() {
         while IFS='' read -r line || [[ -n "$line" ]]
         do
             echo 'updating '"$line"'...'
-            sudo brew cask uninstall "$line" --force
-            sudo brew cask install "$line" --force
+            sudo -v
+            ${USE_PASSWORD} | brew cask uninstall "$line" --force
+            ${USE_PASSWORD} | brew cask install "$line" --force
+            sudo -K
             echo ''
         done <"$TMP_DIR"/"$DATE_LIST_FILE_LATEST"
     else
@@ -306,6 +310,13 @@ cask-upgrade() {
     fi
 
     echo 'casks updates finished ;)'
+}
+
+sudo()
+{
+    ${USE_PASSWORD} | builtin command sudo -p '' -k "$@"
+    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
+    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
 }
 
 homebrew-update

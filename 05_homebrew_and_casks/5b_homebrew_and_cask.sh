@@ -163,10 +163,10 @@ then
     # forcing sudo to forget the sudo password (can still be used with ${USE_PASSWORD})
     sudo -K
     # redefining sudo back for the rest of the script
-    sudo()
-    {
-        ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    }
+    #sudo()
+    #{
+    #    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
+    #}
 else
     echo "homebrew already installed, skipping..."
 fi
@@ -228,8 +228,11 @@ then
 	xquartz
 	)
 	#brew cask install --force ${casks[@]}
-	for caskstoinstall_pre in ${casks_pre[@]}; do
-		sudo brew cask install --force $caskstoinstall_pre
+	for caskstoinstall_pre in "${casks_pre[@]}"
+	do
+        sudo -v
+		${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre"
+		sudo -K
 	done
 else
 	:
@@ -253,9 +256,20 @@ duti
 ghostscript
 homebrew/x11/xpdf
 #imagemagick
+# ffmpeg
+qtfaststart
+fdk-aac
+sdl2
+freetype
+libass
+libquvi
+libvorbis
+libvpx
+opus
+x265
 )
 
-${USE_PASSWORD} | brew install ${homebrewpackages[@]}
+${USE_PASSWORD} | brew install "${homebrewpackages[@]}"
 
 # installing casks
 if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
@@ -351,11 +365,14 @@ then
 	)
 	
 	#brew cask install --force ${casks[@]}
-	for caskstoinstall in ${casks[@]}; do
-		sudo brew cask install --force $caskstoinstall
+	for caskstoinstall in "${casks[@]}"
+	do
+	    sudo -v
+		${USE_PASSWORD} | brew cask install --force $caskstoinstall
+		sudo -K
 	done
 	
-	open "/opt/homebrew-cask/Caskroom/paragon-extfs/latest/FSinstaller.app" &
+	#open "/opt/homebrew-cask/Caskroom/paragon-extfs/latest/FSinstaller.app" &
 else
 	:
 fi
@@ -382,7 +399,7 @@ brew cask cleanup
 # homebrew packages
 echo ''
 echo checking homebrew package installation...
-for homebrewpackage in ${homebrewpackages[@]}; do
+for homebrewpackage in "${homebrewpackages[@]}"; do
     if [[ $(brew info "$homebrewpackage" | grep "Not installed") == "" ]]
     #if [[ $(brew list | grep "$homebrewpackage") != "" ]]
     then
@@ -397,7 +414,7 @@ if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
 then
 	echo ''
 	echo checking casks installation...
-    for caskstoinstall in ${casks[@]}; do
+    for caskstoinstall in "${casks[@]}"; do
         if [[ $(brew cask info "$caskstoinstall" | grep "Not installed") == "" ]]
         #if [[ $(brew cask list | grep "$caskstoinstall") != "" ]]
         then
