@@ -112,13 +112,13 @@ CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 echo ''
 
 # creating directory and adjusting permissions
-echo "creating directory..."
+#echo "creating directory..."
 
-if [ ! -d /usr/local ]; then
-sudo mkdir /usr/local
-fi
+#if [ ! -d /usr/local ]; then
+#sudo mkdir /usr/local
+#fi
 #sudo chown -R $USER:staff /usr/local
-sudo chown -R $(whoami) /usr/local
+#sudo chown -R $(whoami) /usr/local
 
 # installing command line tools
 if xcode-select --install 2>&1 | grep installed >/dev/null
@@ -202,7 +202,9 @@ brew doctor
 echo ''
 echo "cleaning up..."
 
+sudo -v
 brew cleanup
+sudo -K
 
 # homebrew cask
 echo ''
@@ -214,8 +216,10 @@ brew tap caskroom/cask
 echo ''
 echo "cleaning up..."
 
+sudo -v
 brew cleanup
 brew cask cleanup
+sudo -K
 
 #rm -rf ~/Applications
 
@@ -278,7 +282,9 @@ then
     echo ''
 	echo "uninstalling and cleaning some casks..."
     # without this install of flash failed (2016-09)
-    sudo brew cask zap --force flash-npapi
+    sudo -v
+	${USE_PASSWORD} | brew cask zap --force flash-npapi
+	sudo -K
     
     echo ''
 	echo "installing casks..."
