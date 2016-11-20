@@ -246,8 +246,9 @@ fi
 echo ''
 echo "installing homebrew packages..."
 
+${USE_PASSWORD} | brew install ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+
 homebrewpackages=(
-#ffmpeg
 git
 rename
 wget
@@ -260,17 +261,8 @@ duti
 ghostscript
 homebrew/x11/xpdf
 #imagemagick
-# ffmpeg
 qtfaststart
-fdk-aac
-sdl2
-freetype
-libass
-libquvi
-libvorbis
-libvpx
-opus
-x265
+ffmpeg
 )
 
 ${USE_PASSWORD} | brew install "${homebrewpackages[@]}"
@@ -327,11 +319,12 @@ then
 	google-earth-web-plugin
 	handbrake
 	ibackup
+	imageoptim
 	insomniax
 	#imazing
 	istat-menus
 	iterm2
-	itweax
+	#itweax
 	jameica
 	jdownloader
 	keepassx
