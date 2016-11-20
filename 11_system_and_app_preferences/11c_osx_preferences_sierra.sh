@@ -776,6 +776,9 @@ defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 # auto capitalization
 defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
 
+# substitute double space with dot and space
+defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+
 # smart quotes
 defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 
