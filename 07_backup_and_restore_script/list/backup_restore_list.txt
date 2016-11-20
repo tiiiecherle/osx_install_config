@@ -223,6 +223,10 @@ m	/Applications/iBackup.app
 u	~/Library/Application Support/iBackup
 u	~/Library/Preferences/ch.grapefruit.iBackup.plist
 
+# ImageOptim
+m	/Applications/ImageOptim.app
+m	~/Library/Preferences/net.pornel.ImageOptim.plist
+
 # iMazing
 echo iMazing
 u	~/Library/Application Support/iMazing
@@ -554,6 +558,11 @@ u	~/.config
 echo VideoMonkey
 m	/Applications/VideoMonkey.app
 m	~/Library/Preferences/org.VideoMonkey.VideoMonkey.plist
+
+# video ffmpeg
+echo video ffmpeg
+m	/Applications/video_720p_h265_aac_shrink.app
+m	/Applications/video_1080p_h265_aac_shrink.app
 
 # VirtualBox
 echo VirtualBox
