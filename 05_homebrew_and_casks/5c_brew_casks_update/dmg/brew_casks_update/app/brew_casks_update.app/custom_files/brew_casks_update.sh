@@ -294,10 +294,12 @@ cask-install-updates() {
     while IFS='' read -r line || [[ -n "$line" ]]
     do
         echo 'updating '"$line"'...'
+        sudo -v
         #sudo brew cask uninstall "$line" --force
         ${USE_PASSWORD} | brew cask uninstall "$line" --force
         #sudo brew cask install "$line" --force
         ${USE_PASSWORD} | brew cask install "$line" --force
+        sudo -K
         echo ''
     done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
     
@@ -333,9 +335,7 @@ cask-install-updates() {
 
 sudo()
 {
-    ${USE_PASSWORD} | builtin command sudo -p '' -k "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
+    ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
 }
 
 homebrew-update
