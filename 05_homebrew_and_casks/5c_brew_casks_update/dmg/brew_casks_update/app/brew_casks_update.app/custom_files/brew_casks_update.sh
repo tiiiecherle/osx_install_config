@@ -159,8 +159,8 @@ cleanup-all() {
 }
 
 # upgrading all homebrew formulas
-brew-upgrade() {
-    echo "updating brew formulas..."
+brew-show-updates() {
+    echo "listing brew formulas updates..."
 
     printf '=%.0s' {1..80}
     printf '\n'
@@ -168,21 +168,21 @@ brew-upgrade() {
     printf '=%.0s' {1..80}
     printf '\n'
     
-    TMP_DIR=/tmp/brew_updates
-    if [ -e "$TMP_DIR" ]
+    TMP_DIR_BREW=/tmp/brew_updates
+    if [ -e "$TMP_DIR_BREW" ]
     then
-        if [ "$(ls -A $TMP_DIR/)" ]
+        if [ "$(ls -A $TMP_DIR_BREW/)" ]
         then
-            rm "$TMP_DIR"/*    
+            rm "$TMP_DIR_BREW"/*    
         else
             :
         fi
     else
         :
     fi
-    mkdir -p $TMP_DIR/
-    DATE_LIST_FILE=$(echo "brew_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    touch "$TMP_DIR"/"$DATE_LIST_FILE"
+    mkdir -p "$TMP_DIR_BREW"/
+    DATE_LIST_FILE_BREW=$(echo "brew_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    touch "$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW"
 
     for item in $(brew list); do
         local BREW_INFO=$(brew info $item)
@@ -195,7 +195,7 @@ brew-upgrade() {
         # installing if not up-to-date and not excluded
         if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e '\033[1;31mfalse\033[0m')" ]] && [[ ${CASK_EXCLUDES} != *"$BREW_NAME"* ]]
         then
-            echo "$BREW_NAME" >> "$TMP_DIR"/"$DATE_LIST_FILE"
+            echo "$BREW_NAME" >> "$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW"
         fi
 
         BREW_INFO=""
@@ -203,8 +203,12 @@ brew-upgrade() {
         IS_CURRENT_VERSION_INSTALLED=""
     done
     
-    echo ''
-    
+    echo "listing brew formulas updates finished ;)"
+}
+
+brew-install-updates() {
+    echo "installing brew formulas updates..."
+        
     while IFS='' read -r line || [[ -n "$line" ]]
     do
         echo 'updating '"$line"'...'
@@ -212,14 +216,19 @@ brew-upgrade() {
         echo 'removing old installed versions of '"$line"'...'
         ${USE_PASSWORD} | brew cleanup "$line"
         echo ''
-    done <"$TMP_DIR"/"$DATE_LIST_FILE"
+    done <"$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW"
     
-    echo 'brew formulas updates finished ;)'
+    if [[ $(cat "$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW") == "" ]]
+    then
+        echo "no brew formula updates available..."
+    else
+        echo "installing brew formulas updates finished ;)"
+    fi
 }
 
 # selectively upgrade casks
-cask-upgrade() {
-    echo "updating casks..."
+cask-show-updates() {
+    echo "listing casks updates..."
 
     printf '=%.0s' {1..80}
     printf '\n'
@@ -227,23 +236,23 @@ cask-upgrade() {
     printf '=%.0s' {1..80}
     printf '\n'
     
-    TMP_DIR=/tmp/cask_updates
-    if [ -e "$TMP_DIR" ]
+    TMP_DIR_CASK=/tmp/cask_updates
+    if [ -e "$TMP_DIR_CASK" ]
     then
-        if [ "$(ls -A $TMP_DIR/)" ]
+        if [ "$(ls -A $TMP_DIR_CASK/)" ]
         then
-            rm "$TMP_DIR"/*    
+            rm "$TMP_DIR_CASK"/*    
         else
             :
         fi
     else
         :
     fi
-    mkdir -p $TMP_DIR/
-    DATE_LIST_FILE=$(echo "casks_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    DATE_LIST_FILE_LATEST=$(echo "casks_update_latest"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    touch "$TMP_DIR"/"$DATE_LIST_FILE"
-    touch "$TMP_DIR"/"$DATE_LIST_FILE_LATEST"
+    mkdir -p "$TMP_DIR_CASK"/
+    DATE_LIST_FILE_CASK=$(echo "casks_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    DATE_LIST_FILE_CASK_LATEST=$(echo "casks_update_latest"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+    touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
     
     for c in $(brew cask list); do
         local CASK_INFO=$(brew cask info $c)
@@ -263,20 +272,24 @@ cask-upgrade() {
         # installing if not up-to-date and not excluded
         if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e '\033[1;31mfalse\033[0m')" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
         then
-            echo "$CASK_NAME" >> "$TMP_DIR"/"$DATE_LIST_FILE"
+            echo "$CASK_NAME" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
         fi
         
         if [[ "$NEW_VERSION" == "latest" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
         then
-            echo "$CASK_NAME" >> "$TMP_DIR"/"$DATE_LIST_FILE_LATEST"
+            echo "$CASK_NAME" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
         fi
 
         CASK_INFO=""
         NEW_VERSION=""
         IS_CURRENT_VERSION_INSTALLED=""
     done
+    
+    echo "listing casks updates finished ;)"
+}
 
-    echo ''
+cask-install-updates() {
+    echo "installing casks updates..."
     
     while IFS='' read -r line || [[ -n "$line" ]]
     do
@@ -286,7 +299,7 @@ cask-upgrade() {
         #sudo brew cask install "$line" --force
         ${USE_PASSWORD} | brew cask install "$line" --force
         echo ''
-    done <"$TMP_DIR"/"$DATE_LIST_FILE"
+    done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
     
     #read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
     CONT_LATEST="N"
@@ -303,13 +316,19 @@ cask-upgrade() {
             ${USE_PASSWORD} | brew cask install "$line" --force
             sudo -K
             echo ''
-        done <"$TMP_DIR"/"$DATE_LIST_FILE_LATEST"
+        done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
     else
         echo 'skipping all installed casks that show "latest" as version...'
-        echo ''
+        #echo ''
     fi
 
-    echo 'casks updates finished ;)'
+    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK") == "" ]]
+    then
+        echo "no cask updates available..."
+    else
+        echo "installing casks updates finished ;)"
+    fi
+    
 }
 
 sudo()
@@ -321,9 +340,13 @@ sudo()
 
 homebrew-update
 echo ''
-brew-upgrade
+brew-show-updates
 echo ''
-cask-upgrade
+cask-show-updates
+echo ''
+brew-install-updates
+echo ''
+cask-install-updates
 
 cleanup-all
 
