@@ -137,12 +137,22 @@ else
 fi
 #softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
 
+# checking if all dependencies are installed
+echo ''
+echo "checking dependencies..."
+if [[ $(brew list | grep jq) == '' ]]
+then
+    echo "not all dependencies installed, installing..."
+    ${USE_PASSWORD} | brew install jq
+else
+    echo "all dependencies installed..."
+fi
+
 # will exclude these apps from updating
 # pass in params to fit your needs
 # use the exact brew/cask name and separate names with a pipe |
 BREW_EXCLUDES="${1:-}"
 CASK_EXCLUDES="${2:-}"
-
 
 homebrew-update() {
     echo ''
@@ -187,8 +197,15 @@ brew-show-updates() {
     for item in $(brew list); do
         local BREW_INFO=$(brew info $item)
         local BREW_NAME=$(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f1 | sed 's/://g')
-        local NEW_VERSION=$(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f3 | sed 's/,//g')
-        local IS_CURRENT_VERSION_INSTALLED=$(echo "$BREW_INFO" | grep -q ".*/Cellar/$item/$NEW_VERSION.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m' )
+        # make sure you have jq installed via brew
+        local BREW_REVISION=$(brew info "$item" --json=v1 | jq . | grep revision | grep -o '[0-9]')
+        if [[ "$BREW_REVISION" == "0" ]]
+        then
+            local NEW_VERSION=$(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f3 | sed 's/,//g')
+        else
+            local NEW_VERSION=$(echo $(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f3 | sed 's/,//g')_"$BREW_REVISION")
+        fi
+        local IS_CURRENT_VERSION_INSTALLED=$(echo "$BREW_INFO" | grep -q ".*/Cellar/$item/$NEW_VERSION\s.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m' )
 
         printf "%-35s | %-20s | %-15s\n" "$item" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
         

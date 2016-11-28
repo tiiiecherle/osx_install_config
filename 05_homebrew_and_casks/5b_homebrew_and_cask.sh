@@ -263,6 +263,7 @@ homebrew/x11/xpdf
 #imagemagick
 qtfaststart
 ffmpeg
+jq
 )
 
 ${USE_PASSWORD} | brew install "${homebrewpackages[@]}"
