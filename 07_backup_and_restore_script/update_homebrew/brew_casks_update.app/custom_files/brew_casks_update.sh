@@ -95,8 +95,64 @@ sudo()
 
 
 ###
-### functions
+### starting installation
 ###
+
+echo ''
+echo "updating homebrew, formulas and casks..."
+
+echo ''
+
+# creating directory and adjusting permissions
+echo "creating directory..."
+
+if [ ! -d /usr/local ]; then
+sudo mkdir /usr/local
+fi
+#sudo chown -R $USER:staff /usr/local
+sudo chown -R $(whoami) /usr/local
+
+# installing command line tools
+if xcode-select --install 2>&1 | grep installed >/dev/null
+then
+  	echo command line tools are installed...
+else
+  	echo command line tools are not installed, installing...
+  	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
+  	#sudo xcodebuild -license accept
+fi
+
+sudo xcode-select --switch /Library/Developer/CommandLineTools
+
+# updating command line tools and system
+#echo ""
+echo "checking for command line tools update..."
+COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
+if [ "$COMMANDLINETOOLUPDATE" == "" ]
+then
+	echo "no update for command line tools available..."
+else
+	echo "update for command line tools available, updating..."
+	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
+fi
+#softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
+
+# checking if all dependencies are installed
+echo ''
+echo "checking dependencies..."
+if [[ $(brew list | grep jq) == '' ]]
+then
+    echo "not all dependencies installed, installing..."
+    ${USE_PASSWORD} | brew install jq
+else
+    echo "all dependencies installed..."
+fi
+
+# will exclude these apps from updating
+# pass in params to fit your needs
+# use the exact brew/cask name and separate names with a pipe |
+BREW_EXCLUDES="${1:-}"
+CASK_EXCLUDES="${2:-}"
 
 homebrew-update() {
     echo ''
@@ -297,91 +353,22 @@ cask-install-updates() {
     
 }
 
-###
-### running script
-###
+sudo()
+{
+    ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
+}
 
+homebrew-update
 echo ''
-echo "updating homebrew, formulas and casks..."
-
+brew-show-updates
 echo ''
+cask-show-updates
+echo ''
+brew-install-updates
+echo ''
+cask-install-updates
 
-# creating directory and adjusting permissions
-echo "creating directory..."
-
-if [ ! -d /usr/local ]; then
-sudo mkdir /usr/local
-fi
-#sudo chown -R $USER:staff /usr/local
-sudo chown -R $(whoami) /usr/local
-
-# checking if online
-ping -c 3 google.com > /dev/null 2>&1
-if [ $? -eq 0 ]
-then
-    echo "we are online, running script..."
-    # installing command line tools
-    if xcode-select --install 2>&1 | grep installed >/dev/null
-    then
-      	echo command line tools are installed...
-    else
-      	echo command line tools are not installed, installing...
-      	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
-      	#sudo xcodebuild -license accept
-    fi
-    
-    sudo xcode-select --switch /Library/Developer/CommandLineTools
-    
-    # updating command line tools and system
-    #echo ""
-    echo "checking for command line tools update..."
-    COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
-    if [ "$COMMANDLINETOOLUPDATE" == "" ]
-    then
-    	echo "no update for command line tools available..."
-    else
-    	echo "update for command line tools available, updating..."
-    	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
-    fi
-    #softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
-    
-    # checking if all dependencies are installed
-    echo ''
-    echo "checking dependencies..."
-    if [[ $(brew list | grep jq) == '' ]]
-    then
-        echo "not all dependencies installed, installing..."
-        ${USE_PASSWORD} | brew install jq
-    else
-        echo "all dependencies installed..."
-    fi
-    
-    # will exclude these apps from updating
-    # pass in params to fit your needs
-    # use the exact brew/cask name and separate names with a pipe |
-    BREW_EXCLUDES="${1:-}"
-    CASK_EXCLUDES="${2:-}"
-    
-    
-    sudo()
-    {
-        ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
-    }
-    
-    homebrew-update
-    echo ''
-    brew-show-updates
-    echo ''
-    cask-show-updates
-    echo ''
-    brew-install-updates
-    echo ''
-    cask-install-updates
-    
-    cleanup-all
-else
-    echo "not online, skipping updates..."
-fi
+cleanup-all
 
 
 # done

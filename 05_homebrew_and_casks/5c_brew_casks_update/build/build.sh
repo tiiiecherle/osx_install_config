@@ -5,6 +5,7 @@ BREW_CASKS_UPDATE_VERSIONS=(
 )
 
 SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+SCRIPTS_FINAL_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && pwd)")
 
 for BREW_CASKS_UPDATE_VERSION in "${BREW_CASKS_UPDATE_VERSIONS[@]}";
 do
@@ -41,6 +42,10 @@ do
 		:
 	fi
 	cp -a "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/app/"$BREW_CASKS_UPDATE_VERSION".app
+	
+	echo copying app to backup script dir...
+	mkdir -p "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_homebrew
+	cp -a "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_homebrew/"$BREW_CASKS_UPDATE_VERSION".app
 	
 	echo building dmg...
 	if [ -e "$SCRIPT_DIR"/"$BREW_CASKS_UPDATE_VERSION".dmg ]

@@ -244,7 +244,7 @@ function backup_restore {
           	#sudo xcodebuild -license accept
         fi
         
-        # checking and updating homebrew including tools
+        # checking homebrew including script dependencies
         if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'which brew') != "" ]]
         then
             echo homebrew is installed...
@@ -487,33 +487,31 @@ function backup_restore {
             #osascript -e 'tell application "'"$SCRIPT_DIR"'/archive/archive_tar_gz.app" to activate'
             
             # homebrew updates
-            echo "updating homebrew and tools..."
+            # working, but done in seperate script now
+            #echo "updating homebrew and tools..."
             # checking if online
-            #wget -q --tries=1 --timeout=4 --spider google.com > /dev/null 2>&1
-            ping -c 3 google.com > /dev/null 2>&1
-            if [ $? -eq 0 ]
-            then 
+            #ping -c 3 google.com > /dev/null 2>&1
+            #if [ $? -eq 0 ]
+            #then 
                 # online
-                echo "running brew update commands..."
+                #echo "running brew update commands..."
                 #sudo -u $(users)
-                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew update 1> /dev/null'
-                if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew outdated') == "" ]] > /dev/null 2>&1
-                then
-                	echo "all homebrew packages are up to date..."
-                else
-                	echo "the following homebrew packages are outdated and will now be updated..."
-                	sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew outdated --verbose'
-                fi
-                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "${USE_PASSWORD} | brew upgrade 1> /dev/null"
-                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew cleanup 1> /dev/null'
-                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew cask cleanup 1> /dev/null'
-                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew install pigz gnu-tar coreutils pv 1> /dev/null'
-                sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew doctor 1> /dev/null'
-                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c '"'$SCRIPT_DIR'"/homebrew_update.sh'
-            else
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew update 1> /dev/null'
+                #if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew outdated') == "" ]] > /dev/null 2>&1
+                #then
+                	#echo "all homebrew packages are up to date..."
+                #else
+                	#echo "the following homebrew packages are outdated and will now be updated..."
+                	#sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew outdated --verbose'
+                #fi
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "${USE_PASSWORD} | brew upgrade 1> /dev/null"
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew cleanup 1> /dev/null'
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew cask cleanup 1> /dev/null'
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew doctor 1> /dev/null'
+            #else
                 # not online
-                echo "not online, skipping homebrew update..."
-            fi  
+                #echo "not online, skipping homebrew update..."
+            #fi  
             # homebrew permissions
             #BREWGROUP="admin"
             #BREWPATH=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew --prefix') 
@@ -533,7 +531,7 @@ function backup_restore {
             mv "$HOMEFOLDER"/Desktop/backup_restore_log.txt "$DESTINATION"/_backup_restore_log.txt
         
             # compressing and moving backup
-            echo ''
+            #echo ''
             echo "compressing and moving backup..."
         
             # checking and defining some variables
@@ -564,6 +562,29 @@ function backup_restore {
             echo ''
             echo 'script finished ;)'
             osascript -e 'display notification "complete ;)" with title "Backup Script"'
+            echo ''
+            
+            # installing homebrew update script
+            echo "updating homebrew formulas and casks..."
+        	BREW_CASKS_UPDATE_APP="brew_casks_update"
+            if [ -e /Applications/"$BREW_CASKS_UPDATE_APP".app ]
+            then
+            	rm -rf /Applications/"$BREW_CASKS_UPDATE_APP".app
+            else
+            	:
+            fi
+            cp -a "$SCRIPT_DIR"/update_homebrew/"$BREW_CASKS_UPDATE_APP".app /Applications/
+            chown 501:admin /Applications/"$BREW_CASKS_UPDATE_APP".app
+            chown -R 501:admin /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/
+            chmod 755 /Applications/"$BREW_CASKS_UPDATE_APP".app
+            chmod 770 /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/"$BREW_CASKS_UPDATE_APP".sh
+            xattr -dr com.apple.quarantine /Applications/"$BREW_CASKS_UPDATE_APP".app
+            # running homebrew update script
+        	open /Applications/"$BREW_CASKS_UPDATE_APP".app
+        	
+        	# waiting for the process to finish
+            #while ps aux | grep ''"$BREW_CASKS_UPDATE_APP"'.app/Contents' | grep -v grep > /dev/null; do sleep 1; done
+            
             exit
         
         else
