@@ -45,6 +45,12 @@ do
 	
 	echo copying app to backup script dir...
 	mkdir -p "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_homebrew
+	if [ -e "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_homebrew/"$BREW_CASKS_UPDATE_VERSION".app ]
+	then
+		rm -rf "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_homebrew/"$BREW_CASKS_UPDATE_VERSION".app
+	else
+		:
+	fi
 	cp -a "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_homebrew/"$BREW_CASKS_UPDATE_VERSION".app
 	
 	echo building dmg...

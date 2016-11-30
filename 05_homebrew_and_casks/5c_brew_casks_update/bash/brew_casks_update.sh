@@ -320,6 +320,7 @@ ping -c 3 google.com > /dev/null 2>&1
 if [ $? -eq 0 ]
 then
     echo "we are online, running script..."
+    echo ''
     # installing command line tools
     if xcode-select --install 2>&1 | grep installed >/dev/null
     then
