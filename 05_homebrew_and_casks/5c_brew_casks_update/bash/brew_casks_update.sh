@@ -164,7 +164,10 @@ homebrew-update() {
 cleanup-all() {
     echo ''
     echo "cleaning up..."
-    brew cleanup && brew cask cleanup 1> /dev/null
+    #brew cleanup
+    #brew cask cleanup
+    brew cleanup 1> /dev/null
+    brew cask cleanup 1> /dev/null
     echo 'cleaning finished ;)'
 }
 
