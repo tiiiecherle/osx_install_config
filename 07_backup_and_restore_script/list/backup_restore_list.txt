@@ -72,6 +72,10 @@ echo Bartender
 m	/Applications/Bartender 2.app
 u	~/Library/Preferences/com.surteesstudios.Bartender.plist
 
+# Brew Casks Update
+echo Brew Casks Update
+m	/Applications/brew_casks_update.app
+
 # Burn
 echo Burn
 m	/Applications/Burn.app

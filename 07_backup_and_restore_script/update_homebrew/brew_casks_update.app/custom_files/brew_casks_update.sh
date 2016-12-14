@@ -260,9 +260,10 @@ cask-install-updates() {
         echo 'updating '"$line"'...'
         sudo -v
         #sudo brew cask uninstall "$line" --force
-        ${USE_PASSWORD} | brew cask uninstall "$line" --force
+        #${USE_PASSWORD} | brew cask uninstall "$line" --force
         #sudo brew cask install "$line" --force
-        ${USE_PASSWORD} | brew cask install "$line" --force
+        #${USE_PASSWORD} | brew cask install "$line" --force
+        ${USE_PASSWORD} | brew cask reinstall "$line" --force
         sudo -K
         echo ''
     done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
