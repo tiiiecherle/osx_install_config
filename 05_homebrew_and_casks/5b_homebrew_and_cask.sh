@@ -120,6 +120,12 @@ echo ''
 #sudo chown -R $USER:staff /usr/local
 #sudo chown -R $(whoami) /usr/local
 
+# redefining sudo so it is possible to run homebrew install without entering the password again
+sudo()
+{
+    ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
+}
+
 # installing command line tools
 if xcode-select --install 2>&1 | grep installed >/dev/null
 then
@@ -150,11 +156,6 @@ echo ''
 if [[ $(which brew) == "" ]]
 then
     echo "installing homebrew..."
-    # redefining sudo so it is possible to run homebrew without entering the password again
-    sudo()
-    {
-        ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
-    }
     # giving the sudo passoword and keeping it alive for sleep x seconds
     sudo -v
     while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
@@ -162,11 +163,6 @@ then
     yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     # forcing sudo to forget the sudo password (can still be used with ${USE_PASSWORD})
     sudo -K
-    # redefining sudo back for the rest of the script
-    #sudo()
-    #{
-    #    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #}
 else
     echo "homebrew already installed, skipping..."
 fi
@@ -287,7 +283,6 @@ then
 	flash-npapi
 	java
 	silverlight
-	paragon-extfs
 	#osxfuse
 	adobe-reader
 	teamviewer
@@ -301,7 +296,6 @@ then
 	alfred
 	angry-ip-scanner
 	appcleaner
-	audiobookbinder
 	bartender
 	burn
 	chromium
@@ -309,25 +303,20 @@ then
 	cog
 	coteditor
 	cyberduck
-	deluge
 	disk-inventory-x
 	eaglefiler
 	easyfind
 	filezilla
 	firefox
-	github-desktop
 	google-earth-pro
 	google-earth-web-plugin
 	handbrake
 	ibackup
 	imageoptim
 	insomniax
-	#imazing
 	istat-menus
 	iterm2
 	#itweax
-	jameica
-	jdownloader
 	keepassx
 	keepingyouawake
 	keka
@@ -335,7 +324,6 @@ then
 	liteicon
 	macdown
 	macpass
-	macupdate-desktop
 	namechanger
 	onyx
 	openoffice
@@ -343,13 +331,10 @@ then
 	owncloud
 	#plex-media-server
 	progressive-downloader
-	remote-buddy
 	skype
-	telegram
 	textwrangler
 	the-archive-browser
 	tnefs-enough
-	transmission
 	trolcommander
 	#tunnelblick
 	unified-remote
@@ -358,7 +343,6 @@ then
 	vlc-webplugin
 	vnc-viewer
 	vox
-	whatsapp
 	x-lite
 	xnconvert
 	zipeg
@@ -373,10 +357,57 @@ then
 	done
 	
 	#open "/opt/homebrew-cask/Caskroom/paragon-extfs/latest/FSinstaller.app" &
+	
 else
 	:
 fi
 
+# installing user specific casks
+if [[ "$USER" == "tom" ]]
+then
+    if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
+    then
+    
+        echo ''
+    	echo "uninstalling and cleaning some casks..."
+        # without this install of flash failed (2016-09)
+        sudo -v
+    	${USE_PASSWORD} | brew cask zap --force flash-npapi
+    	sudo -K
+        
+        echo ''
+    	echo "installing casks..."
+    	
+    	casks_specific1=(
+    	### needed casks
+    	audiobookbinder
+    	paragon-extfs
+     	deluge
+     	github-desktop
+    	imazing
+    	jameica
+    	jdownloader
+    	macupdate-desktop
+    	remote-buddy
+    	telegram
+       	transmission
+       	whatsapp
+    	)
+    	
+    	#brew cask install --force ${casks[@]}
+    	for caskstoinstall_specific1 in "${casks_specific1[@]}"
+    	do
+    	    sudo -v
+    		${USE_PASSWORD} | brew cask install --force $caskstoinstall_specific1
+    		sudo -K
+    	done
+    else
+        :
+    fi
+else
+    :
+fi
+    
 # cleaning up
 echo ''
 echo "cleaning up..."
