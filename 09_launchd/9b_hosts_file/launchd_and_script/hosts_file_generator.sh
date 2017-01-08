@@ -111,7 +111,7 @@ hosts_file_install_update() {
         #sudo python updateHostsFile.py -a -r -o alternates/gambling-porn-social -e gambling porn social
         sudo python updateHostsFile.py -a -r -o alternates/gambling-porn -e gambling porn
         #sudo python updateHostsFile.py -a -n -r -o alternates/gambling-porn-social -e gambling porn social
-        sudo python updateReadme.py
+        #sudo python updateReadme.py
         cd -
     
         # comment out lines

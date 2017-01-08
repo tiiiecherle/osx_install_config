@@ -15,3 +15,8 @@ www.spiegel.de##DIV[id="spVeeseo"][class="module-box"]
 www.cyberciti.biz##CENTER
 ##DIV[id="boxly-container"][class="col-xs-offset-3 col-sm-offset-4 pre_counter"]
 ##[class="player_hover_a"]
+##A[class="large-ad-center-close"]
+##DIV[id="div-gpt-ad-1468963261457-0"]
+www.macupdate.com##DIV[id="nfmrpb-appicons-top-nav"]
+www.sport1.de##DIV[class="spoods-player-wrapper"]
+www.sport1.de##STRONG
