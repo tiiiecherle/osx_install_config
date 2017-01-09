@@ -476,6 +476,7 @@ u	~/Library/Services/Run as Shellscript.workflow
 u	~/Library/Services/Run in Terminal.workflow
 m	~/Library/Services/Create Symlink.workflow
 u	~/Library/Preferences/pbs.plist
+u	~/Library/Services/Tag Orange.workflow
 # /System/Library/CoreServices/pbs -flush
 
 # Skype
