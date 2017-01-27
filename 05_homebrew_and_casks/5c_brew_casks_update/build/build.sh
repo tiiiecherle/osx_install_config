@@ -26,7 +26,7 @@ do
 	chown -R 501:admin "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app/custom_files/
 	chmod 755 "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
 	chmod 770 "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app/custom_files/"$BREW_CASKS_UPDATE_VERSION".sh
-	chmod 770 "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/run_to_install
+	chmod 770 "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/run_to_install.command
 	
 	# this is to suppress warning on first start
 	#echo opening app...
