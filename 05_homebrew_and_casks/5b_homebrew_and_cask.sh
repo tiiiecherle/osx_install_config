@@ -330,6 +330,7 @@ then
 	oversight
 	owncloud
 	#plex-media-server
+	prefs-editor
 	progressive-downloader
 	skype
 	textwrangler
