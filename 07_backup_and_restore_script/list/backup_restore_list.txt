@@ -338,10 +338,10 @@ echo Mobile Sync
 u	~/Library/Application Support/MobileSync
 
 # MonKey Office
-echo MonKey Office 2016.app
-u	/Applications/MonKey Office 2016.app
+echo MonKey Office 2017.app
+u	/Applications/MonKey Office 2017.app
 u	~/Library/Application Support/ProSaldo
-u	~/Library/Preferences/com.prosaldo.monkeyoffice2016.plist
+u	~/Library/Preferences/com.prosaldo.monkeyoffice2017.plist
 
 # mysides
 echo mysides
@@ -408,6 +408,10 @@ echo Plex Media Server
 u	/Applications/Plex Media Server.app
 u	~/Library/Application Support/Plex Media Server
 u	~/Library/Preferences/com.plexapp.plexmediaserver.plist
+
+# Prefs Editor
+echo Prefs Editor
+m	/Applications/Prefs Editor.app
 
 # Print Window
 echo Print Window

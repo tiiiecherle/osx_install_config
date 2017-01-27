@@ -273,7 +273,7 @@ cask-install-updates() {
     done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
     
     #read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
-    CONT_LATEST="N"
+    #CONT_LATEST="N"
     CONT_LATEST="$(echo "$CONT_LATEST" | tr '[:upper:]' '[:lower:]')"    # tolower
 	if [[ "$CONT_LATEST" == "y" || "$CONT_LATEST" == "yes" ]]
     then
@@ -310,6 +310,26 @@ echo ''
 echo "updating homebrew, formulas and casks..."
 
 echo ''
+
+# trapping script to kill subprocesses when script is stopped
+# kill -9 can only be silenced with >/dev/null 2>&1 when wrappt into function
+function kill_subprocesses() 
+{
+# kills subprocesses only
+pkill -9 -P $$
+}
+
+function kill_main_process() 
+{
+# kills subprocesses and process itself
+exec pkill -9 -P $$
+}
+
+#trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
+trap "unset SUDOPASSWORD; printf '\n'; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
+# kill main process only if it hangs on regular exit
+trap "unset SUDOPASSWORD; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
+#set -e
 
 # creating directory and adjusting permissions
 echo "creating directory..."
@@ -402,3 +422,9 @@ echo ''
 ###
 
 unset SUDOPASSWORD
+
+# kill all child and grandchild processes
+#ps -o pgid= $$ | grep -o '[0-9]*'
+#kill -9 -$(ps -o pgid= $$ | grep -o '[0-9]*')
+
+exit
