@@ -255,7 +255,8 @@ htop
 coreutils
 duti
 ghostscript
-homebrew/x11/xpdf
+#homebrew/x11/xpdf
+xpdf
 #imagemagick
 qtfaststart
 ffmpeg
@@ -270,9 +271,10 @@ then
 
     echo ''
 	echo "uninstalling and cleaning some casks..."
-    # without this install of flash failed (2016-09)
+    # without this install / reinstall of the following casks failed (2017-01)
     sudo -v
 	${USE_PASSWORD} | brew cask zap --force flash-npapi
+	${USE_PASSWORD} | brew cask zap --force adobe-reader
 	sudo -K
     
     echo ''
@@ -368,13 +370,6 @@ if [[ "$USER" == "tom" ]]
 then
     if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
     then
-    
-        echo ''
-    	echo "uninstalling and cleaning some casks..."
-        # without this install of flash failed (2016-09)
-        sudo -v
-    	${USE_PASSWORD} | brew cask zap --force flash-npapi
-    	sudo -K
         
         echo ''
     	echo "installing casks..."
