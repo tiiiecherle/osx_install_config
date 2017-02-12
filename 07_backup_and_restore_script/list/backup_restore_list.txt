@@ -72,6 +72,11 @@ echo Bartender
 m	/Applications/Bartender 2.app
 u	~/Library/Preferences/com.surteesstudios.Bartender.plist
 
+# BL Banking
+echo BL Banking
+u	/Applications/BL Banking Launcher ts.app
+u	/Applications/BL Banking Launcher ws.app
+
 # Brew Casks Update
 echo Brew Casks Update
 m	/Applications/brew_casks_update.app
