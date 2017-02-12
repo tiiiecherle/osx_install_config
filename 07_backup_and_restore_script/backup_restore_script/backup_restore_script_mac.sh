@@ -117,9 +117,9 @@ exec pkill -9 -P $$
 }
 
 #trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "unset SUDOPASSWORD; printf '\n'; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
+trap "unset SUDOPASSWORD; open -g keepingyouawake:///deactivate; printf '\n'; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
 # kill main process only if it hangs on regular exit
-trap "unset SUDOPASSWORD; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
+trap "unset SUDOPASSWORD; open -g keepingyouawake:///deactivate; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
 set -e
 
 echo ""
@@ -147,7 +147,7 @@ fi
 
 # starting a function to tee a record to a logfile
 function backup_restore {
-        
+    
     # backupdate
     DATE=$(date +%F)
     
@@ -286,6 +286,16 @@ function backup_restore {
         ### backup
         ###
         
+        # activating keepingyouawake
+        if [ -e /Applications/KeepingYouAwake.app ]
+        then
+            echo "activating keepingyouawake..."
+            echo ''
+            open -g keepingyouawake:///activate
+        else
+            :
+        fi
+        
         # checking if backup option was selected
         if [[ "$OPTION" == "BACKUP" ]]; 
             then
@@ -355,7 +365,7 @@ function backup_restore {
                 #PID=$(ps aux | grep contacts_backup | grep -v grep | awk "{ print \$2 }")
                 #echo $PID
                 # waiting for the process to finish
-                while ps aux | grep contacts_backup | grep -v grep > /dev/null; do sleep 1; done
+                while ps aux | grep contacts_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
                 osascript -e 'tell application "Terminal" to activate'
             else
                 :
@@ -382,7 +392,7 @@ function backup_restore {
                 #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
                 #echo $PID
                 # waiting for the process to finish
-                while ps aux | grep calendars_backup | grep -v grep > /dev/null; do sleep 1; done
+                while ps aux | grep calendars_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
                 osascript -e 'tell application "Terminal" to activate'
             else
                 :
@@ -577,9 +587,27 @@ function backup_restore {
                 :
             fi
             
+            # waiting for all scripts to finish before starting update script
+            echo ''
+            echo "waiting for running backup scripts to finish..."
+            
+            if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
+            then
+                while ps aux | grep /compress_and_move_vbox_backup.sh | grep -v grep > /dev/null; do sleep 1; done
+            else
+                :
+            fi
+    
+            if [[ "$CONT2" == "y" || "$CONT2" == "yes" ]]
+            then
+                while ps aux | grep /run_files_backup.sh | grep -v grep > /dev/null; do sleep 1; done
+            else
+                :
+            fi
+            
             # done
             echo ''
-            echo 'script finished ;)'
+            echo 'backup finished ;)'
             osascript -e 'display notification "complete ;)" with title "Backup Script"'
             echo ''
             
@@ -602,7 +630,26 @@ function backup_restore {
         	open /Applications/"$BREW_CASKS_UPDATE_APP".app
         	
         	# waiting for the process to finish
-            #while ps aux | grep ''"$BREW_CASKS_UPDATE_APP"'.app/Contents' | grep -v grep > /dev/null; do sleep 1; done
+        	echo "waiting for updating homebrew formulas and casks..."
+        	#sleep 5
+            while ps aux | grep ''"$BREW_CASKS_UPDATE_APP"'.app/Contents' | grep -v grep > /dev/null; do sleep 1; done
+            while ps aux | grep /brew_casks_update.sh | grep -v grep > /dev/null; do sleep 1; done
+            
+            echo ''
+            echo "updating homebrew formulas and casks finished ;)"
+            osascript -e 'display notification "complete ;)" with title "Update Script"'
+            
+            # deactivating keepingyouawake
+            if [ -e /Applications/KeepingYouAwake.app ]
+            then
+                echo "deactivating keepingyouawake..."
+                open -g keepingyouawake:///deactivate
+            else
+                :
+            fi
+            
+            echo ''
+            echo "script done ;)"
             
             exit
         
