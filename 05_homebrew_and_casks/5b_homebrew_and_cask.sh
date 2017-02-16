@@ -341,6 +341,7 @@ then
 	trolcommander
 	#tunnelblick
 	unified-remote
+	veracrypt
 	videomonkey
 	vlc
 	vlc-webplugin
