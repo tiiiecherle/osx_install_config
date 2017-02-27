@@ -116,9 +116,7 @@ cleanup-all() {
 }
 
 # upgrading all homebrew formulas
-brew_show_updates_parallel() {
-    # always use _ instead of - because some sh commands called by parallel would give errors
-
+brew-show-updates-parallel() {
     echo "listing brew formulas updates..."
 
     printf '=%.0s' {1..80}
@@ -146,46 +144,29 @@ brew_show_updates_parallel() {
     export DATE_LIST_FILE_BREW
     touch "$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW"
 
-    brew_show_updates_parallel_inside() {
-        # always use _ instead of - because some sh commands called by parallel would give errors
-        local item="$1"
-        local BREW_INFO=$(brew info $item)
-        #echo BREW_INFO is $BREW_INFO
-        local BREW_NAME=$(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f1 | sed 's/://g')
-        #echo BREW_NAME is $BREW_NAME
-        # make sure you have jq installed via brew
-        local BREW_REVISION=$(brew info "$item" --json=v1 | jq . | grep revision | grep -o '[0-9]')
-        #echo BREW_REVISION is $BREW_REVISION
+    parallel --will-cite -j10 -k -q bash -c '
+        BREW_INFO=$(brew info "{}")
+        BREW_NAME=$(echo "$BREW_INFO" | grep -e "{}: .*" | cut -d" " -f1 | sed "s/://g")
+        BREW_REVISION=$(brew info "{}" --json=v1 | jq . | grep revision | grep -o "[0-9]")
+        
         if [[ "$BREW_REVISION" == "0" ]]
         then
-            local NEW_VERSION=$(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f3 | sed 's/,//g')
+            NEW_VERSION=$(echo "$BREW_INFO" | grep -e "{}: .*" | cut -d" " -f3 | sed "s/,//g")
         else
-            local NEW_VERSION=$(echo $(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f3 | sed 's/,//g')_"$BREW_REVISION")
+            NEW_VERSION=$(echo $(echo "$BREW_INFO" | grep -e "{}: .*" | cut -d" " -f3 | sed "s/,//g")_"$BREW_REVISION")
         fi
-        #echo NEW_VERSION is $NEW_VERSION
-        local IS_CURRENT_VERSION_INSTALLED=$(echo $BREW_INFO | grep -q ".*/Cellar/$item/$NEW_VERSION\s.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m' )
-        #echo IS_CURRENT_VERSION_INSTALLED is $IS_CURRENT_VERSION_INSTALLED
-        printf "%-35s | %-20s | %-15s\n" "$item" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
         
-        # installing if not up-to-date and not excluded
-        if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e '\033[1;31mfalse\033[0m')" ]] && [[ ${CASK_EXCLUDES} != *"$BREW_NAME"* ]]
+        IS_CURRENT_VERSION_INSTALLED=$(echo $BREW_INFO | grep -q ".*/Cellar/{}/$NEW_VERSION\s.*" 2>&1 && echo -e "\033[1;32mtrue\033[0m" || echo -e "\033[1;31mfalse\033[0m" )
+        printf "%-35s | %-20s | %-15s\n" "{}" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
+        
+        if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e "\033[1;31mfalse\033[0m")" ]]
         then
             echo "$BREW_NAME" >> "$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW"
         fi
-    }
-    
-    #
-    local NUMBER_OF_CORES=$(parallel --number-of-cores)
-    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
-    #echo $NUMBER_OF_MAX_JOBS
-    local NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-    #echo $NUMBER_OF_MAX_JOBS_ROUNDED
-    #
-    export -f brew_show_updates_parallel_inside
-    #
-    parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k brew_show_updates_parallel_inside ::: "$(brew list)"
-    wait
+    ' ::: "$(brew list)"
         
+    wait
+    
     echo "listing brew formulas updates finished ;)"
 }
 
@@ -278,8 +259,7 @@ brew-install-updates() {
 }
 
 # selectively upgrade casks
-cask_show_updates_parallel () {
-    # always use _ instead of - because some sh commands called by parallel would give errors
+cask-show-updates-parallel() {
     echo "listing casks updates..."
 
     printf '=%.0s' {1..80}
@@ -309,45 +289,26 @@ cask_show_updates_parallel () {
     touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
     touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
     
-    cask_show_updates_parallel_inside() {
-        # always use _ instead of - because some sh commands called by parallel would give errors
-        local c="$1"
-        local CASK_INFO=$(brew cask info $c)
-        local CASK_NAME=$(echo "$c" | cut -d ":" -f1 | xargs)
-        #if [[ $(brew cask info $c | tail -1 | grep "(app)") != "" ]]
-        #then
-        #    APPNAME=$(brew cask info $c | tail -1 | awk '{$(NF--)=""; print}' | sed 's/ *$//')
-        #else
-        #    APPNAME=$(echo $(brew cask info $c | grep -A 1 "==> Name" | tail -1).app)
-        #fi
-        #local INSTALLED_VERSION=$(plutil -p "/Applications/$APPNAME/Contents/Info.plist" | grep "CFBundleShortVersionString" | awk '{print $NF}' | sed 's/"//g')
-        local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//' )
-        local IS_CURRENT_VERSION_INSTALLED=$(echo $CASK_INFO | grep -q ".*/Caskroom/$CASK_NAME/$NEW_VERSION.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m')
+    parallel --will-cite -j10 -k -q bash -c '
+        CASK_INFO=$(brew cask info "{}")
+        CASK_NAME=$(echo "{}" | cut -d ":" -f1 | xargs)
+        NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed "s/ *//" )
+        IS_CURRENT_VERSION_INSTALLED=$(echo $CASK_INFO | grep -q ".*/Caskroom/$CASK_NAME/$NEW_VERSION.*" 2>&1 && echo -e "\033[1;32mtrue\033[0m" || echo -e "\033[1;31mfalse\033[0m")
 
         printf "%-35s | %-20s | %-15s\n" "$CASK_NAME" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
         
         # installing if not up-to-date and not excluded
-        if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e '\033[1;31mfalse\033[0m')" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
+        if [[ "$IS_CURRENT_VERSION_INSTALLED" == "$(echo -e "\033[1;31mfalse\033[0m")" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
         then
             echo "$CASK_NAME" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
         fi
         
-        if [[ "$NEW_VERSION" == "latest" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
+        if [[ "$NEW_VERSION" == "latest" ]]
         then
             echo "$CASK_NAME" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
         fi
-    }
-    
-    #
-    local NUMBER_OF_CORES=$(parallel --number-of-cores)
-    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
-    #echo $NUMBER_OF_MAX_JOBS
-    local NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-    #echo $NUMBER_OF_MAX_JOBS_ROUNDED
-    #
-    export -f cask_show_updates_parallel_inside
-    #
-    parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k cask_show_updates_parallel_inside ::: "$(brew cask list)"
+    ' ::: "$(brew cask list)"
+        
     wait
         
     echo "listing casks updates finished ;)"
@@ -559,10 +520,10 @@ then
     
     homebrew-update
     echo ''
-    brew_show_updates_parallel
+    brew-show-updates-parallel
     #brew-show-updates-one-by-one
     echo ''
-    cask_show_updates_parallel
+    cask-show-updates-parallel
     #cask-show-updates-one-by-one
     echo ''
     brew-install-updates

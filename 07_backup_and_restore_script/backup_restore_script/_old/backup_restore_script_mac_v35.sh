@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v36, last version without parallel was v35
+### backup / restore script v35
 ###
 
 
@@ -106,35 +106,20 @@ sudo()
 # kill -9 can only be silenced with >/dev/null 2>&1 when wrappt into function
 function kill_subprocesses() 
 {
-    # kills subprocesses only
-    pkill -9 -P $$
+# kills subprocesses only
+pkill -9 -P $$
 }
 
 function kill_main_process() 
 {
-    # kills subprocesses and process itself
-    exec pkill -9 -P $$
-}
-
-function unset_variables() {
-    unset RESTOREDIR
-    unset RESTOREMASTERDIR
-    unset RESTOREUSERDIR
-    unset RESTORETODIR
-    unset DESTINATION
-    unset HOMEFOLDER
-    unset MASTERUSER
-    unset USERUSER
-    unset TERMINALWIDTH
-    unset LINENUMBER
-    unset DESTINATION
-    unset SUDOPASSWORD
+# kills subprocesses and process itself
+exec pkill -9 -P $$
 }
 
 #trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "unset_variables; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
+trap "unset SUDOPASSWORD; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
 # kill main process only if it hangs on regular exit
-trap "unset_variables; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
+trap "unset SUDOPASSWORD; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
 set -e
 
 echo ""
@@ -283,9 +268,9 @@ function backup_restore {
         then
             echo homebrew is installed...
             
-            if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep parallel) == '' ]]
+            if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]]
             then
-                echo at least one needed homebrew tool of gnu-tar, pigz, pv, coreutils and parallel is missing, exiting...
+                echo at least one needed homebrew tool of gnu-tar, pigz, pv and coreutils is missing, exiting...
                 exit
             else
                 echo needed homebrew tools are installed...     
@@ -429,134 +414,92 @@ function backup_restore {
             TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
             LINENUMBER=0
             
-            function backup_data () {
-                # using with parallel
-                # comment out the while, do done lines
-                # uncomment this line
-                line="$1"
-                #echo "$line"
-                
-                #while IFS='' read -r line || [[ -n "$line" ]]
-                #do
-                
-                	LINENUMBER=$(($LINENUMBER+1))
-                	
-                    # if starting with one # and whitespace / tab
-                	#if [[ $line =~ ^[\#][[:blank:]] ]]
-                	
-                	# if starting with more than one #
-                	#if [[ $line =~ ^[\#]{2,} ]]
-                
-                	# if line is empty
-                	#if [ -z "$line" ]
-                	if [ "$line" == "" ]
-                	then
-                        :
-                    else
-                        :
-                    fi
-                	
-                	# if starting with #
-                	if [[ $line =~ ^[\#] ]]
-                	then
-                        :
-                    else
-                        :
-                    fi
-                    
-                    # if starting with echo and whitespace / tab
-                	if [[ $line =~ ^echo[[:blank:]] ]]
-                	then
-                        OUTPUT=$(echo "$line" | sed 's/^echo*//' | sed -e 's/^[ \t]*//')
-                		TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
-                        echo "$OUTPUT" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
-                    else
-                        :
-                    fi   
-                     	
-                	# if starting with m and space / tab
-                	if [[ $line =~ ^m[[:blank:]] ]]
-                	then
-                        ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
-                        #echo "$ENTRY"
-                        DIRNAME_ENTRY=$(dirname "$ENTRY")
-                        #echo "$DIRNAME_ENTRY"
-                        BASENAME_ENTRY=$(basename "$ENTRY")
-                        #echo "$BASENAME_ENTRY"
-                        if [ -e "$ENTRY" ]
-                        then
-                            cd "$DIRNAME_ENTRY"
-                            mkdir -p "$DESTINATION$DIRNAME_ENTRY"
-                            sudo rsync -a "$BASENAME_ENTRY" "$DESTINATION$DIRNAME_ENTRY"
-                        else
-                			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
-                            #echo "        ""$ENTRY" does not exist, skipping...
-                            echo "$BASENAME_ENTRY" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
-                        fi
-                    else
-                        :
-                    fi
-                    
-                    # if starting with u and space / tab
-                	if [[ $line =~ ^u[[:blank:]] ]]
-                	then
-                        ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
-                        #echo "$ENTRY"
-                        DIRNAME_ENTRY=$(dirname "$ENTRY")
-                        #echo "$DIRNAME_ENTRY"
-                        BASENAME_ENTRY=$(basename "$ENTRY")
-                        #echo "$BASENAME_ENTRY"
-                        if [ -e "$ENTRY" ]
-                        then
-                            cd "$DIRNAME_ENTRY"
-                            mkdir -p "$DESTINATION$DIRNAME_ENTRY"
-                            sudo rsync -a "$BASENAME_ENTRY" "$DESTINATION$DIRNAME_ENTRY"
-                        else
-                			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
-                            #echo "        ""$ENTRY" does not exist, skipping...
-                            echo "$BASENAME_ENTRY" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
-                        fi
-                    else
-                        :
-                    fi
-                                    
-                #done <"$BACKUP_RESTORE_LIST"
-            }
+            while IFS='' read -r line || [[ -n "$line" ]]
+            do
+            	
+            	LINENUMBER=$(($LINENUMBER+1))
+            	
+                # if starting with one # and whitespace / tab
+            	#if [[ $line =~ ^[\#][[:blank:]] ]]
+            	
+            	# if starting with more than one #
+            	#if [[ $line =~ ^[\#]{2,} ]]
             
-            # without parallel
-            # comment out the whole following parallel block
-            # uncomment the while read, done lines in the script and run the function
-            # backup_data
-            
-            # with parallel
-            # comment out the whole without parallel block
-            # comment out the while read, done lines in the script and run
-            export DESTINATION
-            export TERMINALWIDTH
-            export HOMEFOLDER
-            export LINENUMBER
-            #
-            mkdir -p /tmp/backup_restore
-            TMP_BACKUP_FUNCTION_SCRIPT="/tmp/backup_restore/backup_data.sh"
-            touch "$TMP_BACKUP_FUNCTION_SCRIPT"
-            chmod +x "$TMP_BACKUP_FUNCTION_SCRIPT"
-            echo "#!/bin/bash" > "$TMP_BACKUP_FUNCTION_SCRIPT"
-            echo $(declare -f backup_data) >> "$TMP_BACKUP_FUNCTION_SCRIPT"
-            #sed -i '' "s/backup_data () {//" "$TMP_BACKUP_FUNCTION_SCRIPT"
-            sed -i '' "s/^.*() {//" "$TMP_BACKUP_FUNCTION_SCRIPT"
-            sed -i '' "s/\(.*\)}/\1 /" "$TMP_BACKUP_FUNCTION_SCRIPT"
-            #
-            NUMBER_OF_CORES=$(parallel --number-of-cores)
-            NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-            #echo $NUMBER_OF_MAX_JOBS
-            NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-            #echo $NUMBER_OF_MAX_JOBS_ROUNDED
-            #
-            ulimit -n 2048
-            sudo -E parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k "$TMP_BACKUP_FUNCTION_SCRIPT" ::: "$(cat "$BACKUP_RESTORE_LIST")"
-            wait
-            #
-                     
+            	# if line is empty
+            	#if [ -z "$line" ]
+            	if [ "$line" == "" ]
+            	then
+                    :
+                else
+                    :
+                fi
+            	
+            	# if starting with #
+            	if [[ $line =~ ^[\#] ]]
+            	then
+                    :
+                else
+                    :
+                fi
+                
+                # if starting with echo and whitespace / tab
+            	if [[ $line =~ ^echo[[:blank:]] ]]
+            	then
+                    OUTPUT=$(echo "$line" | sed 's/^echo*//' | sed -e 's/^[ \t]*//')
+        			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+                    echo "$OUTPUT" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                else
+                    :
+                fi   
+                 	
+            	# if starting with m and space / tab
+            	if [[ $line =~ ^m[[:blank:]] ]]
+            	then
+                    ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
+                    #echo "$ENTRY"
+                    DIRNAME_ENTRY=$(dirname "$ENTRY")
+                    #echo "$DIRNAME_ENTRY"
+                    BASENAME_ENTRY=$(basename "$ENTRY")
+                    #echo "$BASENAME_ENTRY"
+                    if [ -e "$ENTRY" ]
+                    then
+                        cd "$DIRNAME_ENTRY"
+                        mkdir -p "$DESTINATION$DIRNAME_ENTRY"
+                        sudo rsync -a "$BASENAME_ENTRY" "$DESTINATION$DIRNAME_ENTRY"
+                    else
+        				TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
+                        #echo "        ""$ENTRY" does not exist, skipping...
+                        echo "$BASENAME_ENTRY" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
+                    fi
+                else
+                    :
+                fi
+                
+                # if starting with u and space / tab
+            	if [[ $line =~ ^u[[:blank:]] ]]
+            	then
+                    ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
+                    #echo "$ENTRY"
+                    DIRNAME_ENTRY=$(dirname "$ENTRY")
+                    #echo "$DIRNAME_ENTRY"
+                    BASENAME_ENTRY=$(basename "$ENTRY")
+                    #echo "$BASENAME_ENTRY"
+                    if [ -e "$ENTRY" ]
+                    then
+                        cd "$DIRNAME_ENTRY"
+                        mkdir -p "$DESTINATION$DIRNAME_ENTRY"
+                        sudo rsync -a "$BASENAME_ENTRY" "$DESTINATION$DIRNAME_ENTRY"
+                    else
+        				TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
+                        #echo "        ""$ENTRY" does not exist, skipping...
+                        echo "$BASENAME_ENTRY" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"          
+                    fi
+                else
+                    :
+                fi
+                
+            done <"$BACKUP_RESTORE_LIST"
+                        
             # resetting terminal settings or further input will not work
             #reset
             #stty "$STTY_ORIG"
@@ -758,16 +701,8 @@ function backup_restore {
             TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
             LINENUMBER=0
             
-            function restore_data () {
-                
-                # using with parallel
-                # comment out the while, do done lines
-                # uncomment this line
-                line="$1"
-                #echo "$line"
-                
-                #while IFS='' read -r line || [[ -n "$line" ]]
-                #do
+            while IFS='' read -r line || [[ -n "$line" ]]
+            do
                 
                 LINENUMBER=$(($LINENUMBER+1))
             	
@@ -908,49 +843,7 @@ function backup_restore {
                     :
                 fi
                 
-            #done <"$BACKUP_RESTORE_LIST"
-                
-            }
-            
-            # without parallel
-            # comment out the whole following parallel block
-            # uncomment the while read, done lines in the script and run the function
-            # restore_data
-            
-            # with parallel
-            # comment out the whole without parallel block
-            # comment out the while read, done lines in the script and run
-            export RESTOREDIR
-            export RESTOREMASTERDIR
-            export RESTOREUSERDIR
-            export RESTORETODIR
-            export DESTINATION
-            export HOMEFOLDER
-            export MASTERUSER
-            export USERUSER
-            export TERMINALWIDTH
-            export LINENUMBER
-            #
-            mkdir -p /tmp/backup_restore
-            TMP_RESTORE_FUNCTION_SCRIPT="/tmp/backup_restore/restore_data.sh"
-            touch "$TMP_RESTORE_FUNCTION_SCRIPT"
-            chmod +x "$TMP_RESTORE_FUNCTION_SCRIPT"
-            echo "#!/bin/bash" > "$TMP_RESTORE_FUNCTION_SCRIPT"
-            echo $(declare -f restore_data) >> "$TMP_RESTORE_FUNCTION_SCRIPT"
-            #sed -i '' "s/backup_data () {//" "$TMP_RESTORE_FUNCTION_SCRIPT"
-            sed -i '' "s/^.*() {//" "$TMP_RESTORE_FUNCTION_SCRIPT"
-            sed -i '' "s/\(.*\)}/\1 /" "$TMP_RESTORE_FUNCTION_SCRIPT"
-            #
-            NUMBER_OF_CORES=$(parallel --number-of-cores)
-            NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-            #echo $NUMBER_OF_MAX_JOBS
-            NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-            #echo $NUMBER_OF_MAX_JOBS_ROUNDED
-            #
-            ulimit -n 2048
-            sudo -E parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k "$TMP_RESTORE_FUNCTION_SCRIPT" ::: "$(cat "$BACKUP_RESTORE_LIST")"
-            wait
-            #   
+            done <"$BACKUP_RESTORE_LIST"
             
             # resetting terminal settings or further input will not work
             #reset
@@ -1072,8 +965,7 @@ backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt
 ### unsetting password
 ###
 
-# unsetting varibales and cleaning bash environment
-unset_variables   
+unset SUDOPASSWORD
 
 # kill all child and grandchild processes and the parent process itself
 #ps -o pgid= $$ | grep -o '[0-9]*'

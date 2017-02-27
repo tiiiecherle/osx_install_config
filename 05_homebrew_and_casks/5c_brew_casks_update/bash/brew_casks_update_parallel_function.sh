@@ -116,9 +116,7 @@ cleanup-all() {
 }
 
 # upgrading all homebrew formulas
-brew_show_updates_parallel() {
-    # always use _ instead of - because some sh commands called by parallel would give errors
-
+brew-show-updates-parallel() {
     echo "listing brew formulas updates..."
 
     printf '=%.0s' {1..80}
@@ -147,7 +145,7 @@ brew_show_updates_parallel() {
     touch "$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW"
 
     brew_show_updates_parallel_inside() {
-        # always use _ instead of - because some sh commands called by parallel would give errors
+        # no - allowed for functions that call command that use sh, so use _
         local item="$1"
         local BREW_INFO=$(brew info $item)
         #echo BREW_INFO is $BREW_INFO
@@ -278,8 +276,7 @@ brew-install-updates() {
 }
 
 # selectively upgrade casks
-cask_show_updates_parallel () {
-    # always use _ instead of - because some sh commands called by parallel would give errors
+cask-show-updates-parallel() {
     echo "listing casks updates..."
 
     printf '=%.0s' {1..80}
@@ -310,7 +307,7 @@ cask_show_updates_parallel () {
     touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
     
     cask_show_updates_parallel_inside() {
-        # always use _ instead of - because some sh commands called by parallel would give errors
+        # no - allowed for functions that call command that use sh, so use _
         local c="$1"
         local CASK_INFO=$(brew cask info $c)
         local CASK_NAME=$(echo "$c" | cut -d ":" -f1 | xargs)
@@ -559,10 +556,10 @@ then
     
     homebrew-update
     echo ''
-    brew_show_updates_parallel
+    brew-show-updates-parallel
     #brew-show-updates-one-by-one
     echo ''
-    cask_show_updates_parallel
+    cask-show-updates-parallel
     #cask-show-updates-one-by-one
     echo ''
     brew-install-updates

@@ -175,22 +175,21 @@ done
 echo "testing integrity of file(s) in "$FILESTARGZSAVEDIR"/..."
 echo ""
 #
-#
-NUMBER_OF_CORES=$(parallel --number-of-cores)
-NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-#echo $NUMBER_OF_MAX_JOBS
-NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-#echo $NUMBER_OF_MAX_JOBS_ROUNDED
-#
-parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k -q bash -c '
-    if [[ -f "{}" ]];
+IFS=$'\n'
+for TOCHECK in $(cat "$FILESTARGZLOG");
+do
+#echo $TOCHECK
+
+    if [[ -f "$TOCHECK" ]];
     then
-        printf "%-45s" ""$(basename "{}")"... " && unpigz -c "{}" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+        #echo -n "$(basename "$TOCHECK")"'... ' && gtar -tzf "$TOCHECK" >/dev/null 2>&1 && echo file is OK || echo file is INVALID
+        printf "%-45s" ""$(basename "$TOCHECK")"... " && unpigz -c "$TOCHECK" | gtar -tvv >/dev/null 2>&1 && echo -e '\033[1;32mOK\033[0m' || echo -e '\033[1;31mINVALID\033[0m'
     else
         :
     fi
-' ::: "$(cat "$FILESTARGZLOG")"
+done
 wait
+unset IFS
 
 echo ''
 echo 'backing up files done ;)'
