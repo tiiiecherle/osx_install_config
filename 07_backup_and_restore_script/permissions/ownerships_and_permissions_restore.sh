@@ -134,8 +134,8 @@ function backup_restore_permissions {
     
     # app permissions in applications folder
     echo "setting ownerships and permissions in /Applications..."
-    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chmod 755
-    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chown 501:admin
+    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chmod 755 &
+    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chown 501:admin &
     if [ -e /Applications/VirtualBox.app ]; then sudo chown root:admin /Applications/VirtualBox.app; else :; fi
     #sudo chmod 644 "/Applications/.DS_Store"
     
@@ -154,8 +154,8 @@ function backup_restore_permissions {
     # display profiles
     if [ -e "/Library/ColorSync/Profiles/Displays" ]
     then
-        sudo bash -c 'find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 chown root:wheel'
+        sudo bash -c 'find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 chown root:wheel' &
     else
         :
     fi
@@ -180,30 +180,30 @@ function backup_restore_permissions {
     
     if [ -e "/Library/Printers/Canon/CUPSPS2 " ]
     then
-        sudo chown -R root:admin "/Library/Printers/Canon/CUPSPS2"
-        sudo chmod -R 755 "/Library/Printers/Canon/CUPSPS2"
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.nib" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.DAT" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.TBL" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.icc" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.icns" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.plist" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.strings" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.png" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. gif" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. html" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. js" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. gif" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. jpg" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. css" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. xib" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. helpindex" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. PRF" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeResources" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeDirectory" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeRequirements" -print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeSignature"-print0 | xargs -0 chmod 644'
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "PkgInfo" -print0 | xargs -0 chmod 644'
+        sudo chown -R root:admin "/Library/Printers/Canon/CUPSPS2" &
+        sudo chmod -R 755 "/Library/Printers/Canon/CUPSPS2" &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.nib" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.DAT" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.TBL" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.icc" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.icns" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.plist" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.strings" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.png" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. gif" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. html" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. js" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. gif" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. jpg" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. css" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. xib" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. helpindex" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. PRF" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeResources" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeDirectory" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeRequirements" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeSignature"-print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "PkgInfo" -print0 | xargs -0 chmod 644' &
     else
         :
     fi
@@ -270,10 +270,10 @@ function backup_restore_permissions {
     #chflags -R nouchg /"$HOMEFOLDER"
     #diskutil resetUserPermissions / `id -u`
     
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" -type f -print0 | xargs -0 chown 501:staff'
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff'
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" -type f -print0 | xargs -0 chmod 600'
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type d -print0 | xargs -0 chmod 700'
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" -type f -print0 | xargs -0 chown 501:staff' &
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff' &
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" -type f -print0 | xargs -0 chmod 600' &
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' &
     
     #sudo chmod -R u+rwX /"$HOMEFOLDER"/.*
     sudo chown root:wheel /Users
@@ -281,10 +281,12 @@ function backup_restore_permissions {
     sudo chmod 755 "$HOMEFOLDER"
     sudo chmod 777 "$HOMEFOLDER"/Public
     sudo chmod 733 "$HOMEFOLDER"/Public/"Drop Box"
-    # sh files
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700'
+    # .sh files
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' &
+    # .command files
+    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' &
     # bash files without extension
-    sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done'
+    #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' &
     #
     if [[ -e "$HOMEFOLDER"/Library/Services/ ]] && [[ $(ls -A "$HOMEFOLDER"/Library/Services/) ]]
     then
@@ -325,6 +327,9 @@ function backup_restore_permissions {
     #fi
     
     # script finfished
+        
+    wait
+    
     echo 'done setting ownerships and permissions ;)'
 
 }
