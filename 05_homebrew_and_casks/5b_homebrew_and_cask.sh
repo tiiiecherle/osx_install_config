@@ -287,14 +287,14 @@ then
 	silverlight
 	#osxfuse
 	adobe-reader
+	nextcloud
 	teamviewer
+	veracrypt
 	virtualbox
 	virtualbox-extension-pack
 	#totalfinder
 	xtrafinder
-	owncloud
-	the-unarchiver
-	### casks only installed for update monitoring via brew cu
+	### casks only installed for update monitoring
 	alfred
 	angry-ip-scanner
 	appcleaner
@@ -330,18 +330,17 @@ then
 	onyx
 	openoffice
 	oversight
-	owncloud
 	#plex-media-server
 	prefs-editor
 	progressive-downloader
 	skype
 	textwrangler
 	the-archive-browser
+	the-unarchiver
 	tnefs-enough
 	trolcommander
 	#tunnelblick
 	unified-remote
-	veracrypt
 	videomonkey
 	vlc
 	vlc-webplugin
