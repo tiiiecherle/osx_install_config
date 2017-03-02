@@ -552,7 +552,7 @@ function backup_restore {
             NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
             #echo $NUMBER_OF_MAX_JOBS_ROUNDED
             #
-            ulimit -n 2048
+            ulimit -n 4096
             sudo -E parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k "$TMP_BACKUP_FUNCTION_SCRIPT" ::: "$(cat "$BACKUP_RESTORE_LIST")"
             wait
             #
@@ -947,7 +947,7 @@ function backup_restore {
             NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
             #echo $NUMBER_OF_MAX_JOBS_ROUNDED
             #
-            ulimit -n 2048
+            ulimit -n 4096
             sudo -E parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k "$TMP_RESTORE_FUNCTION_SCRIPT" ::: "$(cat "$BACKUP_RESTORE_LIST")"
             wait
             #   
