@@ -43,11 +43,25 @@ m	~/Library/Preferences/com.runningwithcrayons.Alfred-Preferences-3.plist
 echo Angry IP Scanner
 m	/Applications/Angry IP Scanner.app
 
+# Apple Mail
+echo Apple Mail
+u	~/Library/Mail
+
+# Apple Mobile Sync
+echo Apple Mobile Sync
+u	~/Library/Application Support/MobileSync
+
 # AppCleaner
 echo AppCleaner
 m	/Applications/AppCleaner.app
 m	~/Library/Preferences/com.freemacsoft.AppCleaner-Helper.plist
 m	~/Library/Preferences/com.freemacsoft.AppCleaner.plist
+
+# Apptivate
+echo Apptivate
+m	/Applications/Apptivate.app
+m	~/Library/Preferences/se.cocoabeans.apptivate.plist
+m	~/Library/Application Support/Apptivate
 
 # Audio Splitter
 echo Audio Splitter
@@ -319,6 +333,11 @@ echo LiteIcon
 m	/Applications/LiteIcon.app
 m	~/Library/Preferences/net.freemacsoft.LiteIcon.plist
 
+# lock_screen
+echo lock_screen
+m	/Applications/lock_screen.app
+m	/Applications/lock_sleep_screen.app
+
 # MacDown
 echo MacDown
 u	/Applications/MacDown.app
@@ -334,13 +353,6 @@ m	~/Library/Preferences/com.hicknhacksoftware.MacPass.plist
 echo MacUpdate Desktop
 m	/Applications/MacUpdate Desktop.app
 
-# Mail
-echo Mail
-u	~/Library/Mail
-
-# Mobile Sync
-echo Mobile Sync
-u	~/Library/Application Support/MobileSync
 
 # MonKey Office
 echo MonKey Office 2017.app
