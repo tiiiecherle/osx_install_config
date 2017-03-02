@@ -428,7 +428,7 @@ cask-install-updates() {
         #sudo brew cask install "$line" --force
         #${USE_PASSWORD} | brew cask install "$line" --force
         ${USE_PASSWORD} | brew cask reinstall "$line" --force
-        sudo -K
+        sudo -k
         echo ''
     done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
     
@@ -445,7 +445,7 @@ cask-install-updates() {
             sudo -v
             ${USE_PASSWORD} | brew cask uninstall "$line" --force
             ${USE_PASSWORD} | brew cask install "$line" --force
-            sudo -K
+            sudo -k
             echo ''
         done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
     else
@@ -520,17 +520,17 @@ then
     sudo xcode-select --switch /Library/Developer/CommandLineTools
     
     function command_line_tools_update () {
-    # updating command line tools and system
-    echo "checking for command line tools update..."
-    COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
-    if [ "$COMMANDLINETOOLUPDATE" == "" ]
-    then
-    	echo "no update for command line tools available..."
-    else
-    	echo "update for command line tools available, updating..."
-    	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
-    fi
-    #softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
+        # updating command line tools and system
+        echo "checking for command line tools update..."
+        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
+        if [ "$COMMANDLINETOOLUPDATE" == "" ]
+        then
+        	echo "no update for command line tools available..."
+        else
+        	echo "update for command line tools available, updating..."
+        	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
+        fi
+        #softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
     }
     #command_line_tools_update
     
