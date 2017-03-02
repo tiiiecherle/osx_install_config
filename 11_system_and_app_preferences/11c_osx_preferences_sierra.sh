@@ -1082,6 +1082,7 @@ osascript -e 'tell application "System Events" to make login item at end with pr
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"/Applications/XtraFinder.app", hidden:false}'
 #osascript -e 'tell application "System Events" to make login item at end with properties {name:"iStat Menus", path:"/Applications/iStat Menus.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"witchdaemon", path:"/Users/'$USER'/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app", hidden:false}'
+osascript -e 'tell application "System Events" to make login item at end with properties {name:"Apptivate", path:"/Applications/Apptivate.app", hidden:false}'
 
 # adding some more startup-items for user tom if script is run on multiple macs with different users
 if [ "$USER" == "tom" ]
