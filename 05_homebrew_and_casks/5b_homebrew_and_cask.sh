@@ -327,6 +327,7 @@ ffmpeg
 qtfaststart
 jq
 parallel
+gnupg2
 )
 
 # more variables
@@ -378,12 +379,13 @@ then
 	
 	casks=(
 	### needed casks
-	flash-npapi
-	java
-	silverlight
-	#osxfuse
 	adobe-reader
+	flash-npapi
+	gpgtools
+	java
 	nextcloud
+	#osxfuse
+	silverlight
 	teamviewer
 	veracrypt
 	virtualbox
