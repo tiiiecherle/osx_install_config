@@ -1,9 +1,10 @@
 #!/bin/bash
 
 ###
-### backup / restore script v36, last version without parallel was v35
+### backup / restore script v37
+### last version without parallel was v35
+### last version without gpg was v36
 ###
-
 
 
 ###
@@ -131,10 +132,56 @@ function unset_variables() {
     unset SUDOPASSWORD
 }
 
+function delete_tmp_backup_script_fifo1() {
+    if [ -e "/tmp/tmp_backup_script_fifo1" ]
+    then
+        rm "/tmp/tmp_backup_script_fifo1"
+    else
+        :
+    fi
+    if [ -e "/tmp/run_from_backup_script1" ]
+    then
+        rm "/tmp/run_from_backup_script1"
+    else
+        :
+    fi
+}
+
+function create_tmp_backup_script_fifo1() {
+    delete_tmp_backup_script_fifo1
+    touch "/tmp/run_from_backup_script1"
+    echo "1" > "/tmp/run_from_backup_script1"
+    mkfifo -m 600 "/tmp/tmp_backup_script_fifo1"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo1" &
+}
+
+function delete_tmp_backup_script_fifo2() {
+    if [ -e "/tmp/tmp_backup_script_fifo2" ]
+    then
+        rm "/tmp/tmp_backup_script_fifo2"
+    else
+        :
+    fi
+    if [ -e "/tmp/run_from_backup_script2" ]
+    then
+        rm "/tmp/run_from_backup_script2"
+    else
+        :
+    fi
+}
+
+function create_tmp_backup_script_fifo2() {
+    delete_tmp_backup_script_fifo2
+    touch "/tmp/run_from_backup_script2"
+    echo "1" > "/tmp/run_from_backup_script2"
+    mkfifo -m 600 "/tmp/tmp_backup_script_fifo2"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo2" &
+}
+
 #trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "unset_variables; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
+trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; unset_variables; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
 # kill main process only if it hangs on regular exit
-trap "unset_variables; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
+trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; unset_variables; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
 set -e
 
 echo ""
@@ -263,6 +310,13 @@ function backup_restore {
         fi
         
         ###
+        ### updates and installations to all macs running the script
+        ###
+        
+        . "$SCRIPT_DIR"/update_macos/updates_macos.sh
+        wait
+        
+        ###
         ### checking installation of needed tools
         ###
         
@@ -283,9 +337,9 @@ function backup_restore {
         then
             echo homebrew is installed...
             
-            if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep parallel) == '' ]]
+            if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep parallel) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnupg2) == '' ]]
             then
-                echo at least one needed homebrew tool of gnu-tar, pigz, pv, coreutils and parallel is missing, exiting...
+                echo at least one needed homebrew tool of gnu-tar, pigz, pv, coreutils, parallel and gnupg2 is missing, exiting...
                 exit
             else
                 echo needed homebrew tools are installed...     
@@ -356,6 +410,7 @@ function backup_restore {
                 FILESTARGZSAVEDIR="$TARGZSAVEDIR"
                 FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
                 echo "running local files backup..."
+                create_tmp_backup_script_fifo1
                 . "$SCRIPT_DIR"/files/run_files_backup.sh
             else
                 :
@@ -684,6 +739,7 @@ function backup_restore {
             chmod 770 /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/"$BREW_CASKS_UPDATE_APP".sh
             xattr -dr com.apple.quarantine /Applications/"$BREW_CASKS_UPDATE_APP".app
             # running homebrew update script
+            create_tmp_backup_script_fifo2
         	open /Applications/"$BREW_CASKS_UPDATE_APP".app
         	
         	# waiting for the process to finish
