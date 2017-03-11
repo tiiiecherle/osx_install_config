@@ -9,7 +9,7 @@
 # write
 # duti -s com.apple.Safari html all
 #
-# defaults read com.apple.LaunchServices/com.apple.launchservices.secure | grep -B 1 -A 3 public.html
+# defaults read com.apple.LaunchServices/com.apple.launchservices.secure | grep -B 1 -A 5 public.html
 #
 # open /Users/$USER/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist
 
@@ -31,19 +31,23 @@ default_open_with=(
 "LSHandlerURLScheme             https                                       com.apple.safari"
 "LSHandlerContentType           public.html                                 com.apple.safari"
 "LSHandlerContentType           public.xhtml                                com.apple.safari"
-"LSHandlerContentType           public.comma-separated-values-text          org.openoffice.script"          # .csv
+"LSHandlerContentType           public.comma-separated-values-text          org.libreoffice.script"        # .csv
 "LSHandlerContentType           public.shell-script                         com.coteditor.coteditor"        # .sh
-"LSHandlerContentTagClass       public.filename-extension                   com.coteditor.coteditor     LSHandlerContentTag     conf"       # .conf
+"LSHandlerContentTagClass       public.filename-extension                   com.coteditor.coteditor LSHandlerContentTag     conf"       # .conf
 "LSHandlerContentType           com.adobe.pdf                               com.apple.preview"              # .pdf
 "LSHandlerContentType           public.zip-archive                          cx.c3.theunarchiver"            # .zip
 "LSHandlerContentType           org.gnu.gnu-zip-archive                     cx.c3.theunarchiver"            # .tar.gz
 "LSHandlerContentType           org.7-zip.7-zip-archive                     cx.c3.theunarchiver"            # .7z
 "LSHandlerContentType           public.tar-archive                          cx.c3.theunarchiver"            # .tar
 "LSHandlerContentType           net.daringfireball.markdown                 com.uranusjr.macdown"           # .md
+"LSHandlerContentTagClass       public.filename-extension                   org.gpgtools.gpgservices     LSHandlerContentTag    gpg"       # .gpg
+"LSHandlerContentType           com.apple.property-list                     org.tempel.prefseditor"           # .plist
 )
 
-# libreoffice instead of openoffice
+# libreoffice
 #"LSHandlerContentType           public.comma-separated-values-text          org.libreoffice.script"        # .csv
+# openoffice
+#"LSHandlerContentType           public.comma-separated-values-text          org.openoffice.script"          # .csv
 
 
 echo ""
@@ -68,14 +72,17 @@ do
     #fi
 
     function create_entry {
-            $BUDDY -c "Add LSHandlers:$I dict" $PLIST
-            $BUDDY -c "Add LSHandlers:$I:$KEY string $VALUE" $PLIST
-            $BUDDY -c "Add LSHandlers:$I:LSHandlerRoleAll string $HANDLER" $PLIST
             if [[ "$KEY2" != "" ]] && [[ "$VALUE2" != "" ]]
             then
+                $BUDDY -c "Add LSHandlers:$I dict" $PLIST
                 $BUDDY -c "Add LSHandlers:$I:$KEY2 string $VALUE2" $PLIST
+                $BUDDY -c "Add LSHandlers:$I:$KEY string $VALUE" $PLIST
+                $BUDDY -c "Add LSHandlers:$I:LSHandlerRoleAll string $HANDLER" $PLIST
             else
                 :
+                $BUDDY -c "Add LSHandlers:$I dict" $PLIST
+                $BUDDY -c "Add LSHandlers:$I:$KEY string $VALUE" $PLIST
+                $BUDDY -c "Add LSHandlers:$I:LSHandlerRoleAll string $HANDLER" $PLIST
             fi
     }
 
@@ -101,6 +108,9 @@ do
                     echo "Replacing $CONTENT handler with $HANDLER"
                     echo ""
                     $BUDDY -c "Delete 'LSHandlers:$I'" $PLIST
+                    #$BUDDY -c "Delete 'LSHandlers:LSHandlerContentTag'" $PLIST
+                    #$BUDDY -c "Delete 'LSHandlers:LSHandlerContentTagClass'" $PLIST  
+                    #$BUDDY -c "Delete 'LSHandlers:$I'" $PLIST
                     create_entry
                     break
                 else
