@@ -287,8 +287,8 @@ m	/Applications/jameica.app
 u	~/Library/jameica
 
 # JDownloader
-echo JDownloader
-m	/Applications/JDownloader.app
+#echo JDownloader
+#m	/Applications/JDownloader2.app
 
 # KeePassX
 echo KeePassX
@@ -389,9 +389,9 @@ m	/Applications/Overflow.app
 u	~/Library/Application Support/Overflow
 u	~/Library/Preferences/com.stuntsoftware.Overflow.plist
 
-# Owncloud
-echo Owncloud
-m	~/Library/Application Support/ownCloud
+# Nextcloud
+echo Nextcloud
+m	~/Library/Application Support/Nextcloud
 
 # Pages4
 echo Pages4
@@ -513,7 +513,7 @@ m	~/Library/Preferences/com.corecode.SMARTReporter.plist
 
 # ssh
 echo ssh
-u	~/.ssh/config
+u	~/.ssh
 
 # SyncTwoFolders
 echo SyncTwoFolders
@@ -579,6 +579,10 @@ m	/Applications/UnHidden.app
 # User config
 echo User config
 u	~/.config
+
+# VeraCrypt
+u	~/Library/Application Support/VeraCrypt
+u	~/Library/Preferences/org.idrix.VeraCrypt.plist
 
 # VideoMonkey
 echo VideoMonkey
