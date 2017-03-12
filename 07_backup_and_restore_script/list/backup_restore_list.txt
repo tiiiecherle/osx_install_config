@@ -336,7 +336,7 @@ m	~/Library/Preferences/net.freemacsoft.LiteIcon.plist
 # lock_screen
 echo lock_screen
 m	/Applications/lock_screen.app
-m	/Applications/lock_sleep_screen.app
+m	/Applications/lock_screen_and_sleep.app
 
 # MacDown
 echo MacDown
@@ -566,6 +566,11 @@ echo Tunnelblick
 m	/Applications/Tunnelblick.app
 m	~/Library/Preferences/net.tunnelblick.tunnelblick.plist
 u	~/Library/Application Support/Tunnelblick
+
+# unarchive and decrypt
+echo unarchive and decrypt
+m	/Applications/decrypt_finder_input_gpg_progress.app
+m	/Applications/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
 
 # Unified Remote
 echo Unified Remote
