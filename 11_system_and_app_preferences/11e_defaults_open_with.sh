@@ -40,7 +40,7 @@ default_open_with=(
 "LSHandlerContentType           org.7-zip.7-zip-archive                     cx.c3.theunarchiver"            # .7z
 "LSHandlerContentType           public.tar-archive                          cx.c3.theunarchiver"            # .tar
 "LSHandlerContentType           net.daringfireball.markdown                 com.uranusjr.macdown"           # .md
-"LSHandlerContentTagClass       public.filename-extension                   org.gpgtools.gpgservices     LSHandlerContentTag    gpg"       # .gpg
+"LSHandlerContentTagClass       public.filename-extension                   com.apple.automator.unarchive_finder_input_gpg_progress     LSHandlerContentTag    gpg" # .gpg
 "LSHandlerContentType           com.apple.property-list                     org.tempel.prefseditor"           # .plist
 )
 
