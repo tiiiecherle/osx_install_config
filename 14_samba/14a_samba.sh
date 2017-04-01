@@ -40,6 +40,11 @@ EOL
 # more options see
 # man nsmb.conf
 
+# allow unkown servers
+# keeps finder from asking an extra question about connecting
+# you are trying to connect to server xyz, press connect to connect...
+sudo defaults write /Library/Preferences/com.apple.NetworkAuthorization AllowUnknownServers -bool true
+
 # checking effects while connected to a share
 #smbutil statshares -a 
 
