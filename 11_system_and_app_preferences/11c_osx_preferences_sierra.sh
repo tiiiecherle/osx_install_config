@@ -587,6 +587,24 @@ sudo spctl --enable
 
 #### security file vault
 
+# enabling filevault
+if [[ $(fdesetup isactive) == "true" ]]
+then
+	echo "filevault is already already turned on, skipping..."
+else
+	echo "enabling encryption of disk via filevault..."
+	FILEVAULT_KEYFILE="/Users/"$USER"/Desktop/filevault_key_"$USER".txt"
+	touch "$FILEVAULT_KEYFILE"
+	echo $(date) > "$FILEVAULT_KEYFILE"
+	echo "$USER" >> "$FILEVAULT_KEYFILE"
+	echo "filevault key" >> "$FILEVAULT_KEYFILE"
+	sudo fdesetup enable -user "$USER" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
+	# to recover the key afterwards
+	#sudo fdesetup list
+	# to disable, run
+	#sudo fdesetup disable -user "$USER"
+fi
+
 # automatic login with filevault enabled
 # enable
 #sudo defaults delete /Library/Preferences/com.apple.loginwindow DisableFDEAutoLogin
