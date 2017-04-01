@@ -381,7 +381,7 @@ then
 	### needed casks
 	adobe-reader
 	flash-npapi
-	gpgtools
+	#gpgtools
 	java
 	nextcloud
 	#osxfuse
@@ -416,6 +416,7 @@ then
 	google-earth-pro
 	google-earth-web-plugin
 	handbrake
+	hex-fiend
 	ibackup
 	imageoptim
 	insomniax
