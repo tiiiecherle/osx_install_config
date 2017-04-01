@@ -15,10 +15,12 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>*</string>
+				<string>gpg</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>Automator workflow file</string>
+			<string>gpg document</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>****</string>
@@ -30,7 +32,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Application Stub</string>
 	<key>CFBundleIconFile</key>
-	<string>AutomatorApplet</string>
+	<string>gpg.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.apple.automator.unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress</string>
 	<key>CFBundleInfoDictionaryVersion</key>

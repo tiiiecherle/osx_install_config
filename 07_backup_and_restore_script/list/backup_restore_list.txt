@@ -610,6 +610,10 @@ echo VirtualBox Menulet
 m	/Applications/VirtualBox Menulet.app
 m	~/Library/Preferences/com.kiwifruitware.VirtualBox_Menulet.plist
 
+# Virus Scanner Plus
+echo Virus Scanner Plus
+m	~/Library/Containers/com.bitdefender.virusscannerplus/Data/Library/Preferences/com.bitdefender.virusscannerplus.plist
+
 # VLC
 echo VLC
 m	/Applications/VLC.app
