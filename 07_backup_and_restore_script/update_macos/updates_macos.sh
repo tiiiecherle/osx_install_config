@@ -5,6 +5,7 @@
 ###
 
 SCRIPT_DIR_MACOS=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR_BACKUP=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
 
 function start_sudo() {
     ${USE_PASSWORD} | builtin command sudo -p '' -S -v
@@ -68,3 +69,46 @@ function 2017_03_09_update () {
 
 }
 #2017_03_09_update
+
+###
+### 2017-03-24
+###
+
+function 2017_03_24_update () {
+    
+    # uninstalling gpgtools
+    if [[ $(brew cask info gpgtools | grep "Not installed") == "" ]]
+    then
+        start_sudo
+        ${USE_PASSWORD} | brew cask zap gpgtools
+        ${USE_PASSWORD} | brew cask zap textwrangler
+        sudo rm -rf /Users/$USER/.gnupg
+        stop_sudo
+    else
+        :
+    fi
+        
+    # installing own gpg apps
+    cp -a "$SCRIPT_DIR_BACKUP"/unarchive/unarchive_finder_input/decrypt_finder_input_gpg_progress.app /Applications/decrypt_finder_input_gpg_progress.app
+    chmod 755 /Applications/decrypt_finder_input_gpg_progress.app
+    chown 501:admin /Applications/decrypt_finder_input_gpg_progress.app
+    
+    cp -a "$SCRIPT_DIR_BACKUP"/unarchive/unarchive_finder_input/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app /Applications/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
+    chmod 755 /Applications/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
+    chown 501:admin /Applications/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
+    
+    # updating defaults open with
+    if [ -e "$HOME/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist" ]
+    then
+        rm "$HOME/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist"
+    else
+        :
+    fi
+    sleep 2
+    "$SCRIPT_DIR_MACOS"/11e_defaults_open_with.sh
+    
+    osascript -e 'tell app "System Events" to display dialog "the default \"open with\" associations have been set, 
+please reboot after finishing the script - thanks ;)" buttons "OK"'
+
+}
+#2017_03_24_update
