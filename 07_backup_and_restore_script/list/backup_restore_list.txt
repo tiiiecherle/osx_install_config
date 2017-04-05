@@ -647,6 +647,7 @@ u	 ~/Library/Widgets/Wetter.wdgt
 echo Witch
 m	~/Library/PreferencePanes/Witch.prefPane
 m	~/Library/Application Support/Witch
+m	~/Library/Application Support/Many Tricks
 
 # X-Lite
 echo X-Lite
