@@ -112,3 +112,26 @@ please reboot after finishing the script - thanks ;)" buttons "OK"'
 
 }
 #2017_03_24_update
+
+
+
+###
+### 2017-04-07
+###
+
+function 2017-04-07_update () {
+    
+    # unistalling gnupg2 (formula was dropped)
+    ${USE_PASSWORD} | brew uninstall gnupg2
+    
+    # installing gnupg2
+    ${USE_PASSWORD} | brew install gnupg
+    brew link --overwrite gnupg
+    
+    # preferences notification center
+    start_sudo
+    "$SCRIPT_DIR_MACOS"/11h_notification_center.sh
+    stop_sudo
+
+}
+2017-04-07_update
