@@ -183,7 +183,7 @@ fi
 ###
 
 
-if [ "$SELECTEDUSER" == "tom" ] || [ "$SELECTEDUSER" == "bobby" ];
+if [ "$SELECTEDUSER" == "tom" ] || [ "$SELECTEDUSER" == "bobby" ] || [ "$SELECTEDUSER" == "wolfgang" ];
 then
     :
 else
@@ -219,6 +219,17 @@ then
     "/Users/$USER/Eigene_Dateien_wsmac"
     "/Users/$USER/Documents"
     "/Users/$USER/Downloads"
+    )
+
+else
+    :
+fi
+
+if [ "$SELECTEDUSER" == "wolfgang" ];
+then
+
+    BACKUPDIRS=(
+    "/Users/$USER/Desktop/desktop"
     )
 
 else
