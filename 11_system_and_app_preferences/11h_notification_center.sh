@@ -6,7 +6,7 @@ applications_to_set_values=(
 "/Applications/pdf_200dpi_shrink.app/custom_files/pdf_shrink_done.app				335"
 "/Applications/Reminders.app														343"
 "/Applications/EagleFiler.app														335"
-"/Applications/VirusScannerPlus.app													327"
+"/Applications/VirusScannerPlus.app													335"
 )
 
 PLIST_FILE='~/Library/Preferences/com.apple.ncprefs.plist'
