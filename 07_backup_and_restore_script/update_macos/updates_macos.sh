@@ -132,6 +132,12 @@ function 2017-04-07_update () {
     start_sudo
     "$SCRIPT_DIR_MACOS"/11h_notification_center.sh
     stop_sudo
+    
+    # libreoffice language pack
+    start_sudo
+    brew update
+    ${USE_PASSWORD} | brew cask install --force libreoffice-language-pack
+    stop_sudo
 
 }
 2017-04-07_update
