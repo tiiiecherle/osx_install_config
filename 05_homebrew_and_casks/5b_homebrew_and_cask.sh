@@ -395,6 +395,7 @@ then
 	### casks only installed for update monitoring
 	### big casks first
 	libreoffice
+	libreoffice-language-pack
 	openoffice
 	### alpabetical
 	alfred
