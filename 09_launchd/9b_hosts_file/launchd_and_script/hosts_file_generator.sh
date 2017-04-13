@@ -90,7 +90,7 @@ hosts_file_install_update() {
             then
                 sudo rm -rf /Applications/hosts_file_generator/
                 mkdir -p /Applications/hosts_file_generator/
-                git clone https://github.com/StevenBlack/hosts.git /Applications/hosts_file_generator/
+                git clone --depth 5 https://github.com/StevenBlack/hosts.git /Applications/hosts_file_generator/
             else
                 :
             fi
@@ -116,8 +116,9 @@ hosts_file_install_update() {
     
         # comment out lines
         # sport1 videos
-        sudo sed -i '' '/cdn-static.liverail.com/s/^/#/g' /etc/hosts
-        sudo sed -i '' '/c.amazon-adsystem.com/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/cdn-static.liverail.com/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/c.amazon-adsystem.com/s/^/#/g' /etc/hosts
+        sudo sed -i '' '/probe.yieldlab.net/s/^/#/g' /etc/hosts
         #or
         #sudo awk -i inplace '/cdn-static.liverail.com/ {$0="#"$0}1' /etc/hosts
     
