@@ -327,7 +327,7 @@ ffmpeg
 qtfaststart
 jq
 parallel
-gnupg2
+gnupg
 )
 
 # more variables
