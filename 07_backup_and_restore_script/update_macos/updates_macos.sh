@@ -121,6 +121,8 @@ please reboot after finishing the script - thanks ;)" buttons "OK"'
 
 function 2017-04-07_update () {
     
+    set +e
+    
     # unistalling gnupg2 (formula was dropped)
     ${USE_PASSWORD} | brew uninstall gnupg2
     
@@ -138,6 +140,8 @@ function 2017-04-07_update () {
     brew update
     ${USE_PASSWORD} | brew cask install --force libreoffice-language-pack
     stop_sudo
+    
+    set -e
 
 }
-2017-04-07_update
+#2017-04-07_update
