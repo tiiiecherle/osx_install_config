@@ -322,7 +322,7 @@ m	/Library/LaunchDaemons/com.hostsfile.install_update.plist
 # LibreOffice
 echo LibreOffice
 m	/Applications/LibreOffice.app
-m	~/Library/Application Support/LibreOffice/4/user/registrymodifications.xcu
+u	~/Library/Application Support/LibreOffice/4/user/registrymodifications.xcu
 
 # LiquidCD
 echo LiquidCD
