@@ -283,9 +283,14 @@ echo "done ;)"
 echo ""
 
 # deleting some files / folders
-if [[ $(find "/Users/$USER/Music/iTunes/Mobile Applications/" -type f) != "" ]]
+if [[ -e "/Users/$USER/Music/iTunes/Mobile Applications/" ]]
 then
-    rm "/Users/$USER/Music/iTunes/Mobile Applications/"*
+    if [[ $(find "/Users/$USER/Music/iTunes/Mobile Applications/" -type f) != "" ]]
+    then
+        rm "/Users/$USER/Music/iTunes/Mobile Applications/"*
+    else
+        :
+    fi
 else
     :
 fi

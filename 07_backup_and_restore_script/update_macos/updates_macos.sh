@@ -145,3 +145,25 @@ function 2017-04-07_update () {
 
 }
 #2017-04-07_update
+
+
+
+###
+### 2017-05-19
+###
+
+function 2017-05-19_update () {
+    
+    set +e
+    
+    # libreoffice language pack
+    start_sudo
+    brew update
+    ${USE_PASSWORD} | brew cask zap adobe-reader
+    ${USE_PASSWORD} | brew cask install --force adobe-acrobat-reader
+    stop_sudo
+    
+    set -e
+
+}
+#2017-05-19_update

@@ -326,6 +326,19 @@ function backup_restore_permissions {
     #	:
     #fi
     
+    # vbox_shared folder
+    VBOX_SHARED_FOLDER="/Users/"$USER"/Desktop/files/vbox_shared"
+    if [[ -e "$VBOX_SHARED_FOLDER" ]]
+    then
+        #rm -rf /Users/$USER/Desktop/files/vbox_shared
+        #mkdir -p /Users/$USER/Desktop/files/vbox_shared
+        sudo chown -R sharinguser:admin "$VBOX_SHARED_FOLDER"
+        sudo chmod 770 "$VBOX_SHARED_FOLDER"
+        sudo chmod -R +a "staff allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" "$VBOX_SHARED_FOLDER"
+    else
+        :
+    fi
+    
     # script finfished
         
     wait
