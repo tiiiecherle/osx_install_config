@@ -57,12 +57,6 @@ m	/Applications/AppCleaner.app
 m	~/Library/Preferences/com.freemacsoft.AppCleaner-Helper.plist
 m	~/Library/Preferences/com.freemacsoft.AppCleaner.plist
 
-# Apptivate
-echo Apptivate
-m	/Applications/Apptivate.app
-m	~/Library/Preferences/se.cocoabeans.apptivate.plist
-m	~/Library/Application Support/Apptivate
-
 # Audio Splitter
 echo Audio Splitter
 m	/Applications/Audio Splitter.app
@@ -456,6 +450,12 @@ u	~/Library/Preferences/com.PS.PSD.plist
 echo PVGuard
 u	~/PVGuardClient
 
+# Quicksilver
+echo Quicksilver
+m	/Applications/Quicksilver.app
+m	~/Library/Application Support/Quicksilver
+m	~/Library/Preferences/com.blacktree.Quicksilver.plist
+
 # Remote Buddy
 echo Remote Buddy
 m	/Applications/Remote Buddy.app
@@ -510,6 +510,11 @@ u	~/Library/Preferences/com.skype.skype.plist
 echo SMARTReporter
 m	/Applications/SMARTReporter.app
 m	~/Library/Preferences/com.corecode.SMARTReporter.plist
+
+# smb service
+echo smb service
+m	/Applications/smb_disable.app
+m	/Applications/smb_enable.app
 
 # ssh
 echo ssh
