@@ -396,7 +396,8 @@ then
 	### big casks first
 	libreoffice
 	libreoffice-language-pack
-	openoffice
+	#openoffice
+	onlyoffice
 	### alpabetical
 	alfred
 	angry-ip-scanner
@@ -419,6 +420,7 @@ then
 	handbrake
 	hex-fiend
 	ibackup
+	iina
 	imageoptim
 	insomniax
 	istat-menus
