@@ -975,14 +975,20 @@ defaults write com.apple.SoftwareUpdate ScheduleFrequency -int 1
 echo "preferences sharing"
 
 # set computer name (as done via system preferences - sharing)
-echo 'only numbers, characters [a-zA-Z] and '-' are allowed...'
-read -p "Enter new hostname: " _hn
+if [ "$USER" == "tom" ]
+then
+    MY_HOSTNAME="toms-macbookpro"
+else
+    echo 'only numbers, characters [a-zA-Z] and '-' are allowed...'
+    read -p "Enter new hostname: " MY_HOSTNAME
+fi
 
-sudo scutil --set ComputerName "$_hn"
-sudo scutil --set HostName "$_hn"
-sudo scutil --set LocalHostName "$_hn"
-sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "$_hn"
+sudo scutil --set ComputerName "$MY_HOSTNAME"
+sudo scutil --set HostName "$MY_HOSTNAME"
+sudo scutil --set LocalHostName "$MY_HOSTNAME"
+#sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "$MY_HOSTNAME"
 dscacheutil -flushcache
+unset MY_HOSTNAME
 
 # turn off file sharing
 # deactivate smb file server
@@ -1005,6 +1011,88 @@ fi
 # turn off internet sharing
 #sudo launchctl unload /System/Library/LaunchDaemons/com.apple.InternetSharing.plist
 
+# removing public share
+if [[ $(sudo sharing -l | grep /Users/$USER/Public) != "" ]]
+then
+	sudo sharing -r /Users/$USER/Public
+else
+	:
+fi
+
+### separate user for smb sharing    
+if [ "$USER" == "tom" ]
+then
+    
+    echo ''
+    echo creating macos sharinguser...
+    echo ''
+    echo "please set sharinguser password..."
+    sharinguser_password="    "
+    while [[ $sharinguser_password != $sharinguser_password2 ]] || [[ $sharinguser_password == "" ]]; do stty -echo && trap 'stty echo' EXIT && printf "sharinguser password: " && read -r "$@" sharinguser_password && printf "\n" && printf "re-enter sharinguser password: " && read -r "$@" sharinguser_password2 && stty echo && trap - EXIT && printf "\n" && USE_SHARINGUSER_PASSWORD='builtin printf '"$sharinguser_password\n"''; done
+    
+    # deleting user (if existing)
+    if [[ $(dscl . list /Users | grep sharinguser) != "" ]]
+    then
+    	sudo dscl . delete /Users/sharinguser
+    else
+    	:
+    fi    
+    
+    # creating user
+    sudo dscl . create /Users/sharinguser
+    sudo dscl . create /Users/sharinguser RealName "sharinguser"
+    sudo dscl . create /Users/sharinguser hint "none"
+    #sudo dscl . create /Users/sharinguser picture "/Path/To/Picture.png"
+    sudo dscl . passwd /Users/sharinguser $sharinguser_password
+    export LastID=`dscl . -list /Users UniqueID | awk '{print $2}' | sort -n | tail -1`
+    export NextID=$((LastID + 1))
+    #echo $NextID
+    sudo dscl . create /Users/sharinguser UniqueID $NextID
+    sudo dscl . create /Users/sharinguser PrimaryGroupID 20
+    sudo dscl . create /Users/sharinguser UserShell /usr/bin/false
+    sudo dscl . create /Users/sharinguser NFSHomeDirectory /dev/null     
+    
+    ### defining smb shares
+    echo ''
+    echo defining macos smb shares...
+    
+    # listing shares
+    #sudo sharing -l
+    # creating shared folder with ownership and permissions
+    #rm -rf /Users/$USER/Desktop/files/vbox_shared
+    mkdir -p /Users/$USER/Desktop/files/vbox_shared
+    sudo chown -R sharinguser:admin /Users/$USER/Desktop/files/vbox_shared
+    sudo chmod 770 /Users/$USER/Desktop/files/vbox_shared
+    # removing possible exiting share
+    sudo sharing -r /Users/$USER/Desktop/files/vbox_shared
+    # creating share
+    sudo sharing -a /Users/$USER/Desktop/files/vbox_shared -S vbox_shared -s 001 -g 000
+    # listing shares
+    #sudo sharing -l
+    # status if sharing is enabled is given by "shared" (0=disabled, 1=enabled)
+    # sudo sharing -r /Users/$USER/Desktop/files/vbox_shared
+    sudo chmod -R +a "staff allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" /Users/$USER/Desktop/files/vbox_shared
+    # both sethashtypes commands have to be run for the login to work (bug?)
+    # if it is not working run the second one incl. -a and -p twice
+    sudo pwpolicy -u sharinguser -sethashtypes SMB-NT on
+    sudo pwpolicy -u sharinguser -a sharinguser -p $sharinguser_password -sethashtypes SMB-NT on
+    sudo pwpolicy -u sharinguser -gethashtypes
+    
+    # enabling sharing
+    #echo enabling macos smb sharing...
+    #sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.smbd.plist
+    # use /Applications/smb_enable.app
+    
+    # disabling sharing
+    #sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.smbd.plist
+    # use /Applications/smb_disable.app
+        
+    unset sharinguser_password
+    unset sharinguser_password2
+    
+else
+    :
+fi
 
 
 ###
@@ -1100,7 +1188,7 @@ osascript -e 'tell application "System Events" to make login item at end with pr
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"/Applications/XtraFinder.app", hidden:false}'
 #osascript -e 'tell application "System Events" to make login item at end with properties {name:"iStat Menus", path:"/Applications/iStat Menus.app", hidden:false}'
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"witchdaemon", path:"/Users/'$USER'/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app", hidden:false}'
-osascript -e 'tell application "System Events" to make login item at end with properties {name:"Apptivate", path:"/Applications/Apptivate.app", hidden:false}'
+osascript -e 'tell application "System Events" to make login item at end with properties {name:"Quicksilver", path:"/Applications/Quicksilver.app", hidden:false}'
 
 # adding some more startup-items for user tom if script is run on multiple macs with different users
 if [ "$USER" == "tom" ]
