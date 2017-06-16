@@ -30,7 +30,7 @@ fi
 #signing_required=no
 #EOL
 
-### sierra
+### sierra & high sierra
 bash -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
 [default]
 protocol_vers_map=4

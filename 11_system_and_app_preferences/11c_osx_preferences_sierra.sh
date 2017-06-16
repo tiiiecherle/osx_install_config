@@ -1019,10 +1019,7 @@ else
 	:
 fi
 
-### separate user for smb sharing    
-if [ "$USER" == "tom" ]
-then
-    
+function creating_sharing_user() {
     echo ''
     echo creating macos sharinguser...
     echo ''
@@ -1089,7 +1086,13 @@ then
         
     unset sharinguser_password
     unset sharinguser_password2
-    
+}
+
+### separate user for smb sharing    
+if [ "$USER" == "tom" ]
+then
+    #creating_sharing_user
+    :
 else
     :
 fi

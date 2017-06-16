@@ -8,7 +8,11 @@ INSTALL ADDITIONAL APPS
 
 
 # adobe cs 5.5
-pkill -9 SafariPlugInUpdateNotifier		# needed for adobe cs5 installer
+# needed for adobe cs5 installer
+pkill -9 SafariPlugInUpdateNotifier		
+pkill -9 SafariBookmarksSyncAgent
+pkill -9 SafariNotificationAgent		
+
 
 # if the installer refuses to start when double clicking, run it from terminal
 /Volumes/CS5_5\ Design\ Prm/Adobe\ CS5_5\ Design\ Premium/Install.app/Contents/MacOS/Install

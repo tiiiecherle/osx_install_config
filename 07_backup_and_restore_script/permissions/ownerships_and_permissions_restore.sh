@@ -281,6 +281,11 @@ function backup_restore_permissions {
     sudo chmod 755 "$HOMEFOLDER"
     sudo chmod 777 "$HOMEFOLDER"/Public
     sudo chmod 733 "$HOMEFOLDER"/Public/"Drop Box"
+    # ssh
+    #chmod 700 ~/
+    chmod 700 "$HOMEFOLDER"/.ssh
+    chmod 600 "$HOMEFOLDER"/.ssh/config
+    chmod 600 "$HOMEFOLDER"/.ssh/*
     # .sh files
     sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$HOMEFOLDER"'/Desktop/restore/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' &
     # .command files

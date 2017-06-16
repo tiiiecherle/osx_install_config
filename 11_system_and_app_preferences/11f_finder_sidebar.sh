@@ -8,7 +8,7 @@
 # -rwxr-xr-x    1 root  wheel  47724 14 Apr 02:07 mysides
 # https://github.com/mosen/mysides
 MYSIDESVERSION="1.0.1"
-read -r -p "do you want to install / update to mysides "$MYSIDESVERSION"? [Y/n] " answer
+read -r -p "do you want to install / update to mysides "$MYSIDESVERSION"? [y/N] " answer
 response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
 #echo $response
 # >= bash 4
@@ -16,7 +16,8 @@ response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
 # >= bash 3.2
 #if [[ $response =~ ^([yes]|[y]|[""])$ ]]
 #
-if [[ $response == "y" || $response == "yes" || $response == "" ]]
+#if [[ $response == "y" || $response == "yes" || $response == "" ]]
+if [[ $response == "y" || $response == "yes" ]]
 then
 	echo "downloading and installing mysides..."
 	MYSIDESINSTALLER="/Users/$USER/Desktop/mysides-"$MYSIDESVERSION".pkg"
@@ -47,8 +48,10 @@ echo "clearing and setting finder sidebare items..."
 # sudo chmod 755 "/usr/local/bin/mysides"
 #mysides remove all
 #
-mysides remove "Alle meine Dateien"
+#mysides remove "Alle meine Dateien"
+mysides remove myDocuments.cannedSearch
 mysides remove iCloud
+mysides add domain-AirDrop nwnode://domain-AirDrop
 mysides remove domain-AirDrop
 mysides add Applications file:///Applications
 mysides add Desktop file:///Users/${USER}/Desktop
@@ -122,15 +125,20 @@ fi
 ###
 
 # device enable
-if [[ -z $(/usr/libexec/PlistBuddy -c "Print :systemitems:VolumesList:0:Flags" ~/Library/Preferences/com.apple.sidebarlists.plist) ]] > /dev/null 2>&1
+#if [[ -z $(/usr/libexec/PlistBuddy -c "Print :systemitems:VolumesList:0:Flags" ~/Library/Preferences/com.apple.sidebarlists.plist) ]] > /dev/null 2>&1
+#then
+#	/usr/libexec/PlistBuddy -c "Add :systemitems:VolumesList:0:Flags integer 1" ~/Library/Preferences/com.apple.sidebarlists.plist
+#else
+#	:
+#fi
+
+# device disable
+if [[ ! -z $(/usr/libexec/PlistBuddy -c "Print :systemitems:VolumesList:0:Flags" ~/Library/Preferences/com.apple.sidebarlists.plist) ]] > /dev/null 2>&1
 then
-	/usr/libexec/PlistBuddy -c "Add :systemitems:VolumesList:0:Flags integer 1" ~/Library/Preferences/com.apple.sidebarlists.plist
+	/usr/libexec/PlistBuddy -c "Delete :systemitems:VolumesList:0:Flags" ~/Library/Preferences/com.apple.sidebarlists.plist
 else
 	:
 fi
-
-# device disable
-#/usr/libexec/PlistBuddy -c "Delete :systemitems:VolumesList:0:Flags" ~/Library/Preferences/com.apple.sidebarlists.plist
 
 # hard disks
 if [[ -z $(/usr/libexec/PlistBuddy -c "Print :systemitems:ShowHardDisks" ~/Library/Preferences/com.apple.sidebarlists.plist) ]] > /dev/null 2>&1
@@ -141,7 +149,7 @@ else
 	/usr/libexec/PlistBuddy -c "Add :systemitems:ShowHardDisks bool true" ~/Library/Preferences/com.apple.sidebarlists.plist
 fi
 # when all harddisks should be shown the following is needed, comment out when setting hard disks false
-for VOLUMENAME in macintosh_hd macintosh_hd2
+for VOLUMENAME in macintosh_hd2 macintosh_hd
 do 
 	for i in 0 1 2 3 4 5
 	do

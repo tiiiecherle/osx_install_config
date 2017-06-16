@@ -179,14 +179,39 @@ function stop_sudo() {
     sudo -k
 }
 
-#trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
+function activating_keepingyouawake() {
+if [ -e /Applications/KeepingYouAwake.app ]
+then
+	echo "activating keepingyouawake..."
+        echo ''
+	open -g /Applications/KeepingYouAwake.app
+        open -g keepingyouawake:///activate
+else
+        :
+fi
+}
+
+function deactivating_keepingyouawake() {
+if [ -e /Applications/KeepingYouAwake.app ]
+then
+    echo "deactivating keepingyouawake..."
+    open -g keepingyouawake:///deactivate
+else
+    :
+fi
+}
+
+#trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; deactivating_keepingyouawake >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
 trap "stop_sudo; unset_variables; printf '\n'; stty sane; pkill ruby; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
 # kill main process only if it hangs on regular exit
-trap "stop_sudo; unset_variables; stty sane; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
+trap "stop_sudo; unset_variables; stty sane; kill_subprocesses >/dev/null 2>&1; deactivating_keepingyouawake >/dev/null 2>&1; exit; kill_main_process" EXIT
 #set -e
 
+# starting sudo keep alive loop
+start_sudo
 
 # installing command line tools
+function command_line_tools_install () {
 if xcode-select --install 2>&1 | grep installed >/dev/null
 then
   	echo command line tools are installed...
@@ -195,17 +220,14 @@ else
   	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
   	#sudo xcodebuild -license accept
 fi
-
-# starting sudo keep alive loop
-start_sudo
-
-sudo xcode-select --switch /Library/Developer/CommandLineTools
-#stop_sudo
+}
+# does not work without power source connection in 10.13
+#command_line_tools_install
 
 function command_line_tools_update () {
     # updating command line tools and system
     echo "checking for command line tools update..."
-    COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools")
+    COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | head -n 1)
     if [ "$COMMANDLINETOOLUPDATE" == "" ]
     then
     	echo "no update for command line tools available..."
@@ -215,7 +237,10 @@ function command_line_tools_update () {
     fi
     #softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
 }
-command_line_tools_update
+#command_line_tools_update
+
+sudo xcode-select --switch /Library/Developer/CommandLineTools
+#stop_sudo
 
 # installing homebrew without pressing enter or entering the password again
 echo ''
@@ -252,7 +277,7 @@ brew analytics off
 #cd /usr/local/Library && git stash && git clean -d -f
 brew update
 brew upgrade
-# temp fix for no plain text file error
+# temporarily updating to the latest git status / commits, git update / upgrade will update to latest stable version when released
 #cd "$(brew --repository)" && git checkout master && git pull origin master && cd -
 brew prune
 brew doctor
@@ -265,11 +290,17 @@ echo "cleaning up..."
 brew cleanup
 #stop_sudo
 
-# homebrew cask
+# installing homebrew cask
 echo ''
 echo "installing homebrew cask..."
 
 brew tap caskroom/cask
+
+# installing cask repair to contribute to homebrew casks
+echo ''
+echo "installing cask-repair..."
+brew install vitorgalvao/tiny-scripts/cask-repair
+#cask-repair --help
 
 # cleaning up
 echo ''
@@ -281,6 +312,11 @@ brew cask cleanup
 #stop_sudo
 
 #rm -rf ~/Applications
+
+# activating keepingyouawake
+echo "installing keepingyouawake..."
+builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+activating_keepingyouawake
 
 # installing xquartz
 if [[ "$CONT1_BREW" == "y" || "$CONT1_BREW" == "yes" || "$CONT1_BREW" == "" ]]
@@ -307,7 +343,7 @@ else
 fi
 
 # installing some homebrew packages
-echo ''
+#echo ''
 echo "installing homebrew packages..."
 
 homebrewpackages=(
@@ -319,7 +355,7 @@ pigz
 gnu-tar
 htop
 coreutils
-duti
+#duti
 ghostscript
 xpdf
 ffmpeg
@@ -345,7 +381,8 @@ then
     for homebrewpackage_to_install in "${homebrewpackages[@]}"
 	do
 	    echo installing formula "$homebrewpackage_to_install"...
-		${USE_PASSWORD} | brew install "$homebrewpackage_to_install" 2> /dev/null | grep "/Cellar/.*files,"
+		#${USE_PASSWORD} | brew install "$homebrewpackage_to_install" 2> /dev/null | grep "/Cellar/.*files,\|Installing.*dependency"
+		${USE_PASSWORD} | brew install "$homebrewpackage_to_install"
 	done
     # does not work parallel because of dependencies and brew requirements
     # parallel brew processes sometimes not finish install, give errors or hang
@@ -371,7 +408,7 @@ then
     # without this install / reinstall of the following casks failed (2017-01)
     #start_sudo
 	${USE_PASSWORD} | brew cask zap --force flash-npapi
-	${USE_PASSWORD} | brew cask zap --force adobe-reader
+	${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
 	#stop_sudo
     
     echo ''
@@ -379,7 +416,7 @@ then
 	
 	casks=(
 	### needed casks
-	adobe-reader
+	adobe-acrobat-reader
 	flash-npapi
 	#gpgtools
 	java
@@ -434,7 +471,7 @@ then
 	macpass
 	namechanger
 	onyx
-	oversight
+	#oversight
 	#plex-media-server
 	prefs-editor
 	progressive-downloader
@@ -607,6 +644,8 @@ echo ''
 echo "homebrew and cask install script done ;)"
 echo ''
 
+# deactivating keepingyouawake
+deactivating_keepingyouawake
 
 
 ###

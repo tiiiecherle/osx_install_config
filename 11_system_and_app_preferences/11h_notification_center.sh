@@ -24,7 +24,9 @@ getting-needed-entry () {
 	
 	for i in $(seq 0 $LISTED_ENTRIES)
 	do 
-	    if [[ $(/usr/libexec/PlistBuddy -c "Print apps:$i" $(eval echo "$PLIST_FILE") | grep "$BUNDLE_IDENTIFIER") != "" ]]
+	    #if [[ $(/usr/libexec/PlistBuddy -c "Print apps:$i" $(eval echo "$PLIST_FILE") | grep "$BUNDLE_IDENTIFIER") != "" ]] 2> /dev/null
+	   	(/usr/libexec/PlistBuddy -c "Print apps:$i" $(eval echo "$PLIST_FILE") | grep "$BUNDLE_IDENTIFIER") >/dev/null 2>&1
+	   	if [ $? -eq 0 ]
 	    then
 	        #echo $i
 	        NEEDED_ENTRY=$i

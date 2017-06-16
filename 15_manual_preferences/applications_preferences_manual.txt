@@ -2,7 +2,9 @@ APPLICATIONS PREFERENCES
 
 all Browser
 	google.com
+	google.de
 	privacy settings
+	after activatin deny cookies in safari add the privacy settings field to adblocker
 
 Adobe Reader
 	nicht als Standard für pdfs verwenden

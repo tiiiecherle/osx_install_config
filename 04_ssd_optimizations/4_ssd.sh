@@ -218,7 +218,7 @@ EOL
     #osascript -e 'tell app "loginwindow" to «event aevtrlgo»'       # logout
 
 else
-	echo "this script is only for ssds... exiting..."
+	echo "this script is for ssds only... exiting..."
 fi
 
 
