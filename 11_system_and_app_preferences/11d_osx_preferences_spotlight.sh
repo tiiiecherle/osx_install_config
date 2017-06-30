@@ -123,8 +123,18 @@ tell application "System Events"
 		# first checkbox in main window
 		#click checkbox 1 of tab group 1 of window 1
 		# first checkbox of first row in table in window
-		click checkbox 1 of row 1 of table 1 of scroll area 1 of tab group 1 of window 1
-		#click checkbox 1 of row 2 of table 1 of scroll area 1 of tab group 1 of window 1
+		#click checkbox 1 of row 1 of table 1 of scroll area 1 of tab group 1 of window 1
+		set theCheckbox to (checkbox 1 of row 1 of table 1 of scroll area 1 of tab group 1 of window 1)
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 1
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is true then click theCheckbox
+		end tell
+		delay 1
 	end tell
 end tell
 

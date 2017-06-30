@@ -1167,13 +1167,18 @@ sudo defaults write /Library/Preferences/com.apple.loginwindow UseVoiceOverAtLog
 # osascript -e 'tell application "System Events" to delete login item "itemname"'
 
 # deleting all startup items
-osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//' | while read -r autostartapp
-do
-	IFS=$'\n'
-	echo deleting autostartentry for $autostartapp
-	osascript -e 'tell application "System Events" to delete login item "'$autostartapp'"'
-	unset IFS
-done
+if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//') != "" ]]
+then
+    osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//' | while read -r autostartapp
+    do
+    	IFS=$'\n'
+    	echo deleting autostartentry for $autostartapp
+    	osascript -e 'tell application "System Events" to delete login item "'$autostartapp'"'
+    	unset IFS
+    done
+else
+    :
+fi
 
 # adding startup-items
 osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 2", path:"/Applications/Bartender 2.app", hidden:false}'

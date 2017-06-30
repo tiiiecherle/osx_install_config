@@ -80,6 +80,12 @@ echo Bartender
 m	/Applications/Bartender 2.app
 u	~/Library/Preferences/com.surteesstudios.Bartender.plist
 
+# BBEdit
+echo BBEdit
+m	/Applications/BBEdit.app
+m	~/Library/Application Support/BBEdit
+m	~/Library/Preferences/com.barebones.bbedit.plist
+
 # BL Banking
 echo BL Banking
 u	/Applications/BL Banking Launcher ts.app
@@ -391,6 +397,11 @@ m	~/Library/Application Support/Nextcloud
 echo Pages4
 m	/Applications/Pages4.app
 
+# Paragon ExtFS
+echo Paragon ExtFS
+m	~/Library/Preferences/com.paragon-software.filesystems.ExtFS.prefpanel.plist
+m	~/Library/Preferences/com.paragon-software.extfs.fsapp.plist
+
 # PasswordWallet
 echo PasswordWallet
 m	/Applications/PasswordWallet.app
@@ -516,6 +527,12 @@ echo smb service
 m	/Applications/smb_disable.app
 m	/Applications/smb_enable.app
 
+# Spotify
+echo Spotify
+u	~/Library/Application Support/Spotify
+u	~/Library/Preferences/com.spotify.client.plist
+#u	~/Library/Cookies/com.spotify.client.binarycookies
+
 # ssh
 echo ssh
 u	~/.ssh
@@ -530,11 +547,6 @@ u	/Applications/Telegram.app
 u	~/Library/Application Support/Telegram
 u	~/Library/Containers/ru.keepcoder.Telegram/Data/Library/Preferences/ru.keepcoder.Telegram.plist
 u	~/Library/Preferences/ru.keepcoder.Telegram.plist
-
-# TextWrangler
-echo TextWrangler
-m	/Applications/TextWrangler.app
-m	~/Library/Preferences/com.barebones.textwrangler.plist
 
 # The Archive Browser
 echo The Archive Browser

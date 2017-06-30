@@ -148,8 +148,13 @@ function setting_preferences {
     tell application "System Events"
     	tell process "System Preferences"
     		delay 0.5
-    		click checkbox "Datum und Uhrzeit in der Menüleiste anzeigen" of tab group of window 1
-    		#click checkbox 3 of tab group of window 1
+    		#set theCheckbox to checkbox "Datum und Uhrzeit in der Menüleiste anzeigen" of tab group 1 of window 1
+		    set theCheckbox to checkbox 3 of tab group 1 of window 1
+    		tell theCheckbox
+    			set checkboxStatus to value of theCheckbox as boolean
+    			if checkboxStatus is true then click theCheckbox
+    		end tell
+    		delay 1
     	end tell
     end tell
     
@@ -595,22 +600,26 @@ EOF
     #### security file vault
     
     # enabling filevault
-    if [[ $(fdesetup isactive) == "true" ]]
-    then
-    	echo "filevault is already already turned on, skipping..."
-    else
-    	echo "enabling encryption of disk via filevault..."
-    	FILEVAULT_KEYFILE="/Users/"$USER"/Desktop/filevault_key_"$USER".txt"
-    	touch "$FILEVAULT_KEYFILE"
-    	echo $(date) > "$FILEVAULT_KEYFILE"
-    	echo "$USER" >> "$FILEVAULT_KEYFILE"
-    	echo "filevault key" >> "$FILEVAULT_KEYFILE"
-    	sudo fdesetup enable -user "$USER" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
-    	# to recover the key afterwards
-    	#sudo fdesetup list
-    	# to disable, run
-    	#sudo fdesetup disable -user "$USER"
-    fi
+    function enabling_filevault() {
+        
+        if [[ $(fdesetup isactive) == "true" ]]
+        then
+        	echo "filevault is already already turned on, skipping..."
+        else
+        	echo "enabling encryption of disk via filevault..."
+        	FILEVAULT_KEYFILE="/Users/"$USER"/Desktop/filevault_key_"$USER".txt"
+        	touch "$FILEVAULT_KEYFILE"
+        	echo $(date) > "$FILEVAULT_KEYFILE"
+        	echo "$USER" >> "$FILEVAULT_KEYFILE"
+        	echo "filevault key" >> "$FILEVAULT_KEYFILE"
+        	sudo fdesetup enable -user "$USER" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
+        	# to recover the key afterwards
+        	#sudo fdesetup list
+        	# to disable, run
+        	#sudo fdesetup disable -user "$USER"
+        fi
+    }
+    #enabling_filevault
     
     # automatic login with filevault enabled
     # enable
@@ -716,9 +725,54 @@ EOF
     # does not work for me in 10.11
     #defaults write NSGlobalDomain AppleDisplayScaleFactor 0.75
     
+    # automatic brightness
+    function automatic_brightness() {
+    #osascript 2>/dev/null <<EOF
+    osascript <<EOF
+    
+    tell application "System Preferences"
+    	activate
+    	#set panenames to (get the name of every pane)
+    	#display dialog panenames
+    	--return panenames
+    	set current pane to pane "com.apple.preference.displays"
+    	#get the name of every anchor of pane id "com.apple.preference.displays"
+    	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.displays")
+    	#display dialog tabnames
+    	reveal anchor "displaysDisplayTab" of pane id "com.apple.preference.displays"
+    end tell
+    
+    delay 1
+    
+    tell application "System Events"
+    	tell process "System Preferences"
+    		# first checkbox in main window
+    		#click checkbox 1 of window 1
+    		# first checkbox of first group
+    		# set theCheckbox to checkbox "Helligkeit automatisch anpassen" of group 1 of tab group 1 of window 1
+    		set theCheckbox to (checkbox 1 of group 1 of tab group 1 of window 1)
+    		tell theCheckbox
+    			set checkboxStatus to value of theCheckbox as boolean
+    			if checkboxStatus is false then click theCheckbox
+    		end tell
+    		delay 0.2
+    		#click checkbox 1 of group 1 of tab group 1 of window 1
+    	end tell
+    end tell
+    
+    delay 2
+    
+    tell application "System Preferences"
+    	quit
+    end tell
+    
+EOF
+    }
+    automatic_brightness
+    
     # display - automatically adjust brightness
     ##
-    sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Display Enabled" -bool false
+    #sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Display Enabled" -bool false
     
     # show monitor sync options in menu bar if available
     ##
@@ -1183,13 +1237,18 @@ EOF
     # osascript -e 'tell application "System Events" to delete login item "itemname"'
     
     # deleting all startup items
-    osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//' | while read -r autostartapp
-    do
-    	IFS=$'\n'
-    	echo deleting autostartentry for $autostartapp
-    	osascript -e 'tell application "System Events" to delete login item "'$autostartapp'"'
-    	unset IFS
-    done
+    if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//') != "" ]]
+    then
+        osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//' | while read -r autostartapp
+        do
+        	IFS=$'\n'
+        	echo deleting autostartentry for $autostartapp
+        	osascript -e 'tell application "System Events" to delete login item "'$autostartapp'"'
+        	unset IFS
+        done
+    else
+        :
+    fi
     
     # adding startup-items
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 2", path:"/Applications/Bartender 2.app", hidden:false}'

@@ -297,7 +297,7 @@ brew analytics off
 brew update
 brew upgrade
 # temporarily updating to the latest git status / commits, git update / upgrade will update to latest stable version when released
-#cd "$(brew --repository)" && git checkout master && git pull origin master && cd -
+cd "$(brew --repository)" && git checkout master && git pull origin master && cd -
 brew prune
 brew doctor
 
@@ -336,7 +336,7 @@ echo ''
 
 # activating keepingyouawake
 echo "installing keepingyouawake..."
-builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+builtin printf '"$SUDOPASSWORD\n"' | brew cask install keepingyouawake 2> /dev/null | grep "successfully installed"
 activating_keepingyouawake
 
 # installing xquartz
@@ -347,16 +347,16 @@ then
 	casks_pre=(
 	xquartz
 	)
-	#brew cask install --force ${casks[@]}
+	#brew cask install ${casks[@]}
 	for caskstoinstall_pre in "${casks_pre[@]}"
 	do
         if [[ "$INSTALLATION_METHOD" == "parallel" ]]
         then
-		    ${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre" 2> /dev/null | grep "successfully installed" &
+		    ${USE_PASSWORD} | brew cask install "$caskstoinstall_pre" 2> /dev/null | grep "successfully installed" &
 		    CASKS_PRE_PID="$!"
 		    sleep 5
 		else
-		    ${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre"
+		    ${USE_PASSWORD} | brew cask install "$caskstoinstall_pre"
         fi
 	done
 else
@@ -520,14 +520,14 @@ then
         #start_sudo
         printf '%s\n' "${casks[@]}" | xargs -n1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
             echo installing cask {}...
-            builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
+            builtin printf '"$SUDOPASSWORD\n"' | brew cask install {} 2> /dev/null | grep "successfully installed"
         '
         #stop_sudo
     else
         for caskstoinstall in "${casks[@]}"
         do
             #start_sudo
-        	${USE_PASSWORD} | brew cask install --force "$caskstoinstall"
+        	${USE_PASSWORD} | brew cask install "$caskstoinstall"
         	#stop_sudo
         done
     fi
@@ -568,14 +568,14 @@ then
             #start_sudo
             printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
                 echo installing cask {}...
-                builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
+                builtin printf '"$SUDOPASSWORD\n"' | brew cask install {} 2> /dev/null | grep "successfully installed"
             '
             #stop_sudo
         else
         	for caskstoinstall_specific1 in "${casks_specific1[@]}"
         	do  
         	    #start_sudo
-        		${USE_PASSWORD} | brew cask install --force "$caskstoinstall_specific1"
+        		${USE_PASSWORD} | brew cask install "$caskstoinstall_specific1"
         		#stop_sudo
         	done
         fi
