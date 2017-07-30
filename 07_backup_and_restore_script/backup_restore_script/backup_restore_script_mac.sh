@@ -11,18 +11,6 @@
 ### asking password upfront
 ###
 
-# solution 1
-# only working for sudo commands, not for commands that need a password and are run without sudo
-# and only works for specified time
-# asking for the administrator password upfront
-#sudo -v
-# keep-alive: update existing 'sudo' time stamp until script is finished
-#while true; do sudo -n true; sleep 600; kill -0 "$$" || exit; done 2>/dev/null &
-
-# solution 2
-# working for all commands that require the password (use sudo -S for sudo commands)
-# working until script is finished or exited
-
 # function for reading secret string (POSIX compliant)
 enter_password_secret()
 {
@@ -787,11 +775,41 @@ function backup_restore {
         # place the files from the backup in two folders
         # /Users/USERNAME/Desktop/restore/master/backup_directories (Applications, Library, User)
         # /Users/USERNAME/Desktop/restore/user/backup_directories (Applications, Library, User)
+                
+        # restore dir
+        if [[ -e "$HOMEFOLDER"/Desktop/restore ]]
+        then
+            RESTOREDIR="$HOMEFOLDER"/Desktop/restore
+        else
+            echo "restore directoy not found, asking for it..."
+            RESTOREDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_dir.scpt" | sed s'/\/$//')
+        fi
+
+        # restore master dir
+        if [[ -e "$RESTOREDIR"/master ]]
+        then
+            RESTOREMASTERDIR="$RESTOREDIR"/master
+        else
+            echo "restore master directoy not found, asking for it..."
+            RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_master_dir.scpt" | sed s'/\/$//')
+        fi
         
-        RESTOREDIR="$HOMEFOLDER"/Desktop/restore
-        RESTOREMASTERDIR="$RESTOREDIR"/master
-        RESTOREUSERDIR="$RESTOREDIR"/user
+        # restore user dir
+        if [[ -e "$RESTOREDIR"/user ]]
+        then
+            RESTOREUSERDIR="$RESTOREDIR"/user
+        else
+            echo "restore user directoy not found, asking for it..."
+            RESTOREUSERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_user_dir.scpt" | sed s'/\/$//')
+        fi
         
+        echo ''
+        echo restoredir for restore is "$RESTOREDIR"
+        echo restoremasterdir for restore is "$RESTOREMASTERDIR"
+        echo restoreuserdir for restore is "$RESTOREUSERDIR"
+        echo ''
+
+             
         #RESTORETODIR="$HOMEFOLDER"/Desktop/testrestore
         #mkdir -p "$RESTORETODIR"
         RESTORETODIR=""

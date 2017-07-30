@@ -4,18 +4,6 @@
 ### asking password upfront
 ###
 
-# solution 1
-# only working for sudo commands, not for commands that need a password and are run without sudo
-# and only works for specified time
-# asking for the administrator password upfront
-#sudo -v
-# keep-alive: update existing 'sudo' time stamp until script is finished
-#while true; do sudo -n true; sleep 600; kill -0 "$$" || exit; done 2>/dev/null &
-
-# solution 2
-# working for all commands that require the password (use sudo -S for sudo commands)
-# working until script is finished or exited
-
 # function for reading secret string (POSIX compliant)
 enter_password_secret()
 {
@@ -1683,8 +1671,33 @@ EOF
     # enable airdrop over ethernet and on unsupported macs
     #defaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true
     
-    # show the ~/Library folder
+    ### show the ~/Library folder
+    # show extended attributes
+    #ls -la@e ~/
+    #xattr ~/Library
+    #xattr -p com.apple.FinderInfo ~/Library
+    #xattr -l ~/Library
+    # show extended attributes to copy / paste for restore with xattr -wx
+    #xattr -px com.apple.FinderInfo ~/Library
+    # delete all extended attributes
+    #xattr -c ~/Library
+    # delete specific extended attribute
+    if [[ $(xattr -l ~/Library | grep com.apple.FinderInfo) == "" ]]
+    then
+        :
+    else
+        xattr -d com.apple.FinderInfo ~/Library
+    fi
+    # set folder flag to not hidden
     chflags nohidden ~/Library
+    
+    ### undo show the ~/Library folder
+    # set extended attribute
+    #xattr -wx com.apple.FinderInfo "00 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00
+    #00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00" ~/Library
+    #xattr -l ~/Library
+    #chflags hidden ~/Library
+    #ls -la@e ~/
     
     # remove dropbox‚ set green checkmark icons in finder
     #file=/Applications/Dropbox.app/Contents/Resources/emblem-dropbox-uptodate.icns
@@ -2169,6 +2182,10 @@ EOF
     ##
     defaults write com.apple.Safari ShowStatusBar -bool true
     
+    # disable hyperlick auditing / tracking
+    defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2HyperlinkAuditingEnabled -bool false
+    #defaults delete com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2HyperlinkAuditingEnabled
+    
     
     
     ###
@@ -2560,7 +2577,38 @@ EOF
     #defaults write ~/Library/Preferences/org.gpgtools.gpgmail SignNewEmailsByDefault -bool false
     
     
+    ###
+    ### office 2016
+    ###
     
+    # user name and initials
+    defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist" Name "`finger $USER | awk -F: '{ print $3 }' | head -n1 | sed 's/^ //'`"
+    defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist" Initials "`finger $USER | awk -F: '{ print $3 }' | head -n1 | sed 's/^ //' | cut -c1-1`"
+    #defaults read "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist"
+    
+    # set default save location to local
+    defaults write ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave -bool true
+    #defaults delete ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave
+    # set theme to classic
+    defaults write ~/Library/Preferences/com.microsoft.office kCUIThemePreferencesThemeKeyPath -integer 1
+    # do not show documents popup on launch
+    defaults write ~/Library/Preferences/com.microsoft.office ShowDocStageOnLaunch -bool false
+    # do not send telemetry data and crash reports
+    defaults write ~/Library/Preferences/com.microsoft.autoupdate2.plist SendAllTelemetryEnabled -bool false
+    defaults write ~/Library/Preferences/com.microsoft.autoupdate.fba.plist SendAllTelemetryEnabled -bool false
+    
+    # app specific settings
+    for OFFICE_APP in Word Excel onenote.mac Outlook Powerpoint
+    do 
+        # do not send telemetry data and crash reports
+        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist SendAllTelemetryEnabled -bool false
+        # show ribbons
+        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kOUIRibbonDefaultCollapse -bool false
+        # skip first run popups
+        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kSubUIAppCompletedFirstRunSetup1507 -bool true
+    done
+
+
     ###
     ### links to core service utilities
     ###

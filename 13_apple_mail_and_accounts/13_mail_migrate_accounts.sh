@@ -33,4 +33,12 @@ else
 	:
 fi
 
+if [ -e ~/Library/Mail/V5/MailData/ ]
+then
+	find ~/Library/Mail/V5/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm
+	find ~/Library/Mail/V5/MailData/ -type f -name "ExternalUpdates.*" -print0 | xargs -0 rm
+else
+	:
+fi
+
 echo "done"

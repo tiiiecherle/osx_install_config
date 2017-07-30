@@ -9,6 +9,8 @@
 # write
 # duti -s com.apple.Safari html all
 #
+# defaults read com.apple.LaunchServices/com.apple.launchservices.secure
+#
 # defaults read com.apple.LaunchServices/com.apple.launchservices.secure | grep -B 1 -A 5 public.html
 #
 # open /Users/$USER/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist
@@ -42,6 +44,7 @@ default_open_with=(
 "LSHandlerContentType           net.daringfireball.markdown                 com.uranusjr.macdown"           # .md
 "LSHandlerContentTagClass       public.filename-extension                   com.apple.automator.unarchive_finder_input_gpg_progress     LSHandlerContentTag    gpg" # .gpg
 "LSHandlerContentType           com.apple.property-list                     org.tempel.prefseditor"           # .plist
+"LSHandlerContentType           public.mpeg-4                               com.colliderli.iina"           # .mp4
 )
 
 # libreoffice

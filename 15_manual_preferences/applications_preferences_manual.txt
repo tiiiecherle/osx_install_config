@@ -4,7 +4,7 @@ all Browser
 	google.com
 	google.de
 	privacy settings
-	after activatin deny cookies in safari add the privacy settings field to adblocker
+	after activating the option "deny cookies in safari" add the privacy settings field from search and google homepage to adblocker
 
 Adobe Reader
 	nicht als Standard für pdfs verwenden
@@ -14,7 +14,8 @@ Adobe Acrobat Pro
 
 Adobe Photoshop
 	# make saving work (macos 10.12.0)
-	Voreinstellungen - Dateihandhabung - Bildvorschau - nie
+	#Voreinstellungen - Dateihandhabung - Bildvorschau - nie
+	# done from backup and restore now
 
 AppCleaner
 	Einstellungen - SmartDelete - ein
@@ -22,6 +23,16 @@ AppCleaner
 	
 Bartender 2
 	install components at first start
+
+Bitdefender Virus Scanner
+	activate system wide permissions
+	enable permanent scan
+	preferences
+		enable Scanner - nur neue und geänderte Dateien - diese Einstellung ... deaktivieren
+		Ausschlüsse - virtualbox folder
+
+Dialectic
+	preferences - preferences - disable launch application or script on launch
 
 Facetime
 	Account an- oder abmelden
@@ -57,7 +68,7 @@ Kalender
 	Erinnerungen pro Mac anpassen
 
 Kontakte
-	Ansicht - Gruppen einblenden
+	#Ansicht - Gruppen einblenden
 	Kontakte und Sync prüfen
 
 Mail
@@ -66,28 +77,31 @@ Mail
 		Signaturen
 			Signaturen den Accounts zuweisen / Signatur auswählen	
 
-Microsoft Excel 2011 und 2016
-	Dokumentkatalog (nur 2016)				Abmelden 
-	Einstellungen - Allgemein
-		Dokumentkatalog beim Start anzeigen		aus
-		Linealeinheiten					Zentimeter
-		Benutzername					USERNAME
-		Design						Klassisch
-	Save new file (nur 2016)	on my mac		e.g. desktop
-	Ansicht (nur 2011) - Symbolleisten - Format		
+#Microsoft Excel 2011 und 2016
+# done by system preferences script
+	#Dokumentkatalog (nur 2016)				Abmelden 
+	#Einstellungen - Allgemein
+		#Dokumentkatalog beim Start anzeigen		aus
+		#Linealeinheiten					Zentimeter
+		#Benutzername					USERNAME
+		#Design						Klassisch
+	#Save new file (nur 2016)	on my mac		e.g. desktop
+	#Ansicht (nur 2011) - Symbolleisten - Format		
 
-Microsoft Word 2011 und 2016
-	Dokumentkatalog	(nur 2016)				Abmelden 
-	Einstellungen - Allgemein
-		Dokumentkatalog beim Start anzeigen		aus
-		Linealeinheiten					Zentimeter
-		Benutzername					USERNAME
-		Design						Klassisch
-	Save new file (nur 2016)	on my mac		e.g. desktop
-	Ansicht (nur 2011) - Symbolleisten - Format		
+#Microsoft Word 2011 und 2016
+# done by system preferences script
+	#Dokumentkatalog	(nur 2016)				Abmelden 
+	#Einstellungen - Allgemein
+		#Dokumentkatalog beim Start anzeigen		aus
+		#Linealeinheiten					Zentimeter
+		#Benutzername					USERNAME
+		#Design						Klassisch
+	#Save new file (nur 2016)	on my mac		e.g. desktop
+	#Ansicht (nur 2011) - Symbolleisten - Format		
 
 Nachrichten
 	Account an- oder abmelden
+	Nachrichten empfangen für Telefonnr., nicht für Email Adresse
 	enable text message forwarding on iphone
 
 The Unarchiver

@@ -76,14 +76,81 @@ sudo()
 
 
 ###
-### uninstalling command line tools
+### homebrew uninstall
 ###
 
-sudo rm -rf /Library/Developer/CommandLineTools
+# uninstalling homebrew and all casks
+# https://github.com/Homebrew/brew/blob/master/share/doc/homebrew/FAQ.md
 
-# reinstalling command line tools
-#xcode-select --install
-#sudo xcode-select --switch /Library/Developer/CommandLineTools
+# giving the sudo passoword and keeping it alive for sleep x seconds
+sudo -v
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+
+
+###
+###
+###
+
+# asking for command line tools uninstall
+read -p "do you want to uninstall developer tools (Y/n)? " CONT0_BREW
+CONT0_BREW="$(echo "$CONT0_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
+
+
+# asking for homebrew uninstall
+read -p "do you want to uninstall homebrew and all formulae (Y/n)? " CONT1_BREW
+CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
+
+
+
+###
+###
+###
+
+# command line tools uninstall
+echo "uninstalling developer tools..."
+if [[ "$CONT0_BREW" == "y" || "$CONT0_BREW" == "yes" || "$CONT0_BREW" == "" ]]
+then
+    sudo rm -rf /Library/Developer/CommandLineTools
+else
+    :
+fi
+echo ''
+
+# homebrew uninstall
+echo "uninstalling homebrew and all formulae..."
+if [[ "$CONT1_BREW" == "y" || "$CONT1_BREW" == "yes" || "$CONT1_BREW" == "" ]]
+then
+    # redefining sudo so it is possible to run homebrew without entering the password again
+    sudo()
+    {
+        ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
+    }
+    # uninstalling with homebrew script
+    yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    # forcing sudo to forget the sudo password (can still be used with ${USE_PASSWORD})
+    sudo -K
+    # redefining sudo back for the rest of the script
+    sudo()
+    {
+        ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
+    }
+    #
+    sudo rm -rf /opt/homebrew-cask
+    sudo rm -rf /usr/local/Caskroom
+    sudo rm -rf /usr/local/lib/librtmp.dylib
+    sudo rm -rf /usr/local/var/homebrew/
+    sudo rm -rf /usr/local/var/cache/
+    sudo rm -rf /usr/local/Homebrew/
+    sudo chmod 0755 /usr/local
+    sudo chown root:wheel /usr/local
+    sed -i '' '\|/usr/local/sbin:$PATH|d' ~/.bash_profile
+else
+    :
+fi
+echo ''
+
+
 
 ###
 ### unsetting password

@@ -57,25 +57,25 @@ function set_dock_apps () {
     
 ### office 2016
 
-    #$DEF_W $DOCK 'persistent-apps' \
-    #-array-add "$APP_HEAD/Applications/Microsoft Word.app/$APP_TAIL"
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Microsoft Excel.app/$APP_TAIL"
+
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Microsoft Word.app/$APP_TAIL"
 
     #$DEF_W $DOCK 'persistent-apps' \
     #-array-add "$APP_HEAD/Applications/Microsoft PowerPoint.app/$APP_TAIL"
 
-    #$DEF_W $DOCK 'persistent-apps' \
-    #-array-add "$APP_HEAD/Applications/Microsoft Excel.app/$APP_TAIL"
-
 ### office 2011
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Excel.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Excel.app/$APP_TAIL"
 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Word.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Word.app/$APP_TAIL"
 
-#    $DEF_W $DOCK 'persistent-apps' \
-#    -array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft PowerPoint.app/$APP_TAIL"
+    #$DEF_W $DOCK 'persistent-apps' \
+    #-array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft PowerPoint.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Pages.app/$APP_TAIL"

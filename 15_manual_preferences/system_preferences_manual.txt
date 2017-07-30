@@ -2,3 +2,6 @@ Systemeinstellungen
 
 Monitore
 	Auflösung und Farbprofil wählen
+
+iCloud
+	enter password

@@ -33,18 +33,6 @@ then
     delete_tmp_backup_script_fifo2
     set +a
 else
-
-    # solution 1
-    # only working for sudo commands, not for commands that need a password and are run without sudo
-    # and only works for specified time
-    # asking for the administrator password upfront
-    #sudo -v
-    # keep-alive: update existing 'sudo' time stamp until script is finished
-    #while true; do sudo -n true; sleep 600; kill -0 "$$" || exit; done 2>/dev/null &
-    
-    # solution 2
-    # working for all commands that require the password (use sudo -S for sudo commands)
-    # working until script is finished or exited
     
     # function for reading secret string (POSIX compliant)
     enter_password_secret()
