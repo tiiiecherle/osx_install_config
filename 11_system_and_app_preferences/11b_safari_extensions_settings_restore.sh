@@ -4,9 +4,15 @@
 # a reboot is needed after restoring the keychain before running this script
 # or the changes to safari would not be kept
 
+SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+#echo "script dir is $SCRIPT_DIR$"
+
+echo "please select restore master directory..."
+RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/11b_script/ask_restore_master_dir.scpt" | sed s'/\/$//')
+
 SELECTEDUSER=$USER
-MASTERUSER=$(ls /Users/$USER/Desktop/restore/master/Users | egrep -v "^[.]" | egrep -v "Shared")
-RESTOREMASTERDIR=/Users/$USER/Desktop/restore/master
+MASTERUSER=$(ls "$RESTOREMASTERDIR"/Users | egrep -v "^[.]" | egrep -v "Shared")
+#RESTOREMASTERDIR=/Users/$USER/Desktop/restore/master
 HOMEFOLDER=Users/$USER
 
 #echo "SELECTEDUSER is "$SELECTEDUSER""
@@ -47,7 +53,7 @@ chown 501:staff /$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.pli
 echo "restoring safari extensions..."
 find /$HOMEFOLDER/Desktop/Extensions -name "*.safariextz" -print0 | while IFS= read -r -d '' file; do
     open "$file"
-    sleep 5
+    sleep 8
 done
 
 sleep 2
@@ -57,6 +63,12 @@ echo "safari has to be closed before continuing..."
 while ps aux | grep 'Safari.app' | grep -v grep > /dev/null; do sleep 1; done
 
 #osascript -e 'tell application "Safari" to quit'
+
+# restoring settings for extensions
+# enabled / disabled - displayed in menu bar or not...
+#cp -a $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Safari/Extensions/Extensions.plist /$HOMEFOLDER/Library/Safari/Extensions/Extensions.plist
+#chmod 600 /$HOMEFOLDER/Library/Safari/Extensions/Extensions.plist
+#chown 501:staff /$HOMEFOLDER/Library/Safari/Extensions/Extensions.plist
 
 rm -rf /$HOMEFOLDER/Desktop/Extensions
 

@@ -10,6 +10,7 @@ symbolic_links=(
 /Users/$USER/Desktop/backup_file.rtf
 /Users/$USER/github
 /Users/$USER/virtualbox
+/Users/$USER/documents/wallet
 )
 
 VOLUME1=macintosh_hd

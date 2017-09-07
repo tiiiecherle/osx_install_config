@@ -1,0 +1,4 @@
+manual app installations
+
+brew cask install --force oversight
+# during "hanging" install open preferences from menu bar and activate headless mode until installer finishes

@@ -599,15 +599,31 @@ EOF
         	touch "$FILEVAULT_KEYFILE"
         	echo $(date) > "$FILEVAULT_KEYFILE"
         	echo "$USER" >> "$FILEVAULT_KEYFILE"
-        	echo "filevault key" >> "$FILEVAULT_KEYFILE"
-        	sudo fdesetup enable -user "$USER" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
+        	echo "filevault" >> "$FILEVAULT_KEYFILE"
+        	TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
+            TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+            expect -c "
+#log_user 0
+#spawn sudo echo "test"
+#expect \"Password:\"
+#send \"$SUDOPASSWORD\r\"
+spawn sudo fdesetup enable -user "$USER"
+expect \"Password:\"
+send \"$SUDOPASSWORD\r\"
+expect \"Enter the password for user '$USER':\"
+send \"$SUDOPASSWORD\r\"
+#log_user 1
+expect eof
+" 2>/dev/null | grep key | tee -a "$FILEVAULT_KEYFILE"
+#2>/dev/null | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g" | tee -a "$FILEVAULT_KEYFILE"
+        	#sudo fdesetup enable -user "$USER" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
         	# to recover the key afterwards
         	#sudo fdesetup list
         	# to disable, run
         	#sudo fdesetup disable -user "$USER"
         fi
     }
-    #enabling_filevault
+    enabling_filevault
     
     # automatic login with filevault enabled
     # enable
@@ -738,11 +754,13 @@ EOF
     		#click checkbox 1 of window 1
     		# first checkbox of first group
     		# set theCheckbox to checkbox "Helligkeit automatisch anpassen" of group 1 of tab group 1 of window 1
-    		set theCheckbox to (checkbox 1 of group 1 of tab group 1 of window 1)
-    		tell theCheckbox
-    			set checkboxStatus to value of theCheckbox as boolean
-    			if checkboxStatus is false then click theCheckbox
-    		end tell
+    		if exists checkbox 1 of group 1 of tab group 1 of window 1
+    		    set theCheckbox to (checkbox 1 of group 1 of tab group 1 of window 1)
+    		    tell theCheckbox
+    			    set checkboxStatus to value of theCheckbox as boolean
+    			    if checkboxStatus is false then click theCheckbox
+    		    end tell
+    		end if
     		delay 0.2
     		#click checkbox 1 of group 1 of tab group 1 of window 1
     	end tell
@@ -1072,7 +1090,8 @@ EOF
     # removing public share
     if [[ $(sudo sharing -l | grep /Users/$USER/Public) != "" ]]
     then
-    	sudo sharing -r /Users/$USER/Public
+        PUBLIC_SHARED_FOLDER=$(sudo sharing -l | grep "name:" | head -n 1 | cut -f 2- | perl -p -e 's/^[\ \t]//')
+    	sudo sharing -r "$PUBLIC_SHARED_FOLDER"
     else
     	:
     fi
@@ -1239,7 +1258,7 @@ EOF
     fi
     
     # adding startup-items
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 2", path:"/Applications/Bartender 2.app", hidden:false}'
+    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 3", path:"/Applications/Bartender 3.app", hidden:false}'
     # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"AudioSwitcher", path:"/Applications/AudioSwitcher.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Overflow", path:"/Applications/Overflow.app", hidden:true}'
@@ -1343,6 +1362,13 @@ EOF
     # menu bar icon
     defaults write com.apple.Siri StatusMenuVisible -bool false
     
+    # disable all siri analytics
+    # done in manual preferences script later again
+    for i in $(/usr/libexec/PlistBuddy -c "Print CSReceiverBundleIdentifierState" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
+    do
+	        #echo $i
+		    /usr/libexec/PlistBuddy -c "Set CSReceiverBundleIdentifierState:$i false" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist
+    done
     
     
     ###
@@ -1723,8 +1749,11 @@ EOF
     	# do not restore windows and tabs after reboot (does not exist in version 1.7.3 and above)
     	#defaults write com.apple.finder TotalFinderDontRestoreTabsState -bool yes
     	
+    	# keep original finder icon in dock
+    	defaults write com.binaryage.totalfinder TotalFinderDontCustomizeDockIcon -bool true
+    	
     	# allow copy of paths in context menu
-    	defaults write com.binaryage.totalfinder TotalFinderCopyPathMenuEnabled -bool true
+    	#defaults write com.binaryage.totalfinder TotalFinderCopyPathMenuEnabled -bool true
     	
     	# disable totalfinder tabs
     	defaults write com.binaryage.totalfinder TotalFinderTabsDisabled -bool true
@@ -1958,7 +1987,7 @@ EOF
     # 0 = yes
     # 2 = no
     ##
-    defaults write com.apple.Safari BlockStoragePolicy -int 0
+    defaults write com.apple.Safari BlockStoragePolicy -int 3
         
     
     ### safari websites
@@ -2607,6 +2636,21 @@ EOF
         # skip first run popups
         defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kSubUIAppCompletedFirstRunSetup1507 -bool true
     done
+    
+    
+    
+    ###
+    ### hihg sierra specific app changes
+    ###
+    
+    # disabling startup script for dialectic
+    if [[ -e ~/Library/Preferences/com.jen.dialectic.plist ]]
+    then
+        defaults write ~/Library/Preferences/com.jen.dialectic.plist "startupExternalAppEnabled" -bool false
+    else
+        :
+    fi
+    
 
 
     ###

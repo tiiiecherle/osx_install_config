@@ -177,7 +177,7 @@ function activating_keepingyouawake() {
 if [ -e /Applications/KeepingYouAwake.app ]
 then
 	echo "activating keepingyouawake..."
-    echo ''
+    #echo ''
 	open -g /Applications/KeepingYouAwake.app
     open -g keepingyouawake:///activate
 else
@@ -317,6 +317,12 @@ then
     
     brew tap caskroom/cask
     
+    # activating keepingyouawake
+    echo ''
+    echo "installing keepingyouawake..."
+    builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    activating_keepingyouawake
+    
     # installing cask repair to contribute to homebrew casks
     echo ''
     echo "installing cask-repair..."
@@ -331,15 +337,10 @@ then
     brew cleanup
     sudo brew cask cleanup > /dev/null 2>&1
     brew cask cleanup
-    echo ''
+    #echo ''
     #stop_sudo
     
     #rm -rf ~/Applications
-    
-    # activating keepingyouawake
-    echo "installing keepingyouawake..."
-    builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
-    activating_keepingyouawake
     
     # installing xquartz
     if [[ "$CONT1_BREW" == "y" || "$CONT1_BREW" == "yes" || "$CONT1_BREW" == "" ]]
@@ -354,11 +355,15 @@ then
     	do
             if [[ "$INSTALLATION_METHOD" == "parallel" ]]
             then
-    		    ${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre" 2> /dev/null | grep "successfully installed" &
-    		    CASKS_PRE_PID="$!"
-    		    sleep 5
+    		    #${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre" 2> /dev/null | grep "successfully installed" &
+    		    #CASKS_PRE_PID="$!"
+    		    #sleep 5
+    		    # xquartz is a needed dependency for xpdf, so it has to be installed first
+    		    ${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre"
+    		    echo ''
     		else
     		    ${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre"
+    		    echo ''
             fi
     	done
     else
@@ -470,6 +475,7 @@ then
     	chromium
     	coconutbattery
     	cog
+    	commander-one
     	coteditor
     	cyberduck
     	disk-inventory-x
@@ -514,6 +520,7 @@ then
     	vnc-viewer
     	vox
     	x-lite
+    	xact
     	xnconvert
     	zipeg
     	)
@@ -650,6 +657,17 @@ fi
     then
     	echo ''
     	echo checking casks installation...
+        # casks_pre
+    	printf '%s\n' "${casks_pre[@]}" | xargs -n1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+item="{}"
+if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
+then 
+	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
+else 
+	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
+fi
+'
+        # casks
     	printf '%s\n' "${casks[@]}" | xargs -n1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
 item="{}"
 if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
@@ -658,7 +676,7 @@ then
 else 
 	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
 fi
-        '
+'
         # casks specific1
         if [[ "$USER" == "tom" ]]
         then

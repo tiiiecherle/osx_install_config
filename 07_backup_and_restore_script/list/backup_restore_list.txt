@@ -77,7 +77,7 @@ u	~/Library/Preferences/com.rdutoit.backupList.plist
 
 # Bartender
 echo Bartender
-m	/Applications/Bartender 2.app
+m	/Applications/Bartender 3.app
 u	~/Library/Preferences/com.surteesstudios.Bartender.plist
 
 # BBEdit
@@ -400,8 +400,12 @@ m	/Applications/Pages4.app
 
 # Paragon ExtFS
 echo Paragon ExtFS
-m	~/Library/Preferences/com.paragon-software.filesystems.ExtFS.prefpanel.plist
 m	~/Library/Preferences/com.paragon-software.extfs.fsapp.plist
+#m	~/Library/Preferences/com.paragon-software.extfs.FSMenuApp.plist
+m	~/Library/Preferences/com.paragon-software.ExtFS.prefpane.plist
+m	~/Library/Preferences/com.paragon-software.filesystems.extfs.plist
+#m	~/Library/Preferences/com.paragon-software.filesystems.ExtFS.prefpanel.plist
+m	/Users/Shared/Paragon Software/Preferences_ExtFS.plist
 
 # PasswordWallet
 echo PasswordWallet

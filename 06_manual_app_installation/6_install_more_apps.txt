@@ -1,6 +1,6 @@
 INSTALL ADDITIONAL APPS
 
-# microsoft office
+# microsoft office 2011
 	no dock symbols
 	no automator actions
 

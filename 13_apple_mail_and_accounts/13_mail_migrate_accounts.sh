@@ -12,8 +12,13 @@
 #sudo open /System/Library/InternetAccounts/internetAccountsMigrator
 
 # sierra
-echo "deleting ~/Library/Accounts/Accounts3.sqlite*..."
-rm ~/Library/Accounts/Accounts3.sqlite*
+if [ -e ~/Library/Accounts/Accounts3.sqlite ]
+then
+	echo "deleting ~/Library/Accounts/Accounts3.sqlite*..."
+	rm ~/Library/Accounts/Accounts3.sqlite*
+else
+	:
+fi
 
 # rebuilding mail index on next run
 echo "deleting files to rebuild the mailindex at next start of mail..."

@@ -166,7 +166,7 @@ function backup_restore_permissions {
         :
     fi
     
-    if [ -e "/Library/Printers/Canon/CUPSPS2 " ]
+    if [ -e "/Library/Printers/Canon/CUPSPS2" ]
     then
         sudo chown -R root:admin "/Library/Printers/Canon/CUPSPS2" &
         sudo chmod -R 755 "/Library/Printers/Canon/CUPSPS2" &
@@ -178,15 +178,15 @@ function backup_restore_permissions {
         sudo bash -c 'find /Library/Printers/Canon -type f -name "*.plist" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "*.strings" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "*.png" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. gif" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. html" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. js" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. gif" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. jpg" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. css" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. xib" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. helpindex" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "*. PRF" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.gif" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.html" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.js" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.gif" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.jpg" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.css" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.xib" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.helpindex" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "*.PRF" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeResources" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeDirectory" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeRequirements" -print0 | xargs -0 chmod 644' &

@@ -127,7 +127,7 @@ then
         ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
     }
     # uninstalling with homebrew script
-    yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    sudo yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
     # forcing sudo to forget the sudo password (can still be used with ${USE_PASSWORD})
     sudo -K
     # redefining sudo back for the rest of the script

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v38
+### backup / restore script v37
 ### last version without parallel was v35
 ### last version without gpg was v36
 ###
@@ -106,7 +106,7 @@ function kill_main_process()
 }
 
 function unset_variables() {
-    #unset RESTOREDIR
+    unset RESTOREDIR
     unset RESTOREMASTERDIR
     unset RESTOREUSERDIR
     unset RESTORETODIR
@@ -777,25 +777,34 @@ function backup_restore {
         # /Users/USERNAME/Desktop/restore/user/backup_directories (Applications, Library, User)
                 
         # restore dir
-        #if [[ -e "$HOMEFOLDER"/Desktop/restore ]]
-        #then
-        #    RESTOREDIR="$HOMEFOLDER"/Desktop/restore
-        #else
-        #    echo "restore directoy not found, asking for it..."
-        #    RESTOREDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_dir.scpt" | sed s'/\/$//')
-        #fi
+        if [[ -e "$HOMEFOLDER"/Desktop/restore ]]
+        then
+            RESTOREDIR="$HOMEFOLDER"/Desktop/restore
+        else
+            echo "restore directoy not found, asking for it..."
+            RESTOREDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_dir.scpt" | sed s'/\/$//')
+        fi
 
         # restore master dir
-        echo "please select restore master directory..."
-        RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_master_dir.scpt" | sed s'/\/$//')
+        if [[ -e "$RESTOREDIR"/master ]]
+        then
+            RESTOREMASTERDIR="$RESTOREDIR"/master
+        else
+            echo "restore master directoy not found, asking for it..."
+            RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_master_dir.scpt" | sed s'/\/$//')
+        fi
         
         # restore user dir
-        echo ''
-        echo "please select restore user directory..."
-        RESTOREUSERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_user_dir.scpt" | sed s'/\/$//')
+        if [[ -e "$RESTOREDIR"/user ]]
+        then
+            RESTOREUSERDIR="$RESTOREDIR"/user
+        else
+            echo "restore user directoy not found, asking for it..."
+            RESTOREUSERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_user_dir.scpt" | sed s'/\/$//')
+        fi
         
         echo ''
-        #echo restoredir for restore is "$RESTOREDIR"
+        echo restoredir for restore is "$RESTOREDIR"
         echo restoremasterdir for restore is "$RESTOREMASTERDIR"
         echo restoreuserdir for restore is "$RESTOREUSERDIR"
         echo ''
@@ -995,7 +1004,7 @@ function backup_restore {
             # with parallel
             # comment out the whole without parallel block
             # comment out the while read, done lines in the script and run
-            #export RESTOREDIR
+            export RESTOREDIR
             export RESTOREMASTERDIR
             export RESTOREUSERDIR
             export RESTORETODIR
