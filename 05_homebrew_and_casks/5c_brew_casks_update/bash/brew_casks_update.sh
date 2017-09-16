@@ -261,6 +261,9 @@ brew-show-updates-one-by-one() {
 
 brew-install-updates() {
     echo "installing brew formulas updates..."
+    
+    # sorting the outdated casks file after using parallel which can change output order
+    sort "$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW" -o "$TMP_DIR_BREW"/"$DATE_LIST_FILE_BREW"
         
     while IFS='' read -r line || [[ -n "$line" ]]
     do
@@ -430,18 +433,52 @@ cask-show-updates-one-by-one() {
 cask-install-updates() {
     echo "installing casks updates..."
     
+    # virtualbox has to be updated before virtualbox-extension-pack
+    # checking if there is an update for virtualbox-extension-pack available, deleting the line in the file and install it manually later
+    # done by sorting the file after using parallel which can change output order
+    #if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" | grep virtualbox-extension-pack) == "" ]]
+    #then
+    #    VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE=no
+    #else
+    #    VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE=yes
+    #    sed -i '' '/virtualbox-extension-pack/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+    #    sed -i '' '/virtualbox/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+    #fi
+    #echo "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE"
+    
+    # sorting the outdated casks file after using parallel which can change output order
+    sort "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" -o "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+    
+    # updating all casks that are out of date
     while IFS='' read -r line || [[ -n "$line" ]]
     do
         echo 'updating '"$line"'...'
-        sudo -v
+        #sudo -v
+        start_sudo
         #sudo brew cask uninstall "$line" --force
         #${USE_PASSWORD} | brew cask uninstall "$line" --force
         #sudo brew cask install "$line" --force
         #${USE_PASSWORD} | brew cask install "$line" --force
         ${USE_PASSWORD} | brew cask reinstall "$line" --force
-        sudo -k
+        #sudo -k
+        stop_sudo
         echo ''
     done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+    
+    # updating virtualbox-extension-pack if it is outdated
+    #if [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "yes" ]]
+    #then
+    #    start_sudo
+    #    echo 'updating virtualbox...'
+    #    ${USE_PASSWORD} | brew cask reinstall virtualbox --force
+    #    echo ''
+    #    echo 'updating virtualbox-extension-pack...'
+    #    ${USE_PASSWORD} | brew cask reinstall virtualbox-extension-pack --force
+    #    stop_sudo
+    #    echo ''
+    #else
+    #    :
+    #fi
     
     #read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
     #CONT_LATEST="N"
@@ -453,10 +490,12 @@ cask-install-updates() {
         while IFS='' read -r line || [[ -n "$line" ]]
         do
             echo 'updating '"$line"'...'
-            sudo -v
+            #sudo -v
+            start_sudo
             ${USE_PASSWORD} | brew cask uninstall "$line" --force
             ${USE_PASSWORD} | brew cask install "$line" --force
-            sudo -k
+            #sudo -k
+            stop_sudo
             echo ''
         done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
     else
@@ -464,6 +503,7 @@ cask-install-updates() {
         #echo ''
     fi
 
+    #if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK") == "" ]] && [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "no" ]]
     if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK") == "" ]]
     then
         echo "no cask updates available..."
@@ -499,6 +539,30 @@ exec pkill -9 -P $$
 function unset_variables() {
     unset SUDOPASSWORD
     unset USE_PASSWORD    
+}
+
+function start_sudo() {
+    #${USE_PASSWORD} | builtin command sudo -p '' -S -v
+    sudo -v
+    ( while true; do sudo -v; sleep 60; done; ) &
+    SUDO_PID="$!"
+}
+
+function stop_sudo() {
+    if [[ $(echo $SUDO_PID) == "" ]]
+    then
+        :
+    else
+        if ps -p $SUDO_PID > /dev/null
+        then
+            kill -9 $SUDO_PID
+            wait $SUDO_PID 2>/dev/null
+        else
+            :
+        fi
+    fi
+    unset SUDO_PID
+    sudo -k
 }
 
 #trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
@@ -549,6 +613,9 @@ then
         #softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
     }
     #command_line_tools_update
+    
+    # keeping hombrew from updating each time brew install is used
+    export HOMEBREW_NO_AUTO_UPDATE=1
     
     # checking if all dependencies are installed
     echo ''
