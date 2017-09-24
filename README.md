@@ -32,7 +32,7 @@ Table of contents
 [3	Install AppStore apps and copy files](#3-install-appstore-apps-and-copy-files)  
 [4	SSD Optimizations](#4-ssd-optimizations)  
 [5	Homebrew and Casks](#5-homebrew-and-casks)  
-[6	Manual app installation](#6-manual-app-installation)  
+[6	Manual app installation](#6-Manual-app-installation)  
 [7	Backup and restore script](#7-backup-and-restore-script)  
 [8	Java 6](#8-java-6)  
 [9	launchd](#9-launchd)  
