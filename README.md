@@ -9,13 +9,13 @@ Of course you can customize and run the commands and scripts on existing systems
 
 It`s kind of a walkthrough of a clean macOS install with manuals, scripts, comments and a lot of macOS know how that I gathered.
 
-I wrote a [backup and restore script](#7---backup-and-restore-script) for all my third party apps and their preferences files. But restoring old OS system files on a clean new OS install is not recommended.
+I wrote a [backup and restore script](#7-backup-and-restore-script) for all my third party apps and their preferences files. But restoring old OS system files on a clean new OS install is not recommended.
 
-That`s why one of the intentions is to make the complete macOS System Preferences highly customizable by script. There were already a lot of existing scripts. Those built the basis and the idea for mine. That's why a lot of [credit](#credits) goes to their authors. I tried to make their scripts more complete with a lot of my own additions and even tried making them better and clearer by giving them a structure according to the macOS System Preferences and the apple apps that ship with the OS (Safari, Calendar, Contacts, ...).
+That`s why one of the intentions is to make the complete macOS System Preferences highly customizable by script. There were already a lot of existing scripts and some of them were integrated or influenced this project. That's why a lot of [credit](#credits) goes to their authors. I tried to make the scripts more complete with a lot of my own additions and even tried making them better and clearer by giving them a structure according to the macOS System Preferences and the apple apps that ship with the OS (Safari, Calendar, Contacts, ...).
 
-At first it was intented only for my personal use. But then I decided to publish everything here because it took me so many hours and I would have loved to find anything like this when I started. So I hope it helps anyone ;)
+At first it was intented for my personal use only. But then I decided to publish everything here because it took me so many hours and I would have loved to find anything like this when I started. So I hope it helps anyone ;)
 
-This said, any help, feedback and comment for making this better and even more complete is very welcome. There is a list of [stuff](#11a-unsolved-preferences) I couldn`t figure out, so it would be nice to have help for that and test all the functions and commands. 
+This said, any help, feedback and comment for making this better and even more complete is very welcome. There is a list of [stuff](#11a-unsolved-preferences) I couldn`t figure out, so it would be nice to have help for solving them and testing all the functions and commands. 
 
 Read this ReadMe including the [disclaimer](#disclaimer) carefully before you start using anything and feel free to adjust every script and manual to your needs.
 
@@ -26,22 +26,22 @@ Table of contents
 -----
 
 [Usage](#usage)  
-[0 Bootable usb device](#0---bootable-usb-device)  
-[1 NVRAM and system integrity protection](#1---nvram-and-system-integrity-protection)  
-[2	Network Configuration](#2---network-configuration)  
-[3	Install AppStore apps and copy files](#3---install-appstore-apps-and-copy-files)  
-[4	SSD Optimizations](#4---ssd-optimizations)  
-[5	Homebrew and Casks](#5---homebrew-and-casks)  
-[6	Manual app installation](#6---manual-app-installation)  
-[7	Backup and restore script](#7---backup-and-restore-script)  
-[8	Java 6](#8---java-6)  
-[9	launchd](#9---launchd)  
+[0 Bootable usb device](#0-bootable-usb-device)  
+[1 NVRAM and system integrity protection](#1-nvram-and-system-integrity-protection)  
+[2	Network Configuration](#2-network-configuration)  
+[3	Install AppStore apps and copy files](#3-install-appstore-apps-and-copy-files)  
+[4	SSD Optimizations](#4-ssd-optimizations)  
+[5	Homebrew and Casks](#5-homebrew-and-casks)  
+[6	Manual app installation](#6-manual-app-installation)  
+[7	Backup and restore script](#7-backup-and-restore-script)  
+[8	Java 6](#8-java-6)  
+[9	launchd](#9-launchd)  
 [10 Dock apps](#10-dock-apps)  
 [11 System and app Preferences](#11-system-and-app-preferences)  
 [12 Licenses](#12-licenses)  
 [13 Apple Mail and Accounts](#13-apple-mail-and-accounts)  
 [14 Samba](#14-samba)  
-[15 Manual Preferences](15-manual-preferences)  
+[15 Manual Preferences](#15-manual-preferences)  
 [16 Seed update configuration](#16-seed-update-configuration)  
 [Disclaimer](#disclaimer)  
 [Credits](#credits)  
@@ -57,13 +57,13 @@ Just download all files, adjust everything to your needs and follow the instruct
 
 All `.txt` files contain information, manuals and comments.
 
-The files are numbered and ment to be used in this order because some scripts or manuals need tools or other stuff from one or more steps before.
+The files are numbered and ment to be used in this order because some scripts or manuals depend on other ones ment to be run before.
 
 And yes, it is intentional that all the content of the files is written in small letters for easier maintenance.
 
 Before you delete everything on your drive and start a clean macOS install be sure you have at least one working backup of all relevant files.
 
-I do so with [my backup script ](#7---backup-and-restore-script).
+I do so with [my backup script ](#7-backup-and-restore-script) and additionally I do a time machine backup just in case.
 
 
 0	Bootable usb device
@@ -81,7 +81,7 @@ For the next step boot your mac from this created usb device by restarting and h
 
 Select the usb device as device to install from.
 
-When formatting your drive be sure to select macOS Extended (Journaled) for best compatibility. I always rename my drives for easier use of the terminal with a name without spaces. So all scripts from me are using `macintosh_hd` as name for the main partition.
+When formatting your drive be sure to select macOS Extended (Journaled) for best compatibility. I always rename my drives for easier use of the terminal with a name without spaces. So all scripts from me are using `macintosh_hd` as name for the main partition of the installed macOS.
 
 
 1	NVRAM and system integrity protection
@@ -125,7 +125,7 @@ sudo reboot
 
 3	Install AppStore apps and copy files
 -----
-File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts, e.g. installing Xcode and copying over your backup files for later restoring.
+File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts, e.g. installing Xcode or Command Line Tools and copying over your backup files for restoring them later.
 
 
 4	SSD Optimizations
@@ -144,13 +144,9 @@ You will find more information here:
 * [homebrew](http://brew.sh)
 * [homebrew cask](http://caskroom.io)
 
-This script installs a few plugins and furthermore a few apps directly to the /Applications folder without linking them. It is like really installing them to this directory. The disadvantage is that homebrew cask does not know for versioning that those are already installed.
+This script installs a few plugins and furthermore a few apps directly to the /Applications folder without linking them. It is like downloading and installing them to this directory manually but a lot more comfortable and very easy for keeping everything up-to-date.
 
-But this is not a big problem, just re run the script to update homebrew and all plugins, players and apps that are specified in it.
-
-Adjust to your needs and run it. Be sure you have the XCode command line tools installed before running.
-
-You have to enter your password a second time during the script when the first cask gets installed. If anyone knows how to avoid that help is much appreciated.
+Adjust to your needs and run it. Be sure you have the Command Line Tools installed before running. If you don`t the skript will intall them for you.
 
 
 6	Manual app installation
@@ -160,21 +156,21 @@ This is just a checklist of apps I have to install manually (besides the restore
 
 7	Backup and restore script
 -----
-When I was looking for a highly configurable backup / restore tool I could not find one that was fitting my needs and working reliable. That`s why I wrote this script which is working very well for over two years (with multiple backups and restores and different macs) now.
+When I was looking for a highly configurable backup / restore tool I could not find one that was fitting my needs and was working reliable. That`s why I wrote this script which is working very well for over three years (with multiple backups and restores and different macs) now.
 
-At a first glance it seems a bit complicated but it isn`t ;)
+At a first glance it seems a bit complicated but it really isn`t ;)
 
-There is the scritp itself and a `.txt` file where the files and folders for the backup are specified. You will be prompted by an applescript to choose a directory for saving the backup. In the meanwhile the backup will temporary be done in `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why macOS could ask for your password when trying to delete the backup folder. The script then creates a .tar.gz file of the backup folder (also on the Desktop) and checks the file integrity. As the check is passed successfully the file will be moved to the speciefied location and the temporary files will be deleted.
+When running the script by double clilcking the `run_script.command` fiel you will be prompted by an applescript to choose a directory where to save the backup. In the meanwhile the backup will temporary be done in `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why macOS probably aska for your password when trying to delete the backup folder. In the next step the script creates a .tar.gz file of the backup folder (also on the Desktop) and checks the file integrity. When the check is passed successfully the file will be moved to the specified location and the temporary files on the Desktop will be deleted.
 
-The lines in the .../list/backup_restore_list.txt specify the files and folders to be backed up or restored.
+The lines in the `.../list/backup_restore_list.txt` specify the files and folders to be backed up or restored.
 
-All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check at the beginning. Commented lines are ignored and the echo lines will be displayed in the Terminal while running.
+All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check of the file at the beginning. Commented lines are ignored and the echo lines will be displayed in the Terminal while running.
 
-Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings. That`s why I splitted it up to a master and user backup. Everything that is marked as master will be restored from my backup, all user entries from the user backup of the same mac.
+Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings. That`s why I splitted it up to a master and user restore. Everything that is marked as master will be restored from my backup, all entries marked as user will be restored from the user backup of the same mac.
 
 ##### restore
 
-Please only restore files and folders like this that were backed up with this script so they have the right structure. For a restore create the following directories on your desktop 
+Please only restore files and folders this way that were backed up with this script so they have the right structure. For a restore create the following directories on your desktop 
 
 ```ruby
 mkdir -p ~/Desktop/restore/master
@@ -189,7 +185,7 @@ and make sure all respective backup folders and files are in the directories, fo
 ~/Desktop/restore/master/Users
 ```
 
-If you do not use a master / user structure just set all entries in the backup / restore list to m (master) and run the restore script. You wouldn`t need the user restore folder in this case.
+If you do not use a master / user structure and only backup / restore one and the same mac just select the same folder for master und user when the script prompts for the missing folder.
 
 Then run the script to restore.
 
@@ -197,7 +193,7 @@ Then run the script to restore.
 
 This gives you a highly configurable way to backup and restore only the files and folders you want.
 
-It also resets and takes care of the permissions in the `/Applications` and `/Users/$USER` folder and for homebrew. If you add files or folders to your backup / restore list that are not in the User folder make sure to add the permissions in the `.../permissions/ownerships_and_permissions_restore.sh` script for restore.
+It also resets and takes care of the permissions in the `/Applications` and `/Users/$USER` folder. If you add files or folders to your backup / restore list that are not in the User folder make sure to add the permissions in the `.../permissions/ownerships_and_permissions_restore.sh` script for restore.
 
 Sounds more complicated than it is, if there are any questions feel free to ask me.
 
@@ -220,7 +216,7 @@ Before running the script download and install the latest version of java jre fr
 
 As I use a MacBook Pro I change network locations very often. Some services and apps require a restart after that to work. This launchd service keeps looking for changing the network config and performs some operations in this case.
 
-Here it restarts Unified Remote.app, which I love to control my mac through my phone and restarts the Whatsapp.app Desktop app. 
+Here it restarts the Whatsapp Desktop app. 
 
 ```ruby
 1. copy to 
@@ -260,12 +256,8 @@ Adjust to your needs and run them. Start with 11a or some parts of the rest will
 The following preferences are not yet configurable with the script and any help to add the functionality is appreciated.
 
 * mail: view mailboxes list in the sidebar
-* defaults write commands for office 2011 and 2016
-* preferences - general - number of recent documents/apps/servers
 * preferences - language & region - first weekday
 * preferences - language & region - calendar gregorian
-* preferences - security - enable automatic login
-* preferences - security - enable filevault
 * preferences - control center - sorting order
 * preferences - monitor - change resolutions
 * preferences - keyboard - keyboard - show keyboard in menu bar
@@ -274,7 +266,7 @@ The following preferences are not yet configurable with the script and any help 
 
 12 Licenses
 -----
-All bought third party apps have to get their licenses enabled. A few can be done by restoring the correct files with the [restore script](#7---backup-and-restore-script), but unfortunately not all of the ones I have.
+All bought third party apps have to get their licenses enabled. A few can be done by restoring the correct files with the [restore script](#7-backup-and-restore-script), but unfortunately not all of the ones I have.
 
 This is a checklist of licenses that I have to activate again so I don`t forget one ;)
 

@@ -602,15 +602,16 @@ EOF
         	echo "filevault" >> "$FILEVAULT_KEYFILE"
         	TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
             TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+		    FILEVAULTUSER="$USER"
             expect -c "
 #log_user 0
-#spawn sudo echo "test"
+#spawn sudo echo "$FILEVAULTUSER"
 #expect \"Password:\"
 #send \"$SUDOPASSWORD\r\"
-spawn sudo fdesetup enable -user "$USER"
+spawn sudo fdesetup enable -user "$FILEVAULTUSER"
 expect \"Password:\"
 send \"$SUDOPASSWORD\r\"
-expect \"Enter the password for user '$USER':\"
+expect \"Enter the password for user '$FILEVAULTUSER':\"
 send \"$SUDOPASSWORD\r\"
 #log_user 1
 expect eof
@@ -621,9 +622,14 @@ expect eof
         	#sudo fdesetup list
         	# to disable, run
         	#sudo fdesetup disable -user "$USER"
+        	
+        	# make sure the user password is set correctly
+        	#sudo dscl . -passwd /Users/"$USER" "$SUDOPASSWORD"
+        	
         fi
     }
-    enabling_filevault
+    # this can not be enabled here because login will not work after a reboot if the sharing command is used after enabling_filevault (in this script done by public shared folder and sharing user)
+    # this is why enabling_filevault is moved to the end of this script to avoid complications with other commands
     
     # automatic login with filevault enabled
     # enable
@@ -1090,7 +1096,8 @@ EOF
     # removing public share
     if [[ $(sudo sharing -l | grep /Users/$USER/Public) != "" ]]
     then
-        PUBLIC_SHARED_FOLDER=$(sudo sharing -l | grep "name:" | head -n 1 | cut -f 2- | perl -p -e 's/^[\ \t]//')
+        PUBLIC_SHARED_FOLDER=$(sudo sharing -l | grep "name:" | grep "$USER" | head -n 1 | cut -f 2- | perl -p -e 's/^[\ \t]//')
+        #PUBLIC_SHARED_FOLDER=$(sudo sharing -l | grep "name:" | head -n 1 | cut -f 2- | perl -p -e 's/^[\ \t]//')
     	sudo sharing -r "$PUBLIC_SHARED_FOLDER"
     else
     	:
@@ -2640,7 +2647,7 @@ EOF
     
     
     ###
-    ### hihg sierra specific app changes
+    ### high sierra specific app changes
     ###
     
     # disabling startup script for dialectic
@@ -2701,6 +2708,16 @@ EOF
     #sudo diskutil verifyvolume /Volumes/macintosh_hd
     #sudo diskutil repairvolume /Volumes/macintosh_hd
     
+    
+    
+    ###
+    ### enabling filevault
+    ###
+    
+    # this can not be done before using the sharing command or login will not work after a reboot if the sharing command is used after enabling_filevault (in this script done by public shared folder and sharing user)
+    # this is why enabling_filevault is moved to the end of this script to avoid complications with other commands, leave it to ensure maximum compatibility
+    enabling_filevault
+    sleep 3
     
     ###
     ### killing affected applications

@@ -1,0 +1,13 @@
+audiobookbinder
+paragon-extfs
+deluge
+github-desktop
+imazing
+jameica
+jdownloader
+macupdate-desktop
+remote-buddy
+spotify
+telegram
+transmission
+whatsapp

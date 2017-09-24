@@ -1,0 +1,17 @@
+git
+rename
+wget
+pv
+pigz
+gnu-tar
+htop
+coreutils
+#duti
+ghostscript
+xpdf
+ffmpeg
+#imagemagick
+qtfaststart
+jq
+parallel
+gnupg

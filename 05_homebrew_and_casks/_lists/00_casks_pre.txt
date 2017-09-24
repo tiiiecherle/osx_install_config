@@ -1,0 +1,2 @@
+xquartz
+java

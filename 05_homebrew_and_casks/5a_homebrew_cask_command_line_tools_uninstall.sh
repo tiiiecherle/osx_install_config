@@ -73,7 +73,29 @@ sudo()
     #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
 }
 
+function start_sudo() {
+    #${USE_PASSWORD} | builtin command sudo -p '' -S -v
+    sudo -v
+    ( while true; do sudo -v; sleep 60; done; ) &
+    SUDO_PID="$!"
+}
 
+function stop_sudo() {
+    if [[ $(echo $SUDO_PID) == "" ]]
+    then
+        :
+    else
+        if ps -p $SUDO_PID > /dev/null
+        then
+            kill -9 $SUDO_PID
+            wait $SUDO_PID 2>/dev/null
+        else
+            :
+        fi
+    fi
+    unset SUDO_PID
+    sudo -k
+}
 
 ###
 ### homebrew uninstall
@@ -82,15 +104,14 @@ sudo()
 # uninstalling homebrew and all casks
 # https://github.com/Homebrew/brew/blob/master/share/doc/homebrew/FAQ.md
 
-# giving the sudo passoword and keeping it alive for sleep x seconds
-sudo -v
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-
-
-
 ###
 ###
 ###
+
+# asking for casks zap
+read -p "do you want to zap / uninstall all casks including preferences (y/N)? " CONT2_BREW
+CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
+
 
 # asking for command line tools uninstall
 read -p "do you want to uninstall developer tools (Y/n)? " CONT0_BREW
@@ -102,25 +123,50 @@ read -p "do you want to uninstall homebrew and all formulae (Y/n)? " CONT1_BREW
 CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 
 
+###
+###
+###
 
-###
-###
-###
+# casks zap
+if [[ "$CONT2_BREW" == "n" || "$CONT2_BREW" == "no" || "$CONT2_BREW" == "" ]]
+then
+    :
+else
+    #start_sudo
+    echo ''
+    echo "uninstalling casks incl. preferences..."
+    for caskstouninstall in $(brew cask list)
+    do  
+        echo "zapping $caskstouninstall"...
+    	${USE_PASSWORD} | brew cask zap --force "$caskstouninstall"
+    	echo ''
+    done
+    if [[ $(brew cask list) == "" ]]
+    then
+        echo "all casks uninstalled..."
+    else
+        echo "the following casks are still installed..."
+        brew cask list
+    fi
+    #stop_sudo
+fi
 
 # command line tools uninstall
-echo "uninstalling developer tools..."
 if [[ "$CONT0_BREW" == "y" || "$CONT0_BREW" == "yes" || "$CONT0_BREW" == "" ]]
 then
+    echo ''
+    echo "uninstalling developer tools..."
     sudo rm -rf /Library/Developer/CommandLineTools
+    echo ''
 else
     :
 fi
-echo ''
 
 # homebrew uninstall
-echo "uninstalling homebrew and all formulae..."
 if [[ "$CONT1_BREW" == "y" || "$CONT1_BREW" == "yes" || "$CONT1_BREW" == "" ]]
 then
+    echo ''
+    echo "uninstalling homebrew and all formulae..."
     # redefining sudo so it is possible to run homebrew without entering the password again
     sudo()
     {
@@ -148,6 +194,7 @@ then
 else
     :
 fi
+
 echo ''
 
 

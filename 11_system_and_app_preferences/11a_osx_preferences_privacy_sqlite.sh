@@ -227,8 +227,8 @@ done
 ###
 
 echo "done ;)"
-echo "the changes need a reboot or logout to take effect"
-echo "please logout or reboot"
+#echo "the changes need a reboot or logout to take effect"
+#echo "please logout or reboot"
 #echo "initializing loggin out"
 
 #sleep 2

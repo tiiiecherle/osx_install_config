@@ -1,4 +1,4 @@
-TERMINAL
+by TERMINAL
 
 Reboot your mac to recovery mode (reboot with command + R pressed).
 Open Utilities.
@@ -11,7 +11,7 @@ Reboot
 To re-enable it, reboot to recovery and type `sudo csrutil enable`.
 
 
-GUI
+by GUI
 
 Reboot your mac to recovery mode (reboot with command + R pressed).
 Open Utilities.

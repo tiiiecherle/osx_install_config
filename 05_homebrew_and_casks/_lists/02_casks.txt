@@ -1,0 +1,80 @@
+### needed casks
+adobe-acrobat-reader
+flash-npapi
+#gpgtools
+#java               # installed in casks_pre section
+nextcloud
+#osxfuse
+silverlight
+teamviewer
+veracrypt
+#virtualbox         # is installed as a dependency of virtualbox-extension-pack
+virtualbox-extension-pack
+#totalfinder
+#xtrafinder	    # no longer supported in brew cask, installed later in the script
+### casks only installed for update monitoring
+### big casks first
+#libreoffice        # is installed as a dependency of libreoffice-language-pack
+libreoffice-language-pack
+#openoffice
+onlyoffice
+### alpabetical
+alfred
+angry-ip-scanner
+appcleaner
+#apptivate
+bartender
+bbedit
+burn
+chromium
+coconutbattery
+cog
+commander-one
+coteditor
+cyberduck
+disk-inventory-x
+eaglefiler
+easyfind
+filezilla
+firefox
+google-earth-pro
+google-earth-web-plugin
+handbrake
+hex-fiend
+ibackup
+iina
+imageoptim
+insomniax
+istat-menus
+iterm2
+#itweax
+keepassx
+keepingyouawake
+keka
+liteicon
+macdown
+macpass
+namechanger
+onyx
+#oversight
+#plex-media-server
+prefs-editor
+progressive-downloader
+quicksilver
+skype
+the-archive-browser
+the-unarchiver
+tnefs-enough
+trolcommander
+#tunnelblick
+unified-remote
+videomonkey
+vlc
+vlc-webplugin
+vnc-viewer
+vox
+x-lite
+xact
+xnconvert
+#xquartz            # installed in casks_pre section
+zipeg

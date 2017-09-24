@@ -315,6 +315,7 @@ u	~/Library/Keychains
 # LaunchAgents
 echo LaunchAgents
 u	~/Library/LaunchAgents/com.run_script_on_network_change.plist
+u	~/Library/LaunchAgents/com.run_script_on_boot.plist
 
 # LaunchDaemons
 echo LaunchDaemons

@@ -1087,6 +1087,31 @@ function backup_restore {
             do
                 sudo rm "$UNIFIEDREMOTELOGS"
             done
+            
+            # whatsapp
+            if [[ -e "/Users/$USER/Library/Application Support/WhatsApp/" ]]
+            then
+                sudo rm -rf "/Users/$USER/Library/Application Support/WhatsApp/main-process.log"*
+                sudo rm -rf "/Users/$USER/Library/Application Support/WhatsApp/IndexedDB/"*
+                sudo rm -rf "/Users/$USER/Library/Application Support/WhatsApp/Cache/"*
+            else
+                :
+            fi
+            
+            # telegram
+            if [[ -e "/Users/$USER/Library/Application Support/Telegram/" ]]
+            then
+                rm -rf "/Users/$USER/Library/Application Support/Telegram/exports/"*
+                rm -rf "/Users/$USER/Library/Application Support/Telegram/logs/"*
+            else
+                :
+            fi
+            # Caches/ru.keepcoder.Telegram/* not included in backup / restore
+            # rm -rf "/Users/$USER/Library/Caches/ru.keepcoder.Telegram/"*
+            # postbox/media/* not included in backup / restore
+            #find "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/" -name "media" -type d -print0 | xargs -0 rm -rf
+            # after deleting postbox/db/* or accounts-metadata the computer has to be reregistered with phone number
+            #rm -rf "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/"account-*"/postbox/db/"*
         
             echo "cleaning done ;)"
             
@@ -1099,6 +1124,8 @@ function backup_restore {
             ### ownership and permissions
             echo ""
             echo "setting ownerships and permissions..."
+            export RESTOREMASTERDIR
+            export RESTOREUSERDIR
             . "$SCRIPT_DIR"/permissions/ownerships_and_permissions_restore.sh
             wait
             

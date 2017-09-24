@@ -20,9 +20,6 @@ Adobe Photoshop
 AppCleaner
 	Einstellungen - SmartDelete - ein
 	Einstellungen - Updates - ein
-	
-Bartender 2
-	install components at first start
 
 Bitdefender Virus Scanner
 	activate system wide permissions
@@ -31,18 +28,9 @@ Bitdefender Virus Scanner
 		enable Scanner - nur neue und geänderte Dateien - diese Einstellung ... deaktivieren
 		Ausschlüsse - virtualbox folder
 
-Dialectic
-	preferences - preferences - disable launch application or script on launch
-
 Facetime
 	Account an- oder abmelden
 	only activate number for being reachable, deactivate email
-
-Github Desktop
-	Re-Setup git with
-	git config --global user.name "YOUR NAME"
-	and
-	git config --global user.email "YOUR EMAIL ADDRESS"
 
 iMazing
 	open, attach iphone via usb and trust on both devices

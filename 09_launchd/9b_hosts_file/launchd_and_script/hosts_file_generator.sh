@@ -117,13 +117,17 @@ hosts_file_install_update() {
         # comment out lines
         # sport1 videos
         #sudo sed -i '' '/cdn-static.liverail.com/s/^/#/g' /etc/hosts
+        #or
+        #sudo awk -i inplace '/cdn-static.liverail.com/ {$0="#"$0}1' /etc/hosts
         #sudo sed -i '' '/c.amazon-adsystem.com/s/^/#/g' /etc/hosts
         sudo sed -i '' '/probe.yieldlab.net/s/^/#/g' /etc/hosts
         # spiegel.de
         sudo sed -i '' '/imagesrv.adition.com/s/^/#/g' /etc/hosts        
-        #or
-        #sudo awk -i inplace '/cdn-static.liverail.com/ {$0="#"$0}1' /etc/hosts
-    
+		# google shopping
+        sudo sed -i '' '/www.googleadservices.com/s/^/#/g' /etc/hosts
+        sudo sed -i '' '/0.0.0.0 ad.doubleclick.net/s/^/#/g' /etc/hosts
+        sudo sed -i '' '/pagead.l.doubleclick.net/s/^/#/g' /etc/hosts
+
         # activating hosts file
         echo "activating hosts file..."
         sudo dscacheutil -flushcache
