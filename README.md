@@ -27,7 +27,7 @@ Table of contents
 
 [Usage](#usage)  
 [0 Bootable usb device](#0-bootable-usb-device)  
-[1 NVRAM and system integrity protection](#1-nvram-and-system-integrity-protection)  
+[1 NVRAM and system integrity protection](#01-nvram-and-system-integrity-protection)  
 [2	Network Configuration](#2-network-configuration)  
 [3	Install AppStore apps and copy files](#3-install-appstore-apps-and-copy-files)  
 [4	SSD Optimizations](#4-ssd-optimizations)  
