@@ -822,6 +822,10 @@ function backup_restore {
             echo user to restore to is "$SELECTEDUSER"
             echo ""
             
+            # casks install
+            read -p "do you want to install casks after restoring the backup (Y/n)? " CONT1
+            CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
+            
             # stopping services and backing up files
             sudo launchctl stop org.cups.cupsd
         
@@ -1120,7 +1124,18 @@ function backup_restore {
             echo "running post restore operations..."
             sudo launchctl start org.cups.cupsd
             /System/Library/CoreServices/pbs -flush
-        
+            
+            ### casks install
+            if [[ "$CONT1" == "y" || "$CONT1" == "yes" || "$CONT1" == "" ]]
+            then
+                echo ""
+                echo "installing casks..."
+                "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5c_casks_only.sh
+                wait
+            else
+                :
+            fi
+
             ### ownership and permissions
             echo ""
             echo "setting ownerships and permissions..."
@@ -1162,6 +1177,7 @@ function backup_restore {
 }
 
 SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+SCRIPT_DIR_FINAL=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
 APPLESCRIPTDIR="$SCRIPT_DIR"
 
 #FUNC=$(declare -f backup_restore)

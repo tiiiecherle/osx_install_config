@@ -11,75 +11,79 @@
 ### asking password upfront
 ###
 
-# function for reading secret string (POSIX compliant)
-enter_password_secret()
-{
-    # read -s is not POSIX compliant
-    #read -s -p "Password: " SUDOPASSWORD
-    #echo ''
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    # function for reading secret string (POSIX compliant)
+    enter_password_secret()
+    {
+        # read -s is not POSIX compliant
+        #read -s -p "Password: " SUDOPASSWORD
+        #echo ''
+        
+        # this is POSIX compliant
+        # disabling echo, this will prevent showing output
+        stty -echo
+        # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
+        trap 'stty echo' EXIT
+        # asking for password
+        printf "Password: "
+        # reading secret
+        read -r "$@" SUDOPASSWORD
+        # reanabling echo
+        stty echo
+        trap - EXIT
+        # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
+        printf "\n"
+        # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
+        # has to be part of the function or it wouldn`t be updated during the maximum three tries
+        #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+    }
     
-    # this is POSIX compliant
-    # disabling echo, this will prevent showing output
-    stty -echo
-    # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-    trap 'stty echo' EXIT
-    # asking for password
-    printf "Password: "
-    # reading secret
-    read -r "$@" SUDOPASSWORD
-    # reanabling echo
-    stty echo
-    trap - EXIT
-    # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-    printf "\n"
-    # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-    # has to be part of the function or it wouldn`t be updated during the maximum three tries
-    #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-}
-
-# unset the password if the variable was already set
-unset SUDOPASSWORD
-
-# making sure no variables are exported
-set +a
-
-# asking for the SUDOPASSWORD upfront
-# typing and reading SUDOPASSWORD from command line without displaying it and
-# checking if entered password is the sudo password with a set maximum of tries
-NUMBER_OF_TRIES=0
-MAX_TRIES=3
-while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-do
-    NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-    #echo "$NUMBER_OF_TRIES"
-    if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    then
-        enter_password_secret
-        ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-        if [ $? -eq 0 ]
-        then 
-            break
+    # unset the password if the variable was already set
+    unset SUDOPASSWORD
+    
+    # making sure no variables are exported
+    set +a
+    
+    # asking for the SUDOPASSWORD upfront
+    # typing and reading SUDOPASSWORD from command line without displaying it and
+    # checking if entered password is the sudo password with a set maximum of tries
+    NUMBER_OF_TRIES=0
+    MAX_TRIES=3
+    while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
+    do
+        NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
+        #echo "$NUMBER_OF_TRIES"
+        if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
+        then
+            enter_password_secret
+            ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
+            if [ $? -eq 0 ]
+            then 
+                break
+            else
+                echo "Sorry, try again."
+            fi
         else
-            echo "Sorry, try again."
+            echo ""$MAX_TRIES" incorrect password attempts"
+            exit
         fi
-    else
-        echo ""$MAX_TRIES" incorrect password attempts"
-        exit
-    fi
-done
-
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
-# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-}
-
+    done
+    
+    # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
+    trap 'unset SUDOPASSWORD' EXIT
+    
+    # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
+    sudo()
+    {
+        ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
+        #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
+        #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
+    }
+else
+    :
+fi
 
 
 ###
@@ -87,11 +91,16 @@ sudo()
 ###
 
 echo ''
-echo "installing homebrew and homebrew casks..."
+echo "installing brew casks..."
 echo ''
 
 # casks
-read -p "do you want to install casks and formulae parallel or sequential (P/s)? " CONT0_BREW
+if [[ $(which parallel) != "" ]]
+then
+    CONT0_BREW=y
+else
+    read -p "do you want to install casks and formulae parallel or sequential (P/s)? " CONT0_BREW
+fi
 CONT0_BREW="$(echo "$CONT0_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 if [[ "$CONT0_BREW" == "p" || "$CONT0_BREW" == "parallel" || "$CONT0_BREW" == "" ]]
 then
@@ -106,30 +115,8 @@ else
     INSTALLATION_METHOD="parallel"
 fi
 
-# xquartz
-#read -p "do you want to install xquartz (Y/n)? " CONT1_BREW
-#CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
-CONT1_BREW=y
-
 # casks
-read -p "do you want to install casks packages (y/N)? " CONT2_BREW
-CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
-echo ''
-
-# creating directory and adjusting permissions
-#echo "creating directory..."
-
-#if [ ! -d /usr/local ]; then
-#sudo mkdir /usr/local
-#fi
-#sudo chown -R $USER:staff /usr/local
-#sudo chown -R $(whoami) /usr/local
-
-# redefining sudo so it is possible to run homebrew install without entering the password again
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
-}
+CONT2_BREW=y
 
 # trapping script to kill subprocesses when script is stopped
 # kill -9 can only be silenced with >/dev/null 2>&1 when wrappt into function
@@ -243,7 +230,7 @@ then
     function command_line_tools_update () {
         # updating command line tools and system
         echo "checking for command line tools update..."
-        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(defaults read loginwindow SystemVersionStampAsString))
+        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | head -n1)
         if [ "$COMMANDLINETOOLUPDATE" == "" ]
         then
         	echo "no update for command line tools available..."
@@ -278,20 +265,7 @@ then
     else
         echo "homebrew already installed, skipping..."
     fi
-    
-    # homebrew permissions
-    #if [ -e "$(brew --prefix)" ] 
-    #then
-    #	echo "setting ownerships and permissions for homebrew..."
-    #	BREWGROUP="admin"
-    #	BREWPATH=$(brew --prefix)
-    #	sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
-    #	sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
-    #	sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
-    #else
-    #	:
-    #fi
-    
+        
     # including homebrew commands in PATH
     echo 'export PATH="/usr/local/sbin:$PATH"' >> ~/.bash_profile
     source ~/.bash_profile
@@ -336,56 +310,6 @@ then
     echo ''
     echo "cleaning up..."
     
-    #start_sudo
-    brew cleanup
-    sudo brew cask cleanup > /dev/null 2>&1
-    brew cask cleanup
-    #echo ''
-    #stop_sudo
-    
-    #rm -rf ~/Applications
-    
-    # installing some casks that have to go first for compatibility reasons
-    if [[ "$CONT1_BREW" == "y" || "$CONT1_BREW" == "yes" || "$CONT1_BREW" == "" ]]
-    then
-	
-	echo ''
-
-        ### option 1 for including the list in the script
-        #echo ''
-    	#casks_pre=(
-    	#xquartz
-    	#java
-    	#)
-    	#for caskstoinstall_pre in "${casks_pre[@]}"
-    	
-    	### option 2 for separate list file
-        casks_pre=$(cat $SCRIPT_DIR/_lists/00_casks_pre.txt | sed '/^#/ d')
-        old_IFS=$IFS
-        IFS=$'\n'
-    	for caskstoinstall_pre in ${casks_pre[@]}
-    	do
-	    IFS=$old_IFS
-            if [[ "$INSTALLATION_METHOD" == "parallel" ]]
-            then
-    		    # xquartz is a needed dependency for xpdf, so it has to be installed first
-    		    echo installing cask "$caskstoinstall_pre"...
-    		    ${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre"
-    		    echo ''
-    		else
-    		    echo installing cask "$caskstoinstall_pre"...
-    		    ${USE_PASSWORD} | brew cask install --force "$caskstoinstall_pre"
-    		    echo ''
-            fi
-    	done
-    	#echo ''
-    else
-    	:
-    fi
-    
-    # installing some homebrew packages
-    #echo ''
-    echo "installing homebrew packages..."    
     # more variables
     # keeping hombrew from updating each time brew install is used
     export HOMEBREW_NO_AUTO_UPDATE=1
@@ -397,41 +321,7 @@ then
     # due to connection issues with too many downloads at the same time limiting the maximum number of jobs for now
     NUMBER_OF_MAX_JOBS_ROUNDED=4
     #echo $NUMBER_OF_MAX_JOBS_ROUNDED
-    
-    homebrewpackages=$(cat $SCRIPT_DIR/_lists/01_homebrew_packages.txt | sed '/^#/ d')
-    if [[ "$INSTALLATION_METHOD" == "parallel" ]]
-    then
-        old_IFS=$IFS
-        IFS=$'\n'
-        for homebrewpackage_to_install in ${homebrewpackages[@]}
-    	do
-	    IFS=$old_IFS
-    	    echo installing formula "$homebrewpackage_to_install"...
-    		#${USE_PASSWORD} | brew install "$homebrewpackage_to_install" 2> /dev/null | grep "/Cellar/.*files,\|Installing.*dependency"
-    		${USE_PASSWORD} | brew install "$homebrewpackage_to_install"
-		echo ''
-    	done
-        # does not work parallel because of dependencies and brew requirements
-        # parallel brew processes sometimes not finish install, give errors or hang
-    else
-        ### option 1 for including the list in the script
-        #${USE_PASSWORD} | brew install "${homebrewpackages[@]}"
         
-        ### option 2 for separate list file
-        ${USE_PASSWORD} | brew install ${homebrewpackages[@]}
-    fi
-    
-    if [[ "$INSTALLATION_METHOD" == "parallel" ]]
-    then
-	#echo ''
-        echo "installing formula ffmpeg with x265..."
-        # parallel install not working, do not put a & at the end of the line or the script would hang and not finish
-        #${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265 2> /dev/null | grep "/Cellar/.*files,"
-	    ${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
-    else
-        ${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
-    fi
-    
     # installing casks
     if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" ]]
     then
@@ -441,9 +331,9 @@ then
     	# making sure flash gets installed on reinstall
     	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
     	then
-    	    start_sudo
+    	    #start_sudo
             ${USE_PASSWORD} | brew cask zap flash-npapi
-    	    stop_sudo
+    	    #stop_sudo
         else
             :
         fi

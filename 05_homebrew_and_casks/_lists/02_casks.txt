@@ -2,7 +2,7 @@
 adobe-acrobat-reader
 flash-npapi
 #gpgtools
-#java               # installed in casks_pre section
+#java		    # installed in casks_pre section
 nextcloud
 #osxfuse
 silverlight
@@ -54,6 +54,7 @@ keka
 liteicon
 macdown
 macpass
+#malwarebytes
 namechanger
 onyx
 #oversight
