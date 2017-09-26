@@ -1130,7 +1130,7 @@ function backup_restore {
             then
                 echo ""
                 echo "installing casks..."
-                "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5c_casks_only.sh
+                "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5d_casks_only.sh
                 wait
             else
                 :
