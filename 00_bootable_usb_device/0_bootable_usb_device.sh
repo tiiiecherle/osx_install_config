@@ -6,7 +6,7 @@
 # adjust installer path and name and run the following command in terminal and enter admin password
 
 #INSTALLERPATH="/Applications/Install macOS 10.13 Beta.app"#
-INSTALLERPATH="/Applications/Install macOS High Sierra Beta.app"
+INSTALLERPATH="/Applications/Install macOS High Sierra.app"
 VOLUMEPATH="/Volumes/Untitled"
 
 sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --applicationpath "$INSTALLERPATH" --nointeraction
