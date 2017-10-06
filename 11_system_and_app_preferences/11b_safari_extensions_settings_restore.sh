@@ -59,7 +59,14 @@ done
 sleep 2
 
 #open -g /Applications/Safari.app
-echo "safari has to be closed before continuing..."
+echo "safari has to be quit before continuing..."
+while ps aux | grep 'Safari.app' | grep -v grep > /dev/null; do sleep 1; done
+
+# opening safari again to accept self signed certificate for possible calendar error on sync
+echo ''
+echo "please accept self-signed certificate by showing details, opening the webiste and entering the password..."
+open -a /Applications/Safari.app https://172.16.1.200	
+echo "safari has to be quit before continuing..."
 while ps aux | grep 'Safari.app' | grep -v grep > /dev/null; do sleep 1; done
 
 #osascript -e 'tell application "Safari" to quit'

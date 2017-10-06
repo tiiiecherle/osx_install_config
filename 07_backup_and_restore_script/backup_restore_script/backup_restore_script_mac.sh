@@ -166,10 +166,33 @@ function create_tmp_backup_script_fifo2() {
     builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo2" &
 }
 
+function delete_tmp_backup_script_fifo3() {
+    if [ -e "/tmp/tmp_backup_script_fifo3" ]
+    then
+        rm "/tmp/tmp_backup_script_fifo3"
+    else
+        :
+    fi
+    if [ -e "/tmp/run_from_backup_script3" ]
+    then
+        rm "/tmp/run_from_backup_script3"
+    else
+        :
+    fi
+}
+
+function create_tmp_backup_script_fifo3() {
+    delete_tmp_backup_script_fifo3
+    touch "/tmp/run_from_backup_script3"
+    echo "1" > "/tmp/run_from_backup_script3"
+    mkfifo -m 600 "/tmp/tmp_backup_script_fifo3"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo3" &
+}
+
 #trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; unset_variables; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
+trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; unset_variables; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
 # kill main process only if it hangs on regular exit
-trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; unset_variables; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
+trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; unset_variables; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
 set -e
 
 echo ""
@@ -820,11 +843,13 @@ function backup_restore {
         
             # user to restore to
             echo user to restore to is "$SELECTEDUSER"
-            echo ""
+            #echo ''
             
             # casks install
+            printf '\n'           
             read -p "do you want to install casks after restoring the backup (Y/n)? " CONT1
             CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
+            #echo ''
             
             # stopping services and backing up files
             sudo launchctl stop org.cups.cupsd
@@ -1130,6 +1155,7 @@ function backup_restore {
             then
                 echo ""
                 echo "installing casks..."
+                create_tmp_backup_script_fifo3
                 "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5d_casks_only.sh
                 wait
             else

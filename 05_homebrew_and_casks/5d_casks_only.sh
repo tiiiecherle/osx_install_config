@@ -11,8 +11,29 @@
 ### asking password upfront
 ###
 
-if [[ "$SUDOPASSWORD" == "" ]]
+if [[ -e /tmp/run_from_backup_script3 ]] && [[ $(cat /tmp/run_from_backup_script3) == 1 ]]
 then
+    function delete_tmp_backup_script_fifo3() {
+        if [ -e "/tmp/tmp_backup_script_fifo3" ]
+        then
+            rm "/tmp/tmp_backup_script_fifo3"
+        else
+            :
+        fi
+        if [ -e "/tmp/run_from_backup_script3" ]
+        then
+            rm "/tmp/run_from_backup_script3"
+        else
+            :
+        fi
+    }
+    unset SUDOPASSWORD
+    SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo3" | head -n 1)
+    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+    delete_tmp_backup_script_fifo3
+    #set +a
+else
+
     # function for reading secret string (POSIX compliant)
     enter_password_secret()
     {
@@ -71,19 +92,18 @@ then
         fi
     done
     
-    # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-    trap 'unset SUDOPASSWORD' EXIT
-    
-    # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-    sudo()
-    {
-        ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-        #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-        #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-    }
-else
-    :
 fi
+    
+# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
+trap 'unset SUDOPASSWORD' EXIT
+
+# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
+sudo()
+{
+    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
+    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
+    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
+}
 
 
 ###
@@ -138,9 +158,8 @@ function unset_variables() {
 }
 
 function start_sudo() {
-    #${USE_PASSWORD} | builtin command sudo -p '' -S -v
-    sudo -v
-    ( while true; do sudo -v; sleep 60; done; ) &
+    ${USE_PASSWORD} | builtin command sudo -p '' -S -v
+    ( while true; do ${USE_PASSWORD} | builtin command sudo -p '' -S -v; sleep 60; done; ) &
     SUDO_PID="$!"
 }
 
@@ -332,7 +351,7 @@ then
     	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
     	then
     	    #start_sudo
-            ${USE_PASSWORD} | brew cask zap flash-npapi
+            ${USE_PASSWORD} | ${USE_PASSWORD} | brew cask zap flash-npapi
     	    #stop_sudo
         else
             :
@@ -353,7 +372,7 @@ then
             #start_sudo
             printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
                 echo installing cask {}...
-                builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
+                builtin printf '"$SUDOPASSWORD\n"' | builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
             '
             #stop_sudo
         else
@@ -361,7 +380,7 @@ then
             IFS=$'\n'
             for caskstoinstall in ${casks[@]}
             do
-		IFS=$old_IFS
+		        IFS=$old_IFS
                 #start_sudo
                 echo installing cask "$caskstoinstall"...
             	${USE_PASSWORD} | brew cask install --force "$caskstoinstall"

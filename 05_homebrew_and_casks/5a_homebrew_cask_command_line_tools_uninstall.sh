@@ -74,9 +74,8 @@ sudo()
 }
 
 function start_sudo() {
-    #${USE_PASSWORD} | builtin command sudo -p '' -S -v
-    sudo -v
-    ( while true; do sudo -v; sleep 60; done; ) &
+    ${USE_PASSWORD} | builtin command sudo -p '' -S -v
+    ( while true; do ${USE_PASSWORD} | builtin command sudo -p '' -S -v; sleep 60; done; ) &
     SUDO_PID="$!"
 }
 

@@ -618,8 +618,8 @@ expect eof
 " 2>/dev/null | grep key | tee -a "$FILEVAULT_KEYFILE"
 #2>/dev/null | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g" | tee -a "$FILEVAULT_KEYFILE"
         	#sudo fdesetup enable -user "$USER" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
-        	# to recover the key afterwards
-        	#sudo fdesetup list
+        	# to generate and use a new key 
+        	#sudo fdesetup changerecovery -personal >> "$FILEVAULT_KEYFILE"
         	# to disable, run
         	#sudo fdesetup disable -user "$USER"
         	

@@ -9,10 +9,8 @@ SCRIPT_DIR_BACKUP=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
 
 function start_sudo() {
     ${USE_PASSWORD} | builtin command sudo -p '' -S -v
-    #sudo -v
-    ( while true; do sudo -v; sleep 60; done; ) &
-    SUDO_PID1="$!"
-    disown
+    ( while true; do ${USE_PASSWORD} | builtin command sudo -p '' -S -v; sleep 60; done; ) &
+    SUDO_PID="$!"
 }
 
 function stop_sudo() {

@@ -118,10 +118,6 @@ u	~/Library/Application Support/Chromium
 echo coconutBattery
 m	/Applications/coconutBattery.app
 
-# Cog
-echo Cog
-m	/Applications/Cog.app
-
 # Color Profiles
 echo Color Profiles
 m	/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom
@@ -652,6 +648,7 @@ u	~/.vnc
 # VOX
 echo VOX
 m	/Applications/VOX.app
+u	~/Library/Containers/com.coppertino.Vox/Data/Library/Preferences/com.coppertino.Vox.plist
 
 # Whatsapp
 echo Whatsapp
