@@ -12,6 +12,12 @@ Adobe Reader
 Adobe Acrobat Pro
 	nicht als Standard für pdfs verwenden
 
+Adobe InDesign
+	# Bearbeiten - Farbeinstellungen - color_sync_adobe_cs
+
+Adobe Photoshop
+	# Bearbeiten - Farbeinstellungen - color_sync_adobe_cs
+
 AppCleaner
 	Einstellungen - SmartDelete - ein
 	Einstellungen - Updates - ein

@@ -320,9 +320,14 @@ then
     brew tap caskroom/cask
     
     # activating keepingyouawake
-    echo ''
-    echo "installing keepingyouawake..."
-    builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    if [ -e /Applications/KeepingYouAwake.app ]
+    then
+        :
+    else
+        echo ''
+        echo "installing keepingyouawake..."
+        builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    fi
     activating_keepingyouawake
     
     # installing cask repair to contribute to homebrew casks
@@ -359,7 +364,7 @@ then
     	#for caskstoinstall_pre in "${casks_pre[@]}"
     	
     	### option 2 for separate list file
-        casks_pre=$(cat $SCRIPT_DIR/_lists/00_casks_pre.txt | sed '/^#/ d')
+        casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d')
         old_IFS=$IFS
         IFS=$'\n'
     	for caskstoinstall_pre in ${casks_pre[@]}
@@ -397,7 +402,7 @@ then
     NUMBER_OF_MAX_JOBS_ROUNDED=4
     #echo $NUMBER_OF_MAX_JOBS_ROUNDED
     
-    homebrewpackages=$(cat $SCRIPT_DIR/_lists/01_homebrew_packages.txt | sed '/^#/ d')
+    homebrewpackages=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_packages.txt | sed '/^#/ d')
     if [[ "$INSTALLATION_METHOD" == "parallel" ]]
     then
         old_IFS=$IFS
@@ -434,112 +439,11 @@ then
     # installing casks
     if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" ]]
     then
-    
-        echo ''
-    	echo "uninstalling and cleaning some casks..."
-    	# making sure flash gets installed on reinstall
-    	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
-    	then
-    	    start_sudo
-            ${USE_PASSWORD} | brew cask zap flash-npapi
-    	    stop_sudo
-        else
-            :
-        fi
-        echo ''
-    	# making sure libreoffice gets installed as a dependency of libreoffice-language-pack
-    	if [[ -e "/Applications/LibreOffice.app" ]]
-    	then
-    	    brew cask uninstall --force libreoffice
-    	else
-    	    :
-    	fi
-    	
-    	echo "installing casks..."
-    	casks=$(cat $SCRIPT_DIR/_lists/02_casks.txt | sed '/^#/ d')
-        if [[ "$INSTALLATION_METHOD" == "parallel" ]]
-        then
-            #start_sudo
-            printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-                echo installing cask {}...
-                builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
-            '
-            #stop_sudo
-        else
-            old_IFS=$IFS
-            IFS=$'\n'
-            for caskstoinstall in ${casks[@]}
-            do
-		IFS=$old_IFS
-                #start_sudo
-                echo installing cask "$caskstoinstall"...
-            	${USE_PASSWORD} | brew cask install --force "$caskstoinstall"
-            	#stop_sudo
-            done
-        fi
-    	#open "/opt/homebrew-cask/Caskroom/paragon-extfs/latest/FSinstaller.app" &
-    	
-    	# as xtrafinder is no longer installable by cask let`s install it that way ;)
-        echo ''
-    	echo "downloading xtrafinder..."
-    	XTRAFINDER_INSTALLER="/Users/$USER/Desktop/XtraFinder.dmg"
-    	#wget https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -O "$XTRAFINDER_INSTALLER"
-    	curl https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -o "$XTRAFINDER_INSTALLER" --progress-bar
-    	#open "$XTRAFINDER_INSTALLER"
-    	hdiutil attach "$XTRAFINDER_INSTALLER" -quiet
-    	sleep 5
-    	echo "installing application..."
-    	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
-    	#sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
-    	sleep 1
-    	#echo "waiting for installer to finish..."
-    	#while ps aux | grep 'installer' | grep -v grep > /dev/null; do sleep 1; done
-    	echo "unmounting and removing installer file..."
-    	hdiutil detach /Volumes/XtraFinder -quiet
-    	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
-    	
+        . "$SCRIPT_DIR"/5d_casks_only.sh
     else
     	:
     fi
-    
-    # installing user specific casks
-    if [[ "$USER" == "tom" ]]
-    then
-        if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" ]]
-        then
-            
-            echo ''
-        	echo "installing casks specific1..."
-        	
-        	casks_specific1=$(cat $SCRIPT_DIR/_lists/03_casks_specific1.txt | sed '/^#/ d')
-            if [[ "$INSTALLATION_METHOD" == "parallel" ]]
-            then
-                #start_sudo
-                printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-                    echo installing cask {}...
-                    builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
-                '
-                #stop_sudo
-            else
-                old_IFS=$IFS
-                IFS=$'\n'
-            	for caskstoinstall_specific1 in ${casks_specific1[@]}
-            	do
-		    IFS=$old_IFS
-            	    #start_sudo
-            	    echo installing cask "$caskstoinstall_specific1"...
-            		${USE_PASSWORD} | brew cask install --force "$caskstoinstall_specific1"
-            		#stop_sudo
-            	done
-            fi
-    
-        else
-            :
-        fi
-    else
-        :
-    fi
-    
+        
     if [[ $(echo $CASKS_PRE_PID) == "" ]]
     then
         :
@@ -574,71 +478,7 @@ then
     #brew cask list | tr "," "\n"
     
     # checking if successfully installed
-    # homebrew packages
-    echo ''
-    echo checking homebrew package installation...
-    printf '%s\n' "${homebrewpackages[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-        '
-    
-    # casks
-    if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" ]]
-    then
-    	echo ''
-    	echo checking casks installation...
-        # casks_pre
-    	printf '%s\n' "${casks_pre[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-'
-        # casks
-    	printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-'
-        # casks specific1
-        if [[ "$USER" == "tom" ]]
-        then
-            echo ''
-        	echo checking casks specific1 installation...
-        printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-        '
-        else
-            :
-        fi
-        
-        # additonal apps / xtrafinder
-        echo ''
-        echo checking additional apps installation...
-        if [[ -e "/Applications/XtraFinder.app" ]]; 
-        then 
-        	printf "%-50s\e[1;32mok\e[0m%-10s\n" "xtrafinder"; 
-        else 
-        	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "xtrafinder"; 
-        fi
+    . "$SCRIPT_DIR"/5e_homebrew_and_cask_install_check.sh
 
     else
     	:

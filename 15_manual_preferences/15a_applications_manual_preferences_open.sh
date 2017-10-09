@@ -38,7 +38,6 @@ do
 done
 
 # disable all siri analytics
-
 echo "waiting 30s for all apps to open..."
 sleep 30
 # already done in system preferences script before but some apps seam to appear here later

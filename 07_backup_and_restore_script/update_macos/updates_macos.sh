@@ -154,7 +154,6 @@ function 2017-05-19_update () {
     
     set +e
     
-    # libreoffice language pack
     start_sudo
     brew update
     ${USE_PASSWORD} | brew cask zap adobe-reader
@@ -165,3 +164,34 @@ function 2017-05-19_update () {
 
 }
 #2017-05-19_update
+
+
+
+###
+### 2017-10-09
+###
+
+function 2017-10-09_update () {
+    
+    set +e
+    
+    start_sudo
+    # installing onyx for high sierra
+    brew update
+    ${USE_PASSWORD} | brew cask install --force onyx
+    # already done in system preferences script before but some apps seam to appear here later
+    for i in $(/usr/libexec/PlistBuddy -c "Print CSReceiverBundleIdentifierState" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
+    do
+        #echo $i
+    	/usr/libexec/PlistBuddy -c "Set CSReceiverBundleIdentifierState:$i false" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist
+    done
+    stop_sudo
+    
+    set -e
+
+}
+2017-10-09_update
+
+
+
+

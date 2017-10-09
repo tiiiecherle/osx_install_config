@@ -11,7 +11,11 @@
 ### asking password upfront
 ###
 
-if [[ -e /tmp/run_from_backup_script3 ]] && [[ $(cat /tmp/run_from_backup_script3) == 1 ]]
+if [[ "$SUDOPASSWORD" != "" ]]
+then
+    #USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+    :
+elif [[ -e /tmp/run_from_backup_script3 ]] && [[ $(cat /tmp/run_from_backup_script3) == 1 ]]
 then
     function delete_tmp_backup_script_fifo3() {
         if [ -e "/tmp/tmp_backup_script_fifo3" ]
@@ -314,9 +318,14 @@ then
     brew tap caskroom/cask
     
     # activating keepingyouawake
-    echo ''
-    echo "installing keepingyouawake..."
-    builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    if [ -e /Applications/KeepingYouAwake.app ]
+    then
+        :
+    else
+        echo ''
+        echo "installing keepingyouawake..."
+        builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    fi
     activating_keepingyouawake
     
     # installing cask repair to contribute to homebrew casks
@@ -351,7 +360,7 @@ then
     	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
     	then
     	    #start_sudo
-            ${USE_PASSWORD} | ${USE_PASSWORD} | brew cask zap flash-npapi
+            ${USE_PASSWORD} | brew cask zap flash-npapi
     	    #stop_sudo
         else
             :
@@ -360,19 +369,36 @@ then
     	# making sure libreoffice gets installed as a dependency of libreoffice-language-pack
     	if [[ -e "/Applications/LibreOffice.app" ]]
     	then
-    	    brew cask uninstall --force libreoffice
+    	    ${USE_PASSWORD} | brew cask uninstall --force libreoffice
     	else
     	    :
     	fi
+    	echo ''
+    	
+    	# making sure adobe-acrobat-reader gets installed on reinstall
+    	if [[ -e "/Applications/Adobe Acrobat Reader DC.app" ]]
+    	then
+    	    if [[ -e /Users/$USER/Library/Preferences/com.adobe.Reader.plist ]]
+    	    then
+    	        mv /Users/$USER/Library/Preferences/com.adobe.Reader.plist /tmp/com.adobe.Reader.plist
+    	        ${USE_PASSWORD} | brew cask zap adobe-acrobat-reader
+    	        mv /tmp/com.adobe.Reader.plist /Users/$USER/Library/Preferences/com.adobe.Reader.plist
+    	    else
+    	        ${USE_PASSWORD} | brew cask zap adobe-acrobat-reader
+    	    fi
+    	else
+    	    :
+    	fi
+    	echo ''
     	
     	echo "installing casks..."
-    	casks=$(cat $SCRIPT_DIR/_lists/02_casks.txt | sed '/^#/ d')
+    	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d')
         if [[ "$INSTALLATION_METHOD" == "parallel" ]]
         then
             #start_sudo
             printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
                 echo installing cask {}...
-                builtin printf '"$SUDOPASSWORD\n"' | builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
+                builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
             '
             #stop_sudo
         else
@@ -421,7 +447,7 @@ then
             echo ''
         	echo "installing casks specific1..."
         	
-        	casks_specific1=$(cat $SCRIPT_DIR/_lists/03_casks_specific1.txt | sed '/^#/ d')
+        	casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d')
             if [[ "$INSTALLATION_METHOD" == "parallel" ]]
             then
                 #start_sudo
@@ -472,87 +498,8 @@ then
     brew cleanup
     brew cask cleanup
     
-    # listing installed homebrew packages
-    #echo "the following top-level homebrew packages incl. dependencies are installed..."
-    #brew leaves | tr "," "\n"
-    # echo "the following homebrew packages are installed..."
-    #brew list | tr "," "\n"
-    #echo ""
-    
-    # listing installed casks
-    #echo "the following casks are installed..."
-    #brew cask list | tr "," "\n"
-    
     # checking if successfully installed
-    # homebrew packages
-    echo ''
-    echo checking homebrew package installation...
-    printf '%s\n' "${homebrewpackages[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-        '
-    
-    # casks
-    if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" ]]
-    then
-    	echo ''
-    	echo checking casks installation...
-        # casks_pre
-    	printf '%s\n' "${casks_pre[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-'
-        # casks
-    	printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-'
-        # casks specific1
-        if [[ "$USER" == "tom" ]]
-        then
-            echo ''
-        	echo checking casks specific1 installation...
-        printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-        '
-        else
-            :
-        fi
-        
-        # additonal apps / xtrafinder
-        echo ''
-        echo checking additional apps installation...
-        if [[ -e "/Applications/XtraFinder.app" ]]; 
-        then 
-        	printf "%-50s\e[1;32mok\e[0m%-10s\n" "xtrafinder"; 
-        else 
-        	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "xtrafinder"; 
-        fi
-
-    else
-    	:
-    fi
+    . "$SCRIPT_DIR"/5e_homebrew_and_cask_install_check.sh
     
     # done
     echo ''

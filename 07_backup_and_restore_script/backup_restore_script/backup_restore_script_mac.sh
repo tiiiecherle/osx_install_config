@@ -379,6 +379,7 @@ function backup_restore {
         # activating keepingyouawake
         if [ -e /Applications/KeepingYouAwake.app ]
         then
+            echo ''
             echo "activating keepingyouawake..."
             echo ''
             open -g keepingyouawake:///activate
