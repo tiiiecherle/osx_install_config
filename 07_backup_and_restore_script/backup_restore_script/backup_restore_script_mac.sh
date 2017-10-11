@@ -812,18 +812,33 @@ function backup_restore {
         # restore master dir
         echo "please select restore master directory..."
         RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_master_dir.scpt" | sed s'/\/$//')
-        
+        if [[ $(echo "$RESTOREMASTERDIR") == "" ]]
+        then
+            echo ''
+            echo "restoremasterdir is empty - exiting script..."
+            exit
+        else
+            echo ''
+            echo 'restoremasterdir for restore is '"$RESTOREMASTERDIR"''
+            echo ''
+        fi
+
         # restore user dir
-        echo ''
         echo "please select restore user directory..."
         RESTOREUSERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_user_dir.scpt" | sed s'/\/$//')
+        if [[ $(echo "$RESTOREUSERDIR") == "" ]]
+        then
+            echo ''
+            echo "restoreuserdir is empty - exiting script..."
+            exit
+        else
+            echo ''
+            echo 'restoreuserdir for restore is '"$RESTOREUSERDIR"''
+            echo ''
+        fi
         
-        echo ''
+        #echo ''
         #echo restoredir for restore is "$RESTOREDIR"
-        echo restoremasterdir for restore is "$RESTOREMASTERDIR"
-        echo restoreuserdir for restore is "$RESTOREUSERDIR"
-        echo ''
-
              
         #RESTORETODIR="$HOMEFOLDER"/Desktop/testrestore
         #mkdir -p "$RESTORETODIR"
