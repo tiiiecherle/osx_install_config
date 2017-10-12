@@ -774,6 +774,18 @@ function backup_restore {
             echo "updating homebrew formulas and casks finished ;)"
             osascript -e 'display notification "complete ;)" with title "Update Script"'
             
+            ###
+            ### additional settings
+            ###
+            
+            # disabling siri analytics
+            # already done in system preferences script before but some apps seam to appear here later
+            for i in $(/usr/libexec/PlistBuddy -c "Print CSReceiverBundleIdentifierState" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
+            do
+                #echo $i
+            	/usr/libexec/PlistBuddy -c "Set CSReceiverBundleIdentifierState:$i false" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist
+            done
+            
             # deactivating keepingyouawake
             if [ -e /Applications/KeepingYouAwake.app ]
             then

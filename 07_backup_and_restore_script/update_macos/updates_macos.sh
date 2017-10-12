@@ -177,14 +177,10 @@ function 2017-10-09_update () {
     
     start_sudo
     # installing onyx for high sierra
+    echo ''
     brew update
     ${USE_PASSWORD} | brew cask install --force onyx
-    # already done in system preferences script before but some apps seam to appear here later
-    for i in $(/usr/libexec/PlistBuddy -c "Print CSReceiverBundleIdentifierState" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
-    do
-        #echo $i
-    	/usr/libexec/PlistBuddy -c "Set CSReceiverBundleIdentifierState:$i false" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist
-    done
+    echo ''
     stop_sudo
     
     set -e
