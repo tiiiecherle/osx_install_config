@@ -816,6 +816,7 @@ function backup_restore {
         then
             echo ''
             echo "restoremasterdir is empty - exiting script..."
+            echo ''
             exit
         else
             echo ''
@@ -829,8 +830,20 @@ function backup_restore {
         if [[ $(echo "$RESTOREUSERDIR") == "" ]]
         then
             echo ''
-            echo "restoreuserdir is empty - exiting script..."
-            exit
+            read -p "restoreuserdir is empty, do you want to set it to the same directory as the restoremasterdir (Y/n)? " CONT5
+            CONT5="$(echo "$CONT5" | tr '[:upper:]' '[:lower:]')"    # tolower
+            if [[ "$CONT5" == "y" || "$CONT5" == "yes" || "$CONT5" == "" ]]
+            then
+                RESTOREUSERDIR="$RESTOREMASTERDIR"
+                echo ''
+                echo 'restoreuserdir for restore is '"$RESTOREUSERDIR"''
+                echo ''
+            else
+                echo ''
+                echo "restoreuserdir is empty - exiting script..."
+                echo ''
+                exit
+            fi
         else
             echo ''
             echo 'restoreuserdir for restore is '"$RESTOREUSERDIR"''
@@ -839,7 +852,7 @@ function backup_restore {
         
         #echo ''
         #echo restoredir for restore is "$RESTOREDIR"
-             
+        
         #RESTORETODIR="$HOMEFOLDER"/Desktop/testrestore
         #mkdir -p "$RESTORETODIR"
         RESTORETODIR=""
