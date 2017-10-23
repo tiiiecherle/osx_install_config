@@ -86,7 +86,7 @@ function stop_sudo() {
     else
         if ps -p $SUDO_PID > /dev/null
         then
-            kill -9 $SUDO_PID
+            sudo kill -9 $SUDO_PID &> /dev/null
             wait $SUDO_PID 2>/dev/null
         else
             :
