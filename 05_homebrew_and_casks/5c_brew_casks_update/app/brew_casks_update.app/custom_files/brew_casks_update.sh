@@ -458,8 +458,9 @@ cask-install-updates() {
         #sudo brew cask uninstall "$line" --force
         #${USE_PASSWORD} | brew cask uninstall "$line" --force
         #sudo brew cask install "$line" --force
-        #${USE_PASSWORD} | brew cask install "$line" --force
-        ${USE_PASSWORD} | brew cask reinstall "$line" --force
+        # reinstall deletes autostart entries as it runs uninstall and then install
+        #${USE_PASSWORD} | brew cask reinstall "$line" --force
+        ${USE_PASSWORD} | brew cask install "$line" --force
         #sudo -k
         stop_sudo
         echo ''
