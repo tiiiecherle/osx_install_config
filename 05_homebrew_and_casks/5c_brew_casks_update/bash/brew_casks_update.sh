@@ -614,7 +614,7 @@ then
     }
     #command_line_tools_update
     
-    # keeping hombrew from updating each time brew install is used
+    # keeping homebrew from updating each time brew install is used
     export HOMEBREW_NO_AUTO_UPDATE=1
     
     # checking if all dependencies are installed
