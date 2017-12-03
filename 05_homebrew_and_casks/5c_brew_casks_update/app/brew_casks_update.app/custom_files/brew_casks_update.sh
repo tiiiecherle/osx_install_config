@@ -112,7 +112,7 @@ sudo()
 homebrew-update() {
     echo ''
     echo "updating homebrew..."
-    brew analytics off 1> /dev/null && brew update 1> /dev/null && brew prune 1> /dev/null && brew doctor 1> /dev/null
+    brew update-reset 1> /dev/null 2> >(grep -v "Reset branch" 1>&2) && brew analytics off 1> /dev/null && brew update 1> /dev/null && brew prune 1> /dev/null && brew doctor 1> /dev/null
     echo 'updating homebrew finished ;)'
 }
 

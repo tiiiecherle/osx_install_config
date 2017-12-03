@@ -1282,6 +1282,7 @@ EOF
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"witchdaemon", path:"/Users/'$USER'/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Quicksilver", path:"/Applications/Quicksilver.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Oversight", path:"/Applications/OverSight.app/Contents/Library/LoginItems/OverSight Helper.app", hidden:false}'
+    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Virus Scanner Plus", path:"/Applications/VirusScannerPlus.app", hidden:false}'
     
     # adding some more startup-items for specified user if script is run on multiple macs with different users
     if [ "$USER" == "tom" ]

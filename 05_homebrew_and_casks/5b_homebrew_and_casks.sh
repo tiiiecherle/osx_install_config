@@ -112,7 +112,7 @@ fi
 CONT1_BREW=y
 
 # casks
-read -p "do you want to install casks packages (y/N)? " CONT2_BREW
+read -p "do you want to install casks packages (Y/n)? " CONT2_BREW
 CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 echo ''
 
@@ -242,7 +242,9 @@ then
     function command_line_tools_update () {
         # updating command line tools and system
         echo "checking for command line tools update..."
-        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(defaults read loginwindow SystemVersionStampAsString))
+        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.'))
+        # or sw_vers | awk 'BEGIN { FS = ":[ \t]*" } /ProductVersion/ { print $2 }' | cut -f1,2 -d'.'
+        # or sw_vers -productVersion | cut -f1,2 -d'.'
         if [ "$COMMANDLINETOOLUPDATE" == "" ]
         then
         	echo "no update for command line tools available..."
@@ -437,7 +439,7 @@ then
     fi
     
     # installing casks
-    if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" ]]
+    if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
     then
         . "$SCRIPT_DIR"/5d_casks_only.sh
     else
@@ -479,10 +481,6 @@ then
     
     # checking if successfully installed
     . "$SCRIPT_DIR"/5e_homebrew_and_cask_install_check.sh
-
-    else
-    	:
-    fi
     
     # done
     echo ''
