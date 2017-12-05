@@ -26,8 +26,12 @@ Bitdefender Virus Scanner
 	activate system wide permissions
 	enable permanent scan
 	preferences
-		enable Scanner - nur neue und geänderte Dateien - diese Einstellung ... deaktivieren
-		Ausschlüsse - virtualbox folder
+		enable Scanner
+		enable only scan changed and new files
+		enable to disable this setting for drag and drop and customized scans
+		excludes
+			~/virtualbox
+			~/Desktop/files/drop_without_scan
 
 Facetime
 	Account an- oder abmelden
