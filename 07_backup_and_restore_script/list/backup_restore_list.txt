@@ -295,7 +295,7 @@ m	~/Library/Preferences/org.keepassx.keepassx.plist
 # KeepingYouAwake
 echo KeepingYouAwake
 m	/Applications/KeepingYouAwake.app
-u	~/Library/Application Support/KeepingYouAwake
+m	~/Library/Application Support/KeepingYouAwake
 u	~/Library/Preferences/info.marcel-dierkes.KeepingYouAwake.plist
 
 # Keka

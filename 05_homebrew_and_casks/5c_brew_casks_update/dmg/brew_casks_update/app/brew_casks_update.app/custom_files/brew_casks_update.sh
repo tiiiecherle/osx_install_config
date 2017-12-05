@@ -116,13 +116,118 @@ homebrew-update() {
     echo 'updating homebrew finished ;)'
 }
 
-cleanup-all() {
+cleanup-all-parallel() {
     echo ''
     echo "cleaning up..."
     #brew cleanup
     #brew cask cleanup
     brew cleanup 1> /dev/null
     brew cask cleanup 1> /dev/null
+    
+    TMP_DIR_CASK_VERSIONS=/tmp/cask_versions
+    export TMP_DIR_CASK_VERSIONS
+    if [ -e "$TMP_DIR_CASK_VERSIONS" ]
+    then
+        if [ "$(ls -A $TMP_DIR_CASK_VERSIONS/)" ]
+        then
+            rm "$TMP_DIR_CASK_VERSIONS"/*    
+        else
+            :
+        fi
+    else
+        :
+    fi
+    mkdir -p "$TMP_DIR_CASK_VERSIONS"/
+    DATE_LIST_FILE_CASK_VERSIONS=$(echo "casks_versions"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    export DATE_LIST_FILE_CASK_VERSIONS
+    touch "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
+    
+    cask_check_for_multiple_installed_versions() {
+        local v="$1"
+        local CASK_INFO=$(brew cask info "$v")
+        local CASK_NAME=$(echo "$v" | cut -d ":" -f1 | xargs)
+        local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//')
+        local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$v" | sort -V)
+        local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
+        
+        if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
+        then
+            echo -e "$NUMBER_OF_INSTALLED_VERSIONS\t$CASK_NAME" >> "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
+        else
+            :
+        	#echo "only one version installed..."
+        fi 
+
+        CASK_INFO=""
+        CASK_NAME=""
+        NEW_VERSION=""
+        INSTALLED_VERSIONS=""
+    }
+
+    #
+    local NUMBER_OF_CORES=$(parallel --number-of-cores)
+    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
+    #echo $NUMBER_OF_MAX_JOBS
+    local NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
+    #echo $NUMBER_OF_MAX_JOBS_ROUNDED
+    #
+    export -f cask_check_for_multiple_installed_versions
+    #
+    parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k cask_check_for_multiple_installed_versions ::: "$(brew cask list)"
+    wait
+    
+    sort "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS" -o "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
+
+    start_sudo
+    while IFS='' read -r line || [[ -n "$line" ]]
+    do
+            echo ''
+        	echo "$(echo "$line" | awk '{print $1}') versions of $(echo "$line" | awk '{print $2}') are installed..."
+        	echo "uninstalling all versions and reinstalling latest version..."
+        	${USE_PASSWORD} | brew cask uninstall $(echo "$line" | awk '{print $2}') --force 1> /dev/null
+            ${USE_PASSWORD} | brew cask install $(echo "$line" | awk '{print $2}') --force
+    done <"$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
+    stop_sudo
+    #
+    echo 'cleaning finished ;)'
+}
+
+cleanup-all-one-by-one() {
+    echo ''
+    echo "cleaning up..."
+    #brew cleanup
+    #brew cask cleanup
+    brew cleanup 1> /dev/null
+    brew cask cleanup 1> /dev/null
+    #
+    start_sudo
+    for i in $(brew cask list)
+    do
+        local CASK_INFO=$(brew cask info "$i")
+        local CASK_NAME=$(echo "$i" | cut -d ":" -f1 | xargs)
+        local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//')
+        local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$i" | sort -V)
+        local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
+
+        if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
+        then
+            echo ''
+        	echo ""$NUMBER_OF_INSTALLED_VERSIONS" versions of "$CASK_NAME" are installed..."
+        	echo "uninstalling all versions and reinstalling latest version..."
+        	${USE_PASSWORD} | brew cask uninstall "$i" --force 1> /dev/null
+            ${USE_PASSWORD} | brew cask install "$i" --force
+        else
+            :
+        	#echo "only one version installed..."
+        fi 
+            
+        CASK_INFO=""
+        CASK_NAME=""
+        NEW_VERSION=""
+        INSTALLED_VERSIONS=""
+    done
+    stop_sudo
+    #
     echo 'cleaning finished ;)'
 }
 
@@ -174,7 +279,9 @@ brew_show_updates_parallel() {
             local NEW_VERSION=$(echo $(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f3 | sed 's/,//g')_"$BREW_REVISION")
         fi
         #echo NEW_VERSION is $NEW_VERSION
-        local IS_CURRENT_VERSION_INSTALLED=$(echo $BREW_INFO | grep -q ".*/Cellar/$item/$NEW_VERSION\s.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m' )
+        local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAS_PATH"/"$item" | sort -V)
+        #echo INSTALLED_VERSIONS is $INSTALLED_VERSIONS
+        local IS_CURRENT_VERSION_INSTALLED=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m')
         #echo IS_CURRENT_VERSION_INSTALLED is $IS_CURRENT_VERSION_INSTALLED
         printf "%-35s | %-20s | %-15s\n" "$item" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
         
@@ -240,7 +347,9 @@ brew-show-updates-one-by-one() {
             local NEW_VERSION=$(echo $(echo "$BREW_INFO" | grep -e "$item: .*" | cut -d" " -f3 | sed 's/,//g')_"$BREW_REVISION")
         fi
         #echo NEW_VERSION is $NEW_VERSION
-        local IS_CURRENT_VERSION_INSTALLED=$(echo $BREW_INFO | grep -q ".*/Cellar/$item/$NEW_VERSION\s.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m' )
+        local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAS_PATH"/"$item" | sort -V)
+        #echo INSTALLED_VERSIONS is $INSTALLED_VERSIONS
+        local IS_CURRENT_VERSION_INSTALLED=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m')
         #echo IS_CURRENT_VERSION_INSTALLED is $IS_CURRENT_VERSION_INSTALLED
         printf "%-35s | %-20s | %-15s\n" "$item" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
         
@@ -328,16 +437,20 @@ cask_show_updates_parallel () {
         local c="$1"
         local CASK_INFO=$(brew cask info $c)
         local CASK_NAME=$(echo "$c" | cut -d ":" -f1 | xargs)
+        #echo "CASK_NAME is $CASK_NAME"
         #if [[ $(brew cask info $c | tail -1 | grep "(app)") != "" ]]
         #then
         #    APPNAME=$(brew cask info $c | tail -1 | awk '{$(NF--)=""; print}' | sed 's/ *$//')
         #else
         #    APPNAME=$(echo $(brew cask info $c | grep -A 1 "==> Name" | tail -1).app)
         #fi
-        #local INSTALLED_VERSION=$(plutil -p "/Applications/$APPNAME/Contents/Info.plist" | grep "CFBundleShortVersionString" | awk '{print $NF}' | sed 's/"//g')
-        local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//' )
-        local IS_CURRENT_VERSION_INSTALLED=$(echo $CASK_INFO | grep -q ".*/Caskroom/$CASK_NAME/$NEW_VERSION.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m')
-
+        #local INSTALLED_VERSIONS=$(plutil -p "/Applications/$APPNAME/Contents/Info.plist" | grep "CFBundleShortVersionString" | awk '{print $NF}' | sed 's/"//g')
+        local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//')
+        #echo NEW_VERSION is $NEW_VERSION
+        local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$c" | sort -V)
+        #echo INSTALLED_VERSIONS is $INSTALLED_VERSIONS
+        local IS_CURRENT_VERSION_INSTALLED=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m')
+        #echo IS_CURRENT_VERSION_INSTALLED is $IS_CURRENT_VERSION_INSTALLED
         printf "%-35s | %-20s | %-15s\n" "$CASK_NAME" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
         
         # installing if not up-to-date and not excluded
@@ -404,9 +517,13 @@ cask-show-updates-one-by-one() {
         #else
         #    APPNAME=$(echo $(brew cask info $c | grep -A 1 "==> Name" | tail -1).app)
         #fi
-        #local INSTALLED_VERSION=$(plutil -p "/Applications/$APPNAME/Contents/Info.plist" | grep "CFBundleShortVersionString" | awk '{print $NF}' | sed 's/"//g')
+        #local INSTALLED_VERSIONS=$(plutil -p "/Applications/$APPNAME/Contents/Info.plist" | grep "CFBundleShortVersionString" | awk '{print $NF}' | sed 's/"//g')
         local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//' )
-        local IS_CURRENT_VERSION_INSTALLED=$(echo $CASK_INFO | grep -q ".*/Caskroom/$CASK_NAME/$NEW_VERSION.*" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m')
+        #echo NEW_VERSION is $NEW_VERSION
+        local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$c" | sort -V)
+        #echo INSTALLED_VERSIONS is $INSTALLED_VERSIONS
+        local IS_CURRENT_VERSION_INSTALLED=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo -e '\033[1;32mtrue\033[0m' || echo -e '\033[1;31mfalse\033[0m')
+        #echo IS_CURRENT_VERSION_INSTALLED is $IS_CURRENT_VERSION_INSTALLED
 
         printf "%-35s | %-20s | %-15s\n" "$CASK_NAME" "$NEW_VERSION" "$IS_CURRENT_VERSION_INSTALLED"
         
@@ -449,22 +566,20 @@ cask-install-updates() {
     # sorting the outdated casks file after using parallel which can change output order
     sort "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" -o "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
     
+    start_sudo
     # updating all casks that are out of date
     while IFS='' read -r line || [[ -n "$line" ]]
     do
         echo 'updating '"$line"'...'
-        #sudo -v
-        start_sudo
         #sudo brew cask uninstall "$line" --force
-        #${USE_PASSWORD} | brew cask uninstall "$line" --force
+        ${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
         #sudo brew cask install "$line" --force
         # reinstall deletes autostart entries as it runs uninstall and then install
         #${USE_PASSWORD} | brew cask reinstall "$line" --force
         ${USE_PASSWORD} | brew cask install "$line" --force
-        #sudo -k
-        stop_sudo
         echo ''
     done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+    stop_sudo
     
     # updating virtualbox-extension-pack if it is outdated
     #if [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "yes" ]]
@@ -486,19 +601,17 @@ cask-install-updates() {
     CONT_LATEST="$(echo "$CONT_LATEST" | tr '[:upper:]' '[:lower:]')"    # tolower
 	if [[ "$CONT_LATEST" == "y" || "$CONT_LATEST" == "yes" ]]
     then
+        start_sudo
         echo 'updating all installed casks that show "latest" as version...'
         echo ''
         while IFS='' read -r line || [[ -n "$line" ]]
         do
-            echo 'updating '"$line"'...'
-            #sudo -v
-            start_sudo
-            ${USE_PASSWORD} | brew cask uninstall "$line" --force
+            echo 'updating '"$line"'...'            
+            ${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
             ${USE_PASSWORD} | brew cask install "$line" --force
-            #sudo -k
-            stop_sudo
             echo ''
         done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
+        stop_sudo
     else
         echo 'skipping all installed casks that show "latest" as version...'
         #echo ''
@@ -518,9 +631,12 @@ cask-install-updates() {
 ### running script
 ###
 
-echo ''
-echo "updating homebrew, formulas and casks..."
+#printf "\033c"
+printf "\ec"
 
+echo ''
+#echo "updating homebrew, formulas and casks..."
+echo -e "\033[1mupdating homebrew, formulas and casks...\033[0m"
 echo ''
 
 # trapping script to kill subprocesses when script is stopped
@@ -539,7 +655,14 @@ exec pkill -9 -P $$
 
 function unset_variables() {
     unset SUDOPASSWORD
-    unset USE_PASSWORD    
+    unset USE_PASSWORD
+    unset TMP_DIR_BREW
+    unset TMP_DIR_CASK
+    unset DATE_LIST_FILE_BREW
+    unset DATE_LIST_FILE_CASK
+    unset DATE_LIST_FILE_CASK_LATEST
+    unset BREW_FORMULAS_PATH
+    unset BREW_CASKS_PATH  
 }
 
 function start_sudo() {
@@ -572,10 +695,12 @@ trap "unset_variables; kill_subprocesses >/dev/null 2>&1; exit; kill_main_proces
 #set -e
 
 # creating directory and adjusting permissions
-echo "creating directory..."
+echo "checking directory structure and permissions..."
+echo ''
 
-if [ ! -d /usr/local ]; then
-sudo mkdir /usr/local
+if [ ! -d /usr/local ]; 
+then
+    sudo mkdir /usr/local
 fi
 #sudo chown -R $USER:staff /usr/local
 sudo chown -R $(whoami) /usr/local
@@ -634,6 +759,15 @@ then
     BREW_EXCLUDES="${1:-}"
     CASK_EXCLUDES="${2:-}"
     
+    # more variables
+    echo ''
+    BREW_FORMULAS_PATH=$(brew --cellar)
+    export BREW_FORMULAS_PATH
+    echo "homebrew formulas are located in "$BREW_FORMULAS_PATH""
+    BREW_CASKS_PATH=$(brew cask doctor | grep -A1 -B1 "Homebrew-Cask Staging Location" | tail -1)
+    export BREW_CASKS_PATH
+    echo "homebrew casks are located in "$BREW_CASKS_PATH""
+    #echo ''
     
     sudo()
     {
@@ -652,14 +786,9 @@ then
     echo ''
     cask-install-updates
     
-    cleanup-all
+    cleanup-all-parallel
+    #cleanup-all-one-by-one
     
-    # unsetting variables
-    unset TMP_DIR_BREW
-    unset TMP_DIR_CASK
-    unset DATE_LIST_FILE_BREW
-    unset DATE_LIST_FILE_CASK
-    unset DATE_LIST_FILE_CASK_LATEST
     
 else
     echo "not online, skipping updates..."
@@ -674,7 +803,7 @@ echo ''
 
 
 ###
-### unsetting password
+### unsetting variables
 ###
 
 unset_variables
