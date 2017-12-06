@@ -116,6 +116,16 @@ homebrew-update() {
     echo 'updating homebrew finished ;)'
 }
 
+cleanup-all-homebrew-only() {
+    echo ''
+    echo "cleaning up..."
+    #brew cleanup
+    #brew cask cleanup
+    brew cleanup 1> /dev/null
+    brew cask cleanup 1> /dev/null
+    echo 'cleaning finished ;)'
+}
+
 cleanup-all-parallel() {
     echo ''
     echo "cleaning up..."
@@ -178,17 +188,54 @@ cleanup-all-parallel() {
     
     sort "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS" -o "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
 
-    start_sudo
     while IFS='' read -r line || [[ -n "$line" ]]
     do
-            echo ''
-        	echo "$(echo "$line" | awk '{print $1}') versions of $(echo "$line" | awk '{print $2}') are installed..."
-        	echo "uninstalling all versions and reinstalling latest version..."
-        	${USE_PASSWORD} | brew cask uninstall $(echo "$line" | awk '{print $2}') --force 1> /dev/null
-            ${USE_PASSWORD} | brew cask install $(echo "$line" | awk '{print $2}') --force
+            CASK_TO_CLEAN=$(echo "$line" | awk '{print $2}')
+            #echo ''
+        	#echo "$(echo "$line" | awk '{print $1}') versions of $CASK_TO_CLEAN are installed..."
+        	#echo "uninstalling all outdated versions..."
+        	if [[ -e "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN" ]]
+        	then
+        	    # uninstall old versions
+        	    local CASK_INFO=$(brew cask info "$CASK_TO_CLEAN")
+                local CASK_NAME=$(echo "$CASK_TO_CLEAN" | cut -d ":" -f1 | xargs)
+                local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//')
+        	    local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN" | sort -V)
+        	    local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEW_VERSION")
+        	    for i in $VERSIONS_TO_UNINSTALL
+                do
+                    #echo $i
+                    # deleting version entry
+                    if [[ -e "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN"/"$i" && $(echo "$i") != "" ]]
+                    then
+                        rm -rf "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN"/"$i"
+                    else
+                        :
+                    fi
+                    # deleting metadata version entry
+                    if [[ -e "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN"/.metadata/"$i" && $(echo "$i") != "" ]]
+                    then
+                        rm -rf "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN"/.metadata/"$i"
+                    else
+                        :
+                    fi
+                done
+        	else
+        	    :
+        	fi
+        #
+        CASK_INFO=""
+        CASK_NAME=""
+        NEW_VERSION=""
+        INSTALLED_VERSIONS=""
+        VERSIONS_TO_UNINSTALL=""
+        CASK_TO_CLEAN=""
     done <"$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
-    stop_sudo
+
     #
+    # checking if more than version is installed by using
+    # brew cask list --versions
+    echo ''
     echo 'cleaning finished ;)'
 }
 
@@ -200,7 +247,6 @@ cleanup-all-one-by-one() {
     brew cleanup 1> /dev/null
     brew cask cleanup 1> /dev/null
     #
-    start_sudo
     for i in $(brew cask list)
     do
         local CASK_INFO=$(brew cask info "$i")
@@ -208,14 +254,32 @@ cleanup-all-one-by-one() {
         local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | sed 's/ *//')
         local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$i" | sort -V)
         local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
+        local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEW_VERSION")
 
         if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
         then
-            echo ''
-        	echo ""$NUMBER_OF_INSTALLED_VERSIONS" versions of "$CASK_NAME" are installed..."
-        	echo "uninstalling all versions and reinstalling latest version..."
-        	${USE_PASSWORD} | brew cask uninstall "$i" --force 1> /dev/null
-            ${USE_PASSWORD} | brew cask install "$i" --force
+            CASK_TO_CLEAN=$(echo "$i")
+            #echo ''
+        	#echo "$NUMBER_OF_INSTALLED_VERSIONS versions of $CASK_TO_CLEAN are installed..."
+        	#echo "uninstalling all outdated versions..."
+    	    for i in $VERSIONS_TO_UNINSTALL
+            do
+                #echo $i
+                # deleting version entry
+                if [[ -e "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN"/"$i" && $(echo "$i") != "" ]]
+                then
+                    rm -rf "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN"/"$i"
+                else
+                    :
+                fi
+                # deleting metadata version entry
+                if [[ -e "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN"/.metadata/"$i" && $(echo "$i") != "" ]]
+                then
+                    rm -rf "$BREW_CASKS_PATH"/"$CASK_TO_CLEAN"/.metadata/"$i"
+                else
+                    :
+                fi
+            done
         else
             :
         	#echo "only one version installed..."
@@ -225,8 +289,9 @@ cleanup-all-one-by-one() {
         CASK_NAME=""
         NEW_VERSION=""
         INSTALLED_VERSIONS=""
+        VERSIONS_TO_UNINSTALL=""
+        CASK_TO_CLEAN=""
     done
-    stop_sudo
     #
     echo 'cleaning finished ;)'
 }
@@ -571,8 +636,9 @@ cask-install-updates() {
     while IFS='' read -r line || [[ -n "$line" ]]
     do
         echo 'updating '"$line"'...'
+        # uninstall deletes autostart entries
         #sudo brew cask uninstall "$line" --force
-        ${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
+        #${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
         #sudo brew cask install "$line" --force
         # reinstall deletes autostart entries as it runs uninstall and then install
         #${USE_PASSWORD} | brew cask reinstall "$line" --force
@@ -606,8 +672,9 @@ cask-install-updates() {
         echo ''
         while IFS='' read -r line || [[ -n "$line" ]]
         do
-            echo 'updating '"$line"'...'            
-            ${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
+            echo 'updating '"$line"'...'
+            # uninstall deletes autostart entries          
+            #${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
             ${USE_PASSWORD} | brew cask install "$line" --force
             echo ''
         done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
@@ -705,6 +772,24 @@ fi
 #sudo chown -R $USER:staff /usr/local
 sudo chown -R $(whoami) /usr/local
 
+# checking if homebrew is installed
+if [[ $(which brew) == "" ]]
+then
+    echo "homebrew not installed, exiting script..."
+    exit
+else
+    echo "homebrew is installed..."
+fi
+# checking if homebrew-cask is installed
+if [[ $(brew cask --version | grep "caskroom/homebrew-cask") == "" ]]
+then
+    echo "homebrew-cask not installed, exiting script..."
+    exit
+else
+    echo "homebrew-cask is installed..."
+fi
+echo ''
+
 # checking if online
 echo "checking internet connection..."
 ping -c 3 google.com > /dev/null 2>&1
@@ -763,9 +848,25 @@ then
     echo ''
     BREW_FORMULAS_PATH=$(brew --cellar)
     export BREW_FORMULAS_PATH
+    if [[ $(echo "$BREW_FORMULAS_PATH") == "" || ! -e "$BREW_FORMULAS_PATH" ]]
+    then
+        echo "homebrew formulas path is empty or does not exist, exiting script..."
+        exit
+    else
+        :
+    fi
     echo "homebrew formulas are located in "$BREW_FORMULAS_PATH""
+    #
     BREW_CASKS_PATH=$(brew cask doctor | grep -A1 -B1 "Homebrew-Cask Staging Location" | tail -1)
     export BREW_CASKS_PATH
+    if [[ $(echo "$BREW_CASKS_PATH") == "" || ! -e "$BREW_CASKS_PATH" ]]
+    then
+        echo "homebrew casks path is empty or does not exist, skipping respective script parts..."
+        HOMEBREW_CASK_IS_INSTALLED="no"
+    else
+        HOMEBREW_CASK_IS_INSTALLED="yes"
+        :
+    fi
     echo "homebrew casks are located in "$BREW_CASKS_PATH""
     #echo ''
     
@@ -775,21 +876,39 @@ then
     }
     
     homebrew-update
+    #
     echo ''
     brew_show_updates_parallel
     #brew-show-updates-one-by-one
-    echo ''
-    cask_show_updates_parallel
-    #cask-show-updates-one-by-one
+    #
+    if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
+    then
+        echo ''
+        cask_show_updates_parallel
+        #cask-show-updates-one-by-one
+    else
+        :
+    fi
+    #
     echo ''
     brew-install-updates
-    echo ''
-    cask-install-updates
-    
-    cleanup-all-parallel
-    #cleanup-all-one-by-one
-    
-    
+    #
+    if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
+    then
+        echo ''
+        cask-install-updates
+    else
+        :
+    fi
+    #
+    if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
+    then
+        cleanup-all-parallel
+        #cleanup-all-one-by-one
+    else
+        cleanup-all-homebrew-only
+    fi
+
 else
     echo "not online, skipping updates..."
 fi
