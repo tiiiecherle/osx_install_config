@@ -235,7 +235,7 @@ cleanup-all-parallel() {
     #
     # checking if more than version is installed by using
     # brew cask list --versions
-    echo ''
+    #echo ''
     echo 'cleaning finished ;)'
 }
 

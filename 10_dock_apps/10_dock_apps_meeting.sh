@@ -56,7 +56,7 @@ function set_dock_apps () {
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
     $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/MonKey Office 2016.app/$APP_TAIL"
+    -array-add "$APP_HEAD/Applications/MonKey Office 2018.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 

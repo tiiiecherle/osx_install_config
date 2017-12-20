@@ -34,6 +34,7 @@ default_open_with=(
 "LSHandlerContentType           public.html                                 com.apple.safari"
 "LSHandlerContentType           public.xhtml                                com.apple.safari"
 "LSHandlerContentType           public.comma-separated-values-text          org.libreoffice.script"        # .csv
+"LSHandlerContentType           org.oasis-open.opendocument.text            org.libreoffice.script"        # .odt
 "LSHandlerContentType           public.shell-script                         com.coteditor.coteditor"        # .sh
 "LSHandlerContentTagClass       public.filename-extension                   com.coteditor.coteditor LSHandlerContentTag     conf"       # .conf
 "LSHandlerContentType           com.adobe.pdf                               com.apple.preview"              # .pdf

@@ -32,6 +32,7 @@ Bitdefender Virus Scanner
 		excludes
 			~/virtualbox
 			~/Desktop/files/drop_without_scan
+			/usr/local
 
 Facetime
 	Account an- oder abmelden

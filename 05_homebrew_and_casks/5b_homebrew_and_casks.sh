@@ -337,6 +337,10 @@ then
     echo "installing cask-repair..."
     brew install vitorgalvao/tiny-scripts/cask-repair
     #cask-repair --help
+    # fixing red dots before confirming commit that prevent the commit from being made
+    # https://github.com/vitorgalvao/tiny-scripts/issues/88
+    # sudo gem uninstall -ax rubocop rubocop-cask
+    # brew cask style
     
     # cleaning up
     echo ''
