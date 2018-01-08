@@ -115,22 +115,32 @@ hosts_file_install_update() {
         cd -
     
         # comment out lines
-        # sport1 videos
+        # sport1
         #sudo sed -i '' '/cdn-static.liverail.com/s/^/#/g' /etc/hosts
         #or
         #sudo awk -i inplace '/cdn-static.liverail.com/ {$0="#"$0}1' /etc/hosts
         #sudo sed -i '' '/c.amazon-adsystem.com/s/^/#/g' /etc/hosts
         sudo sed -i '' '/probe.yieldlab.net/s/^/#/g' /etc/hosts
+        # anti-adblock popup
+        sudo sed -i '' '/0.0.0.0 acdn.adnxs.com/s/^/#/g' /etc/hosts
         # spiegel.de
         sudo sed -i '' '/imagesrv.adition.com/s/^/#/g' /etc/hosts        
 		# google shopping
         sudo sed -i '' '/www.googleadservices.com/s/^/#/g' /etc/hosts
         sudo sed -i '' '/0.0.0.0 ad.doubleclick.net/s/^/#/g' /etc/hosts
         sudo sed -i '' '/pagead.l.doubleclick.net/s/^/#/g' /etc/hosts
+        
+        # testing
+        # open respective website in browser
+        # deactivate adblocker for the website
+        # open /etc/hosts in gas mask and add / delete entries
+        #sudo killall -HUP mDNSResponder && sleep 2 && open -a /Applications/Firefox.app http://www.sport1.de
 
         # activating hosts file
         echo "activating hosts file..."
-        sudo dscacheutil -flushcache
+        # older osx versions
+        #sudo dscacheutil -flushcache
+        # newer macos versions
         sudo killall -HUP mDNSResponder
         
         # done
