@@ -98,7 +98,6 @@ sudo()
 ### configuring network
 ###
 
-
 # deleting all network locations
 #echo please ignore error about missing preferences.plist file, it will be created automatically
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist >/dev/null 2>&1

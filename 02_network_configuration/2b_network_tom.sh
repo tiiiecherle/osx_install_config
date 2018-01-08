@@ -122,6 +122,10 @@ sudo()
 #sudo networksetup -deletelocation $item
 #done
 
+# name of ethernet device
+# networksetup -listallhardwareports
+ETHERNET_DEVICE="Thunderbolt Ethernet"
+
 # deleting all network locations
 #echo please ignore error about missing preferences.plist file, it will be created automatically
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist >/dev/null 2>&1
@@ -157,12 +161,12 @@ sleep 3
 sudo networksetup -switchtolocation "office_lan"
 echo ""
 sleep 3
-sudo networksetup -createnetworkservice "Thunderbolt-Ethernet" "Thunderbolt Ethernet"
+sudo networksetup -createnetworkservice "$ETHERNET_DEVICE" "$ETHERNET_DEVICE"
 #sudo networksetup -createnetworkservice Thunderbolt-Bridge bridge0
 sleep 3
-sudo networksetup -setmanual "Thunderbolt-Ethernet" 172.16.1.4 255.255.255.0 172.16.1.1
+sudo networksetup -setmanual "$ETHERNET_DEVICE" 172.16.1.4 255.255.255.0 172.16.1.1
 sleep 3
-sudo networksetup -setdnsservers "Thunderbolt-Ethernet" 172.16.1.1
+sudo networksetup -setdnsservers "$ETHERNET_DEVICE" 172.16.1.1
 sleep 3
 
 # creating new location mozart_wlan
@@ -181,19 +185,18 @@ sudo networksetup -setdnsservers "WLAN" 192.168.1.1
 sleep 3
 
 # creating new location berente_wlan
-echo adding location berente_wlan
-sudo networksetup -createlocation "berente_wlan"
-sleep 3
-sudo networksetup -switchtolocation "berente_wlan"
-echo ""
-sleep 3
-sudo networksetup -createnetworkservice "WLAN" Wi-Fi
-#sudo networksetup -createnetworkservice WLAN en0
-sleep 3
-sudo networksetup -setmanual "WLAN" 192.168.2.202 255.255.255.0 192.168.2.1
-sleep 3
-sudo networksetup -setdnsservers "WLAN" 192.168.2.1
-sleep 3
+#echo adding location berente_wlan
+#sudo networksetup -createlocation "berente_wlan"
+#sleep 3
+#sudo networksetup -switchtolocation "berente_wlan"
+#echo ""
+#sleep 3
+#sudo networksetup -createnetworkservice "WLAN" Wi-Fi
+#sleep 3
+#sudo networksetup -setmanual "WLAN" 192.168.2.202 255.255.255.0 192.168.2.1
+#sleep 3
+#sudo networksetup -setdnsservers "WLAN" 192.168.2.1
+#sleep 3
 
 # deleting _temp network location, not necessary when deleting preferences.plist
 #echo deleting _temp network location
