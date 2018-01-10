@@ -180,6 +180,10 @@ cleanup-all-parallel() {
     #echo $NUMBER_OF_MAX_JOBS
     local NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
     #echo $NUMBER_OF_MAX_JOBS_ROUNDED
+    local NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED=$(echo "$NUMBER_OF_MAX_JOBS_ROUNDED * 2.0" | bc -l)
+    #echo $NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED
+    local NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED"'); }')
+    #echo $NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED_ROUNDED
     #
     export -f cask_check_for_multiple_installed_versions
     #

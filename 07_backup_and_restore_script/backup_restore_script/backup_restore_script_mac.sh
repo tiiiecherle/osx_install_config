@@ -370,7 +370,7 @@ function backup_restore {
             exit
         fi
         
-        echo ''
+        #echo ''
         
         ###
         ### backup
@@ -395,28 +395,46 @@ function backup_restore {
             
             # opening applescript which will ask for saving location of compressed file
             echo "asking for directory to save the backup to..."
-            TARGZSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_save_to.scpt" | sed s'/\/$//')
+            TARGZSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_save_to.scpt 2> /dev/null" | sed s'/\/$//')
             sleep 1
+
             #echo ''
             # checking if valid path for backup was selected
             if [ -e "$TARGZSAVEDIR" ]
             then
                 echo "backup will be saved to "$TARGZSAVEDIR""
+                sleep 0.1
             else
                 echo "no valid path for saving the backup selected, exiting script..."
                 exit
             fi
             echo ''
             
+            ### asking for backups
             # virtualbox backup
             if [ "$SELECTEDUSER" == tom ]
             then
                 read -p "do you want to backup virtualbox images (y/N)? " CONT1
                 CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
-    			if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
+                sleep 0.1
+                #
+                if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
                 then
-                    echo "running virtualbox backup..."
-                    open "$SCRIPT_DIR"/vbox_backup/virtualbox_backup.app
+                    # opening applescript which will ask for saving location of compressed file
+                    echo "asking for directory to save the vbox backup to..."
+                    VBOXSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/vbox_backup/ask_save_to.scpt 2> /dev/null" | sed s'/\/$//')
+                    sleep 1
+                    #echo ''
+                    # checking if valid path for backup was selected
+                    if [ -e "$VBOXSAVEDIR" ]
+                    then
+                        echo "vbox backup will be saved to "$VBOXSAVEDIR""
+                        sleep 0.1
+                        printf '\n'
+                    else
+                        echo "no valid path for saving the vbox backup selected, exiting script..."
+                        exit
+                    fi
                 else
                     :
                 fi
@@ -427,20 +445,46 @@ function backup_restore {
             # files backup
             read -p "do you want to backup local files (y/N)? " CONT2
             CONT2="$(echo "$CONT2" | tr '[:upper:]' '[:lower:]')"    # tolower
-            if [[ "$CONT2" == "y" || "$CONT2" == "yes" ]]
-            then
-                FILESTARGZSAVEDIR="$TARGZSAVEDIR"
-                FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
-                echo "running local files backup..."
-                create_tmp_backup_script_fifo1
-                . "$SCRIPT_DIR"/files/run_files_backup.sh
-            else
-                :
-            fi
+            sleep 0.1
         
             # running contacts backup applescript
             read -p "do you want to run an address book backup (y/N)? " CONT3
             CONT3="$(echo "$CONT3" | tr '[:upper:]' '[:lower:]')"    # tolower
+            sleep 0.1
+        
+            # running calendars backup applescript
+            read -p "do you want to run an calendars backup (y/N)? " CONT4
+            CONT4="$(echo "$CONT4" | tr '[:upper:]' '[:lower:]')"    # tolower
+            sleep 0.1
+
+            ### running backups
+            # calendar
+            if [[ "$CONT4" == "y" || "$CONT4" == "yes" ]]
+            then
+                echo ''
+                echo "running calendars backup... please do not touch your computer until the calendar app quits..."
+                # accessibility entry for calendar backup
+                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
+                # service entry for for calendar backup
+                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
+                sleep 2
+                # cleaning up old backups (only keeping the latest 4)
+                find "$HOMEFOLDER"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CALENDARSBACKUPS
+                do
+                    rm -rf "$HOMEFOLDER"/Documents/backup/calendar/"$CALENDARSBACKUPS"
+                done
+                # running calendar backup
+                open "$SCRIPT_DIR"/calendar/calendars_backup.app
+                #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
+                #echo $PID
+                # waiting for the process to finish
+                while ps aux | grep calendars_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
+                osascript -e 'tell application "Terminal" to activate'
+            else
+                :
+            fi
+            
+            # contacts
             if [[ "$CONT3" == "y" || "$CONT3" == "yes" ]]
             then
                 echo running contacts backup... please wait...
@@ -462,30 +506,25 @@ function backup_restore {
             else
                 :
             fi
-        
-            # running calendars backup applescript
-            read -p "do you want to run an calendars backup (y/N)? " CONT4
-            CONT4="$(echo "$CONT4" | tr '[:upper:]' '[:lower:]')"    # tolower
-            if [[ "$CONT4" == "y" || "$CONT4" == "yes" ]]
+            
+            # files
+            if [[ "$CONT2" == "y" || "$CONT2" == "yes" ]]
             then
-                echo "running calendars backup... please do not touch your computer until the calendar app quits..."
-                # accessibility entry for calendar backup
-                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
-                # service entry for for calendar backup
-                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
-                sleep 2
-                # cleaning up old backups (only keeping the latest 4)
-                find "$HOMEFOLDER"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CALENDARSBACKUPS
-                do
-                    rm -rf "$HOMEFOLDER"/Documents/backup/calendar/"$CALENDARSBACKUPS"
-                done
-                # running calendar backup
-                open "$SCRIPT_DIR"/calendar/calendars_backup.app
-                #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                while ps aux | grep calendars_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
-                osascript -e 'tell application "Terminal" to activate'
+                FILESTARGZSAVEDIR="$TARGZSAVEDIR"
+                FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
+                echo "running local files backup..."
+                create_tmp_backup_script_fifo1
+                . "$SCRIPT_DIR"/files/run_files_backup.sh
+            else
+                :
+            fi
+            
+            # virtualbox
+            if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
+            then
+                echo "running virtualbox backup..."
+                export VBOXSAVEDIR
+                open "$SCRIPT_DIR"/vbox_backup/virtualbox_backup.app
             else
                 :
             fi
