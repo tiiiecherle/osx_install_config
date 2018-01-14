@@ -814,7 +814,7 @@ function backup_restore {
             osascript -e 'display notification "complete ;)" with title "Update Script"'
             
             ###
-            ### additional settings
+            ### additional settings and commands
             ###
             
             # disabling siri analytics
@@ -824,6 +824,36 @@ function backup_restore {
                 #echo $i
             	/usr/libexec/PlistBuddy -c "Set CSReceiverBundleIdentifierState:$i false" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist
             done
+            
+            # disabling local time machine backups and cleaning up possible old ones
+            sudo tmutil disable
+            # sudo tmutil enable
+            
+            # force local time machine backup
+            #tmutil localsnapshot
+            # stop local time machine backup
+            #tmutil stopbackup
+            # show status of tmutil
+            #tmutil status
+            
+            # list localsnapshots
+            #tmutil listlocalsnapshots / | cut -d'.' -f4-
+            #tmutil listlocalsnapshots / | rev | cut -d'.' -f1 | rev
+            #tmutil listlocalsnapshotdates | grep -v '[a-zA-Z]'
+            
+            if [[ $(tmutil listlocalsnapshotdates | grep -v '[a-zA-Z]') == "" ]]
+            then
+                # no local time machine backups found
+                :
+            else
+                echo ''
+                echo "local time machine backups found, deleting..."
+                for i in $(tmutil listlocalsnapshotdates | grep -v '[a-zA-Z]')
+                do
+                	tmutil deletelocalsnapshots "$i"
+                done
+                echo ''
+            fi
             
             # deactivating keepingyouawake
             if [ -e /Applications/KeepingYouAwake.app ]
