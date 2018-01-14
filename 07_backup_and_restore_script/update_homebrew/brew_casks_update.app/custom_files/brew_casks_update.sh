@@ -847,7 +847,7 @@ then
     echo "checking for formula dependencies..."
     if [[ $(brew missing) == "" ]]
     then
-    	echo "all formula dependencies are installed..."
+    	echo "all formula dependencies installed..."
     	:
     else
     	echo "not all formula dependencies installed, installing..."
