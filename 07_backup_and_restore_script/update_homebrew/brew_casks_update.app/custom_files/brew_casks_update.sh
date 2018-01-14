@@ -831,16 +831,31 @@ then
     # keeping homebrew from updating each time brew install is used
     export HOMEBREW_NO_AUTO_UPDATE=1
     
-    # checking if all dependencies are installed
+    # checking if all script dependencies are installed
     echo ''
-    echo "checking dependencies..."
+    echo "checking for script dependencies..."
     if [[ $(brew list | grep jq) == '' ]] || [[ $(brew list | grep parallel) == '' ]]
     then
-        echo "not all dependencies installed, installing..."
+        echo "not all script dependencies installed, installing..."
         ${USE_PASSWORD} | brew install jq parallel
     else
-        echo "all dependencies installed..."
+        echo "all script dependencies installed..."
     fi
+    
+    # checking if all formula dependencies are installed
+    #echo ''
+    echo "checking for formula dependencies..."
+    if [[ $(brew missing) == "" ]]
+    then
+    	echo "all formula dependencies are installed..."
+    	:
+    else
+    	echo "not all formula dependencies installed, installing..."
+    	brew install $(brew missing | awk '{print $NF}' | awk '!a[$0]++')
+    	# or 
+    	#brew install $(brew missing | awk '{print $NF}' | sort | uniq)
+    fi
+    #echo ''
     
     # will exclude these apps from updating
     # pass in params to fit your needs

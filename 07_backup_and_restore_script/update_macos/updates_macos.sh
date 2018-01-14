@@ -188,6 +188,20 @@ function 2017-10-09_update () {
 }
 #2017-10-09_update
 
+###
+### 2017-10-09
+###
 
+function 2018-01-10_update () {
+    
+    set +e
+    
+    # htop is not compatible with macos high sierra
+    brew uninstall --force htop
+    brew install glances
+    
+    set -e
 
+}
+2018-01-10_update
 
