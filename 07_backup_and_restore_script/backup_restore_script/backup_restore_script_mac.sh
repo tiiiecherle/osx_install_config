@@ -422,7 +422,7 @@ function backup_restore {
                 then
                     # opening applescript which will ask for saving location of compressed file
                     echo "asking for directory to save the vbox backup to..."
-                    VBOXSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/vbox_backup/ask_save_to.scpt 2> /dev/null" | sed s'/\/$//')
+                    VBOXSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/vbox_backup/ask_save_to_vbox.scpt 2> /dev/null" | sed s'/\/$//')
                     sleep 1
                     #echo ''
                     # checking if valid path for backup was selected
