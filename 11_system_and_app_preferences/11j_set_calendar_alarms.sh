@@ -17,7 +17,7 @@ then
 	# or
 	# w | grep console | awk '{print $(NF-1)}'
 	
-	WAITING_TIME=30
+	WAITING_TIME=60
 	echo "waiting ""$WAITING_TIME"" seconds to give macos time to rebuild the calendar cache..."
 	NUM1=0
 	#echo ''
@@ -109,8 +109,9 @@ EOF
 		echo "radicale caldav is ""$RADICALE_CALENDAR"""
 	else
 		echo "radicale caldav directory not found..."
-		#echo "exiting script..."
-		#exit
+		echo "perhaps waiting time above was to short for rebuilding calendar cache, please try again..."
+		echo "exiting script..."
+		exit
 	fi
 	echo ''
 	
