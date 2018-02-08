@@ -2737,7 +2737,7 @@ EOF
     
     echo "restarting affected apps"
     
-    for app in "Activity Monitor" "Address Book" "Calendar" "Contacts" "cfprefsd" "Dock" "Finder" "Mail" "Messages" "System Preferences" "Safari" "SystemUIServer" "TextEdit"; do
+    for app in "Activity Monitor" "Calendar" "Contacts" "cfprefsd" "Dock" "Finder" "Mail" "Messages" "System Preferences" "Safari" "SystemUIServer" "TextEdit"; do
     	killall "${app}" > /dev/null 2>&1
     done
     
