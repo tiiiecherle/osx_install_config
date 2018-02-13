@@ -84,7 +84,7 @@ sudo()
 # sqlite database for accessibility
 #  /Library/Application Support/com.apple.TCC/TCC.db
 
-# sqlite database for calendar, contacts, ...
+# sqlite database for calendar, contacts, reminders, ...
 #  ~/Library/Application Support/com.apple.TCC/TCC.db
 
 # reading database
@@ -113,7 +113,8 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 
 ### privacy - accessibility
 
-# 	x 	calendars backup			com.apple.ScriptEditor.id.calendars-backup
+## 	x 	calendars backup			com.apple.ScriptEditor.id.calendars-backup
+# 	x 	gui apps backup			com.apple.ScriptEditor.id.gui-apps-backup
 #	x	overflow					com.stuntsoftware.Overflow
 #	x	script-editor				com.apple.ScriptEditor2
 #   x   system-preferences          com.apple.systempreferences
@@ -142,7 +143,8 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 sudo sqlite3 "$DATABASE_SYSTEM" "DELETE FROM access"
 
 ACCESSIBILITYAPPS=(
-com.apple.ScriptEditor.id.calendars-backup
+#com.apple.ScriptEditor.id.calendars-backup
+com.apple.ScriptEditor.id.gui-apps-backup
 com.stuntsoftware.Overflow
 com.apple.ScriptEditor2
 com.apple.systempreferences
@@ -160,30 +162,21 @@ done
 
 ### privacy - contacts
 
-# 	x 	contacts backup             com.apple.ScriptEditor.id.contacts-backup
+## 	x 	contacts backup             com.apple.ScriptEditor.id.contacts-backup
+# 	x 	gui apps backup			com.apple.ScriptEditor.id.gui-apps-backup
 #	x	terminal					com.apple.Terminal
 #	x	iterm2                      com.googlecode.iterm2
 #	x	dialectic					com.jen.dialectic
 #	x	alfred 3					com.runningwithcrayons.Alfred-3
 #	x	geburtstagschecker			earthlingsoft.GeburtstagsChecker
 
-# add application to accessibility
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceAddressBook','IDENTIFIER',0,1,1,NULL,NULL);" 
-# example
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.contacts-backup',0,1,1,NULL,NULL);" 
-
-# remove application from accessibility
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "delete from access where client='IDENTIFIER';"
-# example
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "delete from access where client='com.apple.ScriptEditor.id.contacts-backup';"
-
-
 sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBook';"
 
 CONTACTSAPPS=(
-com.apple.ScriptEditor.id.contacts-backup
-com.apple.Terminal
-com.googlecode.iterm2
+#com.apple.ScriptEditor.id.contacts-backup
+com.apple.ScriptEditor.id.gui-apps-backup
+#com.apple.Terminal
+#com.googlecode.iterm2
 com.jen.dialectic
 com.runningwithcrayons.Alfred-3
 earthlingsoft.GeburtstagsChecker
@@ -197,29 +190,37 @@ done
 
 ### privacy - calendar
 
-# 	x 	calendars backup			com.apple.ScriptEditor.id.calendars-backup
+## 	x 	calendars backup			com.apple.ScriptEditor.id.calendars-backup
+# 	x 	gui apps backup			com.apple.ScriptEditor.id.gui-apps-backup
 #	x	istat menus                 com.bjango.istatmenusstatus
-
-# add application to accessibility
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceCalendar','IDENTIFIER',0,1,1,NULL,NULL);" 
-# example
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);" 
-
-# remove application from accessibility
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "delete from access where client='IDENTIFIER';"
-# example
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "delete from access where client='com.apple.ScriptEditor.id.calendars-backup';"
 
 
 sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCalendar';"
 
 CALENDARAPPS=(
-com.apple.ScriptEditor.id.calendars-backup
+#com.apple.ScriptEditor.id.calendars-backup
+com.apple.ScriptEditor.id.gui-apps-backup
 com.bjango.istatmenusstatus
 )
 
 for calendar_apps in ${CALENDARAPPS[@]}; do
 sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','"$calendar_apps"',0,1,1,NULL,NULL);"
+done
+
+
+### privacy - reminders
+
+# 	x 	gui apps backup			com.apple.ScriptEditor.id.gui-apps-backup
+
+
+sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceReminders';"
+
+REMINDERAPPS=(
+com.apple.ScriptEditor.id.gui-apps-backup
+)
+
+for reminder_apps in ${REMINDERAPPS[@]}; do
+sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','"$reminder_apps"',0,1,1,NULL,NULL);"
 done
 
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v39
+### backup / restore script v38
 ### last version without parallel was v35
 ### last version without gpg was v36
 ### last version with separate backup scripts for calendar and contact backup scripts was v38
@@ -119,8 +119,6 @@ function unset_variables() {
     unset LINENUMBER
     unset DESTINATION
     unset SUDOPASSWORD
-    unset VBOXSAVEDIR
-    unset GUI_APP_TO_BACKUP
 }
 
 function delete_tmp_backup_script_fifo1() {
@@ -352,9 +350,9 @@ function backup_restore {
             echo homebrew is installed...
             if [[ "$OPTION" == "BACKUP" ]]; 
             then
-                if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep parallel) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnupg) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep cliclick) == '' ]]
+                if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep parallel) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnupg) == '' ]]
                 then
-                    echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel, gnupg and cliclick is missing, exiting...
+                    echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel and gnupg is missing, exiting...
                     exit
                 else
                     echo needed homebrew tools are installed...     
@@ -449,137 +447,63 @@ function backup_restore {
             read -p "do you want to backup local files (y/N)? " CONT2
             CONT2="$(echo "$CONT2" | tr '[:upper:]' '[:lower:]')"    # tolower
             sleep 0.1
-            
-            # reminders backup
-            read -p "do you want to run a reminders backup  (y/N)? " CONT3
+        
+            # running contacts backup applescript
+            read -p "do you want to run an address book backup (y/N)? " CONT3
             CONT3="$(echo "$CONT3" | tr '[:upper:]' '[:lower:]')"    # tolower
             sleep 0.1
         
-            # running contacts backup applescript
-            read -p "do you want to run a contacts backup (y/N)? " CONT4
+            # running calendars backup applescript
+            read -p "do you want to run an calendars backup (y/N)? " CONT4
             CONT4="$(echo "$CONT4" | tr '[:upper:]' '[:lower:]')"    # tolower
             sleep 0.1
-        
-            # running calendars backup applescript
-            read -p "do you want to run an calendars backup (y/N)? " CONT5
-            CONT5="$(echo "$CONT5" | tr '[:upper:]' '[:lower:]')"    # tolower
-            sleep 0.1
 
-            echo ''
-            
             ### running backups
-            # reminders
-            if [[ "$CONT3" == "y" || "$CONT3" == "yes" ]]
+            # calendar
+            if [[ "$CONT4" == "y" || "$CONT4" == "yes" ]]
             then
-                echo "running reminders backup... please do not touch the computer until the app quits..."
-                # cleaning up old backups (only keeping the latest 4)
-                find "$HOMEFOLDER"/Documents/backup/reminders -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r REMINDERSBACKUPS
-                do
-                    rm -rf "$HOMEFOLDER"/Documents/backup/reminders/"$REMINDERSBACKUPS"
-                done
-                
-                # all gui app backups in one script
-                # accessibility entry for reminders backup
-                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                # service entry for for backup app
-                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
+                echo ''
+                echo "running calendars backup... please do not touch your computer until the calendar app quits..."
+                # accessibility entry for calendar backup
+                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
+                # service entry for for calendar backup
+                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
                 sleep 2
-                
-                # running contacts backup
-                GUI_APP_TO_BACKUP=Reminders
-                export GUI_APP_TO_BACKUP
-                open "$SCRIPT_DIR"/gui_apps/gui_apps_backup.app
-                #PID=$(ps aux | grep gui_apps_backup | grep -v grep | awk "{ print \$2 }")
+                # cleaning up old backups (only keeping the latest 4)
+                find "$HOMEFOLDER"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CALENDARSBACKUPS
+                do
+                    rm -rf "$HOMEFOLDER"/Documents/backup/calendar/"$CALENDARSBACKUPS"
+                done
+                # running calendar backup
+                open "$SCRIPT_DIR"/calendar/calendars_backup.app
+                #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
                 #echo $PID
                 # waiting for the process to finish
-                while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
+                while ps aux | grep calendars_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
                 osascript -e 'tell application "Terminal" to activate'
             else
                 :
             fi
             
             # contacts
-            if [[ "$CONT4" == "y" || "$CONT4" == "yes" ]]
+            if [[ "$CONT3" == "y" || "$CONT3" == "yes" ]]
             then
-                echo "running contacts backup... please do not touch the computer until the app quits..."
-                # cleaning up old backups (only keeping the latest 4)
-                find "$HOMEFOLDER"/Documents/backup/contacts -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CONTACTSBACKUPS
-                do
-                    rm -rf "$HOMEFOLDER"/Documents/backup/contacts/"$CONTACTSBACKUPS"
-                done
-                
-                # all gui app backups in one script
-                # accessibility entry for calendar backup
-                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                # service entry for for backup app
-                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                sleep 2
-                
-                # running contacts backup
-                GUI_APP_TO_BACKUP=Contacts
-                export GUI_APP_TO_BACKUP
-                open "$SCRIPT_DIR"/gui_apps/gui_apps_backup.app
-                #PID=$(ps aux | grep gui_apps_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
-                osascript -e 'tell application "Terminal" to activate'
-                
-                # old working
+                echo running contacts backup... please wait...
                 # service entry for for contacts backup
-                #sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.contacts-backup',0,1,1,NULL,NULL);"
-                #sleep 2
+                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.contacts-backup',0,1,1,NULL,NULL);"
+                sleep 2
+                # cleaning up old backups (only keeping the latest 4)
+                find "$HOMEFOLDER"/Documents/backup/addressbook -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r ADDRESSBOOKBACKUPS
+                do
+                    rm -rf "$HOMEFOLDER"/Documents/backup/addressbook/"$ADDRESSBOOKBACKUPS"
+                done
                 # running contacts backup
-                #open "$SCRIPT_DIR"/gui_apps/contacts/contacts_backup.app
+                open "$SCRIPT_DIR"/addressbook/contacts_backup.app
                 #PID=$(ps aux | grep contacts_backup | grep -v grep | awk "{ print \$2 }")
                 #echo $PID
                 # waiting for the process to finish
-                #while ps aux | grep contacts_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
-                #osascript -e 'tell application "Terminal" to activate'
-            else
-                :
-            fi
-            
-            # calendar
-            if [[ "$CONT5" == "y" || "$CONT5" == "yes" ]]
-            then
-                echo "running calendars backup... please do not touch the computer until the app quits..."
-                # cleaning up old backups (only keeping the latest 4)
-                find "$HOMEFOLDER"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CALENDARSBACKUPS
-                do
-                    rm -rf "$HOMEFOLDER"/Documents/backup/calendar/"$CALENDARSBACKUPS"
-                done
-                
-                # all gui app backups in one script
-                # accessibility entry for calendar backup
-                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                # service entry for for backup app
-                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                sleep 2
-                
-                # running calendar backup
-                GUI_APP_TO_BACKUP=Calendar
-                export GUI_APP_TO_BACKUP
-                open "$SCRIPT_DIR"/gui_apps/gui_apps_backup.app
-                #PID=$(ps aux | grep gui_apps_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
+                while ps aux | grep contacts_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
                 osascript -e 'tell application "Terminal" to activate'
-                 
-                # old working
-                # accessibility entry for calendar backup
-                #sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
-                # service entry for for calendar backup
-                #sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
-                #sleep 2
-                # running calendar backup                
-                #open "$SCRIPT_DIR"/gui_apps/contacts/calendars_backup.app
-                #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                #while ps aux | grep calendars_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
-                #osascript -e 'tell application "Terminal" to activate'
             else
                 :
             fi

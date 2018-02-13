@@ -16,3 +16,4 @@ qtfaststart
 jq
 parallel
 gnupg
+cliclick
