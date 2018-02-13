@@ -92,3 +92,4 @@ then
 else 
 	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "xtrafinder"; 
 fi
+echo ''
