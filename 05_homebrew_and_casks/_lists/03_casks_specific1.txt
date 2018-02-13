@@ -5,7 +5,7 @@ github
 imazing
 jameica
 jdownloader
-macupdate-desktop
+macupdate
 remote-buddy
 spotify
 telegram
