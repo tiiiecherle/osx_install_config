@@ -90,7 +90,7 @@ NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS
 parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k -q bash -c '
     if [[ -f "{}" ]];
     then
-        printf "%-45s" ""$(basename "{}")"... " && unpigz -c "{}" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+        printf "%-45s" """$(basename "{}")""... " && unpigz -c "{}" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
     else
         :
     fi
