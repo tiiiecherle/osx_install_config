@@ -236,14 +236,9 @@ cleanup-all-parallel() {
         CASK_TO_CLEAN=""
     done <"$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
 
+    #
     # checking if more than version is installed by using
     # brew cask list --versions
-    
-    # fixing red dots before confirming commit to cask-repair that prevent the commit from being made
-    # https://github.com/vitorgalvao/tiny-scripts/issues/88
-    sudo gem uninstall -ax rubocop rubocop-cask 1> /dev/null
-    brew cask style 1> /dev/null
-    
     #echo ''
     echo 'cleaning finished ;)'
 }

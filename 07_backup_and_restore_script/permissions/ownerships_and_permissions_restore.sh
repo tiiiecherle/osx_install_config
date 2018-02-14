@@ -261,10 +261,10 @@ function backup_restore_permissions {
     if [[ "$RESTOREMASTERDIR" != "" ]] && [[ "$RESTOREUSERDIR" != "" ]]
     then
         #echo running 1
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR" -not -path "$RESTOREUSERDIR" -type f -print0 | xargs -0 chown 501:staff' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR" -not -path "$RESTOREUSERDIR" ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR" -not -path "$RESTOREUSERDIR" -type f -print0 | xargs -0 chmod 600' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path -not -path "$RESTOREMASTERDIR" -not -path "$RESTOREUSERDIR" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' -type f -print0 | xargs -0 chown 501:staff' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' -type f -print0 | xargs -0 chmod 600' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -type d -print0 | xargs -0 chmod 700' &
     else
         #echo running 2
         sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 chown 501:staff' &
@@ -281,19 +281,24 @@ function backup_restore_permissions {
     sudo chmod 733 "$HOMEFOLDER"/Public/"Drop Box"
     # ssh
     #chmod 700 ~/
-    chmod 700 "$HOMEFOLDER"/.ssh
-    chmod 600 "$HOMEFOLDER"/.ssh/config
-    chmod 600 "$HOMEFOLDER"/.ssh/*
+    if [[ -e "$HOMEFOLDER"/.ssh ]]
+    then
+        chmod 700 "$HOMEFOLDER"/.ssh
+        chmod 600 "$HOMEFOLDER"/.ssh/config
+        chmod 600 "$HOMEFOLDER"/.ssh/*
+    else
+        :
+    fi
     
     if [[ "$RESTOREMASTERDIR" != "" ]] && [[ "$RESTOREUSERDIR" != "" ]]
     then
         #echo running 1
         # .sh files
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR" -not -path "$RESTOREUSERDIR" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' &
         # .command files
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR" -not -path "$RESTOREUSERDIR" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR" -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' &
         # bash files without extension
-        #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR" -not -path "$RESTOREUSERDIR" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' &
+        #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' &
         #
     else
         #echo running 2

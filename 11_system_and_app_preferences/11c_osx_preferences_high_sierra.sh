@@ -1265,12 +1265,11 @@ EOF
     fi
     
     # adding startup-items
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 3", path:"/Applications/Bartender 3.app", hidden:false}'
     # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
+    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 3", path:"/Applications/Bartender 3.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"AudioSwitcher", path:"/Applications/AudioSwitcher.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Overflow", path:"/Applications/Overflow.app", hidden:true}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Dialectic", path:"/Applications/Dialectic.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Caffeine", path:"/Applications/Caffeine.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"KeepingYouAwake", path:"/Applications/KeepingYouAwake.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 3", path:"/Applications/Alfred 3.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"/Applications/GeburtstagsChecker.app", hidden:false}'
@@ -1285,20 +1284,17 @@ EOF
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Virus Scanner Plus", path:"/Applications/VirusScannerPlus.app", hidden:false}'
     
     # adding some more startup-items for specified user if script is run on multiple macs with different users
-    if [ "$USER" == "tom" ]
+    if [[ "$USER" == "tom" ]]
     then
     	osascript -e 'tell application "System Events" to make login item at end with properties {name:"VirtualBox Menulet", path:"/Applications/VirtualBox Menulet.app", hidden:false}'
     	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Telegram", path:"/Applications/Telegram.app", hidden:true}'
     	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"Unified Remote", path:"/Applications/Unified Remote.app", hidden:false}'
-    	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"ChitChat", path:"/Applications/ChitChat.app", hidden:true}'
-    	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"Whatsapp", path:"/Applications/Whatsapp.app", hidden:true}'
     	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_network_change_login", path:"/Users/'$USER'/Library/Scripts/run_on_network_change_login.app", hidden:true}'
     else
     	:
     fi
     
-    # adding some more startup-items for specified user if script is run on multiple macs with different users
-    if [ "$USER" == "wolfgang" ]
+    if [[ "$USER" == "wolfgang" ]]
     then
     	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Firefox", path:"/Applications/Firefox.app", hidden:false}'
     	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Mail", path:"/Applications/Mail.app", hidden:true}'
@@ -1307,6 +1303,12 @@ EOF
     	:
     fi
     
+    if [[ "$USER" == "annett" ]] || [[ "$USER" == "meeting" ]]
+    then
+    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Macs Fan Control", path:"//Applications/Macs Fan Control.app", hidden:false}'
+    else
+    	:
+    fi
     
     
     ###

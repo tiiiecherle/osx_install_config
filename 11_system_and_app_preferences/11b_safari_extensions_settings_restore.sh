@@ -8,7 +8,7 @@ SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #echo "script dir is $SCRIPT_DIR$"
 
 echo "please select restore master directory..."
-RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/11b_script/ask_restore_master_dir.scpt" | sed s'/\/$//')
+RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/11b_script/ask_restore_master_dir.scpt 2> /dev/null" | sed s'/\/$//')
 
 SELECTEDUSER=$USER
 MASTERUSER=$(ls "$RESTOREMASTERDIR"/Users | egrep -v "^[.]" | egrep -v "Shared")

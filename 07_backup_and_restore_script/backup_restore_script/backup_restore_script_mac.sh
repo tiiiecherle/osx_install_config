@@ -465,7 +465,12 @@ function backup_restore {
             CONT5="$(echo "$CONT5" | tr '[:upper:]' '[:lower:]')"    # tolower
             sleep 0.1
 
-            echo ''
+            if [[ "$CONT3" == "y" || "$CONT3" == "yes" || "$CONT4" == "y" || "$CONT4" == "yes" || "$CONT5" == "y" || "$CONT5" == "yes" ]]
+            then
+                echo ''
+            else
+                :
+            fi
             
             ### running backups
             # reminders
@@ -964,12 +969,12 @@ function backup_restore {
         #    RESTOREDIR="$HOMEFOLDER"/Desktop/restore
         #else
         #    echo "restore directoy not found, asking for it..."
-        #    RESTOREDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_dir.scpt" | sed s'/\/$//')
+        #    RESTOREDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_dir.scpt 2> /dev/null" | sed s'/\/$//')
         #fi
 
         # restore master dir
         echo "please select restore master directory..."
-        RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_master_dir.scpt" | sed s'/\/$//')
+        RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null" | sed s'/\/$//')
         if [[ $(echo "$RESTOREMASTERDIR") == "" ]]
         then
             echo ''
@@ -984,7 +989,7 @@ function backup_restore {
 
         # restore user dir
         echo "please select restore user directory..."
-        RESTOREUSERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_user_dir.scpt" | sed s'/\/$//')
+        RESTOREUSERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_user_dir.scpt 2> /dev/null" | sed s'/\/$//')
         if [[ $(echo "$RESTOREUSERDIR") == "" ]]
         then
             echo ''

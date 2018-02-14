@@ -24,6 +24,7 @@ applications_to_open=(
 "/Applications/Xcode.app"
 "/Applications/iphone/iMazing.app"
 "/Applications/VirusScannerPlus.app"
+"/Applications/Macs Fan Control.app"
 )
 
 for i in "${applications_to_open[@]}"

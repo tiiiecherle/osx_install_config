@@ -156,6 +156,7 @@ tell application "System Events"
 		# festplatten
 		#set theCheckbox to checkbox "Festplatten" of window "Finder-Einstellungen"
 		set theCheckbox to checkbox 16 of window 1
+		click theCheckbox
 		tell theCheckbox
 			set checkboxStatus to value of theCheckbox as boolean
 			if checkboxStatus is false then click theCheckbox
@@ -172,6 +173,7 @@ tell application "System Events"
 		# cds, dvds, ipods
 		#set theCheckbox to checkbox "CDs, DVDs und iPods" of window "Finder-Einstellungen"
 		set theCheckbox to checkbox 18 of window 1
+		click theCheckbox
 		tell theCheckbox
 			set checkboxStatus to value of theCheckbox as boolean
 			if checkboxStatus is false then click theCheckbox

@@ -54,6 +54,7 @@ keka
 liteicon
 macdown
 macpass
+macs-fan-control
 #malwarebytes
 namechanger
 onyx
@@ -77,5 +78,5 @@ vox
 x-lite
 xact
 xnconvert
-#xquartz            # installed in casks_pre section
+#xquartz		# installed in casks_pre section
 zipeg

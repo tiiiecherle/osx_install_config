@@ -347,10 +347,14 @@ echo MacPass
 m	/Applications/MacPass.app
 m	~/Library/Preferences/com.hicknhacksoftware.MacPass.plist
 
+# Macs Fan Control
+echo Macs Fan Control
+u	/Applications/Macs Fan Control.app
+u	~/Library/Preferences/com.crystalidea.macsfancontrol.plist
+
 # MacUpdate Desktop
 echo MacUpdate Desktop
 m	/Applications/MacUpdate Desktop.app
-
 
 # MonKey Office
 echo MonKey Office 2018

@@ -112,7 +112,7 @@ fi
 CONT1_BREW=y
 
 # casks
-read -p "do you want to install casks packages (Y/n)? " CONT2_BREW
+read -p "do you want to install casks packages? select no when restoring on clean install and install casks via restore script (Y/n)? " CONT2_BREW
 CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 echo ''
 
@@ -483,8 +483,14 @@ then
     #echo "the following casks are installed..."
     #brew cask list | tr "," "\n"
     
-    # checking if successfully installed
-    . "$SCRIPT_DIR"/5e_homebrew_and_cask_install_check.sh
+    # checking if successfully installed    
+    if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
+    then
+        # already included in casks_only.sh script
+        :
+    else
+        . "$SCRIPT_DIR"/5e_homebrew_and_cask_install_check.sh
+    fi
     
     # done
     echo ''
