@@ -641,6 +641,23 @@ cask-install-updates() {
     sort "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" -o "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
     
     start_sudo
+    applications_to_reinstall=(
+    "adobe-acrobat-reader"
+    )
+    for i in "${applications_to_reinstall[@]}"
+    do
+    	if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" | grep "$i") != "" ]]
+    	then
+            echo 'updating '"$i"'...'
+            ${USE_PASSWORD} | brew cask reinstall "$i"
+            #sed -i "" "/""$i""/d" "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+            sed -i '' '/'"$i"'/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+            echo ''
+    	else
+    		:
+    	fi
+    done
+
     # updating all casks that are out of date
     while IFS='' read -r line || [[ -n "$line" ]]
     do

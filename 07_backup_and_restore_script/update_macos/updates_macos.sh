@@ -205,3 +205,21 @@ function 2018-01-10_update () {
 }
 #2018-01-10_update
 
+###
+### 2018-02-15
+###
+
+function 2018-02-15_update () {
+    
+    set +e
+    echo ''
+    
+    # additional dependency for backup script
+    brew install cliclick
+    
+    echo ''
+    set -e
+
+}
+2018-02-15_update
+
