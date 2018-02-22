@@ -217,6 +217,15 @@ function 2018-02-15_update () {
     # additional dependency for backup script
     brew install cliclick
     
+    # copy / paste of a lot of commands does only work in iterm2 when editing / lowering default paste speed
+    defaults write com.googlecode.iterm2 QuickPasteBytesPerCall -int 126
+    defaults write com.googlecode.iterm2 QuickPasteDelayBetweenCalls -float 0.05323399
+    # lower values in steps to try if working by clicking edit - paste special - paste slower
+    # check values in preferences advanced - search for paste 
+    # defaults		
+    # dealy in seconds between chunks when pasting normally			0.01530456
+    # number of bytes to paste in each chunk when pasting normally		667
+    
     echo ''
     set -e
 

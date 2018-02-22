@@ -40,56 +40,63 @@ else
 	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
 fi
 '
-    
-# casks
-echo ''
-echo checking casks installation...
-# casks_pre
-printf '%s\n' "${casks_pre[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-'
-# casks
-printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-'
 
-# casks specific1
-if [[ "$USER" == "tom" ]]
+if [[ $(echo "$CHECK_IF_CASKS_INSTALLED") == "no" ]]
 then
-    echo ''
-    echo checking casks specific1 installation...
-    printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-fi
-        '
+	:
 else
-    :
-fi
+	    
+	# casks
+	echo ''
+	echo checking casks installation...
+	# casks_pre
+	printf '%s\n' "${casks_pre[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	item="{}"
+	if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
+	then 
+		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
+	else 
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
+	fi
+	'
+	# casks
+	printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	item="{}"
+	if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
+	then 
+		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
+	else 
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
+	fi
+	'
+	
+	# casks specific1
+	if [[ "$USER" == "tom" ]]
+	then
+	    echo ''
+	    echo checking casks specific1 installation...
+	    printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	item="{}"
+	if [[ $(brew cask info "$item" | grep "Not installed") == "" ]]; 
+	then 
+		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
+	else 
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
+	fi
+	        '
+	else
+	    :
+	fi
+	
+	# additonal apps / xtrafinder
+	echo ''
+	echo checking additional apps installation...
+	if [[ -e "/Applications/XtraFinder.app" ]]; 
+	then 
+		printf "%-50s\e[1;32mok\e[0m%-10s\n" "xtrafinder"; 
+	else 
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "xtrafinder"; 
+	fi
+	echo ''
 
-# additonal apps / xtrafinder
-echo ''
-echo checking additional apps installation...
-if [[ -e "/Applications/XtraFinder.app" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "xtrafinder"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "xtrafinder"; 
 fi
-echo ''

@@ -237,6 +237,10 @@ m	/Applications/HandBrake.app
 echo Hotspot Shield
 m	/Applications/Hotspot Shield.app
 
+# iBackup Viewer
+echo iBackup Viewer
+m	/Applications/iBackup Viewer.app
+
 # iBackup
 echo iBackup
 m	/Applications/iBackup.app
@@ -249,6 +253,7 @@ m	~/Library/Preferences/net.pornel.ImageOptim.plist
 
 # iMazing
 echo iMazing
+u	/Applications/iMazing.app
 u	~/Library/Application Support/iMazing
 u	~/Library/Preferences/com.DigiDNA.iMazing2Mac.plist
 u	~/Library/Preferences/com.DigiDNA.SharedPreferences.plist
@@ -257,10 +262,6 @@ u	~/Library/Preferences/com.DigiDNA.SharedPreferences.plist
 echo InsomniaX
 m	/Applications/InsomniaX.app
 m	~/Library/Preferences/net.semaja2.InsomniaX.plist
-
-# iphone
-echo iphone
-m	/Applications/iphone
 
 # iStat Menus
 echo iStat Menus
@@ -370,6 +371,10 @@ m	/usr/local/bin/mysides
 echo NameChanger
 m	/Applications/NameChanger.app
 
+# Nextcloud
+echo Nextcloud
+m	~/Library/Application Support/Nextcloud
+
 # Ondesoft AudioBook Converter
 echo Ondesoft AudioBook Converter
 m	/Applications/Ondesoft AudioBook Converter.app
@@ -390,10 +395,6 @@ echo Overflow
 m	/Applications/Overflow.app
 u	~/Library/Application Support/Overflow
 u	~/Library/Preferences/com.stuntsoftware.Overflow.plist
-
-# Nextcloud
-echo Nextcloud
-m	~/Library/Application Support/Nextcloud
 
 # Pages4
 echo Pages4
@@ -430,6 +431,10 @@ echo PDF Unlock
 m	/Applications/PDF Unlock.app
 m	~/Library/Preferences/com.brinscall.pdfunlock.plist
 m	~/Library/Preferences/PDFUnlock.plist
+
+# PhotoSync
+echo PhotoSync
+u	/Applications/PhotoSync.app
 
 # Plex Media Server
 echo Plex Media Server

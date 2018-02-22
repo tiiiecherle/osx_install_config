@@ -1274,7 +1274,7 @@ EOF
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 3", path:"/Applications/Alfred 3.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"/Applications/GeburtstagsChecker.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"AppCleaner Helper", path:"/Applications/AppCleaner Helper.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"SMARTReporter", path:"/Applications/SMARTReporter.app", hidden:false}'
+    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"SMARTReporter", path:"/Applications/SMARTReporter.app", hidden:false}'
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"TotalFinder", path:"/Applications/TotalFinder.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"/Applications/XtraFinder.app", hidden:false}'
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"iStat Menus", path:"/Applications/iStat Menus.app", hidden:false}'

@@ -168,8 +168,12 @@ function backup_restore_permissions {
     
     if [ -e "/Library/Printers/Canon/CUPSPS2" ]
     then
-        sudo chown -R root:admin "/Library/Printers/Canon/CUPSPS2" &
-        sudo chmod -R 755 "/Library/Printers/Canon/CUPSPS2" &
+        # do not use & for the -R lines
+        sudo chown -R root:admin "/Library/Printers/Canon/CUPSPS2"
+        sudo chown root:wheel "/Library/Printers/Canon/CUPSPS2/backend/backend.bundle/Contents/Library/canonoipnets2" &
+        # do not use & for the -R lines
+        sudo chmod -R 755 "/Library/Printers/Canon/CUPSPS2"
+        sudo chmod 700 "/Library/Printers/Canon/CUPSPS2/backend/backend.bundle/Contents/Library/canonoipnets2" &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "*.nib" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "*.DAT" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "*.TBL" -print0 | xargs -0 chmod 644' &
@@ -189,9 +193,16 @@ function backup_restore_permissions {
         sudo bash -c 'find /Library/Printers/Canon -type f -name "*.PRF" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeResources" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeDirectory" -print0 | xargs -0 chmod 644' &
-        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeRequirements" -print0 | xargs -0 chmod 644' &
+        sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeRequirements*" -print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "CodeSignature"-print0 | xargs -0 chmod 644' &
         sudo bash -c 'find /Library/Printers/Canon -type f -name "PkgInfo" -print0 | xargs -0 chmod 644' &
+        # find files with respective ownership and permission
+        # find /Library/Printers/Canon -type f ! -user root
+        # find /Library/Printers/Canon -type f ! -group admin
+        # find /Library/Printers/Canon -type d ! -perm 755
+        # find /Library/Printers/Canon -type f ! -perm 755 ! -perm 644
+        # findung more 644 files 
+        # find /Library/Printers/Canon -type f ! -name "*.nib" ! -name "*.DAT" ! -name "*.TBL" ! -name "*.icc" ! -name "*.icns" ! -name "*.plist" ! -name "*.strings" ! -name "*.png" ! -name "*.gif" ! -name "*.html" ! -name "*.js" ! -name "*.gif" ! -name "*.jpg" ! -name "*.css" ! -name "*.xib" ! -name "*.helpindex" ! -name "*.PRF" ! -name "CodeResources" ! -name "CodeDirectory" ! -name "CodeRequirements*" ! -name "CodeSignature" ! -name "PkgInfo" -perm 644
     else
         :
     fi
@@ -261,10 +272,10 @@ function backup_restore_permissions {
     if [[ "$RESTOREMASTERDIR" != "" ]] && [[ "$RESTOREUSERDIR" != "" ]]
     then
         #echo running 1
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' -type f -print0 | xargs -0 chown 501:staff' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' -type f -print0 | xargs -0 chmod 600' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -type d -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" -type f -print0 | xargs -0 chown 501:staff' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" -type f -print0 | xargs -0 chmod 600' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' &
     else
         #echo running 2
         sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 chown 501:staff' &
@@ -281,10 +292,10 @@ function backup_restore_permissions {
     sudo chmod 733 "$HOMEFOLDER"/Public/"Drop Box"
     # ssh
     #chmod 700 ~/
-    if [[ -e "$HOMEFOLDER"/.ssh ]]
+    if [[ -e "$HOMEFOLDER"/.ssh ]] && [[ ! -z "$(ls -A ""$HOMEFOLDER""/.ssh)" ]]
     then
         chmod 700 "$HOMEFOLDER"/.ssh
-        chmod 600 "$HOMEFOLDER"/.ssh/config
+        #chmod 600 "$HOMEFOLDER"/.ssh/config
         chmod 600 "$HOMEFOLDER"/.ssh/*
     else
         :
@@ -294,11 +305,11 @@ function backup_restore_permissions {
     then
         #echo running 1
         # .sh files
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' &
         # .command files
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR" -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' &
         # bash files without extension
-        #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path '"$RESTOREMASTERDIR"' -not -path '"$RESTOREUSERDIR"' ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' &
+        #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' &
         #
     else
         #echo running 2

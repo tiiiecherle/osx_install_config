@@ -148,6 +148,7 @@ function kill_main_process()
 function unset_variables() {
     unset SUDOPASSWORD
     unset SUDO_PID
+    unset CHECK_IF_CASKS_INSTALLED
 }
 
 function start_sudo() {
@@ -489,6 +490,7 @@ then
         # already included in casks_only.sh script
         :
     else
+        CHECK_IF_CASKS_INSTALLED="no"
         . "$SCRIPT_DIR"/5e_homebrew_and_cask_install_check.sh
     fi
     
@@ -506,7 +508,9 @@ else
 fi
 
 ###
-### unsetting password
+### unsetting variables
 ###
 
-unset SUDOPASSWORD
+unset_variables
+
+#
