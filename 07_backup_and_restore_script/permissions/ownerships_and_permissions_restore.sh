@@ -119,11 +119,16 @@ function backup_restore_permissions {
 
     echo "SELECTEDUSER in function is ""$SELECTEDUSER"
     echo "HOMEFOLDER in function is ""$HOMEFOLDER"
+        
+    #USER_ID=$UID
+    USER_ID=`id -u`
+    
+    echo "USER_ID of ""$SELECTEDUSER"" is ""$USER_ID"
     
     # app permissions in applications folder
     echo "setting ownerships and permissions in /Applications..."
     find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chmod 755 &
-    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chown 501:admin &
+    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chown "$USER_ID":admin &
     if [ -e /Applications/VirtualBox.app ]; then sudo chown root:admin /Applications/VirtualBox.app; else :; fi
     #sudo chmod 644 "/Applications/.DS_Store"
     
@@ -272,16 +277,18 @@ function backup_restore_permissions {
     if [[ "$RESTOREMASTERDIR" != "" ]] && [[ "$RESTOREUSERDIR" != "" ]]
     then
         #echo running 1
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" -type f -print0 | xargs -0 chown 501:staff' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" -type f -print0 | xargs -0 chmod 600' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" -type f -print0 | xargs -0 chown '"$USER_ID"':staff' & pids+=($!)
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type d -print0 | xargs -0 chown '"$USER_ID"':staff' & pids+=($!)
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" -type f -print0 | xargs -0 chmod 600' & pids+=($!)
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' & pids+=($!)
+        wait "${pids[@]}"
     else
         #echo running 2
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 chown 501:staff' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type d -print0 | xargs -0 chown 501:staff' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 chmod 600' &
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 chown "$USER_ID":staff' & pids+=($!)
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type d -print0 | xargs -0 chown "$USER_ID":staff' & pids+=($!)
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 chmod 600' & pids+=($!)
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' & pids+=($!)
+        wait "${pids[@]}"
     fi
     
     #sudo chmod -R u+rwX /"$HOMEFOLDER"/.*
@@ -305,21 +312,23 @@ function backup_restore_permissions {
     then
         #echo running 1
         # .sh files
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
         # .command files
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
         # bash files without extension
-        #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' &
+        #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' & pids+=($!)
         #
+        wait "${pids[@]}"
     else
         #echo running 2
         # .sh files
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
         # .command files
-        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' &
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
         # bash files without extension
-        #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' &
+        #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' & pids+=($!)
         #
+        wait "${pids[@]}"
     fi
     
     if [[ -e "$HOMEFOLDER"/Library/Services/ ]] && [[ $(ls -A "$HOMEFOLDER"/Library/Services/) ]]
@@ -346,6 +355,13 @@ function backup_restore_permissions {
         :
         #echo directory does not exist or is empty...
     fi
+    # oversight whitelist
+    if [[ -e "$HOMEFOLDER"/Library/"Application Support"/Objective-See/OverSight/whitelist.plist ]]
+    then
+        sudo chmod 644 "$HOMEFOLDER"/Library/"Application Support"/Objective-See/OverSight/whitelist.plist
+    else
+        :
+    fi
     
     # homebrew permissions
     #if [ -e "$(brew --prefix)" ] 
@@ -353,7 +369,7 @@ function backup_restore_permissions {
     #	echo "setting ownerships and permissions for homebrew..."
     #	BREWGROUP="admin"
     #	BREWPATH=$(brew --prefix)
-    #	sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
+    #	sudo chown -R $UID:"$BREWGROUP" "$BREWPATH"
     #	sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
     #	sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
     #else
