@@ -1569,7 +1569,7 @@ EOF
     
     # save screenshots in png format
     # other options: bmp, gif, jpg, pdf, tiff
-    defaults write com.apple.screencapture type -string "png"
+    defaults write com.apple.screencapture type -string "jpg"
     
     # disable shadow in screenshots
     # true = shadow disabled
@@ -2296,6 +2296,9 @@ EOF
     # copy email addresses as "foo@example.com" instead of "Foo Bar <foo@example.com>" in mail.app
     # false = copy without name
     defaults write com.apple.mail AddressesIncludeNameOnPasteboard -bool false
+    
+    # disable url (content and pictures) loading
+    defaults write com.apple.mail-shared DisableURLLoading -bool false
     
     
     ### more mail tweaks
