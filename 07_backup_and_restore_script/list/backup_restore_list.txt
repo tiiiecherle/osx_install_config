@@ -91,6 +91,12 @@ echo BL Banking
 u	/Applications/BL Banking Launcher ts.app
 u	/Applications/BL Banking Launcher ws.app
 
+# Brackets
+echo Brackets
+m	/Applications/Brackets.app
+u	~/Library/Application Support/Brackets/brackets.json
+u	~/Library/Application Support/Brackets/state.json
+
 # Brew Casks Update
 echo Brew Casks Update
 m	/Applications/brew_casks_update.app

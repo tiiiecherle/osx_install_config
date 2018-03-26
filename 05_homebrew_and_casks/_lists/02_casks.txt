@@ -25,6 +25,7 @@ appcleaner
 #apptivate
 bartender
 bbedit
+brackets
 burn
 chromium
 coconutbattery
