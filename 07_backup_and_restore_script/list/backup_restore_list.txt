@@ -129,6 +129,11 @@ echo Color Profiles
 m	/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom
 u	/Library/ColorSync/Profiles/Displays/21.04.10-5000K-18-135cd-trc_ts_ohne_rotkorrektur.icc
 
+# Commander One
+echo Commander One
+m	/Applications/Commander One.app
+m	~/Library/Preferences/com.eltima.cmd1.plist
+
 # CotEditor
 echo CotEditor
 m	/Applications/CotEditor.app
