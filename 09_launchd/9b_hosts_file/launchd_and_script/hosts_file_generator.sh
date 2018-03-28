@@ -95,7 +95,17 @@ hosts_file_install_update() {
                 :
             fi
         fi
-    
+        
+        # installing dependencies
+        if [[ $(which pip) == "" ]]
+        then
+            sudo -E easy_install pip
+        else
+            :
+        fi
+        pip install --user -r /Applications/hosts_file_generator/requirements.txt >/dev/null 2>&1
+        pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install --user -U >/dev/null 2>&1
+        
         # backing up original hosts file
         if [ ! -f /etc/hosts.orig ];
         then
