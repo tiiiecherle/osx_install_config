@@ -65,6 +65,13 @@ then
 else
 	sed -i '' 's|^user_pref.*browser.startup.page.*|user_pref("browser.startup.page", 0);|' "$FIREFOX_PROFILE_PATH"/user.js
 fi
+# always enable tracking protection
+if [[ $(cat "$FIREFOX_PROFILE_PATH"/user.js | grep "^privacy.trackingprotection.enabled.*") == "" ]]
+then
+	echo 'user_pref("privacy.trackingprotection.enabled", true);' >> "$FIREFOX_PROFILE_PATH"/user.js
+else
+	sed -i 's|^user_pref.*privacy.trackingprotection.enabled.*|user_pref("privacy.trackingprotection.enabled", true);|' "$FIREFOX_PROFILE_PATH"/user.js
+fi 
 # theme light
 if [[ $(cat "$FIREFOX_PROFILE_PATH"/user.js | grep "^user_pref.*lightweightThemes.selectedThemeID.*") == "" ]]
 then
