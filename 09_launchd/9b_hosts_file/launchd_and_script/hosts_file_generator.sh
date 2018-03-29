@@ -102,13 +102,13 @@ hosts_file_install_update() {
         then
             if [[ $(which pip) == "" ]]
             then
-                sudo -H easy_install pip
+                sudo easy_install pip
             else
                 :
             fi
             PYTHON_VERSION='python'
-            sudo -u $(logname) pip install --user -r /Applications/hosts_file_generator/requirements.txt
-            pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $(logname) pip install --user -U
+            sudo pip install -r /Applications/hosts_file_generator/requirements.txt
+            pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
         else
             if [[ $(which pip3) == "" ]]
             then
