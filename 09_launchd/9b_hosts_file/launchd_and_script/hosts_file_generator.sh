@@ -96,15 +96,31 @@ hosts_file_install_update() {
             fi
         fi
         
-        # installing dependencies
-        if [[ $(which pip) == "" ]]
+        ### installing dependencies
+        # checking if homebrew is installed
+        if [[ $(which brew) == "" ]]
         then
-            sudo -E easy_install pip
+            if [[ $(which pip) == "" ]]
+            then
+                sudo -H easy_install pip
+            else
+                :
+            fi
+            PYTHON_VERSION='python'
+            sudo -u $(logname) pip install --user -r /Applications/hosts_file_generator/requirements.txt
+            pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $(logname) pip install --user -U
         else
-            :
+            if [[ $(which pip3) == "" ]]
+            then
+                export HOMEBREW_NO_AUTO_UPDATE=1
+                sudo -u $(logname) brew install python
+            else
+                :
+            fi
+            PYTHON_VERSION='python3'
+            sudo -u $(logname) pip3 install -r /Applications/hosts_file_generator/requirements.txt
+            pip3 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $(logname) pip3 install -U
         fi
-        pip install --user -r /Applications/hosts_file_generator/requirements.txt >/dev/null 2>&1
-        pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install --user -U >/dev/null 2>&1
         
         # backing up original hosts file
         if [ ! -f /etc/hosts.orig ];
@@ -119,7 +135,7 @@ hosts_file_install_update() {
         echo "updating hosts file..."
         cd /Applications/hosts_file_generator/
         #sudo python updateHostsFile.py -a -r -o alternates/gambling-porn-social -e gambling porn social
-        sudo python updateHostsFile.py -a -r -o alternates/gambling-porn -e gambling porn
+        sudo ${PYTHON_VERSION} updateHostsFile.py -a -r -o alternates/gambling-porn -e gambling porn
         #sudo python updateHostsFile.py -a -n -r -o alternates/gambling-porn-social -e gambling porn social
         #sudo python updateReadme.py
         cd -
