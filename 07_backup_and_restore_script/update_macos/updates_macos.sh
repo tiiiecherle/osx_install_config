@@ -33,6 +33,7 @@ function stop_sudo() {
 
 echo "installing some apps and updating preferences..."
 
+
 ###
 ### 2017-03-09
 ###
@@ -67,6 +68,7 @@ function 2017_03_09_update () {
 
 }
 #2017_03_09_update
+
 
 ###
 ### 2017-03-24
@@ -112,7 +114,6 @@ please reboot after finishing the script - thanks ;)" buttons "OK"'
 #2017_03_24_update
 
 
-
 ###
 ### 2017-04-07
 ###
@@ -145,7 +146,6 @@ function 2017-04-07_update () {
 #2017-04-07_update
 
 
-
 ###
 ### 2017-05-19
 ###
@@ -164,7 +164,6 @@ function 2017-05-19_update () {
 
 }
 #2017-05-19_update
-
 
 
 ###
@@ -188,8 +187,9 @@ function 2017-10-09_update () {
 }
 #2017-10-09_update
 
+
 ###
-### 2017-10-09
+### 2018-01-10
 ###
 
 function 2018-01-10_update () {
@@ -204,6 +204,7 @@ function 2018-01-10_update () {
 
 }
 #2018-01-10_update
+
 
 ###
 ### 2018-02-15
@@ -232,3 +233,22 @@ function 2018-02-15_update () {
 }
 #2018-02-15_update
 
+
+###
+### 2018-02-15
+###
+
+function 2018-02-15_update () {
+    
+    set +e
+    echo ''
+    
+    # resetting homebrew path 
+    echo 'export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"' > /Users/$(logname)/.bash_profile
+    source /Users/$(logname)/.bash_profile
+    
+    echo ''
+    set -e
+
+}
+2018-02-15_update
