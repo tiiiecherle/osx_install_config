@@ -108,7 +108,8 @@ hosts_file_install_update() {
             fi
             PYTHON_VERSION='python'
             sudo pip install -r /Applications/hosts_file_generator/requirements.txt
-            pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
+            # do not update internal apple site-packages to ensure compatibility
+            #pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
         else
             if [[ $(which pip3) == "" ]]
             then
