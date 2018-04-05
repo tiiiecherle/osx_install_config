@@ -295,8 +295,8 @@ then
     #fi
     
     # including homebrew commands in PATH
-    echo 'export PATH="/usr/local/sbin:$PATH"' >> ~/.bash_profile
-    source ~/.bash_profile
+    echo 'export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"' > /Users/$(logname)/.bash_profile
+    source /Users/$(logname)/.bash_profile
     
     # checking installation and updating homebrew
     brew analytics off
