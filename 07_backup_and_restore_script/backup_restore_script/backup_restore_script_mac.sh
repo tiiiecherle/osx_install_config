@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v39
+### backup / restore script v40
 ### last version without parallel was v35
 ### last version without gpg was v36
 ### last version with separate backup scripts for calendar and contact backup scripts was v38
@@ -451,7 +451,7 @@ function backup_restore {
             sleep 0.1
             
             # reminders backup
-            read -p "do you want to run a reminders backup  (y/N)? " CONT3
+            read -p "do you want to run a reminders backup (y/N)? " CONT3
             CONT3="$(echo "$CONT3" | tr '[:upper:]' '[:lower:]')"    # tolower
             sleep 0.1
         
@@ -1348,7 +1348,10 @@ function backup_restore {
                 echo ""
                 echo "installing casks..."
                 create_tmp_backup_script_fifo3
-                "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5d_casks_only.sh
+                # this has to run in a new shell due to variables, functions, etc.
+                # so do not source this script
+                #bash -c """$SCRIPT_DIR_FINAL""/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh"
+                bash "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh
                 wait
             else
                 :

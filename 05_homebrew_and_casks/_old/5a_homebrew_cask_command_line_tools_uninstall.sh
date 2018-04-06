@@ -156,7 +156,7 @@ then
     echo ''
     echo "uninstalling developer tools..."
     sudo rm -rf /Library/Developer/CommandLineTools
-    #echo ''
+    echo ''
 else
     :
 fi

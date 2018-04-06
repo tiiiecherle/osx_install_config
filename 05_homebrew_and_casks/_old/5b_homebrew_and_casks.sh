@@ -484,7 +484,7 @@ then
     #echo "the following casks are installed..."
     #brew cask list | tr "," "\n"
     
-    # checking if successfully installed    
+    # checking if successfully installed
     if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
     then
         # already included in casks_only.sh script

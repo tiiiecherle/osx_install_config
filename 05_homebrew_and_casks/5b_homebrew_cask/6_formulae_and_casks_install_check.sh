@@ -1,20 +1,58 @@
 #!/bin/bash
 
+###
+### variables
+###
+
+SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+
+
+###
+### script frame
+###
+
+# if script is run standalone, not sourced from another script, load script frame
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
+then
+    # script is sourced
+    :
+else
+    # script is not sourced, run standalone
+    if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
+    then
+        . "$SCRIPT_DIR"/1_script_frame.sh
+    else
+        echo ''
+        echo "script for functions and prerequisits is missing, exiting..."
+        echo ''
+        exit
+    fi
+fi
+
+
+###
+### command line tools
+###
+
+checking_command_line_tools
+
+
+###
+### homebrew
+###
+
+checking_homebrew
+
+
+### starting sudo
+start_sudo
+
+# variables
 SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
 casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d')
 homebrewpackages=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_packages.txt | sed '/^#/ d')
 casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d')
 casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d')
-
-# more variables
-# keeping hombrew from updating each time brew install is used
-export HOMEBREW_NO_AUTO_UPDATE=1
-# number of max parallel processes
-NUMBER_OF_CORES=$(sysctl hw.ncpu | awk '{print $NF}')
-NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-#echo $NUMBER_OF_MAX_JOBS
-NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-#echo $NUMBER_OF_MAX_JOBS_ROUNDED
 
 # listing installed homebrew packages
 #echo "the following top-level homebrew packages incl. dependencies are installed..."
@@ -29,25 +67,30 @@ NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS
     
 # checking if successfully installed
 # homebrew packages
-echo ''
-echo checking homebrew package installation...
-printf '%s\n' "${homebrewpackages[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-item="{}"
-if [[ $(brew info "$item" | grep "Not installed") == "" ]]; 
-then 
-	printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-else 
-	printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
+if [[ $(echo "$CHECK_IF_FORMULAE_INSTALLED") == "no" ]]
+then
+	:
+else
+	echo ''
+	echo checking homebrew package installation...
+	printf '%s\n' "${homebrewpackages[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	item="{}"
+	if [[ $(brew info "$item" | grep "Not installed") == "" ]]; 
+	then 
+		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
+	else 
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
+	fi
+	'
 fi
-'
+
+echo ''
 
 if [[ $(echo "$CHECK_IF_CASKS_INSTALLED") == "no" ]]
 then
 	:
-else
-	    
+else   
 	# casks
-	echo ''
 	echo checking casks installation...
 	# casks_pre
 	printf '%s\n' "${casks_pre[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
@@ -100,3 +143,6 @@ else
 	echo ''
 
 fi
+
+### stopping sudo
+stop_sudo

@@ -17,7 +17,7 @@ virtualbox-extension-pack
 #libreoffice        # is installed as a dependency of libreoffice-language-pack
 libreoffice-language-pack
 #openoffice
-onlyoffice
+#onlyoffice
 ### alpabetical
 alfred
 angry-ip-scanner
@@ -57,6 +57,7 @@ macdown
 macpass
 macs-fan-control
 #malwarebytes
+mucommander
 namechanger
 onyx
 #oversight

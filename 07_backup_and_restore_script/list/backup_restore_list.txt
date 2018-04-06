@@ -374,6 +374,11 @@ u	/Applications/MonKey Office 2018.app
 u	~/Library/Application Support/ProSaldo
 u	~/Library/Preferences/com.prosaldo.monkeyoffice2018.plist
 
+# muCommander
+echo muCommander
+m	/Applications/muCommander.app
+m	~/Library/Preferences/muCommander
+
 # mysides
 echo mysides
 m	/usr/local/bin/mysides

@@ -5,12 +5,17 @@
 ###
 
 # checking if SELECTEDUSER is exported from restore script
-if [ "$SELECTEDUSER" == "" ]
+if [[ "$SELECTEDUSER" == "" ]]
 then
     #SELECTEDUSER="$USER"
     SELECTEDUSER="$(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser')"
     #echo "user is $SELECTEDUSER"
+else
+    :
+fi
 
+if [[ "$SUDOPASSWORD" == "" ]]
+then
     ###
     ### asking password upfront
     ###
