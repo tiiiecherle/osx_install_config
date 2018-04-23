@@ -258,6 +258,11 @@ m	/Applications/iBackup.app
 u	~/Library/Application Support/iBackup
 u	~/Library/Preferences/ch.grapefruit.iBackup.plist
 
+# IINA
+echo IINA
+m	/Applications/IINA.app
+u	~/Library/Preferences/com.colliderli.iina.plist
+
 # ImageOptim
 m	/Applications/ImageOptim.app
 m	~/Library/Preferences/net.pornel.ImageOptim.plist
