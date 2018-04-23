@@ -51,7 +51,10 @@ fi
 
 # hardening
 FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox" -name "*.default")
+# very restrictive
 curl https://raw.githubusercontent.com/pyllyukko/user.js/master/user.js > "$FIREFOX_PROFILE_PATH"/user.js
+# less restrictive
+#curl https://raw.githubusercontent.com/pyllyukko/user.js/relaxed/user.js > "$FIREFOX_PROFILE_PATH"/user.js
 chown $USER:staff "$FIREFOX_PROFILE_PATH"/user.js
 chmod 644 "$FIREFOX_PROFILE_PATH"/user.js
 
@@ -87,10 +90,13 @@ then
 else
 	sed -i '' 's|^user_pref.*privacy.resistFingerprinting.*|user_pref("privacy.resistFingerprinting", false);|' "$FIREFOX_PROFILE_PATH"/user.js
 fi
-
-# user_pref("privacy.donottrackheader.enabled", true);
-
-
+# enabling svg elements (with disabled a lot of gui elements break)
+if [[ $(cat "$FIREFOX_PROFILE_PATH"/user.js | grep "^user_pref.*svg.disabled.*") == "" ]]
+then
+	echo 'user_pref("svg.disabled", false);' >> "$FIREFOX_PROFILE_PATH"/user.js
+else
+	sed -i '' 's|^user_pref.*svg.disabled.*|user_pref("svg.disabled", false);|' "$FIREFOX_PROFILE_PATH"/user.js
+fi
 
 echo ''
 echo "done ;)"
