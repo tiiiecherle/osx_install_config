@@ -100,27 +100,46 @@ hosts_file_install_update() {
         # checking if homebrew is installed
         if [[ $(which brew) == "" ]]
         then
+            echo "homebrew is not installed..."
             if [[ $(which pip) == "" ]]
             then
+                sudo python -m ensurepip
                 sudo easy_install pip
             else
                 :
             fi
             PYTHON_VERSION='python'
+            sudo pip install --upgrade pip
             sudo pip install -r /Applications/hosts_file_generator/requirements.txt
             # do not update internal apple site-packages to ensure compatibility
             #pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
         else
+            echo "homebrew is installed..."
+            if [[ $(which pip) == "" ]]
+            then
+                :
+            else
+                yes | sudo python -m pip uninstall pip
+            fi
             if [[ $(which pip3) == "" ]]
             then
                 export HOMEBREW_NO_AUTO_UPDATE=1
-                sudo -u $(logname) brew install python
+                if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep python) == '' ]]
+                then
+                    sudo -u $(logname) brew install python
+                else
+                    sudo -u $(logname) brew reinstall python
+                fi
             else
                 :
             fi
             PYTHON_VERSION='python3'
-            sudo -u $(logname) pip3 install -r /Applications/hosts_file_generator/requirements.txt
+            # updating pip itself
+            sudo -u $(logname) pip3 install --upgrade pip
+            # updating all pip modules
             pip3 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $(logname) pip3 install -U
+            # installing dependencies
+            sudo -u $(logname) pip3 install -r /Applications/hosts_file_generator/requirements.txt
         fi
         
         # backing up original hosts file
