@@ -84,26 +84,37 @@ sudo()
 
 
 ###
-### script trap and backup / restore selection
+### functions
 ###
 
-# trapping script to kill subprocesses when script is stopped
-#trap 'echo "" && kill $(jobs -rp) >/dev/null 2>&1' SIGINT SIGTERM EXIT
-#trap "killall background >/dev/null 2>&1; unset SUDOPASSWORD; kill -9 -$(ps -o pgid= $$ | grep -o '[0-9]*') >/dev/null 2>&1; exit" SIGHUP SIGINT SIGTERM EXIT
-#trap "echo "" && trap - SIGTERM >/dev/null 2>&1 && kill -- -$$ >/dev/null 2>&1" SIGINT SIGTERM EXIT
+# kill can only be silenced when 
+# wrapped into function >/dev/null 2>&1 
+# or with wait 
+# or with kill -13
 
-# trapping script to kill subprocesses when script is stopped
-# kill -9 can only be silenced with >/dev/null 2>&1 when wrappt into function
 function kill_subprocesses() 
 {
-    # kills subprocesses only
-    pkill -9 -P $$
+    # kills only subprocesses of the current process
+    #pkill -15 -P $$
+    #kill -15 $(pgrep -P $$)
+    
+    # kills all descendant processes incl. process-children and process-grandchildren
+    # option 1
+    RUNNING_SUBPROCESSES=$(pgrep -g $(ps -o pgid= $$))
+    kill -15 $RUNNING_SUBPROCESSES
+    wait $RUNNING_SUBPROCESSES 2>/dev/null
+    # option 2
+    #{ kill -15 $RUNNING_SUBPROCESSES && wait $RUNNING_SUBPROCESSES; } >/dev/null 2>&1
+    # option 3
+    #kill -13 $RUNNING_SUBPROCESSES
+    unset RUNNING_SUBPROCESSES
 }
 
 function kill_main_process() 
 {
-    # kills subprocesses and process itself
-    exec pkill -9 -P $$
+    # kills processes itself
+    #kill $$
+    kill -13 $$
 }
 
 function unset_variables() {
@@ -195,7 +206,7 @@ function create_tmp_backup_script_fifo3() {
 #trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
 trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; unset_variables; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
 # kill main process only if it hangs on regular exit
-trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; unset_variables; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit; kill_main_process" EXIT
+trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; unset_variables; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit" EXIT
 set -e
 
 echo ""
