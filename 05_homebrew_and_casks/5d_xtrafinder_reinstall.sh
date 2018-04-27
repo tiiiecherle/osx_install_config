@@ -251,7 +251,7 @@ then
 	echo "uninstalling application..."
 	${USE_PASSWORD} | sudo /Volumes/XtraFinder/Uninstall.app/Contents/MacOS/Uninstall 1>/dev/null
 	echo "installing application..."
-	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
+	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinder.pkg -target / 1>/dev/null
 	#sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
 	sleep 1
 	#echo "waiting for installer to finish..."

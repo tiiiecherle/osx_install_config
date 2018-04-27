@@ -190,7 +190,7 @@ then
 	hdiutil attach "$XTRAFINDER_INSTALLER" -quiet
 	sleep 5
 	echo "installing application..."
-	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
+	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinder.pkg -target / 1>/dev/null
 	#sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
 	sleep 1
 	#echo "waiting for installer to finish..."
