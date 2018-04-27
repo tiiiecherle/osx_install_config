@@ -56,6 +56,8 @@ else
 	echo command line tools are not installed, installing...
 	# prompting the softwareupdate utility to list the command line tools
     touch "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+    sleep 3
+    softwareupdate --list >/dev/null 2>&1
     COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.'))
     softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLVERSION" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
 fi
