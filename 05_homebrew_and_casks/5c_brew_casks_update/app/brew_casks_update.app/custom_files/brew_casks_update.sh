@@ -732,6 +732,13 @@ echo ''
 echo -e "\033[1mupdating homebrew, formulas and casks...\033[0m"
 echo ''
 
+function get_running_subprocesses()
+{
+    SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
+    SCRIPTNAME_PART=$(echo "$(basename $0)" | fold -w 12)
+    RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPTNAME_PART" | awk '{print $1}')
+}
+
 function kill_subprocesses() 
 {
     # kills only subprocesses of the current process
@@ -741,7 +748,7 @@ function kill_subprocesses()
     
     # kills all descendant processes incl. process-children and process-grandchildren
     # giving subprocesses the chance to terminate cleanly kill -15
-    RUNNING_SUBPROCESSES=$(pgrep -g $(ps -o pgid= $$))
+    get_running_subprocesses
     if [[ $RUNNING_SUBPROCESSES != "" ]]
     then
         kill -15 $RUNNING_SUBPROCESSES
@@ -754,12 +761,12 @@ function kill_subprocesses()
     TIME_OUT=0
     while [[ $RUNNING_SUBPROCESSES != "" ]] && [[ $TIME_OUT -lt 3 ]]
     do
+        get_running_subprocesses
         sleep 1
         TIME_OUT=$((TIME_OUT+1))
-        RUNNING_SUBPROCESSES=$(pgrep -g $(ps -o pgid= $$))
     done
     # killing the rest of the processes kill -9
-    RUNNING_SUBPROCESSES=$(pgrep -g $(ps -o pgid= $$))
+    get_running_subprocesses
     if [[ $RUNNING_SUBPROCESSES != "" ]]
     then
         kill -9 $RUNNING_SUBPROCESSES
