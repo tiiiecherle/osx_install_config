@@ -737,16 +737,37 @@ function kill_subprocesses()
     # kills only subprocesses of the current process
     #pkill -15 -P $$
     #kill -15 $(pgrep -P $$)
+    #echo "killing processes..."
     
     # kills all descendant processes incl. process-children and process-grandchildren
-    # option 1
+    # giving subprocesses the chance to terminate cleanly kill -15
     RUNNING_SUBPROCESSES=$(pgrep -g $(ps -o pgid= $$))
-    kill -15 $RUNNING_SUBPROCESSES
-    wait $RUNNING_SUBPROCESSES 2>/dev/null
-    # option 2
-    #{ kill -15 $RUNNING_SUBPROCESSES && wait $RUNNING_SUBPROCESSES; } >/dev/null 2>&1
-    # option 3
-    #kill -13 $RUNNING_SUBPROCESSES
+    if [[ $RUNNING_SUBPROCESSES != "" ]]
+    then
+        kill -15 $RUNNING_SUBPROCESSES
+        # do not wait here if a process can not terminate cleanly
+        #wait $RUNNING_SUBPROCESSES 2>/dev/null
+    else
+        :
+    fi
+    # waiting for clean subprocess termination
+    TIME_OUT=0
+    while [[ $RUNNING_SUBPROCESSES != "" ]] && [[ $TIME_OUT -lt 3 ]]
+    do
+        sleep 1
+        TIME_OUT=$((TIME_OUT+1))
+        RUNNING_SUBPROCESSES=$(pgrep -g $(ps -o pgid= $$))
+    done
+    # killing the rest of the processes kill -9
+    RUNNING_SUBPROCESSES=$(pgrep -g $(ps -o pgid= $$))
+    if [[ $RUNNING_SUBPROCESSES != "" ]]
+    then
+        kill -9 $RUNNING_SUBPROCESSES
+        wait $RUNNING_SUBPROCESSES 2>/dev/null
+    else
+        :
+    fi
+    # unsetting variable
     unset RUNNING_SUBPROCESSES
 }
 
@@ -792,10 +813,9 @@ function stop_sudo() {
     sudo -k
 }
 
-#trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "unset_variables; printf '\n'; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
-# kill main process only if it hangs on regular exit
-trap "unset_variables; kill_subprocesses >/dev/null 2>&1; exit" EXIT
+# trap
+trap "printf '\n'; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+trap "kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
 #set -e
 
 # creating directory and adjusting permissions

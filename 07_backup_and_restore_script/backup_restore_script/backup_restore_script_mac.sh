@@ -92,21 +92,49 @@ sudo()
 # or with wait 
 # or with kill -13
 
+function get_running_subprocesses()
+{
+    SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
+    SCRIPTNAME_PART=$(echo "$(basename $0)" | fold -w 12)
+    RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPTNAME_PART" | awk '{print $1}')
+}
+
 function kill_subprocesses() 
 {
     # kills only subprocesses of the current process
     #pkill -15 -P $$
     #kill -15 $(pgrep -P $$)
+    #echo "killing processes..."
     
     # kills all descendant processes incl. process-children and process-grandchildren
-    # option 1
-    RUNNING_SUBPROCESSES=$(pgrep -g $(ps -o pgid= $$))
-    kill -15 $RUNNING_SUBPROCESSES
-    wait $RUNNING_SUBPROCESSES 2>/dev/null
-    # option 2
-    #{ kill -15 $RUNNING_SUBPROCESSES && wait $RUNNING_SUBPROCESSES; } >/dev/null 2>&1
-    # option 3
-    #kill -13 $RUNNING_SUBPROCESSES
+    # giving subprocesses the chance to terminate cleanly kill -15
+    get_running_subprocesses
+    if [[ $RUNNING_SUBPROCESSES != "" ]]
+    then
+        kill -15 $RUNNING_SUBPROCESSES
+        # do not wait here if a process can not terminate cleanly
+        #wait $RUNNING_SUBPROCESSES 2>/dev/null
+    else
+        :
+    fi
+    # waiting for clean subprocess termination
+    TIME_OUT=0
+    while [[ $RUNNING_SUBPROCESSES != "" ]] && [[ $TIME_OUT -lt 3 ]]
+    do
+        get_running_subprocesses
+        sleep 1
+        TIME_OUT=$((TIME_OUT+1))
+    done
+    # killing the rest of the processes kill -9
+    get_running_subprocesses
+    if [[ $RUNNING_SUBPROCESSES != "" ]]
+    then
+        kill -9 $RUNNING_SUBPROCESSES
+        wait $RUNNING_SUBPROCESSES 2>/dev/null
+    else
+        :
+    fi
+    # unsetting variable
     unset RUNNING_SUBPROCESSES
 }
 
@@ -203,10 +231,9 @@ function create_tmp_backup_script_fifo3() {
     builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo3" &
 }
 
-#trap "unset SUDOPASSWORD; printf '\n'; echo 'killing subprocesses...'; kill_subprocesses >/dev/null 2>&1; echo 'done'; echo 'killing main process...'; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; unset_variables; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
-# kill main process only if it hangs on regular exit
-trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; unset_variables; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; exit" EXIT
+# trap
+trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
 set -e
 
 echo ""
