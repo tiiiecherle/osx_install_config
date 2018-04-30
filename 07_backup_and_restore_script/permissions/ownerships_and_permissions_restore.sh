@@ -95,8 +95,14 @@ then
     function get_running_subprocesses()
     {
         SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
-        SCRIPTNAME_PART=$(echo "$(basename $0)" | fold -w 12)
-        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPTNAME_PART" | awk '{print $1}')
+        SCRIPT_COMMAND=$(ps -o comm= $$)
+    	PARENT_SCRIPT_COMMAND=$(ps -o comm= $PPID)
+    	if [[ $PARENT_SCRIPT_COMMAND == "bash" ]] || [[ $PARENT_SCRIPT_COMMAND == "-bash" ]] || [[ $PARENT_SCRIPT_COMMAND == "" ]]
+    	then
+            RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | awk '{print $1}')
+        else
+            RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | grep -v "$PARENT_SCRIPT_COMMAND" | awk '{print $1}')
+        fi
     }
     
     function kill_subprocesses() 
@@ -402,6 +408,15 @@ function backup_restore_permissions {
     if [[ -e "$HOMEFOLDER"/Library/"Application Support"/Objective-See/OverSight/whitelist.plist ]]
     then
         sudo chmod 644 "$HOMEFOLDER"/Library/"Application Support"/Objective-See/OverSight/whitelist.plist
+    else
+        :
+    fi
+    # tunnelblick
+    if [ -e """$HOMEFOLDER""/Library/Application Support/Tunnelblick/Configurations" ]
+    then
+        sudo chown -R "$USER_ID":admin """$HOMEFOLDER""/Library/Application Support/Tunnelblick/Configurations"
+        sudo bash -c 'find "'"$HOMEFOLDER"'/Library/Application Support/Tunnelblick/Configurations" -name .tblk -print0 | xargs -0 chmod 700'
+        sudo bash -c 'find "'"$HOMEFOLDER"'/Library/Application Support/Tunnelblick/Configurations" -type f -print0 | xargs -0 chmod 600'
     else
         :
     fi
