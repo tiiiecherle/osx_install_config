@@ -95,8 +95,14 @@ sudo()
 function get_running_subprocesses()
 {
     SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
-    SCRIPTNAME_PART=$(echo "$(basename $0)" | fold -w 12)
-    RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPTNAME_PART" | awk '{print $1}')
+    SCRIPT_COMMAND=$(ps -o comm= $$)
+	PARENT_SCRIPT_COMMAND=$(ps -o comm= $PPID)
+	if [[ $PARENT_SCRIPT_COMMAND == "bash" ]] || [[ $PARENT_SCRIPT_COMMAND == "-bash" ]] || [[ $PARENT_SCRIPT_COMMAND == "" ]]
+	then
+        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | awk '{print $1}')
+    else
+        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | grep -v "$PARENT_SCRIPT_COMMAND" | awk '{print $1}')
+    fi
 }
 
 function kill_subprocesses() 
@@ -1300,52 +1306,92 @@ function backup_restore {
             echo "cleaning up some files..."
         
             # virtualbox extpack
-            find "$HOMEFOLDER"/Library/VirtualBox -name "*.vbox-extpack" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r VBOXEXTENSIONS
-            do
-                sudo rm "$VBOXEXTENSIONS"
-            done
+            if [[ -e "$HOMEFOLDER"/Library/VirtualBox ]]
+            then
+                find "$HOMEFOLDER"/Library/VirtualBox -name "*.vbox-extpack" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r VBOXEXTENSIONS
+                do
+                    sudo rm "$VBOXEXTENSIONS"
+                done
+            else
+                :
+            fi
         
             # virtualbox logs
-            find "$HOMEFOLDER"/Library/VirtualBox -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r VBOXLOGS
-            do
-                sudo rm "$VBOXLOGS"
-            done
+            if [[ -e "$HOMEFOLDER"/Library/VirtualBox ]]
+            then
+                find "$HOMEFOLDER"/Library/VirtualBox -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r VBOXLOGS
+                do
+                    sudo rm "$VBOXLOGS"
+                done
+            else
+                :
+            fi
         
             # fonts
-            find "$HOMEFOLDER"/Library/Fonts \( -name "*.dir" -o -name "*.list" -o -name "*.scale" \) -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r FONTSFILES
-            do
-                sudo rm "$FONTSFILES"
-            done
+            if [[ -e "$HOMEFOLDER"/Library/Fonts ]]
+            then
+                find "$HOMEFOLDER"/Library/Fonts \( -name "*.dir" -o -name "*.list" -o -name "*.scale" \) -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r FONTSFILES
+                do
+                    sudo rm "$FONTSFILES"
+                done
+            else
+                :
+            fi
         
             # jameica backups
-            find "$HOMEFOLDER"/Library/jameica -name "jameica-backup-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r JAMEICABACKUPS
-            do
-                sudo rm "$JAMEICABACKUPS"
-            done
-        
+            if [[ -e "$HOMEFOLDER"/Library/jameica ]]
+            then
+                find "$HOMEFOLDER"/Library/jameica -name "jameica-backup-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r JAMEICABACKUPS
+                do
+                    sudo rm "$JAMEICABACKUPS"
+                done
+            else
+                :
+            fi
+                   
             # jameica logs
-            find "$HOMEFOLDER"/Library/jameica -name "jameica.log-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r JAMEICALOGS
-            do
-                sudo rm "$JAMEICALOGS"
-            done
-        
+            if [[ -e "$HOMEFOLDER"/Library/jameica ]]
+            then
+                find "$HOMEFOLDER"/Library/jameica -name "jameica.log-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r JAMEICALOGS
+                do
+                    sudo rm "$JAMEICALOGS"
+                done
+            else
+                :
+            fi
+                    
             # address book migration
-            find "$HOMEFOLDER"/Library/"Application Support"/AddressBook -name "Migration*.abbu.tbz" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r ADDRESSBOOKMIGRATION
-            do
-                sudo rm "$ADDRESSBOOKMIGRATION"
-            done
-        
+            if [[ -e "$HOMEFOLDER"/Library/"Application Support"/AddressBook ]]
+            then
+                find "$HOMEFOLDER"/Library/"Application Support"/AddressBook -name "Migration*.abbu.tbz" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r ADDRESSBOOKMIGRATION
+                do
+                    sudo rm "$ADDRESSBOOKMIGRATION"
+                done
+            else
+                :
+            fi
+                    
             # 2do
-            find "$HOMEFOLDER"/Library/"Application Support"/Backups -name "*.db" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,2d | while read -r TODOBACKUPS
-            do
-                sudo rm "$TODOBACKUPS"
-            done
-        
+            if [[ -e "$HOMEFOLDER"/Library/"Application Support"/Backups ]]
+            then
+                find "$HOMEFOLDER"/Library/"Application Support"/Backups -name "*.db" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,2d | while read -r TODOBACKUPS
+                do
+                    sudo rm "$TODOBACKUPS"
+                done
+            else
+                :
+            fi
+            
             # unified remote
-            find "$HOMEFOLDER"/Library/"Application Support"/"Unified Remote" -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r UNIFIEDREMOTELOGS
-            do
-                sudo rm "$UNIFIEDREMOTELOGS"
-            done
+            if [[ -e "$HOMEFOLDER"/Library/"Application Support"/"Unified Remote" ]]
+            then
+                find "$HOMEFOLDER"/Library/"Application Support"/"Unified Remote" -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r UNIFIEDREMOTELOGS
+                do
+                    sudo rm "$UNIFIEDREMOTELOGS"
+                done
+            else
+                :
+            fi
             
             # whatsapp
             if [[ -e "/Users/$USER/Library/Application Support/WhatsApp/" ]]
