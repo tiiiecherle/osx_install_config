@@ -98,10 +98,10 @@ hosts_file_install_update() {
         
         ### installing dependencies
         # checking if homebrew is installed
-        if [[ $(which brew) == "" ]]
+        if [[ $(command -v brew) == "" ]]
         then
             echo "homebrew is not installed..."
-            if [[ $(which pip) == "" ]]
+            if [[ $(command -v pip) == "" ]]
             then
                 sudo python -m ensurepip
                 sudo easy_install pip
@@ -115,13 +115,13 @@ hosts_file_install_update() {
             #pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
         else
             echo "homebrew is installed..."
-            if [[ $(which pip) == "" ]]
+            if [[ $(command -v pip) == "" ]]
             then
                 :
             else
                 yes | sudo python -m pip uninstall pip
             fi
-            if [[ $(which pip3) == "" ]]
+            if [[ $(command -v pip3) == "" ]]
             then
                 export HOMEBREW_NO_AUTO_UPDATE=1
                 if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep python) == '' ]]
