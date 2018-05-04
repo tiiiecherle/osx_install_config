@@ -227,10 +227,17 @@ fi
 
 
 ### trapping
-trap "stop_sudo; printf '\n'; stty sane; pkill ruby; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "stop_sudo; stty sane; kill_subprocesses >/dev/null 2>&1; deactivating_keepingyouawake >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
-#set -e
-
+if [[ $(ps -o stat= -p $PPID) == "S" ]]
+then
+    # script is session master and not run from another script (S)
+    trap "stop_sudo; printf '\n'; stty sane; pkill ruby; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "stop_sudo; stty sane; kill_subprocesses >/dev/null 2>&1; deactivating_keepingyouawake >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+    #set -e
+else
+    # script is not session master and run from another script (S+)
+    trap "stop_sudo; printf '\n'; stty sane; pkill ruby; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "stop_sudo; stty sane; deactivating_keepingyouawake >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+fi
 
 
 ### checking if online
