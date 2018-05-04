@@ -59,15 +59,29 @@ function kill_main_process()
     kill -13 $$
 }
 
-# trap
-trap "printf '\n'; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "kill_subprocesses >/dev/null 2>&1; exit" EXIT
-#set -e
+### trapping
+[[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
+[[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
+# a sourced script does not exit, it ends with return, so checking for session master is sufficent
+# subprocesses will not be killed on return, only on exit
+#if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]] && [[ "$SCRIPT_SOURCED" == "no" ]]
+if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
+then
+    # script is session master and not run from another script (S on mac Ss on linux)
+    trap "printf '\n'; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "kill_subprocesses >/dev/null 2>&1; exit" EXIT
+    #set -e
+else
+    # script is not session master and run from another script (S+ on mac and linux)
+    trap "printf '\n'; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "exit" EXIT
+    #set -e
+fi
 
 SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
 
 find "$SCRIPT_DIR" -mindepth 1 ! -path "*/*.app/*" -name "*.app" -print0 | xargs -0 xattr -dr com.apple.quarantine
-time bash "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
+time "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
 echo ''
 
 exit

@@ -168,9 +168,22 @@ function kill_main_process()
     kill -13 $$
 }
 
-# trap
-trap "printf '\n'; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-trap "kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+### trapping
+[[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
+[[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
+# a sourced script does not exit, it ends with return, so checking for session master is sufficent
+# subprocesses will not be killed on return, only on exit
+#if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]] && [[ "$SCRIPT_SOURCED" == "no" ]]
+if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
+then
+    # script is session master and not run from another script (S on mac Ss on linux)
+    trap "printf '\n'; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+else
+    # script is not session master and run from another script (S+ on mac and linux) 
+    trap "printf '\n'; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "unset SUDOPASSWORD; exit" EXIT
+fi
 #set -e
 
 ###
