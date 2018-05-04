@@ -115,15 +115,25 @@ hosts_file_install_update() {
             #pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
         else
             echo "homebrew is installed..."
+            # do not autoupdate homebrew
+            export HOMEBREW_NO_AUTO_UPDATE=1
+            # uninstalling python2 version from brew
+            if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep python@2) == '' ]]
+            then
+                :
+            else
+                sudo -u $(logname) brew uninstall --ignore-dependencies python@2
+            fi
+            # uninstalling other pip versions to avoid confusion of the update script
             if [[ $(command -v pip) == "" ]]
             then
                 :
             else
                 yes | sudo python -m pip uninstall pip
             fi
+            # making sure python3 is installed
             if [[ $(command -v pip3) == "" ]]
             then
-                export HOMEBREW_NO_AUTO_UPDATE=1
                 if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep python) == '' ]]
                 then
                     sudo -u $(logname) brew install python
