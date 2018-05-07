@@ -8,7 +8,7 @@
 	<array>
 		<string>sh</string>
 		<string>-c</string>
-		<string>rm -rf "/Users/$USER/Library/Application Support/Firefox/Profiles/"*.default/storage/*; rm -rf "/Users/$USER/Library/Application Support/Progressive Downloader Data"</string>
+		<string>COMMANDS HERE</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
