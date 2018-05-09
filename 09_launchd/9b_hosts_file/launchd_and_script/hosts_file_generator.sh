@@ -56,11 +56,12 @@ hosts_file_install_update() {
     then
         :
     else
+        echo "not online, waiting 300s for next try..."
         sleep 300
     fi
-        
+ 
     # checking if online
-    ping -c5 google.com > /dev/null 2>&1
+    ping -c5 google.com >/dev/null 2>&1
     if [ "$?" = 0 ]
     then
         echo "we are online... updating hosts file..."
@@ -97,16 +98,42 @@ hosts_file_install_update() {
         fi
         
         ### installing dependencies
+        
+        # getting logged in user
+        #echo "LOGNAME is $(logname)..."
+        #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
+        #stat -f%Su /dev/console
+        #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
+        # recommended way
+        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+        echo "loggedInUser is $loggedInUser..."
+        
+        # sourcing .bash_profile or setting setting PATH
+        # as the script is run as root it would not detect the brew command and would fail checking if brew is installed
+        #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+        if [[ -e /Users/$loggedInUser/.bash_profile ]]
+        then
+            . /Users/$loggedInUser/.bash_profile
+        else
+            :
+        fi
+        
         # checking if homebrew is installed
-        if [[ $(command -v brew) == "" ]]
+        #which brew
+        #command -v brew
+        #sudo -u $loggedInUser brew -v >/dev/null 2>&1
+        #if [[ "$?" != 0 ]]
+        if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
         then
             echo "homebrew is not installed..."
             if [[ $(command -v pip) == "" ]]
             then
+                echo "pip is not installed, installing..."
                 sudo python -m ensurepip
                 sudo easy_install pip
             else
-                :
+                echo "pip is installed..."
+                #:
             fi
             PYTHON_VERSION='python'
             sudo pip install --upgrade pip
@@ -118,38 +145,45 @@ hosts_file_install_update() {
             # do not autoupdate homebrew
             export HOMEBREW_NO_AUTO_UPDATE=1
             # uninstalling python2 version from brew
-            if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep python@2) == '' ]]
+            if [[ $(sudo -u $loggedInUser brew list | grep python@2) == '' ]]
             then
+                echo "python2 is not installed via homebrew, using python3..."
                 :
             else
-                sudo -u $(logname) brew uninstall --ignore-dependencies python@2
+                echo "python2 is installed via homebrew, uninstalling..."
+                sudo -u $loggedInUser brew uninstall --ignore-dependencies python@2
             fi
             # uninstalling other pip versions to avoid confusion of the update script
             if [[ $(command -v pip) == "" ]]
             then
-                :
+                echo "pip is not installed, using pip3..."
+                #:
             else
+                echo "pip is installed, uninstalling..."
                 yes | sudo python -m pip uninstall pip
             fi
             # making sure python3 is installed
             if [[ $(command -v pip3) == "" ]]
             then
-                if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep python) == '' ]]
+                echo "pip3 is installed..."
+                if [[ $(sudo -u $loggedInUser brew list | grep python) == '' ]]
                 then
-                    sudo -u $(logname) brew install python
+                    echo "python not installed, installing..."
+                    sudo -u $loggedInUser brew install python
                 else
-                    sudo -u $(logname) brew reinstall python
+                    echo "python already installed, reinstalling..."
+                    sudo -u $loggedInUser brew reinstall python
                 fi
             else
                 :
             fi
             PYTHON_VERSION='python3'
             # updating pip itself
-            sudo -u $(logname) pip3 install --upgrade pip
+            sudo -u $loggedInUser pip3 install --upgrade pip
             # updating all pip modules
-            pip3 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $(logname) pip3 install -U
+            pip3 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $loggedInUser pip3 install -U
             # installing dependencies
-            sudo -u $(logname) pip3 install -r /Applications/hosts_file_generator/requirements.txt
+            sudo -u $loggedInUser pip3 install -r /Applications/hosts_file_generator/requirements.txt
         fi
         
         # backing up original hosts file
@@ -207,6 +241,9 @@ hosts_file_install_update() {
     fi
     
 }
+
+#sleep 30
+#echo "waiting 30s to get the system ready..."
 
 (time hosts_file_install_update) 2>&1 | tee -a $LOGFILE
 
