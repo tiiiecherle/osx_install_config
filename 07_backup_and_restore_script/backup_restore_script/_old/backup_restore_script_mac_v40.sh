@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-### backup / restore script v41
+### backup / restore script v40
 ### last version without parallel was v35
 ### last version without gpg was v36
 ### last version with separate backup scripts for calendar and contact backup scripts was v38
@@ -289,15 +289,6 @@ function backup_restore {
     #SYSTEMUSERS=$(pushd /Users/ >/dev/null 2>&1; printf "%s " * | egrep -v "^[.]" | egrep -v "Guest"; popd >/dev/null 2>&1)
     SYSTEMUSERS=$(ls -1 /Users/ | egrep -v "^[.]" | egrep -v "Shared" | egrep -v "Guest")
     
-    # getting logged in user
-    #echo "LOGNAME is $(logname)..."
-    #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-    #stat -f%Su /dev/console
-    #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-    # recommended way
-    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-    #echo "loggedInUser is $loggedInUser..."
-    
     # user directory
     if [ "$OPTION" == "BACKUP" ]
     then
@@ -394,13 +385,8 @@ function backup_restore {
         ### updates and installations to all macs running the script
         ###
         
-        if [[ -e "$SCRIPT_DIR"/update_macos/updates_macos.sh ]]
-        then
-            . "$SCRIPT_DIR"/update_macos/updates_macos.sh
-            wait
-        else
-            echo """$SCRIPT_DIR""/update_macos/updates_macos.sh not found, skipping..."
-        fi
+        . "$SCRIPT_DIR"/update_macos/updates_macos.sh
+        wait
         
         ###
         ### checking installation of needed tools
@@ -419,56 +405,30 @@ function backup_restore {
         fi
         
         # checking homebrew including script dependencies
-        if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
+        if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'which brew') != "" ]]
         then
-            echo homebrew is not installed, exiting...
-            exit
-        else
             echo homebrew is installed...
             if [[ "$OPTION" == "BACKUP" ]]; 
             then
-                # checking for missing dependencies
-                for formula in gnu-tar pigz pv coreutils parallel gnupg cliclick
-                do
-                	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
-                	then
-                		#echo """$formula"" is NOT installed..."
-                		MISSING_SCRIPT_DEPENDENCY="yes"
-                	else
-                		#echo """$formula"" is installed..."
-                		:
-                	fi
-                done
-                if [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
+                if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep parallel) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnupg) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep cliclick) == '' ]]
                 then
                     echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel, gnupg and cliclick is missing, exiting...
                     exit
                 else
                     echo needed homebrew tools are installed...     
                 fi
-                unset MISSING_SCRIPT_DEPENDENCY
             else
-                # checking for missing dependencies
-                for formula in coreutils parallel
-                do
-                	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
-                	then
-                		#echo """$formula"" is NOT installed..."
-                		MISSING_SCRIPT_DEPENDENCY="yes"
-                	else
-                		#echo """$formula"" is installed..."
-                		:
-                	fi
-                done
-                if [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
+                if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep parallel) == '' ]]
                 then
                     echo at least one needed homebrew tools of coreutils and parallel is missing, exiting...
                     exit
                 else
                     echo needed homebrew tools are installed...     
                 fi
-                unset MISSING_SCRIPT_DEPENDENCY
             fi
+        else
+            echo homebrew is not installed, exiting...
+            exit
         fi
         
         #echo ''
@@ -496,7 +456,7 @@ function backup_restore {
             
             # opening applescript which will ask for saving location of compressed file
             echo "asking for directory to save the backup to..."
-            TARGZSAVEDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_save_to.scpt 2> /dev/null | sed s'/\/$//')
+            TARGZSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_save_to.scpt 2> /dev/null" | sed s'/\/$//')
             sleep 1
 
             #echo ''
@@ -523,7 +483,7 @@ function backup_restore {
                 then
                     # opening applescript which will ask for saving location of compressed file
                     echo "asking for directory to save the vbox backup to..."
-                    VBOXSAVEDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/vbox_backup/ask_save_to_vbox.scpt 2> /dev/null | sed s'/\/$//')
+                    VBOXSAVEDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/vbox_backup/ask_save_to_vbox.scpt 2> /dev/null" | sed s'/\/$//')
                     sleep 1
                     #echo ''
                     # checking if valid path for backup was selected
@@ -869,7 +829,45 @@ function backup_restore {
             #osascript -e 'tell application "'"$SCRIPT_DIR"'/archive/archive_tar_gz.app" to activate'
             
             # homebrew updates
-            # done in seperate script now
+            # working, but done in seperate script now
+            #echo "updating homebrew and tools..."
+            # checking if online
+            #ping -c 3 google.com > /dev/null 2>&1
+            #if [ $? -eq 0 ]
+            #then 
+                # online
+                #echo "running brew update commands..."
+                #sudo -u $(users)
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew update 1> /dev/null'
+                #if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew outdated') == "" ]] > /dev/null 2>&1
+                #then
+                	#echo "all homebrew packages are up to date..."
+                #else
+                	#echo "the following homebrew packages are outdated and will now be updated..."
+                	#sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew outdated --verbose'
+                #fi
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "${USE_PASSWORD} | brew upgrade 1> /dev/null"
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew cleanup 1> /dev/null'
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew cask cleanup 1> /dev/null'
+                #sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew doctor 1> /dev/null'
+            #else
+                # not online
+                #echo "not online, skipping homebrew update..."
+            #fi  
+            # homebrew permissions
+            #BREWGROUP="admin"
+            #BREWPATH=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew --prefix') 
+            #eval "echo $BREWPATH" > /dev/null 2>&1
+            #if [ $? -eq 0 ] && [[ "$BREWPATH" != "" ]]
+            #then
+            #    echo "setting ownerships and permissions for homebrew..."
+            #    echo homebrew path is "$BREWPATH"
+            #    sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
+            #    sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
+            #    sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx		
+            #else
+            #    echo homebrew path is empty or invalid, skipping setting ownerships and permissions for homebrew...
+        	#fi
         	
             # moving log to backup directory
             mv "$HOMEFOLDER"/Desktop/backup_restore_log.txt "$DESTINATION"/_backup_restore_log.txt
@@ -1024,9 +1022,17 @@ function backup_restore {
         # /Users/USERNAME/Desktop/restore/user/backup_directories (Applications, Library, User)
                 
         # restore dir
+        #if [[ -e "$HOMEFOLDER"/Desktop/restore ]]
+        #then
+        #    RESTOREDIR="$HOMEFOLDER"/Desktop/restore
+        #else
+        #    echo "restore directoy not found, asking for it..."
+        #    RESTOREDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_dir.scpt 2> /dev/null" | sed s'/\/$//')
+        #fi
+
         # restore master dir
         echo "please select restore master directory..."
-        RESTOREMASTERDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
+        RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null" | sed s'/\/$//')
         if [[ $(echo "$RESTOREMASTERDIR") == "" ]]
         then
             echo ''
@@ -1041,7 +1047,7 @@ function backup_restore {
 
         # restore user dir
         echo "please select restore user directory..."
-        RESTOREUSERDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_restore_user_dir.scpt 2> /dev/null | sed s'/\/$//')
+        RESTOREUSERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/backup_restore_script/ask_restore_user_dir.scpt 2> /dev/null" | sed s'/\/$//')
         if [[ $(echo "$RESTOREUSERDIR") == "" ]]
         then
             echo ''

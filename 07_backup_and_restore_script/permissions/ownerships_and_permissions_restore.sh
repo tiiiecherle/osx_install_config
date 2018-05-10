@@ -4,11 +4,19 @@
 ### ownerships and permissions
 ###
 
-# checking if SELECTEDUSER is exported from restore script
+# checking if SELECTEDUSER is exported from backup / restore script
 if [[ "$SELECTEDUSER" == "" ]]
 then
-    #SELECTEDUSER="$USER"
-    SELECTEDUSER="$(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser')"
+    # getting logged in user
+    #echo "LOGNAME is $(logname)..."
+    #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
+    #stat -f%Su /dev/console
+    #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
+    # recommended way
+    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+    #echo "loggedInUser is $loggedInUser..."
+    
+    SELECTEDUSER="$loggedInUser"
     #echo "user is $SELECTEDUSER"
 else
     :

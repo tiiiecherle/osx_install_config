@@ -73,6 +73,15 @@ sudo()
     #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
 }
 
+# getting logged in user
+#echo "LOGNAME is $(logname)..."
+#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
+#stat -f%Su /dev/console
+#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
+# recommended way
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+#echo "loggedInUser is $loggedInUser..."
+
 
 
 ###
@@ -93,22 +102,33 @@ else
 fi
 
 # checking homebrew including script dependencies
-if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'which brew') != "" ]]
+if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
 then
+    echo homebrew is not installed, exiting...
+    exit
+else
     echo homebrew is installed...
-    
-    if [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnu-tar) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pigz) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep pv) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep coreutils) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep parallel) == '' ]] || [[ $(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c 'brew list' | grep gnupg) == '' ]]
+    # checking for missing dependencies
+    for formula in gnu-tar pigz pv coreutils parallel gnupg cliclick
+    do
+    	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
+    	then
+    		#echo """$formula"" is NOT installed..."
+    		MISSING_SCRIPT_DEPENDENCY="yes"
+    	else
+    		#echo """$formula"" is installed..."
+    		:
+    	fi
+    done
+    if [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
     then
-        echo at least one needed homebrew tool of gnu-tar, pigz, pv, coreutils, parallel and gnupg2 is missing, exiting...
+        echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel, gnupg and cliclick is missing, exiting...
         exit
     else
         echo needed homebrew tools are installed...     
     fi
-else
-    echo homebrew is not installed, exiting...
-    exit
-fi
-
+    unset MISSING_SCRIPT_DEPENDENCY
+fi            
 
 
 ###

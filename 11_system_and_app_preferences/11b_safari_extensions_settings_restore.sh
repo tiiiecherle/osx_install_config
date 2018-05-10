@@ -7,10 +7,18 @@
 SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #echo "script dir is $SCRIPT_DIR$"
 
-echo "please select restore master directory..."
-RESTOREMASTERDIR=$(sudo su $(who | grep console | awk '{print $1}' | egrep -v '_mbsetupuser') -c "osascript \"$SCRIPT_DIR\"/11b_script/ask_restore_master_dir.scpt 2> /dev/null" | sed s'/\/$//')
+# getting logged in user
+#echo "LOGNAME is $(logname)..."
+#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
+#stat -f%Su /dev/console
+#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
+# recommended way
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+#echo "loggedInUser is $loggedInUser..."
 
-SELECTEDUSER=$USER
+echo "please select restore master directory..."
+RESTOREMASTERDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
+SELECTEDUSER="$loggedInUser"
 MASTERUSER=$(ls "$RESTOREMASTERDIR"/Users | egrep -v "^[.]" | egrep -v "Shared")
 #RESTOREMASTERDIR=/Users/$USER/Desktop/restore/master
 HOMEFOLDER=Users/$USER
