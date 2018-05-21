@@ -56,8 +56,8 @@ hosts_file_install_update() {
     then
         :
     else
-        echo "not online, waiting 300s for next try..."
-        sleep 300
+        echo "not online, waiting 120s for next try..."
+        sleep 120
     fi
  
     # checking if online
@@ -109,7 +109,7 @@ hosts_file_install_update() {
         echo "loggedInUser is $loggedInUser..."
         
         # sourcing .bash_profile or setting setting PATH
-        # as the script is run as root it would not detect the brew command and would fail checking if brew is installed
+        # as the script is run as root from a launchd it would not detect the brew command and would fail checking if brew is installed
         #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
         if [[ -e /Users/$loggedInUser/.bash_profile ]]
         then
@@ -198,8 +198,24 @@ hosts_file_install_update() {
         # updating / creating hostsfile
         echo "updating hosts file..."
         cd /Applications/hosts_file_generator/
-        #sudo python updateHostsFile.py -a -r -o alternates/gambling-porn-social -e gambling porn social
-        sudo ${PYTHON_VERSION} updateHostsFile.py -a -r -o alternates/gambling-porn -e gambling porn
+
+        # as the script is run as root from a launchd some env variables are not set, e.g. all locales
+        # setting LC_ALL for root solves
+        # UnicodeDecodeError: 'ascii' codec can't decode byte 0xe2 in position 13: ordinal not in range(128)
+        LANG_SCRIPT=de_DE.UTF-8
+        
+        sudo LC_ALL=$LANG_SCRIPT ${PYTHON_VERSION} updateHostsFile.py -a -r -o alternates/gambling-porn -e gambling porn
+        if [[ $? -eq 0 ]]
+        then
+            echo ''
+            echo "updating hosts file SUCCESSFULL..."
+            echo ''
+        else
+            echo ''
+            echo "updating hosts file FAILED..."
+            echo ''
+        fi
+        
         #sudo python updateHostsFile.py -a -n -r -o alternates/gambling-porn-social -e gambling porn social
         #sudo python updateReadme.py
         cd -
