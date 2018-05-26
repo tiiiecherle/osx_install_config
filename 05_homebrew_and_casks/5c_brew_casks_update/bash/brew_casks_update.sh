@@ -863,20 +863,31 @@ then
 else
     echo "homebrew is installed..."
 fi
+
 # checking if homebrew-cask is installed
-if [[ $(brew cask --version | grep "caskroom/homebrew-cask") == "" ]]
+#if [[ $(brew cask --version | grep "homebrew-cask") == "" ]]
+#then
+#    echo "homebrew-cask not installed, exiting script..."
+#    exit
+#else
+#    echo "homebrew-cask is installed..."
+#fi
+#echo ''
+
+brew cask --version 2>&1 >/dev/null
+if [[ $? -eq 0 ]]
 then
+    echo "homebrew-cask is installed..."
+else
     echo "homebrew-cask not installed, exiting script..."
     exit
-else
-    echo "homebrew-cask is installed..."
 fi
 echo ''
 
 # checking if online
 echo "checking internet connection..."
 ping -c 3 google.com > /dev/null 2>&1
-if [ $? -eq 0 ]
+if [[ $? -eq 0 ]]
 then
     echo "we are online, running script..."
     echo ''
