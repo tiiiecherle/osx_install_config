@@ -111,6 +111,7 @@ echo "installing and running hosts file generator..."
 # otherwise the privileges of the logfile would have to be changed before running inside the script
 # sudo privileges inside the called script will not timeout
 # script will run as root later anyway
+echo ''
 sudo bash -c "/Library/Scripts/custom/hosts_file_generator.sh" &
 wait < <(jobs -p)
 
