@@ -11,11 +11,11 @@
 	<key>CFBundleIconFile</key>
 	<string>applet</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.apple.ScriptEditor.id.run-on-network-change-login-new</string>
+	<string>com.apple.ScriptEditor.id.run-on-login-whatsapp</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>run_on_network_change_login_new</string>
+	<string>run_on_login_whatsapp</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -42,9 +42,9 @@
 		<key>name</key>
 		<string>ScriptWindowState</string>
 		<key>positionOfDivider</key>
-		<real>557</real>
+		<real>511</real>
 		<key>savedFrame</key>
-		<string>490 140 1188 996 0 0 1920 1177 </string>
+		<string>252 32 1188 845 0 0 1440 877 </string>
 		<key>selectedTab</key>
 		<string>description</string>
 	</dict>
