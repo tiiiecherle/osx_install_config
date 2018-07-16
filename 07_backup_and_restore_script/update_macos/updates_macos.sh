@@ -252,3 +252,25 @@ function 2018-02-15_update () {
 
 }
 #2018-02-15_update
+
+
+###
+### 2018-06-20
+###
+
+function 2018-06-20_update () {
+    
+    set +e
+    echo ''
+    
+    # ask if changes of documents shall be confirmed when closing
+    # false = off, true = on
+    defaults write -g NSCloseAlwaysConfirmsChanges -bool true
+    
+    echo ''
+    set -e
+
+}
+2018-06-20_update
+
+
