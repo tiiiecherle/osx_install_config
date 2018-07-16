@@ -176,7 +176,8 @@ cleanup-all-parallel() {
 
     #
     local NUMBER_OF_CORES=$(parallel --number-of-cores)
-    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
+    #local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
+    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 2.5" | bc -l)
     #echo $NUMBER_OF_MAX_JOBS
     local NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
     #echo $NUMBER_OF_MAX_JOBS_ROUNDED
@@ -393,10 +394,14 @@ brew_show_updates_parallel() {
     
     #
     local NUMBER_OF_CORES=$(parallel --number-of-cores)
-    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
+    #local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
+    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 2.5" | bc -l)
     #echo $NUMBER_OF_MAX_JOBS
     local NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
     #echo $NUMBER_OF_MAX_JOBS_ROUNDED
+    local NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED=$(echo "$NUMBER_OF_MAX_JOBS_ROUNDED * 2.0" | bc -l)
+    #echo $NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED
+    local NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED"'); }')
     #
     export -f brew_show_updates_parallel_inside
     #
@@ -615,14 +620,17 @@ cask_show_updates_parallel () {
     
     #
     local NUMBER_OF_CORES=$(parallel --number-of-cores)
-    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
+    #local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.5" | bc -l)
+    local NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 2.5" | bc -l)
     #echo $NUMBER_OF_MAX_JOBS
     local NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
     #echo $NUMBER_OF_MAX_JOBS_ROUNDED
+    local NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED=$(echo "$NUMBER_OF_MAX_JOBS_ROUNDED * 2.0" | bc -l)
+    #echo $NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED
+    local NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS_ROUNDED_DOUBLED"'); }')
     #
     export -f cask_show_updates_parallel_inside
     #
-    #parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k cask_show_updates_parallel_inside ::: "$(brew cask list)"
     parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k cask_show_updates_parallel_inside ::: "$(echo "$INSTALLED_CASKS")"
     wait
         
@@ -1029,6 +1037,9 @@ then
     else
         echo "all script dependencies installed..."
     fi
+    
+    # raising ulimit for more allowed parallel processes
+    ulimit -n 512 
     
     # checking if all formula dependencies are installed
     #echo ''
