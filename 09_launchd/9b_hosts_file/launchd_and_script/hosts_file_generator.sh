@@ -51,7 +51,7 @@ hosts_file_install_update() {
     fi
     
     # giving the online check some time if run on laptop to switch to correct network profile on boot
-    ping -c5 google.com > /dev/null 2>&1
+    ping -c5 google.com >/dev/null 2>&1
     if [ "$?" = 0 ]
     then
         :
@@ -64,7 +64,7 @@ hosts_file_install_update() {
     ping -c5 google.com >/dev/null 2>&1
     if [ "$?" = 0 ]
     then
-        echo "we are online... updating hosts file..."
+        echo "we are online, updating hosts file..."
     
         # creating installation directory
         mkdir -p /Applications/hosts_file_generator/
@@ -96,16 +96,16 @@ hosts_file_install_update() {
                 :
             fi
         fi
-        
-        ### installing dependencies
-        
-        # getting logged in user
+           
+             
+        ### getting logged in user
         #echo "LOGNAME is $(logname)..."
         #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
         #stat -f%Su /dev/console
         #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
         # recommended way
         loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+        echo ''
         echo "loggedInUser is $loggedInUser..."
         
         # sourcing .bash_profile or setting setting PATH
@@ -118,6 +118,8 @@ hosts_file_install_update() {
             :
         fi
         
+        
+        ### python version
         # checking if homebrew is installed
         #which brew
         #command -v brew
@@ -125,6 +127,7 @@ hosts_file_install_update() {
         #if [[ "$?" != 0 ]]
         if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
         then
+            echo ''
             echo "homebrew is not installed..."
             if [[ $(command -v pip) == "" ]]
             then
@@ -136,54 +139,86 @@ hosts_file_install_update() {
                 #:
             fi
             PYTHON_VERSION='python'
-            sudo pip install --upgrade pip
-            sudo pip install -r /Applications/hosts_file_generator/requirements.txt
-            # do not update internal apple site-packages to ensure compatibility
-            #pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
+            PIP_VERSION='pip'
         else
+            echo ''
             echo "homebrew is installed..."
             # do not autoupdate homebrew
             export HOMEBREW_NO_AUTO_UPDATE=1
-            # uninstalling python2 version from brew
-            if [[ $(sudo -u $loggedInUser brew list | grep python@2) == '' ]]
+            # checking installed python versions
+            if [[ $(sudo -u $loggedInUser brew list | grep "^python@2$") == '' ]]
             then
-                echo "python2 is not installed via homebrew, using python3..."
-                :
+                echo "python2 is not installed via homebrew..."
+                PYTHON3_INSTALLED="no"
             else
-                echo "python2 is installed via homebrew, uninstalling..."
-                sudo -u $loggedInUser brew uninstall --ignore-dependencies python@2
+                echo "python2 is installed via homebrew..."
+                PYTHON2_INSTALLED="yes"
+                #sudo -u $loggedInUser brew uninstall --ignore-dependencies python@2
             fi
-            # uninstalling other pip versions to avoid confusion of the update script
-            if [[ $(command -v pip) == "" ]]
+            if [[ $(sudo -u $loggedInUser brew list | grep "^python$") == '' ]]
             then
-                echo "pip is not installed, using pip3..."
-                #:
+                echo "python3 is not installed via homebrew, installing..."
+                PYTHON3_INSTALLED="no"
+                sudo -u $loggedInUser brew install python
             else
-                echo "pip is installed, uninstalling..."
-                yes | sudo python -m pip uninstall pip
+                echo "python3 is installed via homebrew..."
+                PYTHON3_INSTALLED="yes"
+                #sudo -u $loggedInUser brew uninstall --ignore-dependencies python@2
             fi
-            # making sure python3 is installed
-            if [[ $(command -v pip3) == "" ]]
+            if [[ $PYTHON2_INSTALLED == "yes" ]] && [[ $PYTHON3_INSTALLED == "yes" ]]
             then
-                echo "pip3 is installed..."
-                if [[ $(sudo -u $loggedInUser brew list | grep python) == '' ]]
-                then
-                    echo "python not installed, installing..."
-                    sudo -u $loggedInUser brew install python
-                else
-                    echo "python already installed, reinstalling..."
-                    sudo -u $loggedInUser brew reinstall python
-                fi
+                PYTHON_VERSION='python3'
+                PIP_VERSION='pip3'
             else
-                :
+                PYTHON_VERSION='python3'
+                PIP_VERSION='pip3'
             fi
-            PYTHON_VERSION='python3'
-            # updating pip itself
-            sudo -u $loggedInUser pip3 install --upgrade pip
-            # updating all pip modules
-            pip3 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $loggedInUser pip3 install -U
-            # installing dependencies
-            sudo -u $loggedInUser pip3 install -r /Applications/hosts_file_generator/requirements.txt
+        fi
+        
+        # listing installed python versions
+        echo ''
+        echo "installed python versions..."
+        APPLE_PYTHON_VERSION=$(python --version 2>&1)
+        printf "%-25s %-25s\n" "apple python" "$APPLE_PYTHON_VERSION"
+        if [[ $PYTHON2_INSTALLED == "yes" ]]
+        then
+            PYTHON2_VERSION=$(python2 --version 2>&1)
+            printf "%-25s %-25s\n" "python2" "$PYTHON2_VERSION"
+        else
+            :
+        fi
+        if [[ $PYTHON3_INSTALLED == "yes" ]]
+        then
+            PYTHON3_VERSION=$(python3 --version 2>&1)
+            printf "%-25s %-25s\n" "python3" "$PYTHON3_VERSION"
+        else
+            :
+        fi
+        echo ''
+        echo "python version used in script is $PYTHON_VERSION with $PIP_VERSION..."
+        echo ''
+
+
+        ### updating
+        # updating pip itself
+        sudo -u $loggedInUser ${PIP_VERSION} install --upgrade pip
+        
+        # updating all pip modules
+        if [[ $PYTHON_VERSION == 'python' ]]
+        then
+            # do not update internal apple site-packages to ensure compatibility
+            :
+        else
+            ${PIP_VERSION} freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $loggedInUser ${PIP_VERSION} install -U
+        fi
+        
+        # installing dependencies
+        if [[ $PYTHON_VERSION == 'python3' ]]
+        then
+            sed -i '' "s|lxml.*|lxml>=4.1.1|" /Applications/hosts_file_generator/requirements.txt
+            sudo -u $loggedInUser ${PIP_VERSION} install -r /Applications/hosts_file_generator/requirements.txt
+        else
+            sudo -u $loggedInUser ${PIP_VERSION} install -r /Applications/hosts_file_generator/requirements_python2.txt
         fi
         
         # backing up original hosts file
@@ -196,6 +231,7 @@ hosts_file_install_update() {
         fi
     
         # updating / creating hostsfile
+        echo ''
         echo "updating hosts file..."
         cd /Applications/hosts_file_generator/
 
@@ -218,8 +254,9 @@ hosts_file_install_update() {
         
         #sudo python updateHostsFile.py -a -n -r -o alternates/gambling-porn-social -e gambling porn social
         #sudo python updateReadme.py
-        cd -
+        cd - >/dev/null 2>&1
     
+        ### customization
         # comment out lines
         # sport1
         #sudo sed -i '' '/cdn-static.liverail.com/s/^/#/g' /etc/hosts
@@ -235,14 +272,23 @@ hosts_file_install_update() {
         sudo sed -i '' '/www.googleadservices.com/s/^/#/g' /etc/hosts
         sudo sed -i '' '/0.0.0.0 ad.doubleclick.net/s/^/#/g' /etc/hosts
         sudo sed -i '' '/pagead.l.doubleclick.net/s/^/#/g' /etc/hosts
+        # wimbledon
+        sudo sed -i '' '/0.0.0.0 secure.brightcove.com/s/^/#/g' /etc/hosts
+        
+        # wimbledon test
+        #for i in $(sudo cat /etc/hosts | grep "^0.*" | awk '{print $NF}' | head -n 10000)
+        #do
+        #    sudo sed -i '' "/$i/s/^/#/g" /etc/hosts
+        #done
         
         # testing
         # open respective website in browser
         # deactivate adblocker for the website
         # open /etc/hosts in gas mask and add / delete entries
-        #sudo killall -HUP mDNSResponder && sleep 2 && open -a /Applications/Firefox.app http://www.sport1.de
+        #sudo killall -HUP mDNSResponder && sleep 2 && open -a /Applications/Firefox.app && sleep 2 && open -a /Applications/Firefox.app http://www.wimbledon.com/en_GB/video/highlights.html
 
-        # activating hosts file
+
+        ### activating hosts file
         echo "activating hosts file..."
         # older osx versions
         #sudo dscacheutil -flushcache
@@ -250,8 +296,10 @@ hosts_file_install_update() {
         sudo killall -HUP mDNSResponder
         
         # done
+        echo ''
         echo 'done ;)'
-    
+        echo ''
+        
     else
         echo "we are not not online, skipping update of hosts file... exiting script..."
     fi
