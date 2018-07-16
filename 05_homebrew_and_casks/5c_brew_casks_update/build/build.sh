@@ -15,7 +15,8 @@ do
 	# setting icons
 	chmod 770 "$SCRIPT_DIR"/icons/icon_set.py
 	#sudo pip install pyobjc
-	"$SCRIPT_DIR"/icons/icon_set.py "$SCRIPT_DIR"/icons/brew_casks_update.icns "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
+	pip install pyobjc-framework-Cocoa
+	python "$SCRIPT_DIR"/icons/icon_set.py "$SCRIPT_DIR"/icons/brew_casks_update.icns "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
 	cp -a "$SCRIPT_DIR"/icons/brew_casks_update.icns "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app/Contents/Resources/applet.icns
 	
 	echo copying content to app and setting permissions...

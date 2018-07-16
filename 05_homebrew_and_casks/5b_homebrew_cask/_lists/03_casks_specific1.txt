@@ -7,7 +7,7 @@ jameica
 jdownloader
 macupdate
 remote-buddy
+signal
 spotify
-telegram
 transmission
 whatsapp
