@@ -243,9 +243,9 @@ EOF
     # default web browser
     # see separate script defaults_open_with.sh
     
-    # ask if changes of documents shall be kept while closing
+    # ask if changes of documents shall be confirmed when closing
     # false = off, true = on
-    defaults write -g NSCloseAlwaysConfirmsChanges -bool false
+    defaults write -g NSCloseAlwaysConfirmsChanges -bool true
     
     # resume apps system-wide (open windows are not restored when closing and re-opening an app)
     # true = off, false = on
@@ -1955,6 +1955,7 @@ EOF
     # defaults read -g NSPreferredWebServices
     ##
     defaults write -g NSPreferredWebServices '{NSWebServicesProviderWebSearch = { NSDefaultDisplayName = Google; NSProviderIdentifier = "com.google.www"; }; }';
+    #defaults write -g NSPreferredWebServices '{NSWebServicesProviderWebSearch = { NSDefaultDisplayName = Startpage; NSProviderIdentifier = "com.startpage"; }; }';
     
     # don't send search queries to Apple and do not use spotlight suggestions
     defaults write com.apple.Safari UniversalSearchEnabled -bool false
