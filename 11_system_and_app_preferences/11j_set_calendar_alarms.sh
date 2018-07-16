@@ -84,10 +84,10 @@ EOF
 	sleep 2
 	
 	
-	### identify radicale caldav directory
+	### identify caldav directory
 	# holiday calendar
 	CALDAV_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/ | grep .*.caldav$)"
-	RADICALE_CALENDAR=""
+	CALDAV_CALENDAR=""
 	for i in $CALDAV_DIRS
 	do
 		#echo $i
@@ -98,51 +98,51 @@ EOF
 			then
 				:
 			else
-				RADICALE_CALENDAR="$i"
+				CALDAV_CALENDAR="$i"
 			fi
 		else
 			:
 		fi
 	done
-	if [[ "$RADICALE_CALENDAR" != "" ]]
+	if [[ "$CALDAV_CALENDAR" != "" ]]
 	then
-		echo "radicale caldav is ""$RADICALE_CALENDAR"""
+		echo "expected caldav is ""$CALDAV_CALENDAR"""
 	else
-		echo "radicale caldav directory not found..."
+		echo "expected caldav directory not found..."
 		echo "perhaps waiting time above was to short for rebuilding calendar cache, please try again..."
 		echo "exiting script..."
 		exit
 	fi
 	echo ''
 	
-	if [[ $(echo "$RADICALE_CALENDAR") != "" ]]
+	if [[ $(echo "$CALDAV_CALENDAR") != "" ]]
 	then
-		CALENDAR_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/ | grep .*.calendar$)"
+		CALENDAR_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/ | grep .*.calendar$)"
 		for i in $CALENDAR_DIRS
 		do
 			#echo $i
-			#ls "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/
-			if [[ -e "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist ]]
+			#ls "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/
+			if [[ -e "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist ]]
 			then
 				#echo $i
-				CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist)
+				CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
 				#echo "$CALENDAR_TITLE"
 				if [[ "$CALENDAR_TITLE" == "$USER" ]] || [[ "$CALENDAR_TITLE" == "allgemein" ]]
 				then
-					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist
-					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist
+					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 				else
 					if [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$USER" == "wolfgang" ]]
 					then
 						echo "$USER"
-						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist
-						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist
+						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 					else
-						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist
-						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist
+						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 					fi
 				fi
-				ALARM_SET=$(/usr/libexec/PlistBuddy -c "Print :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$RADICALE_CALENDAR"/"$i"/Info.plist)
+				ALARM_SET=$(/usr/libexec/PlistBuddy -c "Print :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
 				echo "calendar alarms for ""$CALENDAR_TITLE"" set to ""$ALARM_SET"""
 				#echo ''
 			else
