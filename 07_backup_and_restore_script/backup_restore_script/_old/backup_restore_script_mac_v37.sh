@@ -265,7 +265,7 @@ function backup_restore {
         
         # path to running script directory
         #SCRIPT_DIR="$(dirname $0)"
-        #SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+        #SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
         echo script directory is "$SCRIPT_DIR"
         
         # checking syntax of backup / restore list
@@ -1143,7 +1143,7 @@ function backup_restore {
 
 }
 
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
 APPLESCRIPTDIR="$SCRIPT_DIR"
 
 #FUNC=$(declare -f backup_restore)

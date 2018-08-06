@@ -4,7 +4,7 @@
 ### variables
 ###
 
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 
 
 ###
@@ -48,7 +48,7 @@ checking_homebrew
 start_sudo
 
 # variables
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d')
 homebrewpackages=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_packages.txt | sed '/^#/ d')
 casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d')

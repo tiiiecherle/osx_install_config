@@ -80,7 +80,7 @@ sudo()
 ### 
 
 # script directory
-SCRIPTDIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPTDIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #echo $SCRIPTDIR
 
 # uninstalling possible old files

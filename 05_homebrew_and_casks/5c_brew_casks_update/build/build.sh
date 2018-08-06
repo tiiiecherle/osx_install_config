@@ -4,8 +4,8 @@ BREW_CASKS_UPDATE_VERSIONS=(
 "brew_casks_update"
 )
 
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
-SCRIPTS_FINAL_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+SCRIPTS_FINAL_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && pwd)")
 
 for BREW_CASKS_UPDATE_VERSION in "${BREW_CASKS_UPDATE_VERSIONS[@]}";
 do

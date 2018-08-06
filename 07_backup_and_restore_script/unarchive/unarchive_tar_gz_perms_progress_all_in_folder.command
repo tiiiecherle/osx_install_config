@@ -227,7 +227,7 @@ trap "printf '\n'; stop_sudo; kill_subprocesses >/dev/null 2>&1; kill_main_proce
 trap "stop_sudo; kill_subprocesses >/dev/null 2>&1; exit" EXIT
 #set -e
 
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 
 echo ''
 echo 'please enter decryption password...'

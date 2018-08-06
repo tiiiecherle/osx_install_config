@@ -4,8 +4,8 @@
 ### updates and installations to all macs running the script
 ###
 
-SCRIPT_DIR_MACOS=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
-SCRIPT_DIR_BACKUP=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+SCRIPT_DIR_MACOS=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR_BACKUP=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
 
 function start_sudo() {
     ${USE_PASSWORD} | builtin command sudo -p '' -S -v
@@ -271,6 +271,6 @@ function 2018-06-20_update () {
     set -e
 
 }
-2018-06-20_update
+#2018-06-20_update
 
 

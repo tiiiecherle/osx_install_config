@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
 
 BREW_CASKS_UPDATE_APP="brew_casks_update"
 

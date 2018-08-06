@@ -4,7 +4,7 @@
 # a reboot is needed after restoring the keychain before running this script
 # or the changes to safari would not be kept
 
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #echo "script dir is $SCRIPT_DIR$"
 
 # getting logged in user

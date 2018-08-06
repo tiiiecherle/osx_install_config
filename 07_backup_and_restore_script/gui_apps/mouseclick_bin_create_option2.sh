@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #echo "$SCRIPT_DIR"
 touch "$SCRIPT_DIR"/mouseclick.c
 cat > "$SCRIPT_DIR"/mouseclick.c << EOF

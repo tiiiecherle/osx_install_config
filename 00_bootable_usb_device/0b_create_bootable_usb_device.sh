@@ -112,7 +112,7 @@ VOLUMEPATH="/Volumes/$VOLUMENAME"
 
 
 # checking if VOLUMEPATH is on USB_DEVICE
-if [[ $(diskutil list $USB_DEVICE | grep "$VOLUMENAME") == "" ]]
+if [[ $(diskutil list $USB_DEVICE | grep "$VOLUMENAME") == "" ]]
 then
 	echo ''
 	echo """$VOLUMENAME"" does not seem to be on $USB_DEVICE, exiting..."

@@ -99,7 +99,7 @@ else
 fi
 
 # run applescript to set sidebar preferences
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #open /"$SCRIPT_DIR"/11f_script_finder_sidebar/11f_finder_sidebar.app
 
 function enable_disable_finder_sidebar_items() {

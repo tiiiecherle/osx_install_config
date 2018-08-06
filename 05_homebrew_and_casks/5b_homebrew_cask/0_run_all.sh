@@ -4,7 +4,7 @@
 ### variables
 ###
 
-SCRIPT_DIR=$(echo "$( cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 FILENAME_INSTALL_SCRIPT=$(basename "$BASH_SOURCE")
 export FILENAME_INSTALL_SCRIPT
 
