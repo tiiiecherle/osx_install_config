@@ -148,14 +148,7 @@ fi
 echo ''
 echo "creating installer medium..."
 
-if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-then
-    # macos versions until and including 10.13 
-    sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --applicationpath "$INSTALLERPATH" --nointeraction
-else
-    # macos versions 10.14 and up
-    sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --nointeraction
-fi
+sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --applicationpath "$INSTALLERPATH" --nointeraction
     
     
 ### deleting efi partition to make the exfat data partition usable on windows

@@ -25,7 +25,6 @@ applications_to_open=(
 "/Applications/iphone/iMazing.app"
 "/Applications/VirusScannerPlus.app"
 "/Applications/Macs Fan Control.app"
-#"/Applications/Signal.app"					# should be open from autostart
 )
 
 for i in "${applications_to_open[@]}"
