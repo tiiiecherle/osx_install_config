@@ -1528,7 +1528,6 @@ function backup_restore {
             #find "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/" -name "media" -type d -print0 | xargs -0 rm -rf
             # after deleting postbox/db/* or accounts-metadata the computer has to be reregistered with phone number
             #rm -rf "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/"account-*"/postbox/db/"*
-<<<<<<< HEAD
             
             # signal
             if [[ -e "/Users/$USER/Library/Application Support/Signal/" ]]
@@ -1545,8 +1544,6 @@ function backup_restore {
             else
                 :
             fi
-=======
->>>>>>> parent of c240f31... python3 only update
         
             echo "cleaning done ;)"
             

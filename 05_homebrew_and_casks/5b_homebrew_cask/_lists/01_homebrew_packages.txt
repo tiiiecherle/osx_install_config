@@ -4,8 +4,8 @@ wget
 pv
 pigz
 gnu-tar
-#htop		# not compatible with high sierra, use glances instead
-glances
+htop		# if htop is not working, use glances instead
+#glances
 coreutils
 #duti
 ghostscript

@@ -91,7 +91,6 @@ function command_line_tools_update () {
 }
 command_line_tools_update
 
-<<<<<<< HEAD
 # installing sdk headers on mojave
 if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 # other way to get system version is sw_vers -productVersion
@@ -106,8 +105,6 @@ else
     sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
 fi
 
-=======
->>>>>>> parent of c240f31... python3 only update
 echo ''
 
 ### stopping sudo
