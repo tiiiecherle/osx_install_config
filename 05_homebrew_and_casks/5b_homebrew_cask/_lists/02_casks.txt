@@ -29,7 +29,7 @@ brackets
 burn
 chromium
 coconutbattery
-#cog
+cog
 commander-one
 coteditor
 cyberduck
@@ -42,10 +42,10 @@ google-earth-pro
 google-earth-web-plugin
 handbrake
 hex-fiend
-#ibackup
+ibackup
 iina
 imageoptim
-#insomniax
+insomniax
 istat-menus
 iterm2
 #itweax
@@ -72,7 +72,7 @@ tnefs-enough
 trolcommander
 #tunnelblick
 unified-remote
-#videomonkey
+videomonkey
 vlc
 vlc-webplugin
 vnc-viewer

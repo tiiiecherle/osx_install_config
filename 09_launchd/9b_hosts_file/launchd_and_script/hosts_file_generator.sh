@@ -157,7 +157,6 @@ hosts_file_install_update() {
             fi
             if [[ $(sudo -u $loggedInUser brew list | grep "^python$") == '' ]]
             then
-                # the project drops python2 support, so make sure python3 is used
                 echo "python3 is not installed via homebrew, installing..."
                 PYTHON3_INSTALLED="no"
                 sudo -u $loggedInUser brew install python
@@ -166,17 +165,14 @@ hosts_file_install_update() {
                 PYTHON3_INSTALLED="yes"
                 #sudo -u $loggedInUser brew uninstall --ignore-dependencies python@2
             fi
-            # the project drops python2 support, so make sure python3 is used
-            #if [[ $PYTHON2_INSTALLED == "yes" ]] && [[ $PYTHON3_INSTALLED == "yes" ]]
-            #then
-            #    PYTHON_VERSION='python3'
-            #    PIP_VERSION='pip3'
-            #else
-            #    PYTHON_VERSION='python'
-            #    PIP_VERSION='pip'
-            #fi
-            PYTHON_VERSION='python3'
-            PIP_VERSION='pip3'
+            if [[ $PYTHON2_INSTALLED == "yes" ]] && [[ $PYTHON3_INSTALLED == "yes" ]]
+            then
+                PYTHON_VERSION='python3'
+                PIP_VERSION='pip3'
+            else
+                PYTHON_VERSION='python3'
+                PIP_VERSION='pip3'
+            fi
         fi
         
         # listing installed python versions

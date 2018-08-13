@@ -92,7 +92,6 @@ sudo()
 # or
 # sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db
 # .dump access
-# .schema access
 
 # quit database
 # .quit
@@ -114,13 +113,21 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 
 ### privacy - accessibility
 
+<<<<<<< HEAD:11_system_and_app_preferences/11a_osx_preferences_privacy_sqlite_mojave.sh
+=======
+## 	x 	calendars backup			com.apple.ScriptEditor.id.calendars-backup
+# 	x 	gui apps backup			com.apple.ScriptEditor.id.gui-apps-backup
+#	x	overflow					com.stuntsoftware.Overflow
+#	x	script-editor				com.apple.ScriptEditor2
+#   x   system-preferences          com.apple.systempreferences
+#	x	witch						com.manytricks.WitchWrapper
+#	x	witchdaemon                 com.manytricks.witchdaemon
+
+>>>>>>> parent of c240f31... python3 only update:11_system_and_app_preferences/11a_osx_preferences_privacy_sqlite.sh
 # add application to accessibility
-#terminal
-#INSERT INTO access VALUES('kTCCServiceAccessibility','com.apple.Terminal',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,1533680610);
-#overflow
-#'IDENTIFIER',0,0,1     # added, but not enabled
-#'IDENTIFIER',0,1,1     # added and enabled
-#sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.stuntsoftware.Overflow',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,1533680686);" 
+# sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceAccessibility','IDENTIFIER',0,1,1,NULL,NULL);" 
+# example
+# sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.stuntsoftware.Overflow',0,1,1,NULL,NULL);" 
 
 # remove application from accessibility
 # sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "delete from access where client='IDENTIFIER';"
@@ -139,12 +146,17 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 sudo sqlite3 "$DATABASE_SYSTEM" "DELETE FROM access"
 
 ACCESSIBILITYAPPS=(
+<<<<<<< HEAD:11_system_and_app_preferences/11a_osx_preferences_privacy_sqlite_mojave.sh
 com.apple.ScriptEditor.id.brew-casks-update
 com.apple.ScriptEditor.id.video-720p-h265-aac-shrink
 com.apple.ScriptEditor.id.video-1080p-h265-aac-shrink
 com.apple.ScriptEditor.id.gui-apps-backup
 com.apple.automator.decrypt_finder_input_gpg_progress
 com.apple.automator.unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress
+=======
+#com.apple.ScriptEditor.id.calendars-backup
+com.apple.ScriptEditor.id.gui-apps-backup
+>>>>>>> parent of c240f31... python3 only update:11_system_and_app_preferences/11a_osx_preferences_privacy_sqlite.sh
 com.stuntsoftware.Overflow
 com.apple.ScriptEditor2
 com.apple.systempreferences
@@ -157,9 +169,8 @@ com.selznick.PasswordWallet
 com.kiwifruitware.VirtualBox_Menulet
 )
 
-for accessibility_app in ${ACCESSIBILITYAPPS[@]}; 
-do
-    sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','"$accessibility_app"',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
+for accessibility_apps in ${ACCESSIBILITYAPPS[@]}; do
+sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','"$accessibility_apps"',0,1,1,NULL,NULL);"
 done
 
 
@@ -178,28 +189,33 @@ com.runningwithcrayons.Alfred-3
 earthlingsoft.GeburtstagsChecker
 )
 
-for contacts_app in ${CONTACTSAPPS[@]}
-do
-    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','"$contacts_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+for contacts_apps in ${CONTACTSAPPS[@]}; do
+sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','"$contacts_apps"',0,1,1,NULL,NULL);"
 done
 
 
 
 ### privacy - calendar
 
+<<<<<<< HEAD:11_system_and_app_preferences/11a_osx_preferences_privacy_sqlite_mojave.sh
+=======
+## 	x 	calendars backup			com.apple.ScriptEditor.id.calendars-backup
+# 	x 	gui apps backup			com.apple.ScriptEditor.id.gui-apps-backup
+#	x	istat menus                 com.bjango.istatmenusstatus
+
+
+>>>>>>> parent of c240f31... python3 only update:11_system_and_app_preferences/11a_osx_preferences_privacy_sqlite.sh
 sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCalendar';"
 
 CALENDARAPPS=(
 #com.apple.ScriptEditor.id.calendars-backup
 com.apple.ScriptEditor.id.gui-apps-backup
-com.bjango.istatmenus.status
+com.bjango.istatmenusstatus
 )
 
-for calendar_app in ${CALENDARAPPS[@]}
-do
-    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','"$calendar_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+for calendar_apps in ${CALENDARAPPS[@]}; do
+sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','"$calendar_apps"',0,1,1,NULL,NULL);"
 done
-
 
 
 ### privacy - reminders
@@ -210,6 +226,7 @@ REMINDERAPPS=(
 com.apple.ScriptEditor.id.gui-apps-backup
 )
 
+<<<<<<< HEAD:11_system_and_app_preferences/11a_osx_preferences_privacy_sqlite_mojave.sh
 for reminder_app in ${REMINDERAPPS[@]}
 do
     sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','"$reminder_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
@@ -276,6 +293,10 @@ do
     #echo "$SOURCE_APP"
     #echo "$AUTOMATED_APP"
     sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
+=======
+for reminder_apps in ${REMINDERAPPS[@]}; do
+sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','"$reminder_apps"',0,1,1,NULL,NULL);"
+>>>>>>> parent of c240f31... python3 only update:11_system_and_app_preferences/11a_osx_preferences_privacy_sqlite.sh
 done
 
 
