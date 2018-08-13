@@ -5,7 +5,6 @@
 symbolic_links=(
 /Users/$USER/Desktop/backup_macos
 /Users/$USER/Desktop/backup
-/Users/$USER/Desktop/archive
 /Users/$USER/Desktop/files
 /Users/$USER/Desktop/backup_file.rtf
 /Users/$USER/github

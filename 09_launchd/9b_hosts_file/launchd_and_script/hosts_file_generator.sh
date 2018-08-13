@@ -219,7 +219,7 @@ hosts_file_install_update() {
         # installing dependencies
         if [[ $PYTHON_VERSION == 'python3' ]]
         then
-            sed -i '' "s|lxml.*|lxml>=4.1.1|" /Applications/hosts_file_generator/requirements.txt
+            #sed -i '' "s|lxml.*|lxml>=4.2.4|" /Applications/hosts_file_generator/requirements.txt
             sudo -u $loggedInUser ${PIP_VERSION} install -r /Applications/hosts_file_generator/requirements.txt
         else
             sudo -u $loggedInUser ${PIP_VERSION} install -r /Applications/hosts_file_generator/requirements_python2.txt
