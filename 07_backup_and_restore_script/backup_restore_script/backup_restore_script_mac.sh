@@ -152,6 +152,7 @@ function kill_main_process()
 }
 
 function unset_variables() {
+    unset OPTION
     #unset RESTOREDIR
     unset RESTOREMASTERDIR
     unset RESTOREUSERDIR
@@ -237,6 +238,86 @@ function create_tmp_backup_script_fifo3() {
     builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo3" &
 }
 
+function databases_apps_security_permissions() {
+    DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_SYSTEM"
+    DATABASE_USER=""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_USER"
+}
+
+function give_apps_security_permissions() {
+    databases_apps_security_permissions
+    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+        # all gui app backups in one script
+        # accessibility entry for reminders backup
+        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
+        # reminders
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
+        # contacts
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
+        # calendar
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
+        
+    else
+        # macos versions 10.14 and up
+        # accessibility
+        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
+        # reminders
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        # contacts
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        # calendar
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        # automation gui backup app
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        # automation files
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+        # automation vbox backup app
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions_start_script() {
+    databases_apps_security_permissions
+    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+        sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+        sudo sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+    else
+        # macos versions 10.14 and up
+        # gui backup app
+        sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+        sudo sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+        # automation files
+        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
+        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
+        # vbox backup app
+        sudo sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.virtualbox-backup';"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions_stop_script() {
+    databases_apps_security_permissions
+    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+        :
+    else
+        # macos versions 10.14 and up
+        # automation files
+        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
+        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
+    fi
+    #sleep 1
+}
+
 
 ### trapping
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
@@ -247,27 +328,34 @@ function create_tmp_backup_script_fifo3() {
 if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
 then
     # script is session master and not run from another script (S on mac Ss on linux)
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop_script; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop_script; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
 else
     # script is not session master and run from another script (S+ on mac and linux)
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; exit" EXIT
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop_script; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop_script; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; exit" EXIT
 fi
 set -e
 
-echo ""
-# choosing the backup and defining $BACKUP variable
-PS3="Please select option by typing the number: "
-select OPTION in BACKUP RESTORE
-do
-    echo You selected option $OPTION.
-    echo ""
-    break
-done
+echo ''
+
+if [ "$OPTION" == "" ]
+then
+    # choosing the backup and defining $BACKUP variable
+    PS3="Please select option by typing the number: "
+    select OPTION in BACKUP RESTORE
+    do
+        echo You selected option $OPTION.
+        echo ''
+        break
+    done
+else
+    echo "script is run with option $OPTION..."
+    echo ''
+fi
 
 # check if a valid option was selected
-if [ "$OPTION" == "" ]
+if [[ "$OPTION" == "" ]] || [[ "$OPTION" != "BACKUP" ]] && [[ "$OPTION" != "RESTORE" ]]
 then
     echo "no valid option selected - exiting script..."
     exit
@@ -297,34 +385,45 @@ function backup_restore {
     # recommended way
     loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
     #echo "loggedInUser is $loggedInUser..."
-    
-    # user directory
-    if [ "$OPTION" == "BACKUP" ]
+
+    if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/ //g') == "1" ]]
     then
-        PS3="Please select user to backup by typing the number: "
+        SELECTEDUSER="$SYSTEMUSERS"
+        if [ "$OPTION" == "BACKUP" ]
+        then
+            echo "only one user account on the system, backing up user ""$SELECTEDUSER""..."
+        elif [ "$OPTION" == "RESTORE" ]
+        then
+            echo "only one user account on the system, restoring to user ""$SELECTEDUSER""..."
+        else
+            :
+        fi
+        echo ''
     else
-        :
+        if [ "$OPTION" == "BACKUP" ]
+        then
+            PS3="Please select user to backup by typing the number: "
+        elif [ "$OPTION" == "RESTORE" ]
+        then
+            PS3="Please select user to restore to by typing the number: "
+        else
+            :
+        fi
+        
+        select SELECTEDUSER in ""$SYSTEMUSERS""
+        do
+            echo You selected user "$SELECTEDUSER".
+            echo ""
+            break
+        done
     fi
-    
-    if [ "$OPTION" == "RESTORE" ]
-    then
-        PS3="Please select user to restore to by typing the number: "
-    else
-        :
-    fi
-    
-    select SELECTEDUSER in ""$SYSTEMUSERS""
-    do
-        echo You selected user "$SELECTEDUSER".
-        echo ""
-        break
-    done
     
     # check1 if a valid user was selected
     USERCHECK=$(find /Users -maxdepth 1 -name "$SELECTEDUSER" -exec basename {} \;)
     if [ "$SELECTEDUSER" != "$USERCHECK" ]
     then
         echo "no valid user selected - exiting script because of no real username..."
+        echo ''
         exit
     else
         :
@@ -339,6 +438,22 @@ function backup_restore {
         :
     fi
     
+    # confirm run
+    read -p "do you want to run the script with option ""$OPTION"" and for user ""$SELECTEDUSER"" (Y/n)? " CONT_SCRIPT
+    CONT_SCRIPT="$(echo "$CONT_SCRIPT" | tr '[:upper:]' '[:lower:]')"    # tolower
+    echo $CONT_SCRIPT
+    sleep 0.1
+    #
+    if [[ "$CONT_SCRIPT" == "" || "$CONT_SCRIPT" == "y" || "$CONT_SCRIPT" == "yes" ]]
+    then
+        :
+    else
+        echo ''
+        echo "exiting..."
+        echo ''
+        exit
+    fi
+    
     ###
     ### variables and list syntax check
     ###
@@ -351,6 +466,7 @@ function backup_restore {
     if [ -d "$HOMEFOLDER" ]
     then
         echo "user home directory exists - running script..."
+        echo ''
     
         # path to current working directory
         CURRENT_DIR="$(pwd)"
@@ -494,10 +610,16 @@ function backup_restore {
             echo "running backup..."
             sleep 1
             
+            echo ''
+            echo "resetting security permissions for backup apps..."
+            remove_apps_security_permissions_start_script
+            give_apps_security_permissions
+            
             # opening applescript which will ask for saving location of compressed file
+            echo ''
             echo "asking for directory to save the backup to..."
             TARGZSAVEDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_save_to.scpt 2> /dev/null | sed s'/\/$//')
-            sleep 1
+            sleep 0.5
 
             #echo ''
             # checking if valid path for backup was selected
@@ -509,7 +631,8 @@ function backup_restore {
                 echo "no valid path for saving the backup selected, exiting script..."
                 exit
             fi
-            echo ''
+            printf '\n'
+            sleep 0.1
             
             ### asking for backups
             # virtualbox backup
@@ -524,7 +647,7 @@ function backup_restore {
                     # opening applescript which will ask for saving location of compressed file
                     echo "asking for directory to save the vbox backup to..."
                     VBOXSAVEDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/vbox_backup/ask_save_to_vbox.scpt 2> /dev/null | sed s'/\/$//')
-                    sleep 1
+                    sleep 0.5
                     #echo ''
                     # checking if valid path for backup was selected
                     if [ -e "$VBOXSAVEDIR" ]
@@ -532,6 +655,7 @@ function backup_restore {
                         echo "vbox backup will be saved to "$VBOXSAVEDIR""
                         sleep 0.1
                         printf '\n'
+                        sleep 0.1
                     else
                         echo "no valid path for saving the vbox backup selected, exiting script..."
                         exit
@@ -580,14 +704,7 @@ function backup_restore {
                 do
                     rm -rf "$HOMEFOLDER"/Documents/backup/reminders/"$REMINDERSBACKUPS"
                 done
-                
-                # all gui app backups in one script
-                # accessibility entry for reminders backup
-                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                # service entry for for backup app
-                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                sleep 2
-                
+                             
                 # running contacts backup
                 GUI_APP_TO_BACKUP=Reminders
                 export GUI_APP_TO_BACKUP
@@ -610,13 +727,6 @@ function backup_restore {
                 do
                     rm -rf "$HOMEFOLDER"/Documents/backup/contacts/"$CONTACTSBACKUPS"
                 done
-                
-                # all gui app backups in one script
-                # accessibility entry for calendar backup
-                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                # service entry for for backup app
-                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                sleep 2
                 
                 # running contacts backup
                 GUI_APP_TO_BACKUP=Contacts
@@ -652,13 +762,6 @@ function backup_restore {
                 do
                     rm -rf "$HOMEFOLDER"/Documents/backup/calendar/"$CALENDARSBACKUPS"
                 done
-                
-                # all gui app backups in one script
-                # accessibility entry for calendar backup
-                sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                # service entry for for backup app
-                sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-                sleep 2
                 
                 # running calendar backup
                 GUI_APP_TO_BACKUP=Calendar
@@ -1425,6 +1528,22 @@ function backup_restore {
             #find "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/" -name "media" -type d -print0 | xargs -0 rm -rf
             # after deleting postbox/db/* or accounts-metadata the computer has to be reregistered with phone number
             #rm -rf "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/"account-*"/postbox/db/"*
+            
+            # signal
+            if [[ -e "/Users/$USER/Library/Application Support/Signal/" ]]
+            then
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/attachments.noindex"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/Cache/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/databases/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/GPUCache/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/Local Storage/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/logs/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/QuotaManager"*
+                #
+                rm -rf "/Users/$USER/Library/Application Support/Signal/"* 
+            else
+                :
+            fi
         
             echo "cleaning done ;)"
             

@@ -17,7 +17,7 @@ loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStor
 #echo "loggedInUser is $loggedInUser..."
 
 echo "please select restore master directory..."
-RESTOREMASTERDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
+RESTOREMASTERDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/11b_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
 SELECTEDUSER="$loggedInUser"
 MASTERUSER=$(ls "$RESTOREMASTERDIR"/Users | egrep -v "^[.]" | egrep -v "Shared")
 #RESTOREMASTERDIR=/Users/$USER/Desktop/restore/master

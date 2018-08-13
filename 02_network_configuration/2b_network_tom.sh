@@ -138,22 +138,6 @@ sudo networksetup -switchtolocation "Automatisch"
 echo ""
 sleep 3
 
-# creating new location tom_wlan
-echo adding location tom_wlan
-sudo networksetup -createlocation "tom_wlan"
-sleep 3
-sudo networksetup -switchtolocation "tom_wlan"
-echo ""
-sleep 3
-sudo networksetup -createnetworkservice "WLAN" Wi-Fi
-#sudo networksetup -createnetworkservice WLAN en0
-sleep 3
-sudo networksetup -setmanual "WLAN" 172.16.2.2 255.255.255.0 172.16.2.1
-sleep 3
-sudo networksetup -setdnsservers "WLAN" 172.16.2.1
-sleep 3
-
-
 # creating new location office_lan
 echo adding location office_lan
 sudo networksetup -createlocation "office_lan"
@@ -169,33 +153,19 @@ sleep 3
 sudo networksetup -setdnsservers "$ETHERNET_DEVICE" 172.16.1.1
 sleep 3
 
-# creating new location mozart_wlan
-echo adding location mozart_wlan
-sudo networksetup -createlocation "mozart_wlan"
+# creating new location wlan only dhcp
+echo adding location wlan
+sudo networksetup -createlocation "wlan"
 sleep 3
-sudo networksetup -switchtolocation "mozart_wlan"
+sudo networksetup -switchtolocation "wlan"
 echo ""
 sleep 3
 sudo networksetup -createnetworkservice "WLAN" Wi-Fi
 #sudo networksetup -createnetworkservice WLAN en0
 sleep 3
-sudo networksetup -setmanual "WLAN" 192.168.1.202 255.255.255.0 192.168.1.1
-sleep 3
-sudo networksetup -setdnsservers "WLAN" 192.168.1.1
-sleep 3
-
-# creating new location berente_wlan
-#echo adding location berente_wlan
-#sudo networksetup -createlocation "berente_wlan"
+#sudo networksetup -setmanual "WLAN" 192.168.1.202 255.255.255.0 192.168.1.1
 #sleep 3
-#sudo networksetup -switchtolocation "berente_wlan"
-#echo ""
-#sleep 3
-#sudo networksetup -createnetworkservice "WLAN" Wi-Fi
-#sleep 3
-#sudo networksetup -setmanual "WLAN" 192.168.2.202 255.255.255.0 192.168.2.1
-#sleep 3
-#sudo networksetup -setdnsservers "WLAN" 192.168.2.1
+#sudo networksetup -setdnsservers "WLAN" 192.168.1.1
 #sleep 3
 
 # deleting _temp network location, not necessary when deleting preferences.plist
