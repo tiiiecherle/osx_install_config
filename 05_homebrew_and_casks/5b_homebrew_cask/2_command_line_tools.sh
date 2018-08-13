@@ -92,14 +92,17 @@ function command_line_tools_update () {
 command_line_tools_update
 
 # installing sdk headers on mojave
-if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.') == "10.14" ]]
+if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+# other way to get system version is sw_vers -productVersion
 then
+    # macos versions until and including 10.13 
+    :
+else
+    # macos versions 10.14 and up
     echo ''
     echo "installing sdk headers..."
     #sudo install -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
     sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-else
-    :
 fi
 
 echo ''
