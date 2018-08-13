@@ -167,8 +167,6 @@ EOF
     "/System/Library/CoreServices/Menu Extras/AirPort.menu" \
     "/System/Library/CoreServices/Menu Extras/Battery.menu"
     
-    # for keyboard use TextInput.menu
-    
     sleep 2
     killall SystemUIServer
     sleep 5
@@ -213,54 +211,25 @@ EOF
     
     echo "preferences general"
     
-    # interface appearance
-    # becomes active after logout
-    # light
-    #defaults write -g AppleInterfaceStyle -string "Light"
-    #defaults delete -g AppleInterfaceStyle
-    # dark
-    #defaults write -g AppleInterfaceStyle -string "Dark"
     
-    # immediate change
-    # light    			
-    osascript -e '
-    tell application id "com.apple.systemevents"
-    	tell appearance preferences
-    		if dark mode is true then
-    			set dark mode to false
-    		end if
-    	end tell
-    end tell
-    '
-    # dark
-    #osascript -e '
-    #tell application id "com.apple.systemevents"
-    #	tell appearance preferences
-    #		if dark mode is false then
-    #			set dark mode to true
-    #		end if
-    #	end tell
-    #end tell
-    #'
-    
-    # color (1=blue,8=graphit)
+    # appearance (1=blue,6=graphit)
     ##
     defaults write -g AppleAquaColorVariant -int 1
     
-    # highlight color
-    # example green
-    #defaults write NSGlobalDomain AppleHighlightColor -string "0.764700 0.976500 0.568600"
-    # reset to default (blue)
-    #defaults delete -g AppleHighlightColor
+    # enable dark / light theme
+    #defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
     
-    # set sidebar icon size
-    # 1=small, 2=medium, 3=big
-    defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 1
-        
     # autohide menu bar
     # 0=no, 1=yes
     ##
     defaults write NSGlobalDomain _HIHideMenuBar -int 0
+    
+    # setting highlight color to green
+    #defaults write NSGlobalDomain AppleHighlightColor -string "0.764700 0.976500 0.568600"
+    
+    # set sidebar icon size
+    # 1=small, 2=medium, 3=big
+    defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 1
     
     # show scrollbars
     # possible values: WhenScrolling, Automatic, Always
@@ -307,47 +276,20 @@ EOF
     
     echo "preferences wallpaper & screensaver"
     
-    # setting desktop wallpaper
-    # getting info
-    #osascript -e 'tell application "System Events" to get properties of every desktop'
+    # screen saver: random
+    #defaults -currentHost write com.apple.screensaver moduleDict -dict moduleName -string "Random" path -string "/System/Library/Screen Savers/Random.saver" type -int 0
     
+    # setting desktop wallpaper
     # set a custom wallpaper image. `DefaultDesktop.jpg` is already a symlink, and
     # all wallpapers are in `/Library/Desktop Pictures/`.
-    # default additionally is in /System/Library/CoreServices/
-    
     #rm -rf ~/Library/Application Support/Dock/desktoppicture.db
     #sudo rm -rf /System/Library/CoreServices/DefaultDesktop.jpg
     #sudo ln -s /Users/tom/Downloads/"nameofpictures".jpg /System/Library/CoreServices/DefaultDesktop.jpg
     #
     # or
     #
-    # osascript -e 'tell application "System Events" to set picture of every desktop to ("/Users/tom/Desktop/testpicture.jpg" as POSIX file as alias)'
+    # osascript -e 'tell application "System Events" to set picture of every desktop to ("/Users/tom/Desktop/testpicture.jpg" as POSIX file as alias)'  
     
-    # default dynamic
-    osascript -e 'tell application "System Events" to set picture of every desktop to ("/Library/Desktop Pictures/Mojave.heic" as POSIX file as alias)' 
-    # default static
-    #osascript -e 'tell application "System Events" to set picture of every desktop to ("/Library/Desktop Pictures/Mojave Day.jpg" as POSIX file as alias)' 
-    
-    # screen saver: 
-    # defaults -currentHost read com.apple.screensaver
-    # defaults -currentHost read com.apple.ScreenSaver.iLifeSlideShows
-    
-    # non-random
-    defaults -currentHost write com.apple.screensaver moduleDict -dict moduleName -string "iLifeSlideshows" path -string "/System/Library/Frameworks/ScreenSaver.framework/Resources/iLifeSlideshows.saver" type -int 0
-    # example origami
-    defaults -currentHost write com.apple.ScreenSaver.iLifeSlideShows styleKey -string Origami
-    
-    # random
-    #defaults -currentHost write com.apple.screensaver moduleDict -dict moduleName -string "Random" path -string "/System/Library/Screen Savers/Random.saver" type -int 8
-    
-    # idle time
-    # time in seconds
-    # never start = 0
-    defaults -currentHost write com.apple.ScreenSaver idleTime -int 0
-    
-    # show clock
-    defaults -currentHost write com.apple.ScreenSaver showClock -bool true
-
     
     
     ###
@@ -401,10 +343,6 @@ EOF
     # show indicator lights for open applications in the dock
     ##
     defaults write com.apple.dock show-process-indicators -bool true
-    
-    # show last used applications in the dock
-    #
-    defaults write com.apple.dock show-recents -bool false
     
     
     ### hidden dock tweaks
@@ -496,119 +434,54 @@ EOF
     # disable all windows
     #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:32'
     #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:enabled bool false'
-    # or
-    #defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 32 "<dict><key>enabled</key><false/></dict>"
     
     # enable all windows on F9
-    # doesn`t work because it does not set the data types like bool, string, integer
-    #defaults write ~/Library/Preferences/com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 32 '{enabled = true; value = {parameters = (0, 101, 65535); type = standard; }; }'
-    #
-    defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 32 "
-      <dict>
-        <key>enabled</key><true/>
-        <key>value</key><dict>
-          <key>type</key><string>standard</string>
-          <key>parameters</key>
-          <array>
-            <integer>65535</integer>
-            <integer>101</integer>
-            <integer>0</integer>
-          </array>
-        </dict>
-      </dict>
-    "
-    # or
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:32'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:enabled bool true'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:type string standard'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:parameters array'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:parameters:"Item 0" integer 0'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:parameters:"Item 1" integer 101'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:parameters:"Item 2" integer 65535'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:32'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:enabled bool true'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:type string standard'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:parameters array'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:parameters:"Item 0" integer 0'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:parameters:"Item 1" integer 101'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:32:value:parameters:"Item 2" integer 65535'
     
     # disable application windows
     #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:33'
     #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:enabled bool false'
     
     # enable application windows on F10
-    defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 33 "
-      <dict>
-        <key>enabled</key><true/>
-        <key>value</key><dict>
-          <key>type</key><string>standard</string>
-          <key>parameters</key>
-          <array>
-            <integer>65535</integer>
-            <integer>109</integer>
-            <integer>0</integer>
-          </array>
-        </dict>
-      </dict>
-    "
-    # or
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:33'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:enabled bool true'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:type string standard'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:parameters array'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:parameters:"Item 0" integer 0'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:parameters:"Item 1" integer 109'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:parameters:"Item 2" integer 65535'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:33'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:enabled bool true'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:type string standard'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:parameters array'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:parameters:"Item 0" integer 0'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:parameters:"Item 1" integer 109'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:33:value:parameters:"Item 2" integer 65535'
     
     # disable show desktop
     #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:36'
     #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:enabled bool false'
     
     # enable show desktop on F11
-    defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 36 "
-      <dict>
-        <key>enabled</key><true/>
-        <key>value</key><dict>
-          <key>type</key><string>standard</string>
-          <key>parameters</key>
-          <array>
-            <integer>65535</integer>
-            <integer>103</integer>
-            <integer>0</integer>
-          </array>
-        </dict>
-      </dict>
-    "
-    # or
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:36'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:enabled bool true'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:type string standard'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:parameters array'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:parameters:"Item 0" integer 0'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:parameters:"Item 1" integer 103'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:parameters:"Item 2" integer 65535'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:36'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:enabled bool true'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:type string standard'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:parameters array'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:parameters:"Item 0" integer 0'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:parameters:"Item 1" integer 103'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:36:value:parameters:"Item 2" integer 65535'
     
     # disable dashboard
     #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:62'
     #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:enabled bool false'
     
     # enable dashboard on F12
-    defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 62 "
-      <dict>
-        <key>enabled</key><true/>
-        <key>value</key><dict>
-          <key>type</key><string>standard</string>
-          <key>parameters</key>
-          <array>
-            <integer>65535</integer>
-            <integer>111</integer>
-            <integer>0</integer>
-          </array>
-        </dict>
-      </dict>
-    "
-    # or
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:62'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:enabled bool true'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:type string standard'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:parameters array'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:parameters:"Item 0" integer 0'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:parameters:"Item 1" integer 111'
-    #/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:parameters:"Item 2" integer 65535'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Delete AppleSymbolicHotKeys:62'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:enabled bool true'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:type string standard'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:parameters array'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:parameters:"Item 0" integer 0'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:parameters:"Item 1" integer 111'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c 'Add AppleSymbolicHotKeys:62:value:parameters:"Item 2" integer 65535'
     
     # hot corners
     # possible values:
@@ -652,40 +525,20 @@ EOF
     
     echo "preferences language and region"
     
-    # setup assistant language (system and login screen)
-    sudo languagesetup -langspec de
-    
     # set language and text formats
     # note: if you are in the US, replace `EUR` with `USD`, `Centimeters` with
     # `Inches`, `en_GB` with `en_US`, and `true` with `false`
     ##.
-    defaults write NSGlobalDomain AppleLanguages -array "de-DE"
-    defaults write NSGlobalDomain AppleLocale -string "de_DE"
-    ##
-    # 2 = monday
-    # 3 = tuesday
-    # ...
-    defaults write NSGlobalDomain AppleFirstWeekday -array "gregorian = 2"
-    ##
-    # 12 hour clock
-    # 12 hour clock of = 24 h clock on
-    # be sure the system preferences window is not open when using this or it won`t work
-    defaults write NSGlobalDomain AppleICUForce12HourTime -bool false
-    ##
-    defaults write NSGlobalDomain AppleTemperatureUnit -string "Celsius"
+    defaults write NSGlobalDomain AppleLanguages -array "de" "de"
+    #defaults write NSGlobalDomain AppleLocale -string "de_DE"
     ##
     defaults write NSGlobalDomain AppleLocale -string "de_DE@currency=EUR"
     ##
     defaults write NSGlobalDomain AppleMeasurementUnits -string "Centimeters"
     ##
     defaults write NSGlobalDomain AppleMetricUnits -bool true
-    ##
-    # sort order phonebook german
-    #defaults write NSGlobalDomain AppleCollationOrder -string "de@collation=phonebook"
-    # sort order default (universal)
-    defaults write NSGlobalDomain AppleCollationOrder -string "de@collation=universal"
-    # or
-    #defaults delete NSGlobalDomain AppleCollationOrder
+    
+    
     
     ###
     ### preferences - security
@@ -710,11 +563,6 @@ EOF
     # deactivate text for lockscreen
     ##
     sudo defaults write /Library/Preferences/com.apple.loginwindow "LoginwindowText" ''
-    
-    # disable automatic login
-    ##
-    sudo defaults write /Library/Preferences/com.apple.loginwindow.plist autoLoginUser 0
-    sudo defaults delete /Library/Preferences/com.apple.loginwindow.plist autoLoginUser
     
     
     #### security gate keeper
@@ -816,12 +664,10 @@ expect eof
     # disable location services
     ##
     sudo launchctl unload /System/Library/LaunchDaemons/com.apple.locationd.plist
-    #sudo defaults write /var/db/locationd/Library/Preferences/ByHost/com.apple.locationd.$uuid1 LocationServicesEnabled -int 0
-    sudo defaults write /var/db/locationd/Library/Preferences/ByHost/com.apple.locationd LocationServicesEnabled -int 0
+    sudo defaults write /var/db/locationd/Library/Preferences/ByHost/com.apple.locationd.$uuid1 LocationServicesEnabled -int 0
     sudo chown -R _locationd:_locationd /var/db/locationd
     sudo launchctl load /System/Library/LaunchDaemons/com.apple.locationd.plist
-    #sudo -u _locationd defaults write -currentHost com.apple.locationd.plist LocationServicesEnabled -int 0
-
+    
     # disable sending diagnostics data to apple
     ##
     defaults write "/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist" AutoSubmit -bool false
@@ -834,84 +680,14 @@ expect eof
     defaults write "/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist" ThirdPartyDataSubmitVersion -integer 4
     
     # disable sending icloud diagnostics data
-    # only has to be done one time ever in the system preferences - security - privacy
+    # only has to be done one in the system preferences - security - privacy
     # or go to 
     # appleid.apple.com 
     # privacy
     # settings for data privacy
     # disable share icloud analytics data
-    
-    # no add tracking
-    # true = no tracking
-    # does not stay activated
-    #defaults write com.apple.AdLib.plist forceLimitAdTracking -bool true
-    
-    function no_add_tracking() {
-    #osascript 2>/dev/null <<EOF
-    osascript <<EOF
-    
-    tell application "System Preferences"
-    	activate
-    	#set panenames to (get the name of every pane)
-    	#display dialog panenames
-    	--return panenames
-    	set current pane to pane "com.apple.preference.security"
-    	get the name of every anchor of pane id "com.apple.preference.security"
-    	set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")
-    	
-    	#display dialog tabnames
-    	reveal anchor "Privacy" of pane id "com.apple.preference.security"
-    	delay 1
-    	tell application "System Events"
-    		select row 12 of table 1 of scroll area 1 of tab group 1 of window 1 of application process "System Preferences"
-    	end tell
-    	
-    end tell
-    
-    delay 1
-    
-    tell application "System Events"
-    	tell process "System Preferences"
-    		# first checkbox in main window
-    		#click checkbox 1 of window 1
-    		# first checkbox of first group
-    		# set theCheckbox to checkbox "Helligkeit automatisch anpassen" of group 1 of tab group 1 of window 1
-    		if exists checkbox 1 of group 1 of tab group 1 of window 1 then
-    			set theCheckbox to (checkbox 1 of group 1 of tab group 1 of window 1)
-    			tell theCheckbox
-    				set checkboxStatus to value of theCheckbox as boolean
-    				if checkboxStatus is false then click theCheckbox
-    			end tell
-    		end if
-    		delay 0.2
-    		#click checkbox 1 of group 1 of tab group 1 of window 1
-    	end tell
-    end tell
-    
-    delay 2
-    
-    tell application "System Preferences"
-    	quit
-    end tell
-    
-EOF
-    }
-    no_add_tracking
-    
-    
-    ### security more options
-    # autologout on inactivity
-    sudo defaults write /Library/Preferences/.GlobalPreferences.plist com.apple.autologout.AutoLogOutDelay -int 0
-    # require an administrator password to access system-wide preferences
-    sudo security authorizationdb read system.preferences > /tmp/system.preferences.plist
-    #sudo /usr/libexec/PlistBuddy -c "Add :shared bool" /tmp/system.preferences.plist
-    sudo /usr/libexec/PlistBuddy -c "Set :shared false" /tmp/system.preferences.plist
-    #defaults read /tmp/system.preferences.plist
-    sudo security authorizationdb write system.preferences < /tmp/system.preferences.plist
-    #sudo security authorizationdb read system.preferences
 
-
-
+    
     ###
     ### preferences spotlight
     ###
@@ -1014,20 +790,7 @@ EOF
     ##
     defaults write com.apple.airplay showInMenuBarIfPresent -bool true
     
-    # night shift
-    # controlled in /S*/L*/PrivateFrameworks/CoreBrightness.framework/CoreBrightness
-    # https://github.com/jenghis/nshift
-    # https://github.com/leberwurstsaft/nshift      (binary)
-    # binary usage
-    # nshift.dms strength (0-100)
-    # nshift.dms on
-    # nshift.dms off
-    # nshift.dms reset
-    # or
-    # https://justgetflux.com
     
-    
-
     ###
     ### preferences - energy
     ###
@@ -1091,18 +854,18 @@ EOF
     defaults write NSGlobalDomain InitialKeyRepeat -int 25
     defaults write NSGlobalDomain KeyRepeat -int 6
     
+    # use all F1, F2, etc. keys as standard function keys
+    # 1=yes, 0=no
+    defaults write NSGlobalDomain com.apple.keyboard.fnState -int 1
+    
     # adjust keyboard brightness in low light
     ##
     sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Keyboard Enabled" -bool true
     
-    # deactivate keyboard light if computer is inactive
+    # deactivate keyboard light if computer is not used
     # -1 = never
     ##
     sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Keyboard Dim Time" -int -1
-    
-    # use all F1, F2, etc. keys as standard function keys
-    # 1=yes, 0=no
-    defaults write NSGlobalDomain com.apple.keyboard.fnState -int 1
     
     
     ### text
@@ -1122,15 +885,6 @@ EOF
     # smart dashes
     defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
     
-    
-    ### dictation
-    defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs DictationIMMasterDictationEnabled -bool false
-    # advanced dictation
-    defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs
-    DictationIMUseOnlyOfflineDictation -bool false
-    # hotkeys
-    # ~/Library/Preferences/com.apple.symbolichotkeys.plist
-    # see dashboard above
     
     ### hidden keyboard tweaks
     
@@ -1157,40 +911,20 @@ EOF
     # secondary click:
     # possible values: OneButton, TwoButton, TwoButtonSwapped
     defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string OneButton
-        
-    if [ "$USER" == "wolfgang" ]
+    
+    sleep 2
+    
+    if [ "$USER" == "michelle" ] || [ "$USER" == "carolin" ] || [ "$USER" == "wolfgang" ]
     then
         defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string TwoButton
     else
         :
     fi
     
-    ### trackpad
-    # included in macbook is com.apple.AppleMultitouchTrackpad
-    # bluetooth trackpad would be com.apple.driver.AppleBluetoothMultitouch.trackpad
-    
-    # trackpad secondary click
-
-    # how to right click
-    defaults write NSGlobalDomain ContextMenuGesture -int 1
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true
-    # 0 = two finger click
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 0
-    # 1 = click left bottom corner of trackpad
-    #defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 1
-    # eventually this is needed to deactivate two finder click
-    #defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool false
-    # 2 = click right bottom corner of trackpad
-    #defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 2
-    # eventually this is needed to deactivate two finder click
-    #defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool false
-
     # trackpad: enable tap to click for this user and for the login screen
     #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
     #defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
-    # 0 = disbled
-    # 1 = enabled
-    defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 0
+    #defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
     
     # trackpad: map bottom right corner to right-click
     #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick -int 2
@@ -1253,17 +987,15 @@ EOF
     ### hidden sound tweaks
     
     # increase sound quality for Bluetooth headphones/headsets
-    #defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
+    defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
     
     
     
     ###
-    ### preferences software update
+    ### preferences app store
     ###
     
     echo "preferences mac app store"
-    
-    # to enable the checkbox "automatically update my mac" just set all options below to true 
     
     # enable or disbale automatic update check
     sudo softwareupdate --schedule on
@@ -1275,19 +1007,17 @@ EOF
     # download updates automatically in the background
     sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -bool false
     
-    # install app updates from appstore automatically
+    # install app updates automatically
     ##
     sudo defaults write /Library/Preferences/com.apple.commerce AutoUpdate -bool false
     
     # install macos updates automatically
     ##
-    sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates -bool false
+    sudo defaults write /Library/Preferences/com.apple.commerce AutoUpdateRestartRequired -bool false
     
     # install system and security updates automatically
     sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall -bool false
     sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall -bool false
-    
-    ### appstore
     
     # automatically install bought apps on other macs
     # sets the correct value but doesn`t set the marker in the gui
@@ -1299,14 +1029,7 @@ EOF
     #	/usr/libexec/PlistBuddy -c "Set autopush-registered-dsids:${i} 0" ~/Library/Preferences/com.apple.commerce.plist
     #done
     
-    # auto play appstore videos
-    # both settings and reboot needed
-    defaults write com.apple.appstore.plist AutoPlayVideoSetting -string "off"
-    defaults write ~/Library/Containers/com.apple.AppStore/Data/Library/Preferences/com.apple.appstore.plist AutoPlayVideoSetting -string "off"
     
-    # in app reviews
-    defaults write com.apple.commerce InAppReviewEnabled -bool false
-
     ### hidden appstore tweaks
     
     # check for software updates daily, not just once per week
@@ -1477,6 +1200,11 @@ EOF
     
     ### login options
     
+    # disable automatic login
+    ##
+    sudo /usr/bin/defaults write /Library/Preferences/com.apple.loginwindow.plist autoLoginUser 0
+    sudo /usr/bin/defaults delete /Library/Preferences/com.apple.loginwindow.plist autoLoginUser
+    
     # display login window as name and password
     ##
     sudo /usr/bin/defaults write /Library/Preferences/com.apple.loginwindow SHOWFULLNAME -bool false
@@ -1559,10 +1287,9 @@ EOF
     if [[ "$USER" == "tom" ]]
     then
     	osascript -e 'tell application "System Events" to make login item at end with properties {name:"VirtualBox Menulet", path:"/Applications/VirtualBox Menulet.app", hidden:false}'
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_signal", path:"/Users/'$USER'/Library/Scripts/run_on_login_signal.app", hidden:true}'
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_whatsapp", path:"/Users/'$USER'/Library/Scripts/run_on_login_whatsapp.app", hidden:true}'
+    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Telegram", path:"/Applications/Telegram.app", hidden:true}'
     	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"Unified Remote", path:"/Applications/Unified Remote.app", hidden:false}'
-    	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_network_change_login", path:"/Users/'$USER'/Library/Scripts/run_on_network_change_login.app", hidden:true}'
+    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_network_change_login", path:"/Users/'$USER'/Library/Scripts/run_on_network_change_login.app", hidden:true}'
     else
     	:
     fi

@@ -318,7 +318,6 @@ function tar_gz_gpg_and_progress {
 
 
 # other commands before starting the actual archiving
-mkdir -p /Users/$USER/Desktop/desktop/_current/
 echo "rsync from /Users/$USER/Desktop/"
 printf "%-11s" "to" "/Users/$USER/Desktop/desktop/_current/..." && echo
 rsync -a -z -v --delete --progress --stats --human-readable --links --exclude files --exclude backup --exclude backup_* --exclude desktop --exclude data --exclude extra --exclude scripts --exclude macintosh_hd /Users/$USER/Desktop/ /Users/$USER/Desktop/desktop/_current/ 1>/dev/null
