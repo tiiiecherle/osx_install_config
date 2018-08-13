@@ -5,8 +5,8 @@ github
 imazing
 jameica
 jdownloader
-#macupdate
-#remote-buddy
+macupdate
+remote-buddy
 signal
 spotify
 transmission

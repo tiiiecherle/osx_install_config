@@ -1425,20 +1425,6 @@ function backup_restore {
             #find "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/" -name "media" -type d -print0 | xargs -0 rm -rf
             # after deleting postbox/db/* or accounts-metadata the computer has to be reregistered with phone number
             #rm -rf "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/"account-*"/postbox/db/"*
-            
-            # signal
-            if [[ -e "/Users/$USER/Library/Application Support/Signal/" ]]
-            then
-                rm -rf "/Users/$USER/Library/Application Support/Signal/attachments.noindex/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/Cache/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/databases/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/GPUCache/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/Local Storage/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/logs/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/QuotaManager"*
-            else
-                :
-            fi
         
             echo "cleaning done ;)"
             
