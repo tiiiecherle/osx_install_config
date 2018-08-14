@@ -264,11 +264,6 @@ AUTOMATIONAPPS=(
 "com.googlecode.iterm2                                                  com.apple.systemevents"
 )
 
-AUTOMATIONAPPS2=(
-"com.apple.ScriptEditor.id.run-on-login-signal                          org.whispersystems.signal-desktop"
-"com.apple.ScriptEditor.id.run-on-login-whatsapp                        WhatsApp"   
-)
-
 for automation in "${AUTOMATIONAPPS[@]}"
 do
     SOURCE_APP=$(echo "$automation" | awk '{print $1}' | sed 's/ //g') 

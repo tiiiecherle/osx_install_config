@@ -3,6 +3,20 @@
 #launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
 #killall NotificationCenter
 
+PLIST_FILE='~/Library/Preferences/com.apple.ncprefs.plist'
+
+# this sets some extended attributes on the file
+# without this the changes will be written but restored to the old version by killall usernoted or reboot
+#com.apple.lastuseddate#PS
+# check with 
+#xattr /Users/$USER/Library/Preferences/com.apple.ncprefs.plist
+#xattr -l /Users/$USER/Library/Preferences/com.apple.ncprefs.plist
+# clean all extended attributes
+#xattr -c /Users/$USER/Library/Preferences/com.apple.ncprefs.plist
+open $(eval echo "$PLIST_FILE")
+sleep 2
+
+
 IFS=$'\n'
 
 user=`ls -l /dev/console | cut -d " " -f 4`
@@ -32,7 +46,7 @@ for index in $(seq 0 $count); do
     if [[ "${bundlesToConfigure[*]}" == *"$bundleID"* ]]; then
         flag=`/usr/libexec/PlistBuddy -c "Print apps:$index:flags" "$notificationsPLIST"`
         echo Current value:  $index:$bundleID $flag
-            echo "  Flag is less than 4096.  Adding 4096 to disable notification/preview on lockscreen."
+            #echo "  Flag is less than 4096.  Adding 4096 to disable notification/preview on lockscreen."
             flag=343
             change=1
             sudo -u $user /usr/libexec/PlistBuddy -c "Set :apps:${index}:flags ${flag}" "$notificationsPLIST"
