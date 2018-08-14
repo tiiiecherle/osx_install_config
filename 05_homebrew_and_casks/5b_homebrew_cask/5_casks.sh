@@ -248,7 +248,8 @@ echo ''
 echo "cleaning up..."
 
 brew cleanup
-brew cask cleanup
+# brew cask cleanup is deprecated from 2018-09
+#brew cask cleanup
 
 # listing installed homebrew packages
 #echo "the following top-level homebrew packages incl. dependencies are installed..."

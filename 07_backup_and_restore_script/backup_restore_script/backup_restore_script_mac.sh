@@ -262,8 +262,10 @@ function give_apps_security_permissions() {
         
     else
         # macos versions 10.14 and up
-        # accessibility
+        # accessibility gui apps backup
         sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
+        # accessibility brew cask update
+        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
         # reminders
         sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
         # contacts
@@ -278,6 +280,9 @@ function give_apps_security_permissions() {
         # automation vbox backup app
         sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
         sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+        # automation brew cask update
+	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
     fi
     sleep 1
 }
@@ -286,12 +291,15 @@ function remove_apps_security_permissions_start_script() {
     databases_apps_security_permissions
     if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
-        # macos versions until and including 10.13 
+        # macos versions until and including 10.13
+        # gui apps backup
         sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
         sudo sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+        # brew cask update
+        sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.brew-casks-update';"
     else
         # macos versions 10.14 and up
-        # gui backup app
+        # gui apps backup
         sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
         sudo sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
         # automation files

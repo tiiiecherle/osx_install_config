@@ -17,5 +17,31 @@ chmod 755 /Applications/"$BREW_CASKS_UPDATE_APP".app
 chmod 770 /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/"$BREW_CASKS_UPDATE_APP".sh
 xattr -dr com.apple.quarantine /Applications/"$BREW_CASKS_UPDATE_APP".app
 
+
+### security permissions
+DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
+#echo "$DATABASE_SYSTEM"
+DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
+#echo "$DATABASE_USER"
+
+if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+then
+    # macos versions until and including 10.13
+    :
+else
+    # macos versions 10.14 and up
+    # removing old permissions
+    sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.brew-casks-update';"
+    
+    sleep 1
+    
+	# accessibility
+	sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
+	
+	# automation
+	sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+fi
+
 #open /Applications/"$BREW_CASKS_UPDATE_APP".app
 

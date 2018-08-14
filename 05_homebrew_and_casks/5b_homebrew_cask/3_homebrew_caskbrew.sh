@@ -121,8 +121,9 @@ echo "cleaning up..."
 
 #start_sudo
 brew cleanup
-sudo brew cask cleanup > /dev/null 2>&1
-brew cask cleanup
+# brew cask cleanup is deprecated from 2018-09
+#sudo brew cask cleanup > /dev/null 2>&1
+#brew cask cleanup
 #echo ''
     
 

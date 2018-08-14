@@ -120,9 +120,10 @@ cleanup-all-homebrew-only() {
     echo ''
     echo "cleaning up..."
     #brew cleanup
-    #brew cask cleanup
     brew cleanup 1> /dev/null
-    brew cask cleanup 1> /dev/null
+    # brew cask cleanup is deprecated from 2018-09
+    #brew cask cleanup
+    #brew cask cleanup 1> /dev/null
     echo 'cleaning finished ;)'
 }
 
@@ -130,9 +131,10 @@ cleanup-all-parallel() {
     echo ''
     echo "cleaning up..."
     #brew cleanup
-    #brew cask cleanup
     brew cleanup 1> /dev/null
-    brew cask cleanup 1> /dev/null
+    # brew cask cleanup is deprecated from 2018-09
+    #brew cask cleanup
+    #brew cask cleanup 1> /dev/null
     
     TMP_DIR_CASK_VERSIONS=/tmp/cask_versions
     export TMP_DIR_CASK_VERSIONS
@@ -253,9 +255,10 @@ cleanup-all-one-by-one() {
     echo ''
     echo "cleaning up..."
     #brew cleanup
-    #brew cask cleanup
     brew cleanup 1> /dev/null
-    brew cask cleanup 1> /dev/null
+    # brew cask cleanup is deprecated from 2018-09
+    #brew cask cleanup
+    #brew cask cleanup 1> /dev/null
     #
     for i in $(brew cask list)
     do
