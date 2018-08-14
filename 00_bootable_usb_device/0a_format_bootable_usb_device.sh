@@ -198,7 +198,7 @@ then
 
     ### path to macos installer
     #INSTALLERPATH="/Applications/Install macOS High Sierra.app"
-    INSTALLERPATH="/Users/$USER/Desktop/Install macOS 10.14 Beta.app"
+    INSTALLERPATH="/Applications/Install macOS Mojave Beta.app"
     if [[ ! -e "$INSTALLERPATH" ]]
     then
     	echo ''

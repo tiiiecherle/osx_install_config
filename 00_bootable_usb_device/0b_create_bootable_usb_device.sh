@@ -106,7 +106,7 @@ fi
 
 ### variables
 # adjust installer path and name and run the following command in terminal and enter admin password
-INSTALLERPATH="/Users/$USER/Desktop/Install macOS 10.14 Beta.app"
+INSTALLERPATH="/Applications/Install macOS Mojave Beta.app"
 VOLUMENAME="Untitled"
 VOLUMEPATH="/Volumes/$VOLUMENAME"
 
