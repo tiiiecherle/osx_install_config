@@ -674,7 +674,7 @@ EOF
     # be sure the system preferences window is not open when using this or it won`t work
     #defaults write NSGlobalDomain AppleICUForce12HourTime -bool false
     # will be set to AppleICUForce24HourTime later
-    defaults delete NSGlobalDomain AppleICUForce12HourTime
+    #defaults delete NSGlobalDomain AppleICUForce12HourTime
     ##
     defaults write NSGlobalDomain AppleTemperatureUnit -string "Celsius"
     ##
@@ -900,15 +900,22 @@ EOF
     ### security more options
     # autologout on inactivity
     sudo defaults write /Library/Preferences/.GlobalPreferences.plist com.apple.autologout.AutoLogOutDelay -int 0
+    
     # require an administrator password to access system-wide preferences
     sudo security authorizationdb read system.preferences > /tmp/system.preferences.plist
+    sleep 0.5
+    # enabled = false
+    # disabled = true
     #sudo /usr/libexec/PlistBuddy -c "Add :shared bool" /tmp/system.preferences.plist
     sudo /usr/libexec/PlistBuddy -c "Set :shared false" /tmp/system.preferences.plist
+    sleep 0.5
     #defaults read /tmp/system.preferences.plist
-    sudo security authorizationdb write system.preferences < /tmp/system.preferences.plist
-    #sudo security authorizationdb read system.preferences
-
-
+    # exec or bash -c bash -c work around
+    # Error Domain=NSCocoaErrorDomain Code=3840 "Cannot parse a NULL or zero-length data" UserInfo={NSDebugDescription=Cannot parse a NULL or zero-length data}
+    # that occurs due to the changed sudo command
+    ${USE_PASSWORD} | exec sudo -p '' -S bash -c "security authorizationdb write system.preferences < /tmp/system.preferences.plist"    
+    #sudo security authorizationdb read system.preferences"
+    sleep 0.5
 
     ###
     ### preferences spotlight
@@ -1785,7 +1792,13 @@ EOF
     # see above, included in time options
     
     # time announcement
-    /usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsEnabled false" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print TimeAnnouncementPrefs:TimeAnnouncementsEnabled" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist) ]] > /dev/null 2>&1
+    then
+        /usr/libexec/PlistBuddy -c "Add TimeAnnouncementPrefs:TimeAnnouncementsEnabled bool" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+        /usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsEnabled false" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    else
+        /usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsEnabled false" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    fi
     #/usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsIntervalIdentifier EveryHourInterval" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
     #/usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsPhraseIdentifier ShortTime" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
     
@@ -2531,25 +2544,10 @@ EOF
         sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesPopUpWindow'"
     fi
     
+    # all plugins but flash are no longer allowed and are not working any more
     # enable / disable plugins individually
     # flash player
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.macromedia.Flash Player.plugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
-    # java
-    /usr/libexec/PlistBuddy -c "Add :PlugInInfo:'com.oracle.java.JavaAppletPlugin':plugInCurrentState bool" "$SAFARI_PREFERENCES_FILE"
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.oracle.java.JavaAppletPlugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
-    # acrobat
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.adobe.acrobat.pdfviewerNPAPI':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
-    # silverlight
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.microsoft.SilverlightPlugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
-    # google earth
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :PlugInInfo:'com.Google.GoogleEarthPlugin.plugin':plugInCurrentState" "$SAFARI_PREFERENCES_FILE") ]] > /dev/null 2>&1
-    then
-    	:
-    else
-    	/usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.Google.GoogleEarthPlugin.plugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
-    fi
-    # vlc web plugin
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'org.videolan.vlc-npapi-plugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
+    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.macromedia.Flash Player.plugin':plugInCurrentState NO" "$SAFARI_PREFERENCES_FILE"
     
     # plugin policies
     # on = PlugInPolicyAllowWithSecurityRestrictions
@@ -2558,26 +2556,8 @@ EOF
     
     # flash player
     /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.macromedia.Flash Player.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
-    # java
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.oracle.java.JavaAppletPlugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
-    #/usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.oracle.java.JavaAppletPlugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
-    # acrobat
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.adobe.acrobat.pdfviewerNPAPI':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
-    # silverlight
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.microsoft.SilverlightPlugin':PlugInFirstVisitPolicy PlugInPolicyAsk" "$SAFARI_PREFERENCES_FILE"
-    # google earth
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :ManagedPlugInPolicies:'com.Google.GoogleEarthPlugin.plugin':PlugInFirstVisitPolicy" "$SAFARI_PREFERENCES_FILE") ]] > /dev/null 2>&1
-    then
-    	:
-    else
-    	/usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.Google.GoogleEarthPlugin.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
-    fi
-    # vlc web plugin
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'org.videolan.vlc-npapi-plugin':PlugInFirstVisitPolicy PlugInPolicyAsk" "$SAFARI_PREFERENCES_FILE"
-    # quicktime
-    #/usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.apple.QuickTime Plugin.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
 
-    
+
     ### safari extensions
     
     # enable extensions

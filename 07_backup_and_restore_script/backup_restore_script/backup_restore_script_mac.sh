@@ -1205,7 +1205,8 @@ function backup_restore {
             #echo ''
             
             # casks install
-            printf '\n'           
+            printf '\n'
+            sleep 0.1         
             read -p "do you want to install casks after restoring the backup (Y/n)? " CONT1
             CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
             #echo ''
