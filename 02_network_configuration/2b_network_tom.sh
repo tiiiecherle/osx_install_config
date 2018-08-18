@@ -167,6 +167,10 @@ sleep 3
 #sleep 3
 #sudo networksetup -setdnsservers "WLAN" 192.168.1.1
 #sleep 3
+#sudo networksetup -setv6LinkLocal Wi-Fi
+#sudo networksetup -setv6off Wi-Fi
+#sudo networksetup -setv6automatic Wi-Fi
+sleep 3
 
 # deleting _temp network location, not necessary when deleting preferences.plist
 #echo deleting _temp network location

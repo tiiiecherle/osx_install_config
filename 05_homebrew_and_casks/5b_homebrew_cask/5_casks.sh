@@ -38,6 +38,56 @@ checking_command_line_tools
 
 
 ###
+### functions
+###
+
+function databases_apps_security_permissions() {
+    DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_SYSTEM"
+	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_USER"
+    
+    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+    then
+    	export SOURCE_APP=com.apple.Terminal
+    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
+    then
+        export SOURCE_APP=com.googlecode.iterm2
+	else
+		export SOURCE_APP=com.apple.Terminal
+		echo "terminal not identified, setting automating permissions to apple terminal..."
+	fi
+    
+}
+
+function give_apps_security_permissions() {
+    databases_apps_security_permissions
+    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions() {
+    databases_apps_security_permissions
+    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder');"
+    fi
+    sleep 1
+}
+
+
+###
 ### homebrew
 ###
 
@@ -62,9 +112,24 @@ checking_parallel
 ### starting sudo
 start_sudo
 
+
 # installing homebrew packages
 #echo ''
 echo "installing casks..."
+echo ''
+
+databases_apps_security_permissions
+echo "setting security permissions..."
+if [[ $(sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+then
+    TERMINAL_IS_ALLOWED_TO_CONTROL_FINDER="yes"
+    #echo "terminal is already allowed to control finder..."
+else
+	TERMINAL_IS_ALLOWED_TO_CONTROL_FINDER="no"
+	#echo "terminal is not allowed to control finder..."
+fi
+remove_apps_security_permissions
+give_apps_security_permissions
 echo ''
 
 # xquartz
@@ -83,7 +148,7 @@ then
 	#for caskstoinstall_pre in "${casks_pre[@]}"
 	
 	### option 2 for separate list file
-    casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d')
+    casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g')
     if [[ "$casks_pre" == "" ]]
     then
     	:
@@ -152,7 +217,7 @@ then
 	echo ''
 	
 	echo "installing casks..."
-	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d')
+	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g')
     if [[ "$casks" == "" ]]
     then
     	:
@@ -198,7 +263,15 @@ then
 	echo "unmounting and removing installer file..."
 	hdiutil detach /Volumes/XtraFinder -quiet
 	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
-	
+	# automation permissions
+	if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+    fi
 else
 	:
 fi
@@ -210,7 +283,7 @@ then
     then
         echo ''
     	echo "installing casks specific1..."
-    	casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d')
+    	casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g')
     	if [[ "$casks_specific1" == "" ]]
 	    then
 	    	:
@@ -274,5 +347,12 @@ else
 fi
   
 
-### stopping sudo
+### removing security permissions and stopping sudo
+if [[ $TERMINAL_IS_ALLOWED_TO_CONTROL_FINDER == "yes" ]]
+then
+    # terminal was already allowed to control finder before running this script, so don`t delete the permission
+    :
+else
+    remove_apps_security_permissions
+fi
 stop_sudo

@@ -68,7 +68,7 @@ echo "installing homebrew packages..."
 echo ''
 
 # installing formulae
-homebrewpackages=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_packages.txt | sed '/^#/ d')
+homebrewpackages=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_packages.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g')
 if [[ "$homebrewpackages" == "" ]]
 then
 	:
@@ -102,9 +102,27 @@ else
         # parallel install not working, do not put a & at the end of the line or the script would hang and not finish
         #${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265 2> /dev/null | grep "/Cellar/.*files,"
         ${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+        if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-x265") == "" ]]
+        then
+            ${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+        else
+            :
+        fi
     else
         ${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+        if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-x265") == "" ]]
+        then
+            ${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+        else
+            :
+        fi
     fi
+    # ffmpeg 
+    # as command shows how the binary was compiled and if the options are really included / enabled
+    # if not try (--build-from-source requires HOMEBREW_DEVELOPER=1)
+    # HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source --force ...
+    # brew reinstall -s --force ...
+    # if this is not working, install with option --HEAD which installs the current git version that is build from souce and compiled with all options
 fi
 
 # if script is run standalone, not sourced from another script, load script frame

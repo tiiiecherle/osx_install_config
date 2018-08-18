@@ -22,6 +22,8 @@ fi
 
 # rebuilding mail index on next run
 echo "deleting files to rebuild the mailindex at next start of mail..."
+
+# el capitan
 if [ -e ~/Library/Mail/V3/MailData/ ]
 then
 	find ~/Library/Mail/V3/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm
@@ -30,6 +32,7 @@ else
 	:
 fi
 
+# sierra
 if [ -e ~/Library/Mail/V4/MailData/ ]
 then
 	find ~/Library/Mail/V4/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm
@@ -38,10 +41,20 @@ else
 	:
 fi
 
+# high sierra
 if [ -e ~/Library/Mail/V5/MailData/ ]
 then
 	find ~/Library/Mail/V5/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm
 	find ~/Library/Mail/V5/MailData/ -type f -name "ExternalUpdates.*" -print0 | xargs -0 rm
+else
+	:
+fi
+
+# mojave
+if [ -e ~/Library/Mail/V6/MailData/ ]
+then
+	find ~/Library/Mail/V6/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm
+	find ~/Library/Mail/V6/MailData/ -type f -name "ExternalUpdates.*" -print0 | xargs -0 rm
 else
 	:
 fi

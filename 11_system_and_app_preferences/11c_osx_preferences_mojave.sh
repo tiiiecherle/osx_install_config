@@ -333,10 +333,12 @@ EOF
     # defaults -currentHost read com.apple.ScreenSaver.iLifeSlideShows
     
     # non-random
-    defaults -currentHost write com.apple.screensaver moduleDict -dict moduleName -string "iLifeSlideshows" path -string "/System/Library/Frameworks/ScreenSaver.framework/Resources/iLifeSlideshows.saver" type -int 0
+    #defaults -currentHost write com.apple.screensaver moduleDict -dict moduleName -string "iLifeSlideshows" path -string "/System/Library/Frameworks/ScreenSaver.framework/Resources/iLifeSlideshows.saver" type -int 0
     # example origami
-    defaults -currentHost write com.apple.ScreenSaver.iLifeSlideShows styleKey -string Origami
-    
+    #defaults -currentHost write com.apple.ScreenSaver.iLifeSlideShows styleKey -string Origami
+    # or 
+    #defaults -currentHost write com.apple.screensaver moduleDict -dict path -string "/System/Library/Screen Savers/Flurry.saver" moduleName -string "Flurry" type -int 0
+
     # random
     #defaults -currentHost write com.apple.screensaver moduleDict -dict moduleName -string "Random" path -string "/System/Library/Screen Savers/Random.saver" type -int 8
     
@@ -670,7 +672,9 @@ EOF
     # 12 hour clock
     # 12 hour clock of = 24 h clock on
     # be sure the system preferences window is not open when using this or it won`t work
-    defaults write NSGlobalDomain AppleICUForce12HourTime -bool false
+    #defaults write NSGlobalDomain AppleICUForce12HourTime -bool false
+    # will be set to AppleICUForce24HourTime later
+    defaults delete NSGlobalDomain AppleICUForce12HourTime
     ##
     defaults write NSGlobalDomain AppleTemperatureUnit -string "Celsius"
     ##
@@ -710,12 +714,6 @@ EOF
     # deactivate text for lockscreen
     ##
     sudo defaults write /Library/Preferences/com.apple.loginwindow "LoginwindowText" ''
-    
-    # disable automatic login
-    ##
-    sudo defaults write /Library/Preferences/com.apple.loginwindow.plist autoLoginUser 0
-    sudo defaults delete /Library/Preferences/com.apple.loginwindow.plist autoLoginUser
-    
     
     #### security gate keeper
     
@@ -1126,8 +1124,7 @@ EOF
     ### dictation
     defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs DictationIMMasterDictationEnabled -bool false
     # advanced dictation
-    defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs
-    DictationIMUseOnlyOfflineDictation -bool false
+    defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs DictationIMUseOnlyOfflineDictation -bool false
     # hotkeys
     # ~/Library/Preferences/com.apple.symbolichotkeys.plist
     # see dashboard above
@@ -1349,6 +1346,10 @@ EOF
     dscacheutil -flushcache
     unset MY_HOSTNAME
     
+    # screen sharing
+    #sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.screensharing.plist
+    #sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.screensharing.plist
+    
     # turn off file sharing
     # deactivate smb file server
     ##
@@ -1457,6 +1458,45 @@ EOF
     else
         :
     fi
+
+    # printer sharing
+    # cupsctl --no-share-printers
+    # check
+    # system_profiler SPPrintersDataType | grep "Printer Sharing"
+    # system_profiler SPPrintersDataType | grep Shared
+    
+    # remote login
+    #sudo systemsetup -setremotelogin off
+    # check
+    #sudo systemsetup -getremotelogin
+    
+    # remote management
+    # screen sharing has to be enabled additionally for this to work
+    #sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
+    #sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -deactivate -stop
+    
+    # remote apple events
+    #sudo systemsetup -setremoteappleevents off
+    #sudo launchctl unload -w /System/Library/LaunchDaemons/eppc.plist
+    # check
+    #sudo systemsetup -getremoteappleevents | grep "Apple Events"
+    
+    # internet sharing
+    #sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.nat NAT -dict Enabled -int 0
+    #sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.InternetSharing.plist
+    # check
+    #sudo defaults read /Library/Preferences/SystemConfiguration/com.apple.nat | grep -i Enabled
+    
+    # bluetooth sharing
+    #defaults -currentHost write com.apple.bluetooth PrefKeyServicesEnabled -bool false
+    #
+    #defaults write ~/Library/Preferences/ByHost/com.apple.bluetooth.${uuid1}.plist PrefKeyServicesEnabled -bool false
+    #chown $USER:staff ~/Library/Preferences/ByHost/com.apple.bluetooth.${uuid1}.plist
+    #fi
+    
+    # content caching
+    #sudo AssetCacheManagerUtil deactivate
+    #sudo AssetCacheManagerUtil activate
     
     
     ###
@@ -1477,6 +1517,11 @@ EOF
     
     ### login options
     
+    # disable automatic login
+    ##
+    sudo defaults write /Library/Preferences/com.apple.loginwindow.plist autoLoginUser 0
+    sudo defaults delete /Library/Preferences/com.apple.loginwindow.plist autoLoginUser
+    
     # display login window as name and password
     ##
     sudo /usr/bin/defaults write /Library/Preferences/com.apple.loginwindow SHOWFULLNAME -bool false
@@ -1492,11 +1537,11 @@ EOF
     ##
     sudo defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool false
     
-    # disable show password hints
+    # password hints
+    # disable
     ##
-    sudo /usr/bin/defaults write /Library/Preferences/com.apple.loginwindow RetriesUntilHint -int 0
-    
-    # enable show password hints
+    sudo defaults write /Library/Preferences/com.apple.loginwindow RetriesUntilHint -int 0
+    # enable
     #sudo /usr/bin/defaults write /Library/Preferences/com.apple.loginwindow RetriesUntilHint -int 3
     
     # menu for fast user switching
@@ -1512,6 +1557,25 @@ EOF
     
     # setting new user password
     # dscl . -passwd /Users/$USER
+    
+    # user is allowed to reset password with appleid
+    #sudo dscl . delete /Users/$USER AuthenticationAuthority ";AppleID;YOUR_APPLE_ID"
+    #sudo dscl . append /Users/$USER AuthenticationAuthority ";AppleID;YOUR_APPLE_ID"
+    # check
+    #dscl . -read /Users/$USER AuthenticationAuthority
+    
+    # clicking the button in the system preferences modifies /var/db/dslocal/nodes/Default/users/$USER.plist
+    # this checking won`t work with command above, it completele removes the button after appending and brings it back with deleting
+    #sudo plutil -p /var/db/dslocal/nodes/Default/users/$USER.plist
+    #sudo /usr/libexec/PlistBuddy -c "Print :'LinkedIdentity':'0'" /var/db/dslocal/nodes/Default/users/$USER.plist
+    
+    # user is admin
+    # this option has to be selected when creating a user account
+    # dscl . -merge /Groups/admin GroupMembership $USER
+    
+    # parental control
+    # con not be enabled for an admin user account
+    # add a non-admin user account and setup parental control
     
     
     ### current user startup items
@@ -1576,7 +1640,8 @@ EOF
     	:
     fi
     
-    if [[ "$USER" == "annett" ]] || [[ "$USER" == "meeting" ]]
+    if [[ $(sysctl hw.model | grep "iMac11,2") != "" || $(sysctl hw.model | grep "iMac12,1") != "" ]] && [[ $(system_profiler SPStorageDataType | grep "Medium Type" | grep SSD) != "" ]]
+    #if [[ $(system_profiler SPHardwareDataType | grep "Model Identifier" | grep "iMac11,2") != "" ]]
     then
     	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Macs Fan Control", path:"//Applications/Macs Fan Control.app", hidden:false}'
     else
@@ -1716,8 +1781,25 @@ EOF
     ##
     defaults write NSGlobalDomain AppleICUForce24HourTime -bool true
     
+    # date options
+    # see above, included in time options
     
+    # time announcement
+    /usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsEnabled false" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    #/usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsIntervalIdentifier EveryHourInterval" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    #/usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsPhraseIdentifier ShortTime" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
     
+    # time announcement voice config
+    # custom speed
+    #/usr/libexec/PlistBuddy -c "Add TimeAnnouncementPrefs:TimeAnnouncementsVoiceSettings:CustomRelativeRate integer" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    #/usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsVoiceSettings:CustomRelativeRate 1" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    
+    #custom volume 
+    #/usr/libexec/PlistBuddy -c "Add TimeAnnouncementPrefs:TimeAnnouncementsVoiceSettings:CustomVolume integer" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    #/usr/libexec/PlistBuddy -c "Set TimeAnnouncementPrefs:TimeAnnouncementsVoiceSettings:CustomVolume 0.5" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
+    
+     
+        
     ###
     ### preferences time machine
     ###
@@ -1744,8 +1826,29 @@ EOF
     # prevent time machine from prompting to use new hard drives as backup volume
     defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool true
     
-    # disable local time machine backups
+    # disable local time machine backups / snapshots
     sudo tmutil disable
+    
+    # delete possible snapshots
+    # list localsnapshots
+    #tmutil listlocalsnapshots / | cut -d'.' -f4-
+    #tmutil listlocalsnapshots / | rev | cut -d'.' -f1 | rev
+    #tmutil listlocalsnapshotdates | grep -v '[a-zA-Z]'
+    
+    if [[ $(tmutil listlocalsnapshotdates | grep -v '[a-zA-Z]') == "" ]]
+    then
+        # no local time machine backups found
+        :
+    else
+        echo ''
+        echo "local time machine backups found, deleting..."
+        for i in $(tmutil listlocalsnapshotdates | grep -v '[a-zA-Z]')
+        do
+        	tmutil deletelocalsnapshots "$i"
+        done
+        echo ''
+    fi
+    
     
     
     ###
@@ -1849,6 +1952,14 @@ EOF
     defaults write com.apple.screencapture disable-shadow -bool true
     
     
+    ###
+    ### macbook pro touchbar
+    ###
+    
+    # always display full control strip (ignoring app Controls)
+    #defaults write com.apple.touchbar.agent PresentationModeGlobal fullControlStrip
+    
+    
     
     ###
     ### finder                                                                    
@@ -1920,6 +2031,13 @@ EOF
     # show hidden files by default
     #defaults write com.apple.finder AppleShowAllFiles -bool true
     
+    # show recent tags
+    # see separate finder sidebar script
+    #defaults write com.apple.finder ShowRecentTags -bool false
+    
+    # show side bar
+    defaults write com.apple.finder ShowSidebar -bool true
+    
     # show status bar
     ##
     defaults write com.apple.finder ShowStatusBar -bool false
@@ -1931,6 +2049,9 @@ EOF
     # show tab bar
     ##
     defaults write com.apple.finder ShowTabView -bool false
+    
+    # show preview pane
+    #defaults write com.apple.finder ShowPreviewPane -bool false
     
     # allow text selection in quick look
     defaults write com.apple.finder QLEnableTextSelection -bool true
@@ -2124,6 +2245,7 @@ EOF
     
     echo "safari & webkit"
     
+    SAFARI_PREFERENCES_FILE="/Users/$USER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist"
     
     ### safari general
     
@@ -2145,6 +2267,15 @@ EOF
     # days of keeping history
     defaults write com.apple.Safari HistoryAgeInDaysLimit -int 1
     
+    # in favorites
+    # FavoritesViewCollectionBookmarkUUID       # big string uuid
+    
+    # topsites arrangement / display
+    # 0 = 6 sites
+    # 1 = 12 sites
+    # 2 = 24 sites
+    defaults write com.apple.Safari TopSitesGridArrangement -int 0
+    
     # set safari download path
     defaults write com.apple.Safari DownloadsPath -string ~/Downloads
     
@@ -2155,12 +2286,6 @@ EOF
     else
         :
     fi
-    
-    # topsites arrangement / display
-    # 0 = 6 sites
-    # 1 = 12 sites
-    # 2 = 24 sites
-    defaults write com.apple.Safari TopSitesGridArrangement -int 0
     
     # remove downloads list items
     # 0 = manually
@@ -2195,6 +2320,10 @@ EOF
     # command+1 through 9 switches tabs
     ##
     defaults write com.apple.Safari Command1Through9SwitchesTabs -bool false
+    
+    # show icons in tabs
+    ##
+    defaults write com.apple.Safari ShowIconsInTabs -bool false
     
     
     ### safari autofill
@@ -2262,10 +2391,11 @@ EOF
     defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaScriptEnabled -bool true
     
     # block pop-up windows
+    # option does no longer exist
     # false = yes
     ##
-    defaults write com.apple.Safari WebKitJavaScriptCanOpenWindowsAutomatically -bool false
-    defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaScriptCanOpenWindowsAutomatically -bool false
+    #defaults write com.apple.Safari WebKitJavaScriptCanOpenWindowsAutomatically -bool false
+    #defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaScriptCanOpenWindowsAutomatically -bool false
         
     
     ### safari privacy
@@ -2283,6 +2413,9 @@ EOF
     # 2 = no
     ##
     defaults write com.apple.Safari BlockStoragePolicy -int 3
+    
+    # allow websites to check if applepay is enabled
+    defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2ApplePayCapabilityDisclosureAllowed -bool true
         
     
     ### safari websites
@@ -2370,6 +2503,7 @@ EOF
     fi
     
     # website use of location services
+    # location services in system preferences have to be enabled if option shall be enabled
     # 0 = deny without prompting
     # 1 = prompt for each website once each day
     # 2 = prompt for each website one time only
@@ -2386,24 +2520,36 @@ EOF
     defaults write com.apple.Safari WebKitPluginsEnabled -bool true
     defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2PluginsEnabled -bool true
     
+    # popups
+    # block and notify = 0
+    # block = 1
+    # allow = 2
+    if [[ $(sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesPopUpWindow") == "" ]]
+    then
+        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesPopUpWindow', '1');"
+    else
+        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesPopUpWindow'"
+    fi
+    
     # enable / disable plugins individually
     # flash player
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.macromedia.Flash Player.plugin':plugInCurrentState YES" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.macromedia.Flash Player.plugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
     # java
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.oracle.java.JavaAppletPlugin':plugInCurrentState YES" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Add :PlugInInfo:'com.oracle.java.JavaAppletPlugin':plugInCurrentState bool" "$SAFARI_PREFERENCES_FILE"
+    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.oracle.java.JavaAppletPlugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
     # acrobat
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.adobe.acrobat.pdfviewerNPAPI':plugInCurrentState YES" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.adobe.acrobat.pdfviewerNPAPI':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
     # silverlight
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.microsoft.SilverlightPlugin':plugInCurrentState YES" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.microsoft.SilverlightPlugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
     # google earth
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :PlugInInfo:'com.Google.GoogleEarthPlugin.plugin':plugInCurrentState" ~/Library/Preferences/com.apple.safari.plist) ]] > /dev/null 2>&1
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :PlugInInfo:'com.Google.GoogleEarthPlugin.plugin':plugInCurrentState" "$SAFARI_PREFERENCES_FILE") ]] > /dev/null 2>&1
     then
     	:
     else
-    	/usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.Google.GoogleEarthPlugin.plugin':plugInCurrentState YES" ~/Library/Preferences/com.apple.safari.plist
+    	/usr/libexec/PlistBuddy -c "Set :PlugInInfo:'com.Google.GoogleEarthPlugin.plugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
     fi
     # vlc web plugin
-    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'org.videolan.vlc-npapi-plugin':plugInCurrentState YES" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :PlugInInfo:'org.videolan.vlc-npapi-plugin':plugInCurrentState YES" "$SAFARI_PREFERENCES_FILE"
     
     # plugin policies
     # on = PlugInPolicyAllowWithSecurityRestrictions
@@ -2411,24 +2557,25 @@ EOF
     # ask = PlugInPolicyAsk
     
     # flash player
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.macromedia.Flash Player.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.macromedia.Flash Player.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
     # java
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.oracle.java.JavaAppletPlugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.oracle.java.JavaAppletPlugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
+    #/usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.oracle.java.JavaAppletPlugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
     # acrobat
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.adobe.acrobat.pdfviewerNPAPI':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.adobe.acrobat.pdfviewerNPAPI':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
     # silverlight
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.microsoft.SilverlightPlugin':PlugInFirstVisitPolicy PlugInPolicyAsk" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.microsoft.SilverlightPlugin':PlugInFirstVisitPolicy PlugInPolicyAsk" "$SAFARI_PREFERENCES_FILE"
     # google earth
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :ManagedPlugInPolicies:'com.Google.GoogleEarthPlugin.plugin':PlugInFirstVisitPolicy" ~/Library/Preferences/com.apple.safari.plist) ]] > /dev/null 2>&1
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :ManagedPlugInPolicies:'com.Google.GoogleEarthPlugin.plugin':PlugInFirstVisitPolicy" "$SAFARI_PREFERENCES_FILE") ]] > /dev/null 2>&1
     then
     	:
     else
-    	/usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.Google.GoogleEarthPlugin.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" ~/Library/Preferences/com.apple.safari.plist
+    	/usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.Google.GoogleEarthPlugin.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
     fi
     # vlc web plugin
-    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'org.videolan.vlc-npapi-plugin':PlugInFirstVisitPolicy PlugInPolicyAsk" ~/Library/Preferences/com.apple.safari.plist
+    /usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'org.videolan.vlc-npapi-plugin':PlugInFirstVisitPolicy PlugInPolicyAsk" "$SAFARI_PREFERENCES_FILE"
     # quicktime
-    #/usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.apple.QuickTime Plugin.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" ~/Library/Preferences/com.apple.safari.plist
+    #/usr/libexec/PlistBuddy -c "Set :ManagedPlugInPolicies:'com.apple.QuickTime Plugin.plugin':PlugInFirstVisitPolicy PlugInPolicyAllowWithSecurityRestrictions" "$SAFARI_PREFERENCES_FILE"
 
     
     ### safari extensions
@@ -2462,14 +2609,18 @@ EOF
     # stop internet plug-ins to save power
     defaults write com.apple.Safari ReadingListSaveArticlesOfflineAutomatically -bool false
     
+    # user style sheet
+    defaults write com.apple.Safari UserStyleSheetEnabled -bool false
+    
     # set default encoding
     defaults write com.apple.Safari WebKitDefaultTextEncodingName -string 'iso-8859-1'
     defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DefaultTextEncodingName -string 'iso-8859-1'
     
-    # enable the develop menu and the web inspector
+    # enable the developer menu and the web inspector
     defaults write com.apple.Safari IncludeDevelopMenu -bool true
     defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
     defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true
+    defaults write com.apple.Safari.SandboxBroker ShowDevelopMenu -bool true
     
     
     ### more safari settings
@@ -2518,7 +2669,9 @@ EOF
     
     echo "mail"
     
-    
+    MAIL_PREFERENCES_FILE="~/Library/Containers/com.apple.mail/Data/Library/Preferences/com.apple.mail.plist"
+
+
     ### general
     
     # setting time to check for messages
@@ -2537,18 +2690,52 @@ EOF
     # notification for new messages (2=vips only)
     defaults write com.apple.mail MailUserNotificationScope -int 2
     
+    # delete not edited attachment downloads
+    # each attachment that is opened gets "downloaded" (pop3 and imap)
+    # files are stored in "~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads/"
+    # never
+    #   DeleteAttachmentsAfterHours   0
+    #   DeleteAttachmentsEnabled      false
+    # when mail quits
+    #   DeleteAttachmentsAfterHours   0
+    #   DeleteAttachmentsEnabled      true
+    # when respective mail gets deleted
+    #   DeleteAttachmentsAfterHours   2147483647
+    #   DeleteAttachmentsEnabled      true
+    defaults write com.apple.mail DeleteAttachmentsAfterHours -int 0
+    defaults write com.apple.mail DeleteAttachmentsEnabled -bool true
+    
+    # add invitations to calendar app automatically
+    # adds entry to ~/Library/Mail/V6/MailData/UnsyncedRules.plist
+    
+    # try sending later automatically if server for sending is offline
+    defaults write com.apple.mail SuppressDeliveryFailure -bool false
+    
+    # when in full screen mode prefer split mode
+    defaults write com.apple.mail FullScreenPreferSplit -bool true
+    
     # when searching, seach in trash, chunk, decrypted messages
     defaults write com.apple.mail IndexTrash -bool true
-    defaults write com.apple.mail IndexJunk -bool false
-    defaults write com.apple.mail IndexDecryptedMessages -bool false
+    defaults write com.apple.mail IndexJunk -bool true
+    defaults write com.apple.mail IndexDecryptedMessages -bool true
     
     
     ### junk mails
     
     # filter for junk mails
-    # 0 = off, 1 = on
-    defaults write com.apple.mail JunkMailBehavior -int 0
+    # sets values in
+    # ~/Library/Mail/V6/MailData/RulesActiveState.plist
+    # ~/Library/Mail/V6/MailData/UnsyncedRules.plist
     
+    
+    ### fonts and fonts colors
+    
+    # use non proportional font for pure text emails
+    defaults write com.apple.mail AutoSelectFont -bool false
+    
+    # show quoted text in colors
+    defaults write com.apple.mail ColorQuoterColorIncoming -bool true
+
     
     ### view
     
@@ -2557,9 +2744,11 @@ EOF
     defaults write com.apple.mail DraftsViewerAttributes -dict-add "SortedAscending" -string "yes"
     defaults write com.apple.mail DraftsViewerAttributes -dict-add "SortOrder" -string "received-date"
     
-    # sort order in the conversation
-    # latest on top
-    defaults write com.apple.mail ConversationViewSortDescending -bool true
+    # show from/to/cc label in mail list
+    defaults write com.apple.mail EnableToCcInMessageList -bool false
+    
+    # show contact pictures in mail list
+    defaults write com.apple.mail EnableContactPhotos -bool false
     
     # number of displayed lines
     defaults write com.apple.mail NumberOfSnippetLines -int 0
@@ -2571,10 +2760,75 @@ EOF
     # false = copy without name
     defaults write com.apple.mail AddressesIncludeNameOnPasteboard -bool false
     
-    # disable url (content and pictures) loading
-    defaults write com.apple.mail-shared DisableURLLoading -bool false
+    # load content from remote urls (content and pictures)
+    # load content = false
+    # do not load content = true
+    defaults write com.apple.mail-shared DisableURLLoading -bool true
+    
+    # highlight non grouped messages from conversations
+    defaults write com.apple.mail HighlightCurrentThread -bool true
+    
+    # include corresponding messages in conversations
+    defaults write com.apple.mail ConversationViewSpansMailboxes -bool true
+    
+    # mark all messages as read when opening conversation
+    defaults write com.apple.mail ConversationViewMarkAllAsRead -bool false
+    
+    # sort order in the conversation, latest on top
+    defaults write com.apple.mail ConversationViewSortDescending -bool true
     
     
+    ### writing and sending
+    
+    # text format
+    # formatted = MIME
+    # plain = Plain
+    defaults write com.apple.mail SendFormat -string MIME
+    
+    # spell checking
+    # during typing = InlineSpellCheckingEnabled
+    # when clicking send = SpellCheckingOnSendEnabled
+    # never = NoSpellCheckingEnabled
+    defaults write com.apple.mail SpellCheckingBehavior -string InlineSpellCheckingEnabled
+    
+    # send copy to myself
+    # copy
+    defaults write com.apple.mail ReplyToSelf -bool false
+    # blind copy
+    defaults write com.apple.mail BccSelf -bool false
+
+    # show all recipients when sending an email to a group
+    defaults write com.apple.mail-shared ExpandPrivateAliases -bool true
+    
+    # highlight adresses that do not match pattern
+    defaults write com.apple.mail-shared AlertForNonmatchingDomains -bool false
+    
+    # using the same format to rely (plain or formatted)
+    defaults write com.apple.mail AutoReplyFormat -bool false
+
+    # quote received message on reply
+    defaults write com.apple.mail ReplyQuotesOriginal -bool true
+
+    # quote in multiple levels
+    # enabled = false
+    # disabled = true
+    defaults write com.apple.mail SupressQuoteBarsInComposeWindows -bool false
+    
+    # always include complete original message in quote (not just highlighted text)
+    defaults write com.apple.mail AlwaysIncludeOriginalMessage -bool true
+    
+    
+    ### signature
+    
+    # place signature above quoted text
+    defaults write com.apple.mail SignaturePlacedAboveQuotedText -bool true
+    
+    # use default system font for signature
+    # for enabling set SignatureIsRich -bool true in
+    # ~/Library/Mail/V6/MailData/Signatures/AllSignatures.plist
+    # ~/Library/Mail/V6/MailData/Signatures/SignaturesByAccount.plist  
+
+
     ### more mail tweaks
     
     # disable send and reply animations
@@ -2583,9 +2837,6 @@ EOF
     
     # disable inline attachments (just show the icons)
     defaults write com.apple.mail DisableInlineAttachmentViewing -bool true
-    
-    # disable automatic spell checking
-    #defaults write com.apple.mail SpellCheckingBehavior -string "NoSpellCheckingEnabled"
     
     # always add attachments at the end of messages
     defaults write com.apple.mail AttachAtEnd -bool true
@@ -2605,8 +2856,8 @@ EOF
     
     echo "terminal & iterm 2"
     
-    # Only use UTF-8 in Terminal.app
-    defaults write com.apple.lookup StringEncodings -array 4
+    # only use utf-8 in terminal
+    defaults write com.apple.terminal StringEncodings -array 4
     
     # enable "focus follows mouse" for Terminal.app and all X11 apps, i.e. hover over a window and start typing in it without clicking first
     #defaults write com.apple.terminal FocusFollowsMouse -bool true
@@ -2618,7 +2869,17 @@ EOF
     # don't display the annoying prompt when quitting iTerm
     #defaults write com.googlecode.iterm2 PromptOnQuit -bool false
     
+    # secure keyboard entry
+    defaults write com.apple.terminal SecureKeyboardEntry -bool true
+    # check
+    #defaults read -app Terminal SecureKeyboardEntry
     
+    # make terminal font sf mono available in other apps
+    cp -a /Applications/Utilities/Terminal.app/Contents/Resources/Fonts/* /Users/$USER/Library/Fonts/
+    # set it in iterm2
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Normal Font" "SFMono-Regular 11"'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Horizontal Spacing" 1'
+    /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Vertical Spacing" 1'
     
     ###
     ### activity monitor
@@ -2715,21 +2976,53 @@ EOF
     # use plain text mode for new textedit documents
     #defaults write com.apple.TextEdit RichText -int 0
     
+    # show page breaks in new documents by default
+    defaults write com.apple.TextEdit ShowPageBreaks -bool false
+    
+    # window size for new documents default
+    defaults write com.apple.TextEdit HeightInChars -int 50
+    defaults write com.apple.TextEdit WidthInChars -int 120
+    
     # open and save files as utf-8 in textedit
     defaults write com.apple.TextEdit PlainTextEncoding -int 4
     defaults write com.apple.TextEdit PlainTextEncodingForWrite -int 4
     
-    # enable smart links in textedit
-    #defaults write com.apple.TextEdit SmartLinks -bool true            # no longer working in 10.11
-    defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartLinks -bool true
+    # check spelling while typing
+    defaults write com.apple.TextEdit CheckSpellingWhileTyping -bool true   
+    
+    # check spelling and grammar
+    defaults write com.apple.TextEdit CheckGrammarWithSpelling -bool false
+    
+    # correct spelling automatically
+    defaults write com.apple.TextEdit CorrectSpellingAutomatically -bool false
+    
+    # check show ruler
+    defaults write com.apple.TextEdit ShowRuler -bool true
+    
+    # data detection
+    defaults write com.apple.TextEdit DataDetectors -bool false
+    
+    # smart substitutions of quotes and dashes only in formatted documents
+    defaults write com.apple.TextEdit SmartSubstitutionsEnabledInRichTextOnly -bool true
+    
+    # smart copy paste
+    defaults write com.apple.TextEdit SmartCopyPaste -bool true
     
     # disable smart quotes in textedit
-    #defaults write com.apple.TextEdit SmartQuotes -bool true
-    defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartQuotes -bool false
-    
+    defaults write com.apple.TextEdit SmartQuotes -bool false
+    #defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartQuotes -bool false
+
     # disable smart dashes in textedit
-    #defaults write com.apple.TextEdit SmartDashes -bool false
-    defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartDashes -bool false
+    defaults write com.apple.TextEdit SmartDashes -bool false
+    #defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartDashes -bool false
+
+    # enable smart links in textedit
+    defaults write com.apple.TextEdit SmartLinks -bool true
+    #defaults write ~/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist SmartLinks -bool true
+    
+    # text replacement
+    defaults write com.apple.TextEdit TextReplacement -bool true
+    
     
     ###
     ### preview
@@ -2738,7 +3031,14 @@ EOF
     echo "preview"
     
     # antialias preview of documents (text and lines)
-    defaults write ~/Library/Containers/com.apple.Preview/Data/Library/Preferences/com.apple.Preview.plist PVPDFAntiAliasOption -bool false
+    #defaults write ~/Library/Containers/com.apple.Preview/Data/Library/Preferences/com.apple.Preview.plist PVPDFAntiAliasOption -bool false
+    
+    # when opening multiple images open
+    # all in same window = 0
+    # groups in same window = 1
+    # every file in separate window = 2
+    defaults write com.apple.Preview PVImageOpeningMode -int 0
+
     
     
     ###
@@ -2803,6 +3103,22 @@ EOF
     #defaults write com.apple.iCal "CALPrefOverlayCalendarIdentifier" -string "chinese"
     
     
+    ### notifications
+    
+    # time to leave
+    defaults write com.apple.iCal "TimeToLeaveEnabled" -bool false
+    
+    # invitations of shared calendars in notifications
+    # enabled = false
+    # disabled = true
+    defaults write com.apple.iCal "SharedCalendarNotificationsDisabled" -bool true
+
+    # invitations in notifications
+    # enabled = false
+    # disabled = true
+    defaults write com.apple.iCal "InvitationNotificationsDisabled" -bool false
+
+    
     ### advanced
     
     # time zone support
@@ -2813,7 +3129,7 @@ EOF
     defaults write com.apple.iCal "Show heat map in Year View" -bool false
     
     # show week numbers
-    #defaults write com.apple.iCal "Show Week Numbers" -bool true
+    defaults write com.apple.iCal "Show Week Numbers" -bool false
     
     # open events in new windows
     defaults write com.apple.iCal "OpenEventsInWindowType" -bool false
@@ -2896,6 +3212,15 @@ EOF
     
     
     ###
+    ### photos
+    ###
+    
+    # preventing photos from opening automatically when devices are plugged in
+    defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
+    
+    
+    
+    ###
     ### GPGMail 2
     ###
     
@@ -2938,16 +3263,8 @@ EOF
     
     
     ###
-    ### high sierra specific app changes
+    ### mojave specific app changes
     ###
-    
-    # disabling startup script for dialectic
-    if [[ -e ~/Library/Preferences/com.jen.dialectic.plist ]]
-    then
-        defaults write ~/Library/Preferences/com.jen.dialectic.plist "startupExternalAppEnabled" -bool false
-    else
-        :
-    fi
     
 
 
@@ -3010,13 +3327,19 @@ EOF
     enabling_filevault
     sleep 3
     
+    # destroying filevault key when going to standby
+    sudo pmset -a destroyfvkeyonstandby 1
+    # check
+    # 1 = on / yes
+    #pmset -g | grep DestroyFVKeyOnStandby
+    
     ###
     ### killing affected applications
     ###
     
     echo "restarting affected apps"
     
-    for app in "Activity Monitor" "Calendar" "Contacts" "cfprefsd" "Dock" "Finder" "Mail" "Messages" "System Preferences" "Safari" "SystemUIServer" "TextEdit"; do
+    for app in "Activity Monitor" "Calendar" "Contacts" "cfprefsd" "blued" "Dock" "Finder" "Mail" "Messages" "System Preferences" "Safari" "SystemUIServer" "TextEdit" "ControlStrip" "Photos"; do
     	killall "${app}" > /dev/null 2>&1
     done
     

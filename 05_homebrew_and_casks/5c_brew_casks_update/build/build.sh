@@ -13,10 +13,10 @@ do
 	echo ''
 	printf "\033[1m%s\033[00m %s\n" "processing $BREW_CASKS_UPDATE_VERSION"
 	# setting icons
-	chmod 770 "$SCRIPT_DIR"/icons/icon_set.py
+	chmod 770 "$SCRIPT_DIR"/icons/icon_set_python3.py
 	#sudo pip install pyobjc
-	pip install pyobjc-framework-Cocoa
-	python "$SCRIPT_DIR"/icons/icon_set.py "$SCRIPT_DIR"/icons/brew_casks_update.icns "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
+	pip3 install pyobjc-framework-Cocoa
+	python3 "$SCRIPT_DIR"/icons/icon_set_python3.py "$SCRIPT_DIR"/icons/brew_casks_update.icns "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app
 	cp -a "$SCRIPT_DIR"/icons/brew_casks_update.icns "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app/Contents/Resources/applet.icns
 	
 	echo copying content to app and setting permissions...

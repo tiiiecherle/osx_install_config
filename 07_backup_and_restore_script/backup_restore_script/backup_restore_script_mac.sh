@@ -824,6 +824,10 @@ function backup_restore {
             DESTINATION="$HOMEFOLDER"/Desktop/backup_"$SELECTEDUSER"_"$DATE"
             mkdir -p "$DESTINATION"
             
+            # backup macos system
+            BACKUP_MACOS_SYSTEM=$(defaults read loginwindow SystemVersionStampAsString)
+            echo "$BACKUP_MACOS_SYSTEM" > "$DESTINATION"/_backup_macos_version.txt
+            
             # backup
             #
             echo ""
@@ -1540,15 +1544,18 @@ function backup_restore {
             # signal
             if [[ -e "/Users/$USER/Library/Application Support/Signal/" ]]
             then
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/attachments.noindex"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/Cache/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/databases/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/GPUCache/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/Local Storage/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/logs/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/QuotaManager"*
+                # delete everything but config.json and Preferences
+                rm -rf "/Users/$USER/Library/Application Support/Signal/attachments.noindex"
+                rm -rf "/Users/$USER/Library/Application Support/Signal/Cache/"
+                rm -rf "/Users/$USER/Library/Application Support/Signal/databases/"
+                rm -rf "/Users/$USER/Library/Application Support/Signal/GPUCache/"
+                rm -rf "/Users/$USER/Library/Application Support/Signal/IndexedDB/"
+                rm -rf "/Users/$USER/Library/Application Support/Signal/Local Storage/"
+                rm -rf "/Users/$USER/Library/Application Support/Signal/logs/"
+                rm -rf "/Users/$USER/Library/Application Support/Signal/QuotaManager"*
+                rm -rf "/Users/$USER/Library/Application Support/Signal/sql/"
                 #
-                rm -rf "/Users/$USER/Library/Application Support/Signal/"* 
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/"* 
             else
                 :
             fi

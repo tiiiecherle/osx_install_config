@@ -526,6 +526,7 @@ m	~/Library/Preferences/sekn.ResizeIt.plist
 echo Safari
 m	~/Library/Safari/Extensions
 m	~/Library/Preferences/com.apple.Safari.Extensions.plist
+m	~/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist
 u	~/Library/Safari/Bookmarks.plist
 
 # Scripts

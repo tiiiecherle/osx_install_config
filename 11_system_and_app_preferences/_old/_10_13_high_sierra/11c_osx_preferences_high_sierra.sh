@@ -2345,6 +2345,14 @@ EOF
     # don't display the annoying prompt when quitting iTerm
     #defaults write com.googlecode.iterm2 PromptOnQuit -bool false
     
+    # converting tabs to spaces on copy / paste
+    defaults write com.googlecode.iterm2 AboutToPasteTabsWithCancel -bool true
+    defaults write com.googlecode.iterm2 PasteTabToStringTabStopSize -int 4
+  
+    # copy / paste of a lot of commands does only work in iterm2 when editing / lowering default paste speed
+    defaults write com.googlecode.iterm2 QuickPasteBytesPerCall -int 126
+    defaults write com.googlecode.iterm2 QuickPasteDelayBetweenCalls -float 0.05323399
+    
     
     
     ###

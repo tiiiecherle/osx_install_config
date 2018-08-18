@@ -28,43 +28,16 @@ HOMEFOLDER=Users/$USER
 #echo "RESTOREMASTERDIR is "$RESTOREMASTERDIR""
 #echo "HOMEFOLDER is "$HOMEFOLDER""
 
-# restore file
-if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-then
-    # macos versions until and including 10.13 
-	EXTENSIONS_PREFERENCESFILE_DESTINATION="/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"
-else
-    # macos versions 10.14 and up
-    if [[ -e "/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist" ]]
-    then   
-    	rm -f "/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"
-	else
-		:
-	fi
-	EXTENSIONS_PREFERENCESFILE_DESTINATION="/$HOMEFOLDER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
-fi
-
-# backup file
-if [[ $(cat $RESTOREMASTERDIR/_backup_macos_version.txt | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-then
-	# macos versions until and including 10.13 
-	EXTENSIONS_PREFERENCESFILE_SOURCE="$RESTOREMASTERDIR/Users/$MASTERUSER/Library/Preferences/com.apple.Safari.Extensions.plist"
-else
-    # macos versions 10.14 and up
-	EXTENSIONS_PREFERENCESFILE_SOURCE="$RESTOREMASTERDIR/Users/$MASTERUSER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
-fi	
-
-
-###
-
+EXTENSIONS_PREFERENCESFILE="/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"
 
 osascript -e 'tell application "Safari" to quit'
 sleep 2
 
-if [ -e "$EXTENSIONS_PREFERENCESFILE_SOURCE" ] && [ -e $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Safari/Extensions ]
+if [ -e $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Preferences/com.apple.Safari.Extensions.plist ] && [ -e $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Safari/Extensions ]
 then
 	echo""
 	echo "deleting local preferences file and extensions before restoring them from backup..."
+	rm "$EXTENSIONS_PREFERENCESFILE"
 	cp -a $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Safari/Extensions /$HOMEFOLDER/Desktop/
 	rm -rf /$HOMEFOLDER/Library/Safari/Extensions/*
 	sleep 2
@@ -74,16 +47,21 @@ else
 	exit
 fi
 
-#open -g /Applications/Safari.app
-#sleep 10
+open -g /Applications/Safari.app
+sleep 10
 
-#osascript -e 'tell application "Safari" to quit'
-#sleep 2
+osascript -e 'tell application "Safari" to quit'
+sleep 2
+
+echo "restoring preferences of safari extensions..."
+cp -a $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Preferences/com.apple.Safari.Extensions.plist /$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist
+chmod 600 /$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist
+chown 501:staff /$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist
 
 echo "restoring safari extensions..."
 find /$HOMEFOLDER/Desktop/Extensions -name "*.safariextz" -print0 | while IFS= read -r -d '' file; do
     open "$file"
-    sleep 5
+    sleep 8
 done
 
 sleep 2
@@ -91,12 +69,6 @@ sleep 2
 #open -g /Applications/Safari.app
 echo "safari has to be quit before continuing..."
 while ps aux | grep 'Safari.app' | grep -v grep > /dev/null; do sleep 1; done
-
-echo "restoring preferences of safari extensions..."
-rm "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
-cp -a "$EXTENSIONS_PREFERENCESFILE_SOURCE" "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
-chmod 600 "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
-chown 501:staff "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
 
 # opening safari again to accept self signed certificate for possible calendar error on sync
 echo ''

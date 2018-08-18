@@ -526,6 +526,12 @@ brew-install-updates() {
     then
         echo "rebuilding ffmpeg due to components updates..."
         ${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+        if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-x265") == "" ]]
+        then
+            ${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+        else
+            :
+        fi
     else
         :
     fi

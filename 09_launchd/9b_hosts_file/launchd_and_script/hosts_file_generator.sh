@@ -157,7 +157,7 @@ hosts_file_install_update() {
             fi
             if [[ $(sudo -u $loggedInUser brew list | grep "^python$") == '' ]]
             then
-                # the project drops python2 support, so make sure python3 is used
+                # the project drops python2 support, so make sure python3 is installed
                 echo "python3 is not installed via homebrew, installing..."
                 PYTHON3_INSTALLED="no"
                 sudo -u $loggedInUser brew install python
@@ -219,7 +219,12 @@ hosts_file_install_update() {
         # installing dependencies
         if [[ $PYTHON_VERSION == 'python3' ]]
         then
-            #sed -i '' "s|lxml.*|lxml>=4.2.4|" /Applications/hosts_file_generator/requirements.txt
+            if [[ $(cat /Applications/hosts_file_generator/requirements.txt | grep "lxml==4.1.1") != "" ]]
+            then
+                sed -i '' "s|lxml.*|lxml>=4.2.4|" /Applications/hosts_file_generator/requirements.txt
+            else
+                :
+            fi
             sudo -u $loggedInUser ${PIP_VERSION} install -r /Applications/hosts_file_generator/requirements.txt
         else
             sudo -u $loggedInUser ${PIP_VERSION} install -r /Applications/hosts_file_generator/requirements_python2.txt

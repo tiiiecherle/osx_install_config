@@ -27,7 +27,7 @@ then
 		# reminders are also stored inside the calendars folder
 		
 		### quitting calandar and contacts 
-		echo "quitting calendar and contacts..."
+		echo "quitting calendar, contacts and reminders..."
 		osascript <<EOF
 		
 			try

@@ -87,6 +87,11 @@ sudo()
 # sqlite database for calendar, contacts, reminders, ...
 #  ~/Library/Application Support/com.apple.TCC/TCC.db
 
+DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
+#echo "$DATABASE_SYSTEM"
+DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
+#echo "$DATABASE_USER"
+
 # reading database
 # sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
 # or
@@ -97,10 +102,12 @@ sudo()
 # quit database
 # .quit
 
-DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
-#echo "$DATABASE_SYSTEM"
-DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
-#echo "$DATABASE_USER"
+# getting entries from database
+# examples
+# sudo sqlite3 "$DATABASE_USER" "select * from access where service='kTCCServiceAppleEvents';"
+# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal');"
+# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and indirect_object_identifier='com.apple.systemevents');"
+# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.finder' and allowed='1');"
 
 # getting application identifier
 # /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/enterapplicaitonnamehere.app/Contents/Info.plist
@@ -113,6 +120,9 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 
 
 ### privacy - accessibility
+
+echo ''
+echo "accessibility..." 
 
 # add application to accessibility
 #terminal
@@ -155,6 +165,7 @@ com.googlecode.iterm2
 org.virtualbox.app.VirtualBox
 com.selznick.PasswordWallet
 com.kiwifruitware.VirtualBox_Menulet
+com.surteesstudios.Bartender
 )
 
 for accessibility_app in ${ACCESSIBILITYAPPS[@]}; 
@@ -165,6 +176,9 @@ done
 
 
 ### privacy - contacts
+
+echo ''
+echo "contacs..." 
 
 sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBook';"
 
@@ -187,6 +201,9 @@ done
 
 ### privacy - calendar
 
+echo ''
+echo "calendar..." 
+
 sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCalendar';"
 
 CALENDARAPPS=(
@@ -204,6 +221,9 @@ done
 
 ### privacy - reminders
 
+echo ''
+echo "reminders..." 
+
 sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceReminders';"
 
 REMINDERAPPS=(
@@ -219,6 +239,9 @@ done
 
 ### privacy - microphone
 
+echo ''
+echo "microphone..." 
+
 sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceMicrophone';"
 
 MICROPHONEAPPS=(
@@ -233,6 +256,12 @@ done
 
 ### privacy - automation
 # does not show in system preferences window, but works
+
+# asking for permission to use terminal to automate the finder
+# osascript -e "tell application \"Finder\" to «event BATFinit»"
+
+echo ''
+echo "automation..." 
 
 sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAppleEvents';"
 #sudo tccutil reset AppleEvents   
@@ -262,6 +291,7 @@ AUTOMATIONAPPS=(
 "com.apple.ScriptEditor.id.run-on-login-signal                          com.apple.systemevents"
 "com.apple.ScriptEditor.id.run-on-login-whatsapp                        com.apple.systemevents"
 "com.googlecode.iterm2                                                  com.apple.systemevents"
+"com.trankynam.XtraFinder                                               com.apple.finder"
 )
 
 for automation in "${AUTOMATIONAPPS[@]}"
@@ -271,13 +301,35 @@ do
     #echo "$SOURCE_APP"
     #echo "$AUTOMATED_APP"
     sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
+    unset SOURCE_APP
+    unset AUTOMATED_APP
 done
-
 
 
 ###
 
+
+AUTOMATIONAPPS_NOT_ALLOWED=(
+"com.manytricks.witchdaemon                                             com.apple.mail"
+)
+
+for automation_not_allowed in "${AUTOMATIONAPPS_NOT_ALLOWED[@]}"
+do
+    SOURCE_APP=$(echo "$automation_not_allowed" | awk '{print $1}' | sed 's/ //g') 
+    AUTOMATED_APP=$(echo "$automation_not_allowed" | awk '{print $2}' | sed 's/ //g')
+    #echo "$SOURCE_APP"
+    #echo "$AUTOMATED_APP"
+    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,0,0,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
+    unset SOURCE_APP
+    unset AUTOMATED_APP
+done
+
+
+###
+
+echo ''
 echo "done ;)"
+echo ''
 #echo "the changes need a reboot or logout to take effect"
 #echo "please logout or reboot"
 #echo "initializing loggin out"
