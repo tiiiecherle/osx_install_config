@@ -15,6 +15,14 @@ PLIST_FILE='~/Library/Preferences/com.apple.ncprefs.plist'
 #xattr -c /Users/$USER/Library/Preferences/com.apple.ncprefs.plist
 open $(eval echo "$PLIST_FILE")
 sleep 2
+osascript -e "tell application (path to frontmost application as text) to quit saving no"
+sleep 1
+
+
+### setting flags
+echo ''
+echo "setting flags..."
+
 
 # attributes
 applications_to_set_values=(
@@ -83,6 +91,10 @@ do
 
 done
 
+
+### restarting notification center
+echo ''
+echo "restarting notification center..."
 #launchctl load -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
 #open /System/Library/CoreServices/NotificationCenter.app
 # applying changes without having to logout
@@ -92,3 +104,38 @@ done
 #killall sighup NotificationCenter
 killall usernoted
 killall NotificationCenter
+
+SLEEP_TIME=10
+echo ''
+echo "waiting "$SLEEP_TIME"s for the changes to take effect..."
+sleep $SLEEP_TIME
+
+
+#### checking preferences
+echo ''
+echo "checking settings..."
+for application in "${applications_to_set_values[@]}"
+do
+
+	APP_PATH=$(echo "$application" | awk '{print $1}')
+    FLAGS_VALUE=$(echo "$application" | awk '{print $2}')
+    
+	BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' $(eval echo "$APP_PATH")/Contents/Info.plist)
+	#echo "getting flags for $BUNDLE_IDENTIFIER..."
+
+	getting-needed-entry
+
+	#echo $NEEDED_ENTRY
+	if [[ $NEEDED_ENTRY != "" ]]
+	then
+	    ACTIVE_FLAG_VALUE=$(/usr/libexec/PlistBuddy -c "Print apps:$NEEDED_ENTRY:flags" $(eval echo "$PLIST_FILE"))
+	    printf "%-5s %-45s %10s %10s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE"
+	else
+		echo "entry for $BUNDLE_IDENTIFIER does not exist..."
+	fi
+
+done
+
+echo ''
+echo 'done ;)'
+echo ''
