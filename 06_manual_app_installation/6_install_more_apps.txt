@@ -38,11 +38,16 @@ adobe creative suite 5.5 (select needed installers including all components)
 		# rm -rf "/Applications/Utilities/Adobe Application Manager"
 		# install from ApplicationManager10.0_all.dmg
 
-	4	open /Applications/Adobe\ InDesign\ CS5.5/Adobe\ InDesign\ CS5.5.app
+	4	manually install updates
+		10.14
+		Extension Manager
+		Indesign
+
+	5	open /Applications/Adobe\ InDesign\ CS5.5/Adobe\ InDesign\ CS5.5.app
 		help - updates - all
 		#pkill -9 InDesign		# or force quit via gui
 
-	5	open /Applications/Adobe\ Acrobat\ X\ Pro/Adobe\ Acrobat\ Pro.app
+	6	open /Applications/Adobe\ Acrobat\ X\ Pro/Adobe\ Acrobat\ Pro.app
 		# if update server does not respond, download and install update manually
 		# get latest v10 update from here
 		# http://supportdownloads.adobe.com/product.jsp?product=1&platform=Macintosh
