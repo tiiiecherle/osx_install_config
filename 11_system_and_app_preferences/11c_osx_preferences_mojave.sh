@@ -1570,7 +1570,8 @@ EOF
     # setting new user password
     # dscl . -passwd /Users/$USER
     
-    # user is allowed to reset password with appleid
+    # user is allowed to reset password with appleid from icloud
+    # this is an option you select when activating filevault in preferences gui
     #sudo dscl . delete /Users/$USER AuthenticationAuthority ";AppleID;YOUR_APPLE_ID"
     #sudo dscl . append /Users/$USER AuthenticationAuthority ";AppleID;YOUR_APPLE_ID"
     # check
