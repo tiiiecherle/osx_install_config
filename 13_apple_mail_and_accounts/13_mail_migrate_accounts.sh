@@ -59,4 +59,6 @@ else
 	:
 fi
 
-echo "done"
+echo ''
+echo "done ;)"
+echo ''
