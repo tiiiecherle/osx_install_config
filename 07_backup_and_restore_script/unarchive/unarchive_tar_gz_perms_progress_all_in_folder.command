@@ -250,11 +250,15 @@ NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS
 decrypt_and_unarchive_parallel () {
     start_sudo
     
+    echo "decrypting and unarchiving is set to parallel mode, no progress will be shown..."
+    echo ''
+    
     parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" -q bash -c '
     
         item="{}"
         echo ""
     	echo "decrypting and unarchiving..."
+    	echo ''
     	echo "$item"
     	echo to '"$SCRIPT_DIR"'/"$(basename $item | rev | cut -d"." -f4- | rev )"
     	cat "$item" | pv -s $(gdu -scb "$item" | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$GPG_PASSWORD"' --quiet -d - | unpigz -dc - | sudo gtar --same-owner -C '"$SCRIPT_DIR"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"
@@ -266,10 +270,14 @@ decrypt_and_unarchive_parallel () {
 decrypt_and_unarchive_sequential () {
     start_sudo
     
+    echo "decrypting and unarchiving is set to sequential mode..."
+    echo ''
+    
     for item in $(find "$SCRIPT_DIR" -mindepth 1 -name '*.tar.gz.gpg')
     do
         echo ""
     	echo "decrypting and unarchiving..."
+    	echo ''
     	echo "$item"
     	echo to "$SCRIPT_DIR"/"$(basename $item | rev | cut -d"." -f4- | rev )"
     	bash -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$GPG_PASSWORD"' --quiet -d - | unpigz -dc - | sudo gtar --same-owner -C '"$SCRIPT_DIR"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
@@ -278,8 +286,8 @@ decrypt_and_unarchive_sequential () {
     stop_sudo
 }
 
-decrypt_and_unarchive_parallel
-#decrypt_and_unarchive_sequential
+#decrypt_and_unarchive_parallel
+decrypt_and_unarchive_sequential
 
 echo ''
 echo 'done ;)'
