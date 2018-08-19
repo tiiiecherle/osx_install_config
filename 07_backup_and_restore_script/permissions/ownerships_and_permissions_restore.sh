@@ -364,7 +364,7 @@ function backup_restore_permissions {
     #sudo chmod -R u+rwX /"$HOMEFOLDER"/.*
     sudo chown root:wheel /Users
     sudo chmod 755 /Users
-    sudo chmod 755 "$HOMEFOLDER"
+    sudo chmod 700 "$HOMEFOLDER"
     sudo chmod 777 "$HOMEFOLDER"/Public
     sudo chmod 733 "$HOMEFOLDER"/Public/"Drop Box"
     # ssh
