@@ -174,6 +174,17 @@ do
 done
 
 
+###
+
+ACCESSIBILITYAPPS_NOT_ALLOWED=(
+com.eltima.cmd1
+)
+
+for accessibility_app_not_allowed in ${ACCESSIBILITYAPPS_NOT_ALLOWED[@]}; 
+do
+    sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','"$accessibility_app_not_allowed"',0,0,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
+done
+
 
 ### privacy - contacts
 
