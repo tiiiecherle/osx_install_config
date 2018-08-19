@@ -1467,12 +1467,17 @@ EOF
     fi
 
     # printer sharing
+    # cupsctl --share-printers
     # cupsctl --no-share-printers
+    # sets preferences in 
+    # /etc/cups/cupsd.conf
+    # /etc/cups/printers.conf
     # check
     # system_profiler SPPrintersDataType | grep "Printer Sharing"
     # system_profiler SPPrintersDataType | grep Shared
     
     # remote login
+    #sudo systemsetup -setremotelogin on
     #sudo systemsetup -setremotelogin off
     # check
     #sudo systemsetup -getremotelogin
@@ -1483,27 +1488,27 @@ EOF
     #sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -deactivate -stop
     
     # remote apple events
+    #sudo systemsetup -setremoteappleevents on
     #sudo systemsetup -setremoteappleevents off
     #sudo launchctl unload -w /System/Library/LaunchDaemons/eppc.plist
     # check
     #sudo systemsetup -getremoteappleevents | grep "Apple Events"
     
     # internet sharing
+    # disable
     #sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.nat NAT -dict Enabled -int 0
-    #sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.InternetSharing.plist
     # check
     #sudo defaults read /Library/Preferences/SystemConfiguration/com.apple.nat | grep -i Enabled
     
     # bluetooth sharing
+    # needs logout / reboot
+    #defaults -currentHost write com.apple.bluetooth PrefKeyServicesEnabled -bool true
     #defaults -currentHost write com.apple.bluetooth PrefKeyServicesEnabled -bool false
-    #
-    #defaults write ~/Library/Preferences/ByHost/com.apple.bluetooth.${uuid1}.plist PrefKeyServicesEnabled -bool false
-    #chown $USER:staff ~/Library/Preferences/ByHost/com.apple.bluetooth.${uuid1}.plist
-    #fi
     
     # content caching
-    #sudo AssetCacheManagerUtil deactivate
     #sudo AssetCacheManagerUtil activate
+    #sudo AssetCacheManagerUtil deactivate
+    
     
     
     ###
