@@ -65,10 +65,7 @@ Kontakte
 	Kontakte und Sync prüfen
 
 Mail
-	Postfächer einblenden
-	Preferences
-		Signaturen
-			Signaturen den Accounts zuweisen / Signatur auswählen	
+	Disable Spam Filter
 
 Microsoft Word 2016
 	register licence
