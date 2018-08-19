@@ -121,6 +121,10 @@ m	/Applications/Chromium.app
 #u	/Applications/chromium
 u	~/Library/Application Support/Chromium
 
+# Clover Configurator Pro
+m	/Applications/Clover Configurator Pro.app
+m	~/Library/Preferences/com.m79softwares.Clover-Configurator-Pro.plist
+
 # coconutBattery
 echo coconutBattery
 m	/Applications/coconutBattery.app
