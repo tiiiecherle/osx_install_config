@@ -18,3 +18,4 @@ parallel
 gnupg
 cliclick
 python
+node
