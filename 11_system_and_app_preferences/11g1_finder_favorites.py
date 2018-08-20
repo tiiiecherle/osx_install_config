@@ -17,7 +17,7 @@ import Foundation
 
 favorites_path = "/Users/{user}/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.FavoriteServers.sfl2"
 
-servers = ("smb://172.16.1.200",)
+servers = ("smb://172.16.1.200/",)
 #servers = ("smb://server.example.com/share", "vnc://server.example.com")
 
 

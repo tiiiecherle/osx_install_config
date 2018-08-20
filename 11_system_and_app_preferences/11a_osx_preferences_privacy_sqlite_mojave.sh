@@ -106,9 +106,7 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 # examples
 # sudo sqlite3 "$DATABASE_USER" "select * from access where service='kTCCServiceAppleEvents';"
 # sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal');"
-# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and indirect_object_identifier='com.apple.systempreferences');"
-# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal');"
-# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and indirect_object_identifier='com.apple.finder');"
+# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and indirect_object_identifier='com.apple.systemevents');"
 # sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.finder' and allowed='1');"
 
 # getting application identifier
@@ -148,9 +146,6 @@ echo "accessibility..."
 # permission off for all apps listed
 # sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" 'UPDATE access SET allowed = "0";'
 
-# getting entries from database
-# sudo sqlite3 "$DATABASE_SYSTEM" "select * from access where service='kTCCServiceAccessibility';"
-
 sudo sqlite3 "$DATABASE_SYSTEM" "DELETE FROM access"
 
 ACCESSIBILITYAPPS=(
@@ -171,8 +166,6 @@ org.virtualbox.app.VirtualBox
 com.selznick.PasswordWallet
 com.kiwifruitware.VirtualBox_Menulet
 com.surteesstudios.Bartender
-com.ondesoft.audiobookconverter
-com.realvnc.vncviewer
 )
 
 for accessibility_app in ${ACCESSIBILITYAPPS[@]}; 
@@ -310,7 +303,6 @@ AUTOMATIONAPPS=(
 "com.apple.ScriptEditor.id.run-on-login-whatsapp                        com.apple.systemevents"
 "com.googlecode.iterm2                                                  com.apple.systemevents"
 "com.trankynam.XtraFinder                                               com.apple.finder"
-"com.ondesoft.audiobookconverter                                        com.apple.iTunes"
 )
 
 for automation in "${AUTOMATIONAPPS[@]}"
