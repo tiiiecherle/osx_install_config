@@ -127,23 +127,53 @@ EOF
 				#echo $i
 				CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
 				#echo "$CALENDAR_TITLE"
+				
+				# calender notifications
 				if [[ "$CALENDAR_TITLE" == "$USER" ]] || [[ "$CALENDAR_TITLE" == "allgemein" ]]
 				then
 					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+				elif [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$USER" == "wolfgang" ]]
+				then
+					#echo "$USER"
+					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 				else
-					if [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$USER" == "wolfgang" ]]
-					then
-						#echo "$USER"
-						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					else
-						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					fi
+					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 				fi
-				ALARM_SET=$(/usr/libexec/PlistBuddy -c "Print :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
-				echo "calendar alarms for ""$CALENDAR_TITLE"" set to ""$ALARM_SET"""
+				
+				sleep 0.1
+				
+				# enable all reminder notifications
+				IS_REMINDER=$(/usr/libexec/PlistBuddy -c 'Print TaskContainer' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
+				#echo $IS_REMINDER
+				if [[ "$IS_REMINDER" == "true" ]]
+				then
+					#echo "$CALENDAR_TITLE is a reminder..."
+					#ENTRY_TYPE="reminder"
+					ENTRY_TYPE="tasks"
+					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+				else
+					#echo "$CALENDAR_TITLE is a calendar..."
+					ENTRY_TYPE="calendar"
+					:
+				fi
+				
+				sleep 0.1
+				
+				# results
+				ALARM_SET_TO_OFF=$(/usr/libexec/PlistBuddy -c "Print :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
+				if [[ $ALARM_SET_TO_OFF == "true" ]]
+				then
+					NOTIFICATION_STATUS="disabled"
+				else
+					NOTIFICATION_STATUS="enabled"
+				fi
+				
+				printf "%-30s %-15s %-15s\n" "$CALENDAR_TITLE" "$ENTRY_TYPE" "$NOTIFICATION_STATUS"
+
 				#echo ''
 			else
 				:
