@@ -84,6 +84,56 @@ sudo()
 
 
 ###
+### functions
+###
+
+function databases_apps_security_permissions() {
+    DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_SYSTEM"
+	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_USER"
+    
+    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+    then
+    	export SOURCE_APP=com.apple.Terminal
+    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
+    then
+        export SOURCE_APP=com.googlecode.iterm2
+	else
+		export SOURCE_APP=com.apple.Terminal
+		echo "terminal not identified, setting automating permissions to apple terminal..."
+	fi
+    
+}
+
+function give_apps_security_permissions() {
+    databases_apps_security_permissions
+    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.systempreferences',?,NULL,?);"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions() {
+    databases_apps_security_permissions
+    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.systempreferences');"
+    fi
+    sleep 1
+}
+
+
+###
 ### setting preferences
 ###
 
@@ -93,6 +143,21 @@ function setting_preferences {
     ###
     ### defining some variables for later usage
     ###
+    
+    databases_apps_security_permissions
+    echo''
+    echo "setting security permissions..."
+    if [[ $(sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+    then
+        TERMINAL_IS_ALLOWED_TO_CONTROL_SYSTEM_PREFERENCES="yes"
+        #echo "terminal is already allowed to control finder..."
+    else
+    	TERMINAL_IS_ALLOWED_TO_CONTROL_SYSTEM_PREFERENCES="no"
+    	#echo "terminal is not allowed to control finder..."
+    fi
+    remove_apps_security_permissions
+    give_apps_security_permissions
+    echo ''
     
     
     ### uuid
@@ -765,11 +830,37 @@ expect \"Enter the password for user '$FILEVAULTUSER':\"
 send \"$SUDOPASSWORD\r\"
 #log_user 1
 expect eof
-" 2>/dev/null | grep key | tee -a "$FILEVAULT_KEYFILE"
-#2>/dev/null | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g" | tee -a "$FILEVAULT_KEYFILE"
+" 2>&1 | grep key | tee -a "$FILEVAULT_KEYFILE"
+# if grep from output does not work to get the key, use this alternative
+#" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
+#sed -i '' '/^spawn sudo/d' "$FILEVAULT_KEYFILE"
+#sed -i '' '/^Password:/d' "$FILEVAULT_KEYFILE"
+#sed -i '' '/^Enter the/d' "$FILEVAULT_KEYFILE"
+
         	#sudo fdesetup enable -user "$USER" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
-        	# to generate and use a new key 
-        	#sudo fdesetup changerecovery -personal >> "$FILEVAULT_KEYFILE"
+        	# to generate and use a new key
+        	#sudo fdesetup changerecovery -user "$USER" -personal >> "$FILEVAULT_KEYFILE"
+        	sleep 1
+        	if [[ $(cat "$FILEVAULT_KEYFILE" | grep key) == "" ]]
+        	then
+        	    echo "no filevault key found in keyfile, setting new key"
+        	    sleep 1
+        	    expect -c "
+spawn sudo fdesetup changerecovery -user "$FILEVAULTUSER" -personal
+expect \"Password:\"
+send \"$SUDOPASSWORD\r\"
+expect \"Enter the password for user '$FILEVAULTUSER':\"
+send \"$SUDOPASSWORD\r\"
+expect eof
+" 2>&1 | grep key | tee -a "$FILEVAULT_KEYFILE"
+# if grep from output does not work to get the key, use this alternative
+#" 2>&1 | tee -a "$FILEVAULT_KEYFILE"
+#sed -i '' '/^spawn sudo/d' "$FILEVAULT_KEYFILE"
+#sed -i '' '/^Password:/d' "$FILEVAULT_KEYFILE"
+#sed -i '' '/^Enter the/d' "$FILEVAULT_KEYFILE"
+            else
+                :
+            fi
         	# to disable, run
         	#sudo fdesetup disable -user "$USER"
         	
@@ -3318,6 +3409,15 @@ EOF
     # check
     # 1 = on / yes
     #pmset -g | grep DestroyFVKeyOnStandby
+    
+    ### removing security permissions
+    if [[ $TERMINAL_IS_ALLOWED_TO_CONTROL_SYSTEM_PREFERENCES == "yes" ]]
+    then
+        # terminal was already allowed to control system preferences before running this script, so don`t delete the permission
+        :
+    else
+        remove_apps_security_permissions
+    fi
     
     ###
     ### killing affected applications
