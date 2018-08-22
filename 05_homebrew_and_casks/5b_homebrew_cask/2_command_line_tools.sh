@@ -5,7 +5,8 @@
 ###
 
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
 ###
 ### script frame
@@ -34,7 +35,7 @@ fi
 start_sudo
 
 # installing command line tools (graphical)
-function command_line_tools_install () {
+function command_line_tools_install() {
 if xcode-select --install 2>&1 | grep installed >/dev/null
 then
   	echo command line tools are installed...
@@ -58,7 +59,7 @@ else
     touch "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
     sleep 3
     softwareupdate --list >/dev/null 2>&1
-    COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.'))
+    COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.'))
     softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLVERSION" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
 fi
 
@@ -73,11 +74,11 @@ fi
 # choosing command line tools as default
 sudo xcode-select --switch /Library/Developer/CommandLineTools
 
-function command_line_tools_update () {
+function command_line_tools_update() {
     # updating command line tools and system
     echo ''
     echo "checking for command line tools update..."
-    COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.'))
+    COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.'))
     # or sw_vers | awk 'BEGIN { FS = ":[ \t]*" } /ProductVersion/ { print $2 }' | cut -f1,2 -d'.'
     # or sw_vers -productVersion | cut -f1,2 -d'.'
     if [ "$COMMANDLINETOOLUPDATE" == "" ]
@@ -92,8 +93,7 @@ function command_line_tools_update () {
 command_line_tools_update
 
 # installing sdk headers on mojave
-if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-# other way to get system version is sw_vers -productVersion
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then
     # macos versions until and including 10.13 
     :

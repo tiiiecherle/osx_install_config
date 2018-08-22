@@ -5,6 +5,8 @@
 ###
 
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
 
 ###
@@ -57,33 +59,47 @@ function databases_apps_security_permissions() {
 		export SOURCE_APP=com.apple.Terminal
 		echo "terminal not identified, setting automating permissions to apple terminal..."
 	fi
-    
 }
 
 function give_apps_security_permissions() {
-    databases_apps_security_permissions
-    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13 
 		:
     else
         # macos versions 10.14 and up
-	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
     fi
     sleep 1
 }
 
-function remove_apps_security_permissions() {
-    databases_apps_security_permissions
-    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+function remove_apps_security_permissions_start() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13 
 		:
     else
         # macos versions 10.14 and up
-        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder');"
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder');"
     fi
     sleep 1
+}
+
+function remove_apps_security_permissions_stop() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP == "yes" ]]
+        then
+            # source app was already allowed to control app before running this script, so don`t delete the permission
+            :
+        else
+            remove_apps_security_permissions_start
+        fi
+    fi
 }
 
 
@@ -119,18 +135,25 @@ echo "installing casks..."
 echo ''
 
 databases_apps_security_permissions
-echo "setting security permissions..."
-if [[ $(sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then
-    TERMINAL_IS_ALLOWED_TO_CONTROL_FINDER="yes"
-    #echo "terminal is already allowed to control finder..."
+    # macos versions until and including 10.13 
+	:
 else
-	TERMINAL_IS_ALLOWED_TO_CONTROL_FINDER="no"
-	#echo "terminal is not allowed to control finder..."
+    echo "setting security permissions..."
+    if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+	then
+	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="yes"
+	    #echo "terminal is already allowed to control finder..."
+	else
+		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="no"
+		#echo "terminal is not allowed to control finder..."
+	fi
+    remove_apps_security_permissions_start
+    give_apps_security_permissions
+    echo ''
 fi
-remove_apps_security_permissions
-give_apps_security_permissions
-echo ''
 
 # xquartz
 #read -p "do you want to install xquartz (Y/n)? " CONT1_BREW
@@ -264,13 +287,13 @@ then
 	hdiutil detach /Volumes/XtraFinder -quiet
 	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
 	# automation permissions
-	if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13 
 		:
     else
         # macos versions 10.14 and up
-	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
     fi
 else
 	:
@@ -345,14 +368,19 @@ else
     CHECK_IF_FORMULAE_INSTALLED="no"
     . "$SCRIPT_DIR"/6_formulae_and_casks_install_check.sh
 fi
-  
+
+# installing user specific casks
+if [[ "$USER" == "wolfgang" ]]
+then
+    echo ''
+    brew cask uninstall java
+    brew cask install caskroom/versions/java8
+    echo ''
+else
+    :
+fi
 
 ### removing security permissions and stopping sudo
-if [[ $TERMINAL_IS_ALLOWED_TO_CONTROL_FINDER == "yes" ]]
-then
-    # terminal was already allowed to control finder before running this script, so don`t delete the permission
-    :
-else
-    remove_apps_security_permissions
-fi
+remove_apps_security_permissions_stop
+
 stop_sudo

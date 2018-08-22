@@ -225,7 +225,12 @@ else
 fi
 }
 
+
+### variables
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+
 
 ### trapping
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
@@ -280,13 +285,13 @@ then
 	hdiutil detach /Volumes/XtraFinder -quiet
 	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
 	# automation permissions
-	if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13 
 		:
     else
         # macos versions 10.14 and up
-	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
     fi
 	
 	if [ -e "/Applications/XtraFinder.app" ]

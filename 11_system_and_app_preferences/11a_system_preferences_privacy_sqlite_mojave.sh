@@ -95,7 +95,7 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 # reading database
 # sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
 # or
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db
+# sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db
 # .dump access
 # .schema access
 
@@ -104,12 +104,12 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 
 # getting entries from database
 # examples
-# sudo sqlite3 "$DATABASE_USER" "select * from access where service='kTCCServiceAppleEvents';"
-# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal');"
-# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and indirect_object_identifier='com.apple.systempreferences');"
-# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal');"
-# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and indirect_object_identifier='com.apple.finder');"
-# sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.finder' and allowed='1');"
+# sqlite3 "$DATABASE_USER" "select * from access where service='kTCCServiceAppleEvents';"
+# sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal');"
+# sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and indirect_object_identifier='com.apple.systempreferences');"
+# sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal');"
+# sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and indirect_object_identifier='com.apple.finder');"
+# sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.finder' and allowed='1');"
 
 # getting application identifier
 # /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/enterapplicaitonnamehere.app/Contents/Info.plist
@@ -158,6 +158,8 @@ com.apple.ScriptEditor.id.brew-casks-update
 com.apple.ScriptEditor.id.video-720p-h265-aac-shrink
 com.apple.ScriptEditor.id.video-1080p-h265-aac-shrink
 com.apple.ScriptEditor.id.gui-apps-backup
+com.apple.ScriptEditor.id.BL-Banking-Launcher-ts
+com.apple.ScriptEditor.id.BL-Banking-Launcher-ws
 com.apple.automator.decrypt_finder_input_gpg_progress
 com.apple.automator.unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress
 com.stuntsoftware.Overflow
@@ -198,7 +200,7 @@ done
 echo ''
 echo "contacs..." 
 
-sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBook';"
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBook';"
 
 CONTACTSAPPS=(
 #com.apple.ScriptEditor.id.contacts-backup
@@ -212,7 +214,7 @@ earthlingsoft.GeburtstagsChecker
 
 for contacts_app in ${CONTACTSAPPS[@]}
 do
-    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','"$contacts_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','"$contacts_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
 done
 
 
@@ -222,7 +224,7 @@ done
 echo ''
 echo "calendar..." 
 
-sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCalendar';"
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCalendar';"
 
 CALENDARAPPS=(
 #com.apple.ScriptEditor.id.calendars-backup
@@ -232,7 +234,7 @@ com.bjango.istatmenus.status
 
 for calendar_app in ${CALENDARAPPS[@]}
 do
-    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','"$calendar_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','"$calendar_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
 done
 
 
@@ -242,7 +244,7 @@ done
 echo ''
 echo "reminders..." 
 
-sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceReminders';"
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceReminders';"
 
 REMINDERAPPS=(
 com.apple.ScriptEditor.id.gui-apps-backup
@@ -250,7 +252,7 @@ com.apple.ScriptEditor.id.gui-apps-backup
 
 for reminder_app in ${REMINDERAPPS[@]}
 do
-    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','"$reminder_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','"$reminder_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
 done
 
 
@@ -260,7 +262,7 @@ done
 echo ''
 echo "microphone..." 
 
-sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceMicrophone';"
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceMicrophone';"
 
 MICROPHONEAPPS=(
 org.virtualbox.app.VirtualBox
@@ -268,7 +270,7 @@ org.virtualbox.app.VirtualBox
 
 for microphone_app in ${MICROPHONEAPPS[@]}
 do
-    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceMicrophone','"$microphone_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceMicrophone','"$microphone_app"',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
 done
 
 
@@ -281,7 +283,7 @@ done
 echo ''
 echo "automation..." 
 
-sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAppleEvents';"
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAppleEvents';"
 #sudo tccutil reset AppleEvents   
 
 AUTOMATIONAPPS=(
@@ -319,7 +321,7 @@ do
     AUTOMATED_APP=$(echo "$automation" | awk '{print $2}' | sed 's/ //g')
     #echo "$SOURCE_APP"
     #echo "$AUTOMATED_APP"
-    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
     unset SOURCE_APP
     unset AUTOMATED_APP
 done
@@ -338,7 +340,7 @@ do
     AUTOMATED_APP=$(echo "$automation_not_allowed" | awk '{print $2}' | sed 's/ //g')
     #echo "$SOURCE_APP"
     #echo "$AUTOMATED_APP"
-    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,0,0,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,0,0,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
     unset SOURCE_APP
     unset AUTOMATED_APP
 done

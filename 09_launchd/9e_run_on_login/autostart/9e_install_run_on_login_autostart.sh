@@ -7,6 +7,8 @@
 ### installation should be done via restore script after first install
 
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
 # copy to /Users/$USER/Library/Scripts/
 rm -rf /Users/"$USER"/Library/Scripts/run_on_login_signal.app
@@ -37,7 +39,7 @@ fi
 
 
 ### automation
-if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then
     # macos versions until and including 10.13 
     :
@@ -47,8 +49,8 @@ else
 	#echo "$DATABASE_SYSTEM"
 	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 	#echo "$DATABASE_USER"
-	sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.run-on-login-signal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-	sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.run-on-login-whatsapp',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.run-on-login-signal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.run-on-login-whatsapp',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
 fi
 
 

@@ -82,5 +82,9 @@ Nachrichten
 		#öffne diese Website
 		#Passwort
 
+Signal
+	reconnect to phone
+	set preferences
+
 The Unarchiver
 	Extrahieren - extrahierten Ordner öffnen

@@ -102,35 +102,72 @@ function databases_apps_security_permissions() {
 	else
 		export SOURCE_APP=com.apple.Terminal
 		echo "terminal not identified, setting automating permissions to apple terminal..."
-	fi
-    
+	fi 
 }
 
 function give_apps_security_permissions() {
-    databases_apps_security_permissions
-    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13 
 		:
     else
         # macos versions 10.14 and up
-	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.systempreferences',?,NULL,?);"
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.systempreferences',?,NULL,?);"
     fi
     sleep 1
 }
 
-function remove_apps_security_permissions() {
-    databases_apps_security_permissions
-    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+function remove_apps_security_permissions_start() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13 
 		:
     else
         # macos versions 10.14 and up
-        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.systempreferences');"
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.systempreferences');"
     fi
     sleep 1
 }
+
+function remove_apps_security_permissions_stop() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP == "yes" ]]
+        then
+            # source app was already allowed to control app before running this script, so don`t delete the permission
+            :
+        else
+            remove_apps_security_permissions_start
+        fi
+    fi
+}
+
+
+###
+### variables
+###
+
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+
+### uuid
+
+#uuid1=$(system_profiler SPHardwareDataType | grep "Hardware UUID" | awk -F":" '{print $2}' | awk '{gsub(/^[ \t]+|[ \t]+$/, "")}1')
+uuid1=$(/usr/sbin/system_profiler SPHardwareDataType | grep "Hardware UUID" | cut -c22-57)
+
+echo "user uuid is $uuid1"
+
+### displayid
+
+#displayid=$(/usr/libexec/PlistBuddy -c 'Print com.apple.AmbientDisplay.LUT' ~/Library/Preferences/ByHost/.GlobalPreferences.13C818AE-B18F-56C7-99D0-690513D860A9.plist | tail -n 4 | head -n 1 | awk -F" " '{print $1}')
+#displayid=$(sudo defaults read /Library/Preferences/com.apple.windowserver.plist | grep DisplayID | head -n 1 | awk -F"=" '{print $2}' | sed 's/[ \t]//g' | sed 's/;//g')
+#displayid1=$(eval echo '"'"$displayid"'"')
+
+#echo "my displayid is $displayid1"
 
 
 ###
@@ -144,36 +181,31 @@ function setting_preferences {
     ### defining some variables for later usage
     ###
     
+    echo''    
     databases_apps_security_permissions
-    echo''
-    echo "setting security permissions..."
-    if [[ $(sudo sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+    
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
-        TERMINAL_IS_ALLOWED_TO_CONTROL_SYSTEM_PREFERENCES="yes"
-        #echo "terminal is already allowed to control finder..."
+        # macos versions until and including 10.13 
+    	:
     else
-    	TERMINAL_IS_ALLOWED_TO_CONTROL_SYSTEM_PREFERENCES="no"
-    	#echo "terminal is not allowed to control finder..."
+        echo "setting security permissions..."
+        if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+    	then
+    	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="yes"
+    	    #echo "terminal is already allowed to control finder..."
+    	else
+    		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="no"
+    		#echo "terminal is not allowed to control finder..."
+    	fi
+        remove_apps_security_permissions_start
+        give_apps_security_permissions
+        echo ''
     fi
-    remove_apps_security_permissions
-    give_apps_security_permissions
-    echo ''
     
+    # trap
+    trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM EXIT
     
-    ### uuid
-    
-    #uuid1=$(system_profiler SPHardwareDataType | grep "Hardware UUID" | awk -F":" '{print $2}' | awk '{gsub(/^[ \t]+|[ \t]+$/, "")}1')
-    uuid1=$(/usr/sbin/system_profiler SPHardwareDataType | grep "Hardware UUID" | cut -c22-57)
-    
-    echo "my uuid is $uuid1"
-    
-    ### displayid
-    
-    #displayid=$(/usr/libexec/PlistBuddy -c 'Print com.apple.AmbientDisplay.LUT' ~/Library/Preferences/ByHost/.GlobalPreferences.13C818AE-B18F-56C7-99D0-690513D860A9.plist | tail -n 4 | head -n 1 | awk -F" " '{print $1}')
-    #displayid=$(sudo defaults read /Library/Preferences/com.apple.windowserver.plist | grep DisplayID | head -n 1 | awk -F"=" '{print $2}' | sed 's/[ \t]//g' | sed 's/;//g')
-    #displayid1=$(eval echo '"'"$displayid"'"')
-    
-    #echo "my displayid is $displayid1"
     
     
     ###
@@ -2533,7 +2565,7 @@ EOF
     WEBSITE_SAFARI_DATABASE="/Users/$USER/Library/Safari/PerSitePreferences.db"
     
     # /Users/$USER/Library/Safari/PerSitePreferences.db
-    # sudo sqlite3 /Users/$USER/Library/Safari/PerSitePreferences.db
+    # sqlite3 /Users/$USER/Library/Safari/PerSitePreferences.db
     # .tables
     # select * from default_preferences;
     # .headers ON
@@ -2550,40 +2582,40 @@ EOF
     # .quit
     
     # checking values
-    # sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;"
+    # sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;"
     
     # resetting / deleting values
-    # sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "delete from default_preferences WHERE preference='PerSitePreferencesMicrophone';"
+    # sqlite3 "$WEBSITE_SAFARI_DATABASE" "delete from default_preferences WHERE preference='PerSitePreferencesMicrophone';"
     
     # use reader
     # off = 0
     # on = 1
-    if [[ $(sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesUseReader") == "" ]]
+    if [[ $(sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesUseReader") == "" ]]
     then
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesUseReader', '0');"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesUseReader', '0');"
     else
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='0' WHERE preference='PerSitePreferencesUseReader'"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='0' WHERE preference='PerSitePreferencesUseReader'"
     fi
     
     # use content blocker
     # off = 0
     # on = 1
-    if [[ $(sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesContentBlockers") == "" ]]
+    if [[ $(sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesContentBlockers") == "" ]]
     then
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesContentBlockers', '1');"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesContentBlockers', '1');"
     else
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesContentBlockers'"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesContentBlockers'"
     fi
     
     # autoplay media
     # allow automatic autoplay for all = 0
     # stop media with sound = 1
     # never autoplay = 2
-    if [[ $(sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesAutoplay") == "" ]]
+    if [[ $(sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesAutoplay") == "" ]]
     then
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesAutoplay', '1');"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesAutoplay', '1');"
     else
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesAutoplay'"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesAutoplay'"
     fi
     
     # default page zoom
@@ -2594,22 +2626,22 @@ EOF
     # ask = 0
     # do not allow = 1
     # allow = 2
-    if [[ $(sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesCamera") == "" ]]
+    if [[ $(sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesCamera") == "" ]]
     then
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesCamera', '1');"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesCamera', '1');"
     else
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesCamera'"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesCamera'"
     fi
     
     # allow microphone
     # ask = 0
     # do not allow = 1
     # allow = 2
-    if [[ $(sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesMicrophone") == "" ]]
+    if [[ $(sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesMicrophone") == "" ]]
     then
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesMicrophone', '1');"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesMicrophone', '1');"
     else
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesMicrophone'"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesMicrophone'"
     fi
     
     # website use of location services
@@ -2634,11 +2666,11 @@ EOF
     # block and notify = 0
     # block = 1
     # allow = 2
-    if [[ $(sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesPopUpWindow") == "" ]]
+    if [[ $(sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesPopUpWindow") == "" ]]
     then
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesPopUpWindow', '1');"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesPopUpWindow', '1');"
     else
-        sudo sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesPopUpWindow'"
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesPopUpWindow'"
     fi
     
     # all plugins but flash are no longer allowed and are not working any more
@@ -3410,14 +3442,10 @@ EOF
     # 1 = on / yes
     #pmset -g | grep DestroyFVKeyOnStandby
     
+    
     ### removing security permissions
-    if [[ $TERMINAL_IS_ALLOWED_TO_CONTROL_SYSTEM_PREFERENCES == "yes" ]]
-    then
-        # terminal was already allowed to control system preferences before running this script, so don`t delete the permission
-        :
-    else
-        remove_apps_security_permissions
-    fi
+    remove_apps_security_permissions_stop
+    
     
     ###
     ### killing affected applications

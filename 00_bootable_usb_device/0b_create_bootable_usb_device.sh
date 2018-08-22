@@ -109,6 +109,8 @@ fi
 INSTALLERPATH="/Applications/Install macOS Mojave Beta.app"
 VOLUMENAME="Untitled"
 VOLUMEPATH="/Volumes/$VOLUMENAME"
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
 
 # checking if VOLUMEPATH is on USB_DEVICE
@@ -148,7 +150,7 @@ fi
 echo ''
 echo "creating installer medium..."
 
-if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then
     # macos versions until and including 10.13 
     sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --applicationpath "$INSTALLERPATH" --nointeraction

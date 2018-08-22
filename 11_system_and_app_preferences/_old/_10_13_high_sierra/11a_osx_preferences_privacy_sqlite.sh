@@ -90,7 +90,7 @@ sudo()
 # reading database
 # sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
 # or
-# sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db
+# sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db
 # .dump access
 
 # quit database
@@ -155,7 +155,7 @@ com.googlecode.iterm2
 )
 
 for accessibility_apps in ${ACCESSIBILITYAPPS[@]}; do
-sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','"$accessibility_apps"',0,1,1,NULL,NULL);"
+    sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','"$accessibility_apps"',0,1,1,NULL,NULL);"
 done
 
 
@@ -170,7 +170,7 @@ done
 #	x	alfred 3					com.runningwithcrayons.Alfred-3
 #	x	geburtstagschecker			earthlingsoft.GeburtstagsChecker
 
-sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBook';"
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBook';"
 
 CONTACTSAPPS=(
 #com.apple.ScriptEditor.id.contacts-backup
@@ -183,7 +183,7 @@ earthlingsoft.GeburtstagsChecker
 )
 
 for contacts_apps in ${CONTACTSAPPS[@]}; do
-sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','"$contacts_apps"',0,1,1,NULL,NULL);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','"$contacts_apps"',0,1,1,NULL,NULL);"
 done
 
 
@@ -195,7 +195,7 @@ done
 #	x	istat menus                 com.bjango.istatmenusstatus
 
 
-sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCalendar';"
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCalendar';"
 
 CALENDARAPPS=(
 #com.apple.ScriptEditor.id.calendars-backup
@@ -204,7 +204,7 @@ com.bjango.istatmenusstatus
 )
 
 for calendar_apps in ${CALENDARAPPS[@]}; do
-sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','"$calendar_apps"',0,1,1,NULL,NULL);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','"$calendar_apps"',0,1,1,NULL,NULL);"
 done
 
 
@@ -213,14 +213,14 @@ done
 # 	x 	gui apps backup			com.apple.ScriptEditor.id.gui-apps-backup
 
 
-sudo sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceReminders';"
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceReminders';"
 
 REMINDERAPPS=(
 com.apple.ScriptEditor.id.gui-apps-backup
 )
 
 for reminder_apps in ${REMINDERAPPS[@]}; do
-sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','"$reminder_apps"',0,1,1,NULL,NULL);"
+    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','"$reminder_apps"',0,1,1,NULL,NULL);"
 done
 
 

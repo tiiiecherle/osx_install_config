@@ -1,6 +1,8 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
 BREW_CASKS_UPDATE_APP="brew_casks_update"
 
@@ -24,7 +26,7 @@ DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
 DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 #echo "$DATABASE_USER"
 
-if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then
     # macos versions until and including 10.13
     :
@@ -39,8 +41,8 @@ else
 	sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
 	
 	# automation
-	sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-	sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+	sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
 fi
 
 #open /Applications/"$BREW_CASKS_UPDATE_APP".app

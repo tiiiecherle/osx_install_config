@@ -6,6 +6,8 @@
 
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #echo "script dir is $SCRIPT_DIR$"
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
 # getting logged in user
 #echo "LOGNAME is $(logname)..."
@@ -29,7 +31,7 @@ HOMEFOLDER=Users/$USER
 #echo "HOMEFOLDER is "$HOMEFOLDER""
 
 # restore file
-if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then
     # macos versions until and including 10.13 
 	EXTENSIONS_PREFERENCESFILE_DESTINATION="/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"

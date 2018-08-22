@@ -283,6 +283,10 @@ hosts_file_install_update() {
         sudo sed -i '' '/pagead.l.doubleclick.net/s/^/#/g' /etc/hosts
         # wimbledon
         sudo sed -i '' '/0.0.0.0 secure.brightcove.com/s/^/#/g' /etc/hosts
+        # sma
+        #sudo sed -i '' '/0.0.0.0 eu.*.force.com/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/0.0.0.0 eu1.*.force.com/s/^/#/g' /etc/hosts
+        sudo sed -i '' '/0.0.0.0 eu10.force.com/s/^/#/g' /etc/hosts
         
         # wimbledon test
         #for i in $(sudo cat /etc/hosts | grep "^0.*" | awk '{print $NF}' | head -n 10000)

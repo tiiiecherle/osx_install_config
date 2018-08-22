@@ -241,25 +241,34 @@ function create_tmp_backup_script_fifo3() {
 function databases_apps_security_permissions() {
     DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
     #echo "$DATABASE_SYSTEM"
-    DATABASE_USER=""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db"
+	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
     #echo "$DATABASE_USER"
+    
+    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+    then
+    	export SOURCE_APP=com.apple.Terminal
+    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
+    then
+        export SOURCE_APP=com.googlecode.iterm2
+	else
+		export SOURCE_APP=com.apple.Terminal
+		echo "terminal not identified, setting automating permissions to apple terminal..."
+	fi
 }
 
 function give_apps_security_permissions() {
-    databases_apps_security_permissions
-    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13 
         # all gui app backups in one script
         # accessibility entry for reminders backup
         sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
         # reminders
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
         # contacts
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
         # calendar
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-        
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
     else
         # macos versions 10.14 and up
         # accessibility gui apps backup
@@ -267,64 +276,73 @@ function give_apps_security_permissions() {
         # accessibility brew cask update
         sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
         # reminders
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
         # contacts
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
         # calendar
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
         # automation gui backup app
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
         # automation files
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
         # automation vbox backup app
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-        sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
         # automation brew cask update
-	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-	    sudo sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
     fi
     sleep 1
 }
 
-function remove_apps_security_permissions_start_script() {
-    databases_apps_security_permissions
-    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+function remove_apps_security_permissions_start() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13
         # gui apps backup
         sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
-        sudo sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+        sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
         # brew cask update
         sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.brew-casks-update';"
     else
         # macos versions 10.14 and up
         # gui apps backup
         sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
-        sudo sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+        sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
         # automation files
-        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
-        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
         # vbox backup app
-        sudo sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.virtualbox-backup';"
+        sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.virtualbox-backup';"
     fi
     sleep 1
 }
 
-function remove_apps_security_permissions_stop_script() {
-    databases_apps_security_permissions
-    if [[ $(defaults read loginwindow SystemVersionStampAsString | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+function remove_apps_security_permissions_stop() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         # macos versions until and including 10.13 
         :
     else
         # macos versions 10.14 and up
         # automation files
-        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
-        sudo sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
     fi
     #sleep 1
 }
+
+
+### variables
+databases_apps_security_permissions
+
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+SCRIPT_DIR_FINAL=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+APPLESCRIPTDIR="$SCRIPT_DIR"
+
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
 
 ### trapping
@@ -336,12 +354,12 @@ function remove_apps_security_permissions_stop_script() {
 if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
 then
     # script is session master and not run from another script (S on mac Ss on linux)
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop_script; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop_script; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
 else
     # script is not session master and run from another script (S+ on mac and linux)
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop_script; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop_script; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; exit" EXIT
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; exit" EXIT
 fi
 set -e
 
@@ -620,7 +638,7 @@ function backup_restore {
             
             echo ''
             echo "resetting security permissions for backup apps..."
-            remove_apps_security_permissions_start_script
+            remove_apps_security_permissions_start
             give_apps_security_permissions
             
             # opening applescript which will ask for saving location of compressed file
@@ -748,7 +766,7 @@ function backup_restore {
                 
                 # old working
                 # service entry for for contacts backup
-                #sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.contacts-backup',0,1,1,NULL,NULL);"
+                #sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.contacts-backup',0,1,1,NULL,NULL);"
                 #sleep 2
                 # running contacts backup
                 #open "$SCRIPT_DIR"/gui_apps/contacts/contacts_backup.app
@@ -785,7 +803,7 @@ function backup_restore {
                 # accessibility entry for calendar backup
                 #sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
                 # service entry for for calendar backup
-                #sudo sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
+                #sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
                 #sleep 2
                 # running calendar backup                
                 #open "$SCRIPT_DIR"/gui_apps/contacts/calendars_backup.app
@@ -825,8 +843,7 @@ function backup_restore {
             mkdir -p "$DESTINATION"
             
             # backup macos system
-            BACKUP_MACOS_SYSTEM=$(defaults read loginwindow SystemVersionStampAsString)
-            echo "$BACKUP_MACOS_SYSTEM" > "$DESTINATION"/_backup_macos_version.txt
+            echo "$MACOS_VERSION" > "$DESTINATION"/_backup_macos_version.txt
             
             # backup
             #
@@ -1623,10 +1640,6 @@ function backup_restore {
     fi
 
 }
-
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
-SCRIPT_DIR_FINAL=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
-APPLESCRIPTDIR="$SCRIPT_DIR"
 
 #FUNC=$(declare -f backup_restore)
 #time bash -c "OPTION=\"$OPTION\"; SCRIPT_DIR=\"$SCRIPT_DIR\"; APPLESCRIPTDIR=\"$APPLESCRIPTDIR\"; $FUNC; backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt"
