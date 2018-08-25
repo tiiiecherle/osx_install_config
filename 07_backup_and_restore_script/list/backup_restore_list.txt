@@ -89,8 +89,7 @@ m	~/Library/Preferences/com.barebones.bbedit.plist
 
 # BL Banking
 echo BL Banking
-u	/Applications/BL Banking Launcher ts.app
-u	/Applications/BL Banking Launcher ws.app
+u	/Applications/BL Banking Launcher.app
 
 # Brackets
 echo Brackets
