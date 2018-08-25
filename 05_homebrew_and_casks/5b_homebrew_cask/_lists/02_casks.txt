@@ -5,7 +5,7 @@ flash-npapi
 #java		    # installed in casks_pre section
 nextcloud
 #osxfuse
-silverlight
+#silverlight
 teamviewer
 veracrypt
 #virtualbox         # is installed as a dependency of virtualbox-extension-pack
