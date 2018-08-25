@@ -112,6 +112,7 @@ function give_apps_security_permissions() {
 		:
     else
         # macos versions 10.14 and up
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
 	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.systempreferences',?,NULL,?);"
     fi
     sleep 1
@@ -190,19 +191,18 @@ function setting_preferences {
     	:
     else
         echo "setting security permissions..."
-        if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+        if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.systempreferences' and allowed='1');") != "" ]]
     	then
     	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="yes"
-    	    #echo "terminal is already allowed to control finder..."
+    	    #echo "$SOURCE_APP is already allowed to control app..."
     	else
     		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="no"
-    		#echo "terminal is not allowed to control finder..."
+    		#echo "$SOURCE_APP is not allowed to control app..."
+    		give_apps_security_permissions
     	fi
-        remove_apps_security_permissions_start
-        give_apps_security_permissions
         echo ''
     fi
-    
+
     # trap
     trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM EXIT
     
@@ -252,7 +252,6 @@ function setting_preferences {
 EOF
     }
     disable_menu_bar_clock
-    
     
     # show these menu bar icons
     defaults write com.apple.systemuiserver menuExtras -array \
@@ -3383,31 +3382,26 @@ EOF
     
     # lining core service utilities to /Applications/Utilities
     
-    echo "creating links from core service utilities to /Applications/Utilities..."
+    echo "creating links from core service apps..."
     
-    # Archive Utility
-    if [ -L "/Applications/Utilities/Archive Utility.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Applications/Archive Utility.app" "/Applications/Utilities/Archive Utility.app" ; fi
+    for CORE_SERVICE_APP in $(ls -1 /System/Library/CoreServices/Applications/)
+    do
+        CORE_SERVICE_APP=$(printf '%s\n' "$CORE_SERVICE_APP")
+        #echo "$CORE_SERVICE_APP"
+        if [[ ! -e /Applications/Utilities/"$CORE_SERVICE_APP" ]]
+        then
+            sudo ln -s /System/Library/CoreServices/Applications/"$CORE_SERVICE_APP" /Applications/Utilities/"$CORE_SERVICE_APP"
+        else
+            :
+        fi
+    done
     
-    # Directory Utility
-    if [ -L "/Applications/Utilities/Directory Utility.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Applications/Directory Utility.app" "/Applications/Utilities/Directory Utility.app" ; fi
-    
-    # Screen Sharing
-    if [ -L "/Applications/Utilities/Screen Sharing.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Applications/Screen Sharing.app" "/Applications/Utilities/Screen Sharing.app" ; fi
-    
-    # Ticket Viewer
-    if [ -L "/Applications/Utilities/Ticket Viewer.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Ticket Viewer.app" "/Applications/Utilities/Ticket Viewer.app" ; fi
-    
-    if [ -L "/Applications/Utilities/Network Diagnostics.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Network Diagnostics.app" "/Applications/Utilities/Network Diagnostics.app" ; fi
-    
-    if [ -L "/Applications/Utilities/Network Utility.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Applications/Network Utility.app" "/Applications/Utilities/Network Utility.app" ; fi
-    
-    if [ -L "/Applications/Utilities/Wireless Diagnostics.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Applications/Wireless Diagnostics.app" "/Applications/Utilities/Wireless Diagnostics.app" ; fi
-    
-    if [ -L "/Applications/Utilities/Feedback Assistant.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Applications/Feedback Assistant.app" "/Applications/Utilities/Feedback Assistant.app" ; fi
-    
-    if [ -L "/Applications/Utilities/RAID Utility.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Applications/RAID Utility.app" "/Applications/Utilities/RAID Utility.app" ; fi
-    
-    if [ -L "/Applications/Utilities/System Image Utility.app" ] ; then : ; else sudo ln -s "/System/Library/CoreServices/Applications/System Image Utility.app" "/Applications/Utilities/System Image Utility.app" ; fi
+    if [[ ! -L "/Applications/Finder.app" ]] && [[ -e "/System/Library/CoreServices/Finder.app" ]]
+    then
+        ln -s "/System/Library/CoreServices/Finder.app" "/Applications/Finder.app"
+    else
+        :
+    fi
     
     # ios simulator
     #sudo ln -s "/Applications/Xcode.app/Contents/Applications/iPhone Simulator.app" "/Applications/iOS Simulator.app"

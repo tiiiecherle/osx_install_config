@@ -38,11 +38,11 @@ else
     sleep 1
     
 	# accessibility
-	sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
-	
+	sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"	
 	# automation
-	sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-	sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+	# working, but does not show in gui of system preferences, use csreq for the entry to show
+	#sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	#sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
 fi
 
 #open /Applications/"$BREW_CASKS_UPDATE_APP".app

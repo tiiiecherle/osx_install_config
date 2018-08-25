@@ -49,8 +49,8 @@ else
 	#echo "$DATABASE_SYSTEM"
 	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 	#echo "$DATABASE_USER"
-	sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.run-on-login-signal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-	sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.run-on-login-whatsapp',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	#sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.run-on-login-signal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	#sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.run-on-login-whatsapp',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
 fi
 
 

@@ -68,6 +68,7 @@ function give_apps_security_permissions() {
 		:
     else
         # macos versions 10.14 and up
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
 	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
     fi
     sleep 1
@@ -145,13 +146,12 @@ else
     if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
 	then
 	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="yes"
-	    #echo "terminal is already allowed to control finder..."
+	    #echo "$SOURCE_APP is already allowed to control app..."
 	else
 		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="no"
-		#echo "terminal is not allowed to control finder..."
+		#echo "$SOURCE_APP is not allowed to control app..."
+		give_apps_security_permissions
 	fi
-    remove_apps_security_permissions_start
-    give_apps_security_permissions
     echo ''
 fi
 
@@ -293,7 +293,9 @@ then
 		:
     else
         # macos versions 10.14 and up
-	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
+	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+	    :
     fi
 else
 	:

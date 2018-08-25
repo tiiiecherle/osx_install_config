@@ -291,7 +291,11 @@ then
 		:
     else
         # macos versions 10.14 and up
-	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+        # working
+	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,X'fade0c00000000a000000001000000060000000200000018636f6d2e7472616e6b796e616d2e5874726146696e646572000000060000000f000000060000000b000000000000000a7375626a6563742e434e000000000001000000274d616320446576656c6f7065723a205472616e204b79204e616d202850594e3545554748363629000000000e000000010000000a2a864886f76364060201000000000000',NULL,0,'com.apple.finder',X'fade0c000000002c00000001000000060000000200000010636f6d2e6170706c652e66696e64657200000003',NULL,?);"
+	    :
     fi
 	
 	if [ -e "/Applications/XtraFinder.app" ]

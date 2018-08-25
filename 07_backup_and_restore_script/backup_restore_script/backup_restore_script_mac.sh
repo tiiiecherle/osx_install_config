@@ -272,26 +272,28 @@ function give_apps_security_permissions() {
     else
         # macos versions 10.14 and up
         # accessibility gui apps backup
-        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
+        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
         # accessibility brew cask update
-        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,'UNUSED',NULL,0,?);"
+        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
         # reminders
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
         # contacts
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
         # calendar
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,NULL,NULL,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
+        
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
         # automation gui backup app
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
         # automation files
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
         # automation vbox backup app
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
         # automation brew cask update
-	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
     fi
     sleep 1
 }
@@ -311,8 +313,8 @@ function remove_apps_security_permissions_start() {
         sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
         sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
         # automation files
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
+        #sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
+        #sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
         # vbox backup app
         sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.virtualbox-backup';"
     fi
