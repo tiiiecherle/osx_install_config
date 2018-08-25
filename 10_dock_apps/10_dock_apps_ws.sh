@@ -70,7 +70,7 @@ function set_dock_apps () {
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
     $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Volumes/extra/documents/blbanking/install_database/BL Banking.app/$APP_TAIL"
+    -array-add "$APP_HEAD/Applications/BL Banking Launcher.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Pages.app/$APP_TAIL"
