@@ -155,6 +155,20 @@ function remove_apps_security_permissions_stop() {
 MACOS_VERSION=$(sw_vers -productVersion)
 #MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
+# macos 10.14 and higher
+#if [[ $(echo $MACOS_VERSION | cut -f1 -d'.') == "10" ]] && [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+# only macos 14.14
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.') != "10.14" ]]
+then
+    #echo "this script is only compatible with macos 10.14 mojave and newer, exiting..."
+    echo ''
+    echo "this script is only compatible with macos 10.14 mojave, exiting..."
+    echo ''
+    exit
+else
+    :
+fi
+
 ### uuid
 
 #uuid1=$(system_profiler SPHardwareDataType | grep "Hardware UUID" | awk -F":" '{print $2}' | awk '{gsub(/^[ \t]+|[ \t]+$/, "")}1')
@@ -3384,9 +3398,9 @@ EOF
     
     echo "creating links from core service apps..."
     
-    for CORE_SERVICE_APP in $(ls -1 /System/Library/CoreServices/Applications/)
+    for CORE_SERVICE_APP_PATH in /System/Library/CoreServices/Applications/*
     do
-        CORE_SERVICE_APP=$(printf '%s\n' "$CORE_SERVICE_APP")
+        CORE_SERVICE_APP=$(basename -- "$CORE_SERVICE_APP_PATH")
         #echo "$CORE_SERVICE_APP"
         if [[ ! -e /Applications/Utilities/"$CORE_SERVICE_APP" ]]
         then
@@ -3394,9 +3408,10 @@ EOF
         else
             :
         fi
+        echo ''
     done
     
-    if [[ ! -L "/Applications/Finder.app" ]] && [[ -e "/System/Library/CoreServices/Finder.app" ]]
+    if [[ ! -e "/Applications/Finder.app" ]] && [[ -e "/System/Library/CoreServices/Finder.app" ]]
     then
         ln -s "/System/Library/CoreServices/Finder.app" "/Applications/Finder.app"
     else
