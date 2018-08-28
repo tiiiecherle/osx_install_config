@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
 ###
+### variables
+###
+
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+
+
+###
 ### forcing smb3 connection
 ###
 
@@ -12,29 +20,34 @@ then
 	echo ""~/Library/Preferences/nsmb.conf" does not exist, will be created..."
 else 
 	echo ""~/Library/Preferences/nsmb.conf" exists will be deleted and recreated..."
-	rm -f ~/Library/Preferences/nsmb.conf
+	rm -f "~/Library/Preferences/nsmb.conf"
 fi
 
 if [ -f "/etc/nsmb.conf" ]
 then 
 	:
 else 
-	sudo rm -f /etc/nsmb.conf
+	sudo rm -f "/etc/nsmb.conf"
 fi
 
-### el captian or earlier
-#bash -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
-#[default]
-#smb_neg=smb3_only
-#signing_required=no
-#EOL
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "12" ]]
+then
+    # macos versions until and including 10.12
+    bash -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
+[default]
+smb_neg=smb3_only
+signing_required=no
+EOL
 
-### macos >=10.12
-bash -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
+else
+    # macos versions 10.13 and up
+	bash -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
 [default]
 protocol_vers_map=4
 signing_required=no
 EOL
+
+fi
 
 
 ### more options and default values
@@ -66,5 +79,6 @@ EOL
 
 ### restore default as user do
 #rm ~/Library/Preferences/nsmb.conf
+
 
 echo 'done ;)'

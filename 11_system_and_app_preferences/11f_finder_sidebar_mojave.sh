@@ -1,12 +1,34 @@
 #!/usr/bin/env bash
 
-# sfltool
+
+### variables
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+
+# macos 10.14 and higher
+#if [[ $(echo $MACOS_VERSION | cut -f1 -d'.') == "10" ]] && [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+# macos 10.14 only
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.') != "10.14" ]]
+then
+    #echo "this script is only compatible with macos 10.14 mojave and newer, exiting..."
+    echo ''
+    echo "this script is only compatible with macos 10.14 mojave, exiting..."
+    echo ''
+    exit
+else
+    :
+fi
+
+
+### sfltool
 # sfltool restore|add-item|save-lists|test|archive|enable-modern|dump-server-state|clear|disable-modern|dump-storage|list-info [options]
 
-# alternative to mysides
+
+### alternative to mysides
 # https://github.com/robperc/FinderSidebarEditor
 
-# mysides
+
+### mysides
 # installs to /usr/local/bin/mysides
 # -rwxr-xr-x    1 root  wheel  47724 14 Apr 02:07 mysides
 # https://github.com/mosen/mysides
@@ -101,7 +123,8 @@ fi
 #	:
 #fi
 
-# run applescript to set sidebar preferences
+
+### run applescript to set sidebar preferences
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #open /"$SCRIPT_DIR"/11f_script_finder_sidebar/11f_finder_sidebar.app
 
@@ -219,7 +242,8 @@ defaults write com.apple.finder ShowRecentTags -bool false
 # and
 # ~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.FavoriteItems.sfl2
 
-# restart finder
+
+### restarting finder
 killall cfprefsd
 killall Finder
 
@@ -267,10 +291,12 @@ EOF
 }
 #enable_disable_finder_sidebar_items2
 
+
 echo "done ;)"
 echo "the changes need a reboot to take effect..."
 #echo "initializing reboot"
 echo ""
+
 
 #osascript -e 'tell app "loginwindow" to «event aevtrrst»'       # reboot
 #osascript -e 'tell app "loginwindow" to «event aevtrsdn»'       # shutdown
