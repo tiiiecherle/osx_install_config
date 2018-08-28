@@ -266,7 +266,7 @@ function setting_preferences {
 EOF
     }
     disable_menu_bar_clock
-    
+
     # show these menu bar icons
     defaults write com.apple.systemuiserver menuExtras -array \
     "/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
