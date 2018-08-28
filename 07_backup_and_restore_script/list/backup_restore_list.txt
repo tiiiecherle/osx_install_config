@@ -439,6 +439,10 @@ echo PasswordWallet
 m	/Applications/PasswordWallet.app
 u	~/Library/Preferences/com.selznick.PasswordWallet.plist
 
+# Password Factory
+echo Password Factory
+u	~/Library/Containers/com.cloudthirteen.Password-Factory/Data/Library/Preferences/com.cloudthirteen.Password-Factory.plist
+
 # PDF Shrink
 #echo PDF Shrink
 #m	/Applications/PDF Shrink.app
