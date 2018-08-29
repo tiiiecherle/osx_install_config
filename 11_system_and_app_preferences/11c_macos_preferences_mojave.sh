@@ -1389,6 +1389,9 @@ EOF
     # 1 = yes, 0 = no
     defaults write NSGlobalDomain com.apple.sound.beep.feedback -integer 1
     
+    # ambient noice reduction
+    #defaults write NSGlobalDomain 646F6E7A_00000000_00000001_6E7A6361_696D6963 -integer 1
+    
     
     ### hidden sound tweaks
     
