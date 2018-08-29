@@ -3,15 +3,15 @@ macOS Scripting for Configuration, Backup and Restore
 
 Hey to every macOS user ;)
 
-I am not a developer but an apple user and admin for more than 10 years. I realized that a clean install on every major macOS update is the best way to avoid many bugs and get rid of old, no longer needed files in the system. But unfortunately every install took a lot of time and I have more than one mac to admin... That`s why I started this project: to make clean installations and macOS configurations as easy, individual and fast as possible.
+I am not a developer but an apple user and admin for more than 10 years. It's known that generally a clean install on every major macOS update is the best way to avoid many bugs and get rid of old, no longer needed files in the system. But unfortunately a clean install takes a lot of time and I have more than one mac to admin... That`s why I started this project: to make clean installations and macOS configurations as easy, individual and fast as possible.
 
 Of course you can customize and run the commands and scripts on existing systems that did not lately get a clean install, too.
 
 It`s kind of a walkthrough of a clean macOS install with manuals, scripts, comments and a lot of macOS know how that I gathered.
 
-I wrote a [backup and restore script](#7-backup-and-restore-script) for all my third party apps and their preferences files. But restoring old OS system files on a clean new OS install is not recommended.
+One of the projects intentions is to make the complete macOS System Preferences highly customizable by script. There were already a lot of existing scripts and some of them were integrated or had an impact on this version. That's why a lot of [credit](#credits) goes to their authors. I tried to make the scripts more complete with a lot of my own additions and even tried making them better and clearer by giving them a structure according to the macOS System Preferences and the apple apps that ship with the OS (Safari, Calendar, Contacts, ...).
 
-That`s why one of the intentions is to make the complete macOS System Preferences highly customizable by script. There were already a lot of existing scripts and some of them were integrated or influenced this project. That's why a lot of [credit](#credits) goes to their authors. I tried to make the scripts more complete with a lot of my own additions and even tried making them better and clearer by giving them a structure according to the macOS System Preferences and the apple apps that ship with the OS (Safari, Calendar, Contacts, ...).
+Additionally I wrote a [backup and restore script](#7-backup-and-restore-script) for all my third party apps and their preferences files.
 
 At first it was intented for my personal use only. But then I decided to publish everything here because it took me so many hours and I would have loved to find anything like this when I started. So I hope it helps anyone ;)
 
@@ -125,7 +125,7 @@ sudo reboot
 
 3	Install AppStore apps and copy files
 -----
-File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts, e.g. installing Xcode or Command Line Tools and copying over your backup files for restoring them later.
+File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts.
 
 
 4	SSD Optimizations
@@ -144,9 +144,9 @@ You will find more information here:
 * [homebrew](http://brew.sh)
 * [homebrew cask](http://caskroom.io)
 
-This script installs a few plugins and furthermore a few apps directly to the /Applications folder without linking them. It is like downloading and installing them to this directory manually but a lot more comfortable and very easy for keeping everything up-to-date.
+These scripts install macOS Command Line Tools, homebrew and homebrew-cask. Additionally it takes care of installing homebrew formulas, macOS-plugins and macOS-apps from a given list directly to the /Applications folder without linking them. It is like downloading and installing them to this directory manually but a lot more comfortable. To make it very easy for keeping everything up-to-date an updater script with with a macOS-app Wrapper is also included.
 
-Adjust to your needs and run it. Be sure you have the Command Line Tools installed before running. If you don`t the skript will intall them for you.
+Adjust the scripts and install lists to your needs and run them.
 
 
 6	Manual app installation
@@ -156,38 +156,25 @@ This is just a checklist of apps I have to install manually (besides the restore
 
 7	Backup and restore script
 -----
-When I was looking for a highly configurable backup / restore tool I could not find one that was fitting my needs and was working reliable. That`s why I wrote this script which is working very well for over three years (with multiple backups and restores and different macs) now.
+When I was looking for a highly configurable backup / restore tool I could not find one that was fitting my needs and was working reliable. That`s why I wrote this script which is working very well for over four years (with multiple backups and restores and different macs) now.
 
 At a first glance it seems a bit complicated but it really isn`t ;)
 
-When running the script by double clilcking the `run_script.command` fiel you will be prompted by an applescript to choose a directory where to save the backup. In the meanwhile the backup will temporary be done in `~/Desktop/backup_USERNAME_DATE` and is supposed to preserve all file permissions. That's why macOS probably aska for your password when trying to delete the backup folder. In the next step the script creates a .tar.gz file of the backup folder (also on the Desktop) and checks the file integrity. When the check is passed successfully the file will be moved to the specified location and the temporary files on the Desktop will be deleted.
+When running the script by double clilcking the `run_backup_script.command` you will be asked for a user if you have multiple users on your mac. Afterwards you will be prompted by an applescript to choose a directory where to save the backup. The backup will temporarily be done in `~/Desktop/backup_$USER_DATE` and is supposed to preserve all file permissions. In the next step the script creates a .tar.gz file of the backup folder (also on the Desktop) and checks the file integrity. When the check is passed successfully the file will be moved to the specified location and the temporary files on the Desktop will be deleted.
 
 The lines in the `.../list/backup_restore_list.txt` specify the files and folders to be backed up or restored.
 
 All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check of the file at the beginning. Commented lines are ignored and the echo lines will be displayed in the Terminal while running.
 
-Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings. That`s why I splitted it up to a master and user restore. Everything that is marked as master will be restored from my backup, all entries marked as user will be restored from the user backup of the same mac.
+Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings. That's why I splitted it up to a master and user restore. Everything that is marked as master will be restored from a selected master backup, all entries marked as user will be restored from the selected user backup. Master and user backups can be selected when running `run_restore_script.command`.
 
 ##### restore
 
-Please only restore files and folders this way that were backed up with this script so they have the right structure. For a restore create the following directories on your desktop 
-
-```ruby
-mkdir -p ~/Desktop/restore/master
-mkdir -p ~/Desktop/restore/user
-```
-
-and make sure all respective backup folders and files are in the directories, for example
-
-```ruby
-~/Desktop/restore/master/Applications
-~/Desktop/restore/master/Library
-~/Desktop/restore/master/Users
-```
+Please only restore files and folders this way that were backed up with this script so they have the correct structure. 
 
 If you do not use a master / user structure and only backup / restore one and the same mac just select the same folder for master und user when the script prompts for the missing folder.
 
-Then run the script to restore.
+Then use `run_restore_script.command` to restore.
 
 ##### general
 
@@ -195,59 +182,49 @@ This gives you a highly configurable way to backup and restore only the files an
 
 It also resets and takes care of the permissions in the `/Applications` and `/Users/$USER` folder. If you add files or folders to your backup / restore list that are not in the User folder make sure to add the permissions in the `.../permissions/ownerships_and_permissions_restore.sh` script for restore.
 
-Sounds more complicated than it is, if there are any questions feel free to ask me.
+Sounds more complicated than it is, if there are any questions feel free to ask.
 
 And of course any help to make this better and easier is appreciated here, too.
 
 
 8	Java 6
 -----
-Some applications still use java 6 on macOS.
+Not a lot of applications still use java 6 on macOS.
 
-To make them work without installing apple java run this script.
+To make them work without installing apple java activate the options and run this script.
 
-Before running the script download and install the latest version of java jre from [java.com](http://www.java.com) or through homebrew cask.
+Before running the script download and install the latest version of java jre from [java.com](http://www.java.com) or through homebrew-cask.
+
+In my case this script is deprecated and no longer used.
 
 
 9	launchd
 -----
 
-##### run on network change
+##### run on network change, boot, login or logout
 
-As I use a MacBook Pro I change network locations very often. Some services and apps require a restart after that to work. This launchd service keeps looking for changing the network config and performs some operations in this case.
+These Scripts give the possibility to run commands or scripts on certian specified occasions.
 
-Here it restarts the Whatsapp Desktop app. 
+They come with installer scripts and are highly configurable.
 
-```ruby
-1. copy to 
-	/Users/$USER/Library/Scripts/run_on_network_change_login.app
-	/Users/$USER/Library/Scripts/run_on_network_change.app
-	chmod 755 /Users/$USER/Library/Scripts/run_on_network_change_login.app
-	chmod 755 /Users/$USER/Library/Scripts/run_on_network_change.app
-2. change username in com.run_script_on_network_change.plist in program arguments and copy the file to 
-	~/Library/LaunchAgents/com.run_script_on_network_change.plist
-	chmod 644 ~/Library/LaunchAgents/com.run_script_on_network_change.plist
-	Do not copy it to /Library/LaunchAgents/ or the app will not be restartable when quit through the script.
-3. Run the script to enable the service.
-```
 
 ##### AdBlocking by extensions and /etc/hosts
 
-As Adblocking is a big thing in the internet I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the /etc/hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a launchd service that keeps it up to date.
+As Adblocking is a big thing in the internet. I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the /etc/hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a launchd service that keeps it up to date on a given intervall.
 
 
 10 Dock apps
 -----
-This script completely wipes your dock and adds new entries including apps and spacer to the dock.
+This script completely wipes the dock and adds new entries including apps and spacer to the dock.
 
 Adjust to your needs and run it.
 
 
 11 System and app Preferences
 -----
-These are the main scripts described in the beginning of the readme that makes it possible to adjust almost all of the macOS System and app Preferences.
+These are the main scripts described in the beginning of the readme that makes it possible to adjust almost all of the macOS System Preferences and macos Applications that ship with the OS.
 
-Adjust to your needs and run them. Start with 11a or some parts of the rest will not work as it activates applescript gui-scripting by the terminal.
+Adjust to your needs and run them. Start with 11a or some parts of the rest will not work as it sets certain permissions for apps that are needed afterwards.
 
 
 11b Unsolved Preferences
@@ -255,18 +232,13 @@ Adjust to your needs and run them. Start with 11a or some parts of the rest will
 
 The following preferences are not yet configurable with the script and any help to add the functionality is appreciated.
 
-* mail: view mailboxes list in the sidebar
-* preferences - language & region - first weekday
-* preferences - language & region - calendar gregorian
 * preferences - control center - sorting order
 * preferences - monitor - change resolutions
-* preferences - keyboard - keyboard - show keyboard in menu bar
-* preferences - sound - input - ambient noise reduction
 * preferences - mac app store - download all bought apps on other macs automatically
 
 12 Licenses
 -----
-All bought third party apps have to get their licenses enabled. A few can be done by restoring the correct files with the [restore script](#7-backup-and-restore-script), but unfortunately not all of the ones I have.
+All bought third party apps have to get their licenses enabled. A few can be done by restoring the correct files with the [restore script](#7-backup-and-restore-script), but unfortunately that is not working for all apps.
 
 This is a checklist of licenses that I have to activate again so I don`t forget one ;)
 
@@ -282,6 +254,8 @@ to
 ```
 
 Please read the manual files in the folder for further instructions and run the script after the required steps.
+
+The script additionally resets delets the index files to force mail to reindex all mailboxes.
 
 
 14 Samba
@@ -309,7 +283,7 @@ This manual tells you how to set the correct update catalog for the appstore and
 Disclaimer
 -----------
 
-I am not responsible for any problems, damages, file loss or data corruption that may occure because of using any of this. Most of the commands are tested, but some are not or maybe some things changed after my last use. So use everything here completely at your own risk.
+I am not responsible for any problems, damages, data loss or data corruption that may occure because of using any of this. Most of the commands are tested, but some are not. Maybe some things changed after my last use. So use everything here completely at your own risk.
 
 Do some research if you have any concerns about commands or procedures that are included in any of the files BEFORE using them. 
 
