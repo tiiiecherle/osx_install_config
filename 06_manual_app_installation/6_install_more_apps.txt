@@ -39,9 +39,9 @@ adobe creative suite 5.5 (select needed installers including all components)
 		# install from ApplicationManager10.0_all.dmg
 
 	4	manually install updates
-		10.14
-		Extension Manager
-		Indesign
+		#10.14
+		#Extension Manager
+		#Indesign
 
 	5	open /Applications/Adobe\ InDesign\ CS5.5/Adobe\ InDesign\ CS5.5.app
 		help - updates - all
