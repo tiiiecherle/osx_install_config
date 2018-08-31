@@ -45,6 +45,7 @@ hex-fiend
 #ibackup
 iina
 imageoptim
+imazing
 #insomniax
 istat-menus
 iterm2
@@ -82,4 +83,4 @@ x-lite
 xact
 xnconvert
 #xquartz		# installed in casks_pre section
-zipeg
+#zipeg

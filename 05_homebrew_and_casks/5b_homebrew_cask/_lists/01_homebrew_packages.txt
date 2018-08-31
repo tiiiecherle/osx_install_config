@@ -1,12 +1,15 @@
+gnu-tar
+pigz
+pv
+coreutils
+parallel
+gnupg
+#
 git
 rename
 wget
-pv
-pigz
-gnu-tar
 htop		# if htop is not working, use glances instead
 #glances
-coreutils
 #duti
 ghostscript
 xpdf
@@ -14,8 +17,6 @@ ffmpeg
 #imagemagick
 qtfaststart
 jq
-parallel
-gnupg
 cliclick
 python
 node
