@@ -109,7 +109,7 @@ then
 else
     echo homebrew is installed...
     # checking for missing dependencies
-    for formula in gnu-tar pigz pv coreutils parallel gnupg cliclick
+    for formula in gnu-tar pigz pv coreutils parallel gnupg
     do
     	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
     	then
@@ -122,7 +122,7 @@ else
     done
     if [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
     then
-        echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel, gnupg and cliclick is missing, exiting...
+        echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel, and gnupg is missing, exiting...
         exit
     else
         echo needed homebrew tools are installed...     
