@@ -86,6 +86,9 @@ echo "cleaning up..."
 
 #start_sudo
 brew cleanup
+brew cleanup --prune=0
+# should do the same withou output, but just to make sure              
+rm -rf $(brew --cache)
 #stop_sudo
 
 # installing homebrew cask
@@ -121,6 +124,9 @@ echo "cleaning up..."
 
 #start_sudo
 brew cleanup
+brew cleanup --prune=0
+# should do the same withou output, but just to make sure              
+rm -rf $(brew --cache)
 # brew cask cleanup is deprecated from 2018-09
 #sudo brew cask cleanup > /dev/null 2>&1
 #brew cask cleanup

@@ -207,7 +207,7 @@ then
 	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
 	then
 	    #start_sudo
-        ${USE_PASSWORD} | brew cask zap flash-npapi
+        ${USE_PASSWORD} | brew cask zap --force flash-npapi
 	    #stop_sudo
 	    echo ''
     else
@@ -229,10 +229,10 @@ then
 	    if [[ -e /Users/$USER/Library/Preferences/com.adobe.Reader.plist ]]
 	    then
 	        mv /Users/$USER/Library/Preferences/com.adobe.Reader.plist /tmp/com.adobe.Reader.plist
-	        ${USE_PASSWORD} | brew cask zap adobe-acrobat-reader
+	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
 	        mv /tmp/com.adobe.Reader.plist /Users/$USER/Library/Preferences/com.adobe.Reader.plist
 	    else
-	        ${USE_PASSWORD} | brew cask zap adobe-acrobat-reader
+	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
 	    fi
 	else
 	    :
@@ -346,6 +346,9 @@ echo ''
 echo "cleaning up..."
 
 brew cleanup
+brew cleanup --prune=0
+# should do the same withou output, but just to make sure              
+rm -rf $(brew --cache)
 # brew cask cleanup is deprecated from 2018-09
 #brew cask cleanup
 

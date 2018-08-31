@@ -121,6 +121,9 @@ cleanup-all-homebrew-only() {
     echo "cleaning up..."
     #brew cleanup
     brew cleanup 1> /dev/null
+    brew cleanup --prune=0 1> /dev/null
+    # should do the same withou output, but just to make sure              
+    rm -rf $(brew --cache)
     # brew cask cleanup is deprecated from 2018-09
     #brew cask cleanup
     #brew cask cleanup 1> /dev/null
@@ -132,6 +135,9 @@ cleanup-all-parallel() {
     echo "cleaning up..."
     #brew cleanup
     brew cleanup 1> /dev/null
+    brew cleanup --prune=0 1> /dev/null
+    # should do the same withou output, but just to make sure              
+    rm -rf $(brew --cache)
     # brew cask cleanup is deprecated from 2018-09
     #brew cask cleanup
     #brew cask cleanup 1> /dev/null
@@ -256,6 +262,9 @@ cleanup-all-one-by-one() {
     echo "cleaning up..."
     #brew cleanup
     brew cleanup 1> /dev/null
+    brew cleanup --prune=0 1> /dev/null
+    # should do the same withou output, but just to make sure              
+    rm -rf $(brew --cache)
     # brew cask cleanup is deprecated from 2018-09
     #brew cask cleanup
     #brew cask cleanup 1> /dev/null

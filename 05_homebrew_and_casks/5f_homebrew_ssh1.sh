@@ -300,6 +300,9 @@ then
         # brew cleanup <formula>
         # or
         brew cleanup
+        brew cleanup --prune=0
+        # should do the same withou output, but just to make sure              
+        rm -rf $(brew --cache)
         
         # uninstalling patched ssh versions and dependencies including all installed versions
         #echo ''
