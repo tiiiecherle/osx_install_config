@@ -1564,16 +1564,15 @@ function backup_restore {
             # signal
             if [[ -e "/Users/$USER/Library/Application Support/Signal/" ]]
             then
-                # delete everything but config.json and Preferences
                 rm -rf "/Users/$USER/Library/Application Support/Signal/attachments.noindex"
                 rm -rf "/Users/$USER/Library/Application Support/Signal/Cache/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/databases/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/databases/"
                 rm -rf "/Users/$USER/Library/Application Support/Signal/GPUCache/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/IndexedDB/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/Local Storage/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/IndexedDB/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/Local Storage/"
                 rm -rf "/Users/$USER/Library/Application Support/Signal/logs/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/QuotaManager"*
-                rm -rf "/Users/$USER/Library/Application Support/Signal/sql/"
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/QuotaManager"*
+                #rm -rf "/Users/$USER/Library/Application Support/Signal/sql/"
                 #
                 #rm -rf "/Users/$USER/Library/Application Support/Signal/"* 
             else
