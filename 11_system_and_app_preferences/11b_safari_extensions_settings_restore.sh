@@ -33,35 +33,25 @@ HOMEFOLDER=Users/$USER
 # restore file
 if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then
-    # macos versions until and including 10.13 
+    # macos versions until and including 10.13
+    EXTENSIONS_PREFERENCESFILE_SOURCE="$RESTOREMASTERDIR/Users/$MASTERUSER/Library/Preferences/com.apple.Safari.Extensions.plist"
 	EXTENSIONS_PREFERENCESFILE_DESTINATION="/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"
 else
     # macos versions 10.14 and up
+    EXTENSIONS_PREFERENCESFILE_SOURCE="$RESTOREMASTERDIR/Users/$MASTERUSER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
+    EXTENSIONS_PREFERENCESFILE_DESTINATION="/$HOMEFOLDER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
     if [[ -e "/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist" ]]
     then   
-    	rm -f "/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"
+    	mv "/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist" "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
 	else
 		:
 	fi
-	EXTENSIONS_PREFERENCESFILE_DESTINATION="/$HOMEFOLDER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
-fi
 
-# backup file
-if [[ $(cat $RESTOREMASTERDIR/_backup_macos_version.txt | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-then
-	# macos versions until and including 10.13 
-	EXTENSIONS_PREFERENCESFILE_SOURCE="$RESTOREMASTERDIR/Users/$MASTERUSER/Library/Preferences/com.apple.Safari.Extensions.plist"
-else
-    # macos versions 10.14 and up
-	EXTENSIONS_PREFERENCESFILE_SOURCE="$RESTOREMASTERDIR/Users/$MASTERUSER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
-fi	
+fi
 
 
 ###
 
-
-osascript -e 'tell application "Safari" to quit'
-sleep 2
 
 if [ -e "$EXTENSIONS_PREFERENCESFILE_SOURCE" ] && [ -e $RESTOREMASTERDIR/Users/"$MASTERUSER"/Library/Safari/Extensions ]
 then
@@ -85,7 +75,7 @@ fi
 echo "restoring safari extensions..."
 find /$HOMEFOLDER/Desktop/Extensions -name "*.safariextz" -print0 | while IFS= read -r -d '' file; do
     open "$file"
-    sleep 5
+    sleep 8
 done
 
 sleep 2
@@ -95,14 +85,18 @@ echo "safari has to be quit before continuing..."
 while ps aux | grep 'Safari.app' | grep -v grep > /dev/null; do sleep 1; done
 
 echo "restoring preferences of safari extensions..."
+sleep 1
 rm "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
+#echo "source is "$EXTENSIONS_PREFERENCESFILE_SOURCE"..."
+#echo "destination is "$EXTENSIONS_PREFERENCESFILE_DESTINATION"..."
 cp -a "$EXTENSIONS_PREFERENCESFILE_SOURCE" "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
 chmod 600 "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
 chown 501:staff "$EXTENSIONS_PREFERENCESFILE_DESTINATION"
+sleep 1
 
 # opening safari again to accept self signed certificate for possible calendar error on sync
 echo ''
-echo "please accept self-signed certificate by showing details, opening the webiste and entering the password..."
+echo "please accept self-signed certificate by showing details, opening the website and entering the password..."
 open -a /Applications/Safari.app https://172.16.1.200	
 echo "safari has to be quit before continuing..."
 while ps aux | grep 'Safari.app' | grep -v grep > /dev/null; do sleep 1; done
