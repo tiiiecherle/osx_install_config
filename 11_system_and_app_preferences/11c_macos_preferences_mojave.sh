@@ -3411,7 +3411,7 @@ EOF
         else
             :
         fi
-        echo ''
+        #echo ''
     done
     
     if [[ ! -e "/Applications/Finder.app" ]] && [[ -e "/System/Library/CoreServices/Finder.app" ]]
