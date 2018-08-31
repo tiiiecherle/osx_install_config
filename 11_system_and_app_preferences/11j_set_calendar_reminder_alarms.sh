@@ -36,34 +36,77 @@ then
 		fi
 	done
 	
+	
 	### variables
 	PATH_TO_CALENDARS=/Users/"$USER"/Library/Calendars
 	
+	function identify_terminal() {
+    
+    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+    then
+    	export SOURCE_APP=Terminal
+    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
+    then
+        export SOURCE_APP=iTerm
+	else
+		export SOURCE_APP=Terminal
+		echo "terminal not identified, setting automating permissions to apple terminal..."
+	fi 
+}
+identify_terminal
+	
 	
 	### opening app
-	#echo "opening calendar..."
-	#echo "please wait 10s for calendar to quit..." 
-	#osascript <<EOF
-	#	
-	#		tell application "Calendar"
-	#			launch
-	#			#delay 3
-	#			#activate
-	#			#delay 3
-	#		end tell
-	#		
-	#		delay 10
-	#	
-	#		try
-	#			tell application "Calendar"
-	#				quit
-	#			end tell
-	#		end try
-	#	
-#EOF
+	echo ''
+	echo "opening calendar..."
+	osascript <<EOF	
+			tell application "Calendar"
+				launch
+				#delay 3
+				#activate
+				#delay 3
+			end tell
+			
+			delay 3
+			
+			tell application "$SOURCE_APP"
+				activate
+			end tell
+			
+EOF
+
+	WAITING_TIME=60
+	echo "waiting ""$WAITING_TIME"" seconds to give the calendar time to download calendar entries..."
+	NUM1=0
+	#echo ''
+	echo ''
+	while [[ "$NUM1" -le "$WAITING_TIME" ]]
+	do 
+		NUM1=$((NUM1+1))
+		if [[ "$NUM1" -lt "$WAITING_TIME" ]]
+		then
+			#echo "$NUM1"
+			sleep 1
+			tput cuu 1 && tput el
+			echo "$(($WAITING_TIME-NUM1)) seconds waiting..."
+		else
+			:
+		fi
+	done
+	
+	osascript <<EOF					
+			try
+				tell application "Calendar"
+					quit
+				end tell
+			end try
+EOF
+
+	sleep 2
 	
 	
-	### quitting calandar and contacts 
+	### quitting calandar and contacts
+	echo ''
 	echo "quitting calendar and contacts..."
 	osascript <<EOF
 	
