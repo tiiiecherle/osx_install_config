@@ -76,22 +76,129 @@ sudo()
 
 
 ###
+### variables
+###
+
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+
+
+
+###
+### functions
+###
+
+function databases_apps_security_permissions() {
+    DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_SYSTEM"
+	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_USER"
+}
+    
+function identify_terminal() {
+    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+    then
+    	export SOURCE_APP=com.apple.Terminal
+    	export SOURCE_APP_NAME="Terminal"
+    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
+    then
+        export SOURCE_APP=com.googlecode.iterm2
+        export SOURCE_APP_NAME="iTerm"
+	else
+		export SOURCE_APP=com.apple.Terminal
+		echo "terminal not identified, setting automating permissions to apple terminal..."
+	fi
+}
+
+function give_apps_security_permissions() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.systempreferences',?,NULL,?);"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions_start() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.systempreferences');"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions_stop() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP == "yes" ]]
+        then
+            # source app was already allowed to control app before running this script, so don`t delete the permission
+            :
+        else
+            remove_apps_security_permissions_start
+        fi
+    fi
+}
+
+
+###
+
+
+databases_apps_security_permissions
+identify_terminal
+
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+then
+    # macos versions until and including 10.13 
+	:
+else
+    echo ''
+    echo "setting security permissions..."
+    if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.systempreferences' and allowed='1');") != "" ]]
+	then
+	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="yes"
+	    #echo "$SOURCE_APP is already allowed to control app..."
+	else
+		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="no"
+		#echo "$SOURCE_APP is not allowed to control app..."
+		give_apps_security_permissions
+	fi
+    echo ''
+fi
+
+# trap
+trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM EXIT
+
+
+###
 ### preferences spotlight
 ###
 
 echo "preferences spotlight"
 
-if [ -e ~/Library/Preferences/com.apple.spotlight.plist ]
+function open_system_prefs_spotlight() {
+    
+if [ -e ~/Library/Preferences/com.apple.Spotlight.plist ]
 then
-	rm ~/Library/Preferences/com.apple.spotlight.plist
+	rm ~/Library/Preferences/com.apple.Spotlight.plist
 else
 	:
 fi
 
 sleep 2
 
-# setting one click in system preferences to activate the file and make the rest of the script work
-function open_system_prefs_spotlight() {
 #osascript 2>/dev/null <<EOF
 osascript <<EOF
 
@@ -133,8 +240,13 @@ tell application "System Preferences"
 end tell
 
 EOF
+
+# waiting for the applescript settings to be applied to the preferences file to make the script work
+sleep 10
+
 }
-open_system_prefs_spotlight
+# only use the function if the spotlight preferences shall be reset completely
+#open_system_prefs_spotlight
 
 # if script hangs it has to be run with an app that has the the right to write to accessibility settings
 # in system preferences - security - assistance devices
@@ -150,11 +262,9 @@ open_system_prefs_spotlight
 # 	MENU_OTHER
 
 echo "settings spotlight system preferences options..."
-# waiting for the applescript settings to be applied to the preferences file to make the script work
-sleep 10
 
-/usr/libexec/PlistBuddy -c 'Delete orderedItems' ~/Library/Preferences/com.apple.spotlight.plist
-/usr/libexec/PlistBuddy -c 'Add orderedItems array' ~/Library/Preferences/com.apple.spotlight.plist
+/usr/libexec/PlistBuddy -c 'Delete orderedItems' ~/Library/Preferences/com.apple.Spotlight.plist
+/usr/libexec/PlistBuddy -c 'Add orderedItems array' ~/Library/Preferences/com.apple.Spotlight.plist
 
 spotlightconfig=(
 "0      APPLICATIONS                    false"
@@ -190,10 +300,12 @@ do
     #echo $ITEMNR
     #echo $SPOTLIGHTENTRY
     #echo $ENABLED
-    /usr/libexec/PlistBuddy -c 'Add orderedItems:'$ITEMNR' dict' ~/Library/Preferences/com.apple.spotlight.plist
-    /usr/libexec/PlistBuddy -c 'Add orderedItems:'$ITEMNR':enabled bool '$ENABLED'' ~/Library/Preferences/com.apple.spotlight.plist
-    /usr/libexec/PlistBuddy -c 'Add orderedItems:'$ITEMNR':name string '$SPOTLIGHTENTRY'' ~/Library/Preferences/com.apple.spotlight.plist
+    /usr/libexec/PlistBuddy -c 'Add orderedItems:'$ITEMNR' dict' ~/Library/Preferences/com.apple.Spotlight.plist
+    /usr/libexec/PlistBuddy -c 'Add orderedItems:'$ITEMNR':enabled bool '$ENABLED'' ~/Library/Preferences/com.apple.Spotlight.plist
+    /usr/libexec/PlistBuddy -c 'Add orderedItems:'$ITEMNR':name string '$SPOTLIGHTENTRY'' ~/Library/Preferences/com.apple.Spotlight.plist
 done
+
+echo ''
 
 # another way of stopping indexing AND searching for a volume (very helpful for network volumes) is putting an empty file ".metadata_never_index"
 # in the root directory of the volume and run "mdutil -E /Volumes/*" afterwards, check if it worked with sudo mdutil -s /Volumes/*
@@ -254,6 +366,10 @@ defaults write com.apple.lookup.shared LookupSuggestionsDisabled -bool true
 
 # spotlight menu bar icon
 # hide or move with bartender
+
+
+### removing security permissions
+remove_apps_security_permissions_stop
 
 
 ###

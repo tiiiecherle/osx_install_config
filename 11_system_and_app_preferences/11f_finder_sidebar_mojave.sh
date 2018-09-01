@@ -20,6 +20,102 @@ else
 fi
 
 
+### functions
+
+function databases_apps_security_permissions() {
+    DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_SYSTEM"
+	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_USER"
+}
+    
+function identify_terminal() {
+    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+    then
+    	export SOURCE_APP=com.apple.Terminal
+    	export SOURCE_APP_NAME="Terminal"
+    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
+    then
+        export SOURCE_APP=com.googlecode.iterm2
+        export SOURCE_APP_NAME="iTerm"
+	else
+		export SOURCE_APP=com.apple.Terminal
+		echo "terminal not identified, setting automating permissions to apple terminal..."
+	fi
+}
+
+function give_apps_security_permissions() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions_start() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder');"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions_stop() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP == "yes" ]]
+        then
+            # source app was already allowed to control app before running this script, so don`t delete the permission
+            :
+        else
+            remove_apps_security_permissions_start
+        fi
+    fi
+}
+
+
+###
+
+
+databases_apps_security_permissions
+identify_terminal
+
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+then
+    # macos versions until and including 10.13 
+	:
+else
+    echo ''
+    echo "setting security permissions..."
+    if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+	then
+	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="yes"
+	    #echo "$SOURCE_APP is already allowed to control app..."
+	else
+		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="no"
+		#echo "$SOURCE_APP is not allowed to control app..."
+		give_apps_security_permissions
+	fi
+    echo ''
+fi
+
+# trap
+trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM EXIT
+
+
 ### sfltool
 # sfltool restore|add-item|save-lists|test|archive|enable-modern|dump-server-state|clear|disable-modern|dump-storage|list-info [options]
 
@@ -74,9 +170,9 @@ echo "clearing and setting finder sidebare items..."
 #mysides remove all
 #
 #mysides remove "Alle meine Dateien"
-mysides remove myDocuments.cannedSearch
-mysides remove iCloud
-mysides add domain-AirDrop nwnode://domain-AirDrop
+#mysides remove myDocuments.cannedSearch
+#mysides remove iCloud
+#mysides add domain-AirDrop nwnode://domain-AirDrop
 mysides remove domain-AirDrop
 mysides add Applications file:///Applications
 mysides add Desktop file:///Users/${USER}/Desktop
@@ -156,6 +252,23 @@ tell application "System Events"
 		# computer
 		set host_name to (do shell script "echo $HOSTNAME")
 		--return host_name
+		# last used
+		#set theCheckbox to checkbox host_name of window "Finder-Einstellungen"
+		set theCheckbox to checkbox 1 of window 1
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is true then click theCheckbox
+		end tell
+		delay 0.2
+		# airdrop
+		#set theCheckbox to checkbox host_name of window "Finder-Einstellungen"
+		set theCheckbox to checkbox 2 of window 1
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is true then click theCheckbox
+		end tell
+		delay 0.2
+		# my computer
 		#set theCheckbox to checkbox host_name of window "Finder-Einstellungen"
 		set theCheckbox to checkbox 12 of window 1
 		tell theCheckbox
@@ -266,7 +379,7 @@ tell application "System Events"
 		#click button "Seitenleiste" of toolbar 1 of window "Finder-Einstellungen"
 		click button 3 of toolbar 1 of window 1
 		delay 1
-		# zugang zu meinem mac
+		# icloud drive
 		#set theCheckbox to checkbox "iCloud Drive" of window "Finder-Einstellungen"
 		set theCheckbox to checkbox 11 of window 1
 		tell theCheckbox
@@ -289,7 +402,11 @@ end tell
 
 EOF
 }
-#enable_disable_finder_sidebar_items2
+enable_disable_finder_sidebar_items2
+
+
+### removing security permissions
+remove_apps_security_permissions_stop
 
 
 echo "done ;)"
