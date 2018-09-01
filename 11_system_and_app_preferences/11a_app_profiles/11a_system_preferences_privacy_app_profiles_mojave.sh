@@ -11,7 +11,9 @@ function databases_apps_security_permissions() {
     #echo "$DATABASE_SYSTEM"
 	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
     #echo "$DATABASE_USER"
+}
     
+function identify_terminal() {
     if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
     then
     	export SOURCE_APP=com.apple.Terminal
@@ -23,8 +25,10 @@ function databases_apps_security_permissions() {
 	else
 		export SOURCE_APP=com.apple.Terminal
 		echo "terminal not identified, setting automating permissions to apple terminal..."
-	fi 
+	fi
 }
+
+identify_terminal
 databases_apps_security_permissions
 
 

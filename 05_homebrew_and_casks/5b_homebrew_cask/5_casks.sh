@@ -48,13 +48,17 @@ function databases_apps_security_permissions() {
     #echo "$DATABASE_SYSTEM"
 	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
     #echo "$DATABASE_USER"
+}
     
+function identify_terminal() {
     if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
     then
     	export SOURCE_APP=com.apple.Terminal
+    	export SOURCE_APP_NAME="Terminal"
     elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
     then
         export SOURCE_APP=com.googlecode.iterm2
+        export SOURCE_APP_NAME="iTerm"
 	else
 		export SOURCE_APP=com.apple.Terminal
 		echo "terminal not identified, setting automating permissions to apple terminal..."
@@ -136,6 +140,7 @@ echo "installing casks..."
 echo ''
 
 databases_apps_security_permissions
+identify_terminal
 
 if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then

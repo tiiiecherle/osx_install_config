@@ -92,17 +92,21 @@ function databases_apps_security_permissions() {
     #echo "$DATABASE_SYSTEM"
 	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
     #echo "$DATABASE_USER"
+}
     
+function identify_terminal() {
     if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
     then
     	export SOURCE_APP=com.apple.Terminal
+    	export SOURCE_APP_NAME="Terminal"
     elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
     then
         export SOURCE_APP=com.googlecode.iterm2
+        export SOURCE_APP_NAME="iTerm"
 	else
 		export SOURCE_APP=com.apple.Terminal
 		echo "terminal not identified, setting automating permissions to apple terminal..."
-	fi 
+	fi
 }
 
 function give_apps_security_permissions() {
@@ -198,6 +202,7 @@ function setting_preferences {
     
     echo''    
     databases_apps_security_permissions
+    identify_terminal
     
     if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
@@ -618,8 +623,10 @@ EOF
     defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 32 "
       <dict>
         <key>enabled</key><true/>
-        <key>value</key><dict>
-          <key>type</key><string>standard</string>
+        <key>value</key>
+        <dict>
+          <key>type</key>
+          <string>standard</string>
           <key>parameters</key>
           <array>
             <integer>65535</integer>
@@ -645,9 +652,12 @@ EOF
     # enable application windows on F10
     defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 33 "
       <dict>
-        <key>enabled</key><true/>
-        <key>value</key><dict>
-          <key>type</key><string>standard</string>
+        <key>enabled</key>
+        <true/>
+        <key>value</key>
+        <dict>
+          <key>type</key>
+          <string>standard</string>
           <key>parameters</key>
           <array>
             <integer>65535</integer>
@@ -673,9 +683,12 @@ EOF
     # enable show desktop on F11
     defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 36 "
       <dict>
-        <key>enabled</key><true/>
-        <key>value</key><dict>
-          <key>type</key><string>standard</string>
+        <key>enabled</key>
+        <true/>
+        <key>value</key>
+        <dict>
+          <key>type</key>
+          <string>standard</string>
           <key>parameters</key>
           <array>
             <integer>65535</integer>
@@ -1937,6 +1950,13 @@ EOF
     # see above, included in time options
     
     # time announcement
+    if [[ ! -e ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist ]]
+    then
+        /usr/libexec/PlistBuddy -c "Add TimeAnnouncementPrefs:TimeAnnouncementsEnabled bool" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist > /dev/null 2>&1
+    else
+        :
+    fi
+
     if [[ -z $(/usr/libexec/PlistBuddy -c "Print TimeAnnouncementPrefs:TimeAnnouncementsEnabled" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist) ]] > /dev/null 2>&1
     then
         /usr/libexec/PlistBuddy -c "Add TimeAnnouncementPrefs:TimeAnnouncementsEnabled bool" ~/Library/Preferences/com.apple.speech.synthesis.general.prefs.plist
