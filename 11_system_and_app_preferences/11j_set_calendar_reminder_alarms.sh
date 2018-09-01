@@ -44,14 +44,16 @@ then
     
     if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
     then
-    	export SOURCE_APP=Terminal
+    	export SOURCE_APP=com.apple.Terminal
+    	export SOURCE_APP_NAME="Terminal"
     elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
     then
-        export SOURCE_APP=iTerm
+        export SOURCE_APP=com.googlecode.iterm2
+        export SOURCE_APP_NAME="iTerm"
 	else
-		export SOURCE_APP=Terminal
+		export SOURCE_APP=com.apple.Terminal
 		echo "terminal not identified, setting automating permissions to apple terminal..."
-	fi 
+	fi
 }
 identify_terminal
 	
@@ -69,7 +71,7 @@ identify_terminal
 			
 			delay 3
 			
-			tell application "$SOURCE_APP"
+			tell application "$SOURCE_APP_NAME"
 				activate
 			end tell
 			
