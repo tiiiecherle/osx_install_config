@@ -458,6 +458,7 @@ AUTOMATIONAPPS=(
 "gui_apps_backup                                                        System Events                   1"
 "gui_apps_backup                                                        Terminal                        1"
 "virtualbox_backup                                                      System Events                   1"
+"virtualbox_backup                                                      Terminal                        1"
 "run_on_login_signal                                                    System Events                   1"
 "run_on_login_whatsapp                                                  System Events                   1"
 "iTerm                                                                  System Events                   1"
