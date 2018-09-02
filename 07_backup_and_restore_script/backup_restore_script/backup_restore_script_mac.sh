@@ -1586,7 +1586,7 @@ function backup_restore {
                 #rm -rf "/Users/$USER/Library/Application Support/Signal/sql/"
                 #
                 #rm -rf "/Users/$USER/Library/Application Support/Signal/"* 
-                osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."'
+                osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
             else
                 :
             fi

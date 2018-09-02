@@ -35,8 +35,9 @@ PLIST_FILE='~/Library/Preferences/com.apple.ncprefs.plist'
 # clean all extended attributes
 #xattr -c /Users/$USER/Library/Preferences/com.apple.ncprefs.plist
 open $(eval echo "$PLIST_FILE")
-sleep 2
-osascript -e "tell application (path to frontmost application as text) to quit saving no"
+sleep 5
+#osascript -e "tell application (path to frontmost application as text) to quit saving no"
+osascript -e "tell application \"Prefs Editor\" to quit saving no"
 sleep 1
 
 
