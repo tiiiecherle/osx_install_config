@@ -135,11 +135,12 @@ applications_to_open=(
 #"/Applications/Microsoft Office 2011/Microsoft Word.app"
 "/Applications/Messages.app"
 "/Applications/The Unarchiver.app"
-"/Applications/Xcode.app"
-"/Applications/iphone/iMazing.app"
+#"/Applications/Xcode.app"
+"/Applications/iMazing.app"
 "/Applications/VirusScannerPlus.app"
 "/Applications/Macs Fan Control.app"
-"/Applications/Signal.app"
+#"/Applications/Signal.app"
+"/Applications/Keka.app"
 )
 
 for i in "${applications_to_open[@]}"
