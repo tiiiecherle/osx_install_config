@@ -1607,17 +1607,19 @@ function backup_restore {
                 create_tmp_backup_script_fifo3
                 # this has to run in a new shell due to variables, functions, etc.
                 # so do not source this script
-                #bash -c """$SCRIPT_DIR_FINAL""/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh"
-                
                 # tee does not capture the output format, so e.g. you can not see the download progress of casks, use scripts command to keep output formats
-                bash "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh
+                #bash -c """$SCRIPT_DIR_FINAL""/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh"
+                #bash "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh
+                # parentheses put script in subshell - this works with subprocess killing functions
+                # exec, bash and bash -c output terminations of sleep 60 from start sudo at the end
+                ( "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh )
                 wait
             else
                 :
             fi
 
             ### ownership and permissions
-            echo ""
+            #echo ''
             echo "setting ownerships and permissions..."
             export RESTOREMASTERDIR
             export RESTOREUSERDIR
