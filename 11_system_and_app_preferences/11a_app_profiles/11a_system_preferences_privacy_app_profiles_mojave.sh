@@ -74,6 +74,7 @@ EagleFiler
 ### creating profiles
 for APP_ENTRY in "${APP_LIST[@]}"
 do
+	echo ''
 	echo "$APP_ENTRY"
 	
 	tccutil reset AppleEvents

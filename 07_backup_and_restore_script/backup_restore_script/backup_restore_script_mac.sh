@@ -276,21 +276,21 @@ function give_apps_security_permissions() {
     else
         # macos versions 10.14 and up
         # accessibility gui apps backup
-        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
+        #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
         # accessibility brew cask update
-        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
+        #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
         # reminders
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
         # contacts
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
         # calendar
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
         
         # working, but does not show in gui of system preferences, use csreq for the entry to show
         # automation gui backup app
         #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
         # automation files
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
         #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
         # automation vbox backup app
         #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
@@ -298,6 +298,8 @@ function give_apps_security_permissions() {
         # automation brew cask update
 	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
 	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+	    
+	    :
     fi
     sleep 1
 }
@@ -314,13 +316,15 @@ function remove_apps_security_permissions_start() {
     else
         # macos versions 10.14 and up
         # gui apps backup
-        sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
-        sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+        #sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
+        #sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
         # automation files
         #sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
         #sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
         # vbox backup app
-        sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.virtualbox-backup';"
+        #sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.virtualbox-backup';"
+        
+        :
     fi
     sleep 1
 }
@@ -334,7 +338,9 @@ function remove_apps_security_permissions_stop() {
         # macos versions 10.14 and up
         # automation files
         sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
+        #sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
+        
+        :
     fi
     #sleep 1
 }
@@ -637,16 +643,16 @@ function backup_restore {
             :
         fi
         
+        echo "resetting security permissions for backup apps..."
+        remove_apps_security_permissions_start
+        give_apps_security_permissions
+        echo ''
+        
         # checking if backup option was selected
         if [[ "$OPTION" == "BACKUP" ]]; 
             then
             echo "running backup..."
             sleep 1
-            
-            echo ''
-            echo "resetting security permissions for backup apps..."
-            remove_apps_security_permissions_start
-            give_apps_security_permissions
             
             # opening applescript which will ask for saving location of compressed file
             echo ''
@@ -1602,6 +1608,8 @@ function backup_restore {
                 # this has to run in a new shell due to variables, functions, etc.
                 # so do not source this script
                 #bash -c """$SCRIPT_DIR_FINAL""/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh"
+                
+                # tee does not capture the output format, so e.g. you can not see the download progress of casks, use scripts command to keep output formats
                 bash "$SCRIPT_DIR_FINAL"/05_homebrew_and_casks/5b_homebrew_cask/5_casks.sh
                 wait
             else
@@ -1651,8 +1659,22 @@ function backup_restore {
 #FUNC=$(declare -f backup_restore)
 #time bash -c "OPTION=\"$OPTION\"; SCRIPT_DIR=\"$SCRIPT_DIR\"; APPLESCRIPTDIR=\"$APPLESCRIPTDIR\"; $FUNC; backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt"
 
-backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt
-#echo ''
+if [[ "$OPTION" == "BACKUP" ]]
+then
+    # script is run with
+    # export OPTION=RESTORE; time "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
+    # tee does not capture the output format, so e.g. you couldn`t see the download progress of casks
+    backup_restore 2>&1 | tee "$HOME"/Desktop/backup_restore_log.txt
+elif [[ "$OPTION" == "RESTORE" ]]
+then
+    # script is run with
+    # export OPTION=RESTORE; time script -q ~/Desktop/backup_restore_log.txt "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
+    # to read the output file including formats do
+    # cat ~/Desktop/backup_restore_log.txt
+    backup_restore
+else
+    :
+fi
 
 ###
 ### unsetting password

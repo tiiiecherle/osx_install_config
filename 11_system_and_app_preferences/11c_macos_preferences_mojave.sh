@@ -117,7 +117,7 @@ function give_apps_security_permissions() {
     else
         # macos versions 10.14 and up
         # working, but does not show in gui of system preferences, use csreq for the entry to show
-	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.systempreferences',?,NULL,?);"
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
     fi
     sleep 1
 }
@@ -129,7 +129,10 @@ function remove_apps_security_permissions_start() {
 		:
     else
         # macos versions 10.14 and up
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.systempreferences');"
+        AUTOMATED_APP=com.apple.systemevents
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
+        AUTOMATED_APP=com.apple.systempreferences
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
     fi
     sleep 1
 }
@@ -140,13 +143,23 @@ function remove_apps_security_permissions_stop() {
         # macos versions until and including 10.13 
 		:
     else
+        AUTOMATED_APP=com.apple.systemevents
         # macos versions 10.14 and up
-        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP == "yes" ]]
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1 == "yes" ]]
         then
             # source app was already allowed to control app before running this script, so don`t delete the permission
             :
         else
-            remove_apps_security_permissions_start
+            sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
+        fi
+        #
+        AUTOMATED_APP=com.apple.systempreferences
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP2 == "yes" ]]
+        then
+            # source app was already allowed to control app before running this script, so don`t delete the permission
+            :
+        else
+            sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
         fi
     fi
 }
@@ -173,11 +186,53 @@ else
     :
 fi
 
+
+###
+
+echo''    
+databases_apps_security_permissions
+identify_terminal
+
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+then
+    # macos versions until and including 10.13 
+	:
+else
+    echo "setting security permissions..."
+    AUTOMATED_APP=com.apple.systemevents
+    if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"' and allowed='1');") != "" ]]
+	then
+	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1="yes"
+	    #echo "$SOURCE_APP is already allowed to control $AUTOMATED_APP..."
+	else
+		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1="no"
+		#echo "$SOURCE_APP is not allowed to control $AUTOMATED_APP..."
+		give_apps_security_permissions
+	fi
+	#
+	AUTOMATED_APP=com.apple.systempreferences
+	if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"' and allowed='1');") != "" ]]
+	then
+	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP2="yes"
+	    #echo "$SOURCE_APP is already allowed to control $AUTOMATED_APP..."
+	else
+		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP2="no"
+		#echo "$SOURCE_APP is not allowed to control $AUTOMATED_APP..."
+		give_apps_security_permissions
+	fi
+    echo ''
+fi
+
+# trap
+trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM EXIT
+
+
 ### uuid
 
 #uuid1=$(system_profiler SPHardwareDataType | grep "Hardware UUID" | awk -F":" '{print $2}' | awk '{gsub(/^[ \t]+|[ \t]+$/, "")}1')
 uuid1=$(/usr/sbin/system_profiler SPHardwareDataType | grep "Hardware UUID" | cut -c22-57)
 
+echo ''
 echo "user uuid is $uuid1"
 
 ### displayid
@@ -194,39 +249,7 @@ echo "user uuid is $uuid1"
 ###
 
 function setting_preferences {
-    
-    
-    ###
-    ### defining some variables for later usage
-    ###
-    
-    echo''    
-    databases_apps_security_permissions
-    identify_terminal
-    
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-    then
-        # macos versions until and including 10.13 
-    	:
-    else
-        echo "setting security permissions..."
-        if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.systempreferences' and allowed='1');") != "" ]]
-    	then
-    	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="yes"
-    	    #echo "$SOURCE_APP is already allowed to control app..."
-    	else
-    		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="no"
-    		#echo "$SOURCE_APP is not allowed to control app..."
-    		give_apps_security_permissions
-    	fi
-        echo ''
-    fi
 
-    # trap
-    trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM EXIT
-    
-    
-    
     ###
     ### menu bar
     ###

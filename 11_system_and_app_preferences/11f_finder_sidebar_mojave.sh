@@ -52,7 +52,7 @@ function give_apps_security_permissions() {
     else
         # macos versions 10.14 and up
         # working, but does not show in gui of system preferences, use csreq for the entry to show
-	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
     fi
     sleep 1
 }
@@ -64,7 +64,8 @@ function remove_apps_security_permissions_start() {
 		:
     else
         # macos versions 10.14 and up
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder');"
+        AUTOMATED_APP=com.apple.finder
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
     fi
     sleep 1
 }
@@ -76,12 +77,14 @@ function remove_apps_security_permissions_stop() {
 		:
     else
         # macos versions 10.14 and up
-        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP == "yes" ]]
+        AUTOMATED_APP=com.apple.finder
+        # macos versions 10.14 and up
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1 == "yes" ]]
         then
             # source app was already allowed to control app before running this script, so don`t delete the permission
             :
         else
-            remove_apps_security_permissions_start
+            sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
         fi
     fi
 }
@@ -100,13 +103,14 @@ then
 else
     echo ''
     echo "setting security permissions..."
-    if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='com.apple.finder' and allowed='1');") != "" ]]
+    AUTOMATED_APP=com.apple.finder
+    if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"' and allowed='1');") != "" ]]
 	then
-	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="yes"
-	    #echo "$SOURCE_APP is already allowed to control app..."
+	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1="yes"
+	    #echo "$SOURCE_APP is already allowed to control $AUTOMATED_APP..."
 	else
-		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP="no"
-		#echo "$SOURCE_APP is not allowed to control app..."
+		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1="no"
+		#echo "$SOURCE_APP is not allowed to control $AUTOMATED_APP..."
 		give_apps_security_permissions
 	fi
     echo ''
