@@ -77,7 +77,7 @@ identify_terminal
 			
 EOF
 
-	WAITING_TIME=60
+	WAITING_TIME=30
 	echo "waiting ""$WAITING_TIME"" seconds to give the calendar time to download calendar entries..."
 	NUM1=0
 	#echo ''
