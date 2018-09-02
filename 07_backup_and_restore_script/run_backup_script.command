@@ -81,7 +81,14 @@ fi
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 
 find "$SCRIPT_DIR" -mindepth 1 ! -path "*/*.app/*" -name "*.app" -print0 | xargs -0 xattr -dr com.apple.quarantine
+
+# to read the output file including formats do
+# cat ~/Desktop/backup_restore_log.txt
+#export OPTION=RESTORE; time script -q ~/Desktop/backup_restore_log.txt "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
+
+# this needs tee in the backup script which does not capture the output format, so e.g. you couldn`t see the download progress of casks
 export OPTION=BACKUP; time "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
+
 echo ''
 
 exit
