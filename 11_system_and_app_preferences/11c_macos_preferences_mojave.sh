@@ -3131,10 +3131,6 @@ EOF
     ##
     defaults write com.apple.AddressBook ABIncludePhotosInVCard -bool true
     
-    # set address format
-    # here for germany
-    defaults write com.apple.AddressBook ABDefaultAddressCountryCode -string de
-    
     
     ###
     ### text edit
