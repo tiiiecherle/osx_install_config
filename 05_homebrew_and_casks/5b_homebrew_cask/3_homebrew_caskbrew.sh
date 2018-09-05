@@ -118,6 +118,17 @@ brew install vitorgalvao/tiny-scripts/cask-repair
 # sudo gem uninstall -ax rubocop rubocop-cask
 # brew cask style
 
+# installing parallel as dependency for the other scripts
+echo ''
+echo "installing parallel..."
+if [[ "$(which parallel)" == "" ]]
+then
+    brew install parallel
+    echo ''
+else
+    :
+fi
+
 # cleaning up
 echo ''
 echo "cleaning up..."

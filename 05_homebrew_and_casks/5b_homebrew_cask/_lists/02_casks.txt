@@ -1,8 +1,11 @@
 ### needed casks
+xquartz
+java
+#java		    	# installed in casks_pre section
+#xquartz		# installed in casks_pre section
 adobe-acrobat-reader
 flash-npapi
 #gpgtools
-#java		    # installed in casks_pre section
 nextcloud
 #osxfuse
 #silverlight
@@ -82,5 +85,4 @@ witch
 x-lite
 xact
 xnconvert
-#xquartz		# installed in casks_pre section
 #zipeg

@@ -238,9 +238,11 @@ then
 	    if [[ -e /Users/$USER/Library/Preferences/com.adobe.Reader.plist ]]
 	    then
 	        mv /Users/$USER/Library/Preferences/com.adobe.Reader.plist /tmp/com.adobe.Reader.plist
+	        sudo rm -f /Library/Preferences/com.adobe.reader.DC.WebResource.plist
 	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
 	        mv /tmp/com.adobe.Reader.plist /Users/$USER/Library/Preferences/com.adobe.Reader.plist
 	    else
+	        sudo rm -f /Library/Preferences/com.adobe.reader.DC.WebResource.plist
 	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
 	    fi
 	else
@@ -278,7 +280,19 @@ then
 	fi
 	
 	# as xtrafinder is no longer installable by cask let`s install it that way ;)
-    echo ''
+	# automation permissions
+	echo ''
+	echo "setting security permissions for xtrafinder..."
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+	    :
+    fi
 	echo "downloading xtrafinder..."
 	XTRAFINDER_INSTALLER="/Users/$USER/Desktop/XtraFinder.dmg"
 	#wget https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -O "$XTRAFINDER_INSTALLER"
@@ -295,17 +309,6 @@ then
 	echo "unmounting and removing installer file..."
 	hdiutil detach /Volumes/XtraFinder -quiet
 	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
-	# automation permissions
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-    then
-        # macos versions until and including 10.13 
-		:
-    else
-        # macos versions 10.14 and up
-        # working, but does not show in gui of system preferences, use csreq for the entry to show
-	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
-	    :
-    fi
 else
 	:
 fi
@@ -380,7 +383,9 @@ then
 else
     # script is not sourced, run standalone
     CHECK_IF_FORMULAE_INSTALLED="no"
-    . "$SCRIPT_DIR"/6_formulae_and_casks_install_check.sh
+    CHECK_IF_MASAPPS_INSTALLED="no"
+    echo ''
+    . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
 fi
 
 # installing user specific casks

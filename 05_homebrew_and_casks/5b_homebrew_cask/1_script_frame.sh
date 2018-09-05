@@ -8,26 +8,26 @@ if [[ "$SUDOPASSWORD" != "" ]]
 then
     #USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
     :
-elif [[ -e /tmp/run_from_backup_script3 ]] && [[ $(cat /tmp/run_from_backup_script3) == 1 ]]
+elif [[ -e /tmp/run_for_homebrew ]] && [[ $(cat /tmp/run_for_homebrew) == 1 ]]
 then
-    function delete_tmp_backup_script_fifo3() {
-        if [ -e "/tmp/tmp_backup_script_fifo3" ]
+    function delete_tmp_homebrew_script_fifo() {
+        if [ -e "/tmp/tmp_homebrew_script_fifo" ]
         then
-            rm "/tmp/tmp_backup_script_fifo3"
+            rm "/tmp/tmp_homebrew_script_fifo"
         else
             :
         fi
-        if [ -e "/tmp/run_from_backup_script3" ]
+        if [ -e "/tmp/run_for_homebrew" ]
         then
-            rm "/tmp/run_from_backup_script3"
+            rm "/tmp/run_for_homebrew"
         else
             :
         fi
     }
     unset SUDOPASSWORD
-    SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo3" | head -n 1)
+    SUDOPASSWORD=$(cat "/tmp/tmp_homebrew_script_fifo" | head -n 1)
     USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-    delete_tmp_backup_script_fifo3
+    delete_tmp_homebrew_script_fifo
     #set +a
 else
     # function for reading secret string (POSIX compliant)
@@ -171,6 +171,7 @@ function unset_variables() {
     unset SUDO_PID
     unset CHECK_IF_CASKS_INSTALLED
     unset CHECK_IF_FORMULAE_INSTALLED
+    unset CHECK_IF_MASAPPS_INSTALLED
     unset INSTALLATION_METHOD
     unset KEEPINGYOUAWAKE
 }
@@ -216,12 +217,168 @@ if [ -e /Applications/KeepingYouAwake.app ]
 then
     echo "deactivating keepingyouawake..."
     KEEPINGYOUAWAKE=""
-    open -g /Applications/KeepingYouAwake.app
+    #open -g /Applications/KeepingYouAwake.app
     open -g keepingyouawake:///deactivate
 else
     :
 fi
 }
+
+function delete_tmp_homebrew_script_fifo() {
+    if [ -e "/tmp/tmp_homebrew_script_fifo" ]
+    then
+        rm "/tmp/tmp_homebrew_script_fifo"
+    else
+        :
+    fi
+    if [ -e "/tmp/run_for_homebrew" ]
+    then
+        rm "/tmp/run_for_homebrew"
+    else
+        :
+    fi
+}
+
+function create_tmp_homebrew_script_fifo() {
+    delete_tmp_homebrew_script_fifo
+    touch "/tmp/run_for_homebrew"
+    echo "1" > "/tmp/run_for_homebrew"
+    mkfifo -m 600 "/tmp/tmp_homebrew_script_fifo"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_homebrew_script_fifo" &
+}
+
+
+function databases_apps_security_permissions() {
+    DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_SYSTEM"
+	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
+    #echo "$DATABASE_USER"
+}
+    
+function identify_terminal() {
+    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+    then
+    	export SOURCE_APP=com.apple.Terminal
+    	export SOURCE_APP_NAME="Terminal"
+    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
+    then
+        export SOURCE_APP=com.googlecode.iterm2
+        export SOURCE_APP_NAME="iTerm"
+	else
+		export SOURCE_APP=com.apple.Terminal
+		echo "terminal not identified, setting automating permissions to apple terminal..."
+	fi
+}
+
+function give_apps_security_permissions() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        # macos versions 10.14 and up
+        # working, but does not show in gui of system preferences, use csreq for the entry to show
+	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
+    fi
+    sleep 1
+}
+
+function remove_apps_security_permissions_stop() {
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    then
+        # macos versions until and including 10.13 
+		:
+    else
+        AUTOMATED_APP=com.apple.systemevents
+        # macos versions 10.14 and up
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1 == "yes" ]]
+        then
+            # source app was already allowed to control app before running this script, so don`t delete the permission
+            :
+        elif  [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1 == "no" ]]
+        then
+            sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
+        else
+            :
+        fi
+        unset AUTOMATED_APP
+        #
+        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP2 == "yes" ]]
+        then
+            # source app was already allowed to control app before running this script, so don`t delete the permission
+            :
+        elif  [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP2 == "no" ]]
+        then
+            sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where (service='kTCCServiceAccessibility' and client='"$SOURCE_APP"');"
+        else
+            :
+        fi
+    fi
+}
+
+
+
+###
+### variables
+###
+
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+
+# macos 10.14 and higher
+#if [[ $(echo $MACOS_VERSION | cut -f1 -d'.') == "10" ]] && [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+# macos 10.14 only
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.') != "10.14" ]]
+then
+    #echo "this script is only compatible with macos 10.14 mojave and newer, exiting..."
+    echo ''
+    echo "this script is only compatible with macos 10.14 mojave, exiting..."
+    echo ''
+    exit
+else
+    :
+fi
+
+
+###
+
+echo''    
+databases_apps_security_permissions
+identify_terminal
+
+if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+then
+    # macos versions until and including 10.13 
+	:
+else
+    echo "setting security permissions..."
+    if [[ "$FIRST_RUN_DONE" == "" ]]
+    then
+        AUTOMATED_APP=com.apple.systemevents
+        if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"' and allowed='1');") != "" ]]
+    	then
+    	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1="yes"
+    	    #echo "$SOURCE_APP is already allowed to control $AUTOMATED_APP..."
+    	else
+    		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1="no"
+    		#echo "$SOURCE_APP is not allowed to control $AUTOMATED_APP..."
+    		give_apps_security_permissions
+    	fi
+        #
+    	if [[ $(sudo sqlite3 "$DATABASE_SYSTEM" "select * from access where (service='kTCCServiceAccessibility' and client='"$SOURCE_APP"' and allowed='1');") != "" ]]
+    	then
+    	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP2="yes"
+    	    #echo "$SOURCE_APP is already allowed to control accessibility..."
+    	else
+    		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP2="no"
+    		#echo "$SOURCE_APP is not allowed to control accessibility..."
+    		sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','"$SOURCE_APP"',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
+    	fi
+    else
+        :
+    fi
+    #echo ''
+fi
 
 #SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 
@@ -234,14 +391,23 @@ fi
 #if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]] && [[ "$SCRIPT_SOURCED" == "no" ]]
 if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
 then
+    if [[ "$FIRST_RUN_DONE" == "" ]]
+    then
+        # script is session master and not run from another script (S on mac Ss on linux)
+        trap "stop_sudo; printf '\n'; stty sane; pkill ruby; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+        trap "stop_sudo; stty sane; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; kill_subprocesses >/dev/null 2>&1; deactivating_keepingyouawake >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+        #set -e
+    else
+        # do not stop keeping you awake in the scripts executed by run_all in separate tabs
+        #echo "no stopping of keepingyouawake..."
+        # script is not session master and run from another script (S+ on mac and linux) 
+        trap "stop_sudo; printf '\n'; stty sane; pkill ruby; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+        trap "stop_sudo; stty sane; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; unset SUDOPASSWORD; exit" EXIT
+    fi
+else    
     # script is session master and not run from another script (S on mac Ss on linux)
-    trap "stop_sudo; printf '\n'; stty sane; pkill ruby; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "stop_sudo; stty sane; kill_subprocesses >/dev/null 2>&1; deactivating_keepingyouawake >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
-    #set -e
-else
-    # script is not session master and run from another script (S+ on mac and linux) 
-    trap "stop_sudo; printf '\n'; stty sane; pkill ruby; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "stop_sudo; stty sane; deactivating_keepingyouawake >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+    trap "stop_sudo; printf '\n'; stty sane; pkill ruby; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "stop_sudo; stty sane; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; kill_subprocesses >/dev/null 2>&1; deactivating_keepingyouawake >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
 fi
 
 
@@ -303,10 +469,10 @@ function checking_parallel() {
     if [[ "$(which parallel)" == "" ]]
     then
         # parallel is not installed
-        INSTALLATION_METHOD="sequential"
+        export INSTALLATION_METHOD="sequential"
     else
         # parallel is installed
-        INSTALLATION_METHOD="parallel"
+        export INSTALLATION_METHOD="parallel"
     fi
     #echo ''
     echo INSTALLATION_METHOD is "$INSTALLATION_METHOD"...
@@ -336,3 +502,8 @@ function checking_homebrew() {
 }
 # done in scripts
 #checking_homebrew
+
+
+### first run done
+export FIRST_RUN_DONE="yes"
+

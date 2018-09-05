@@ -1,0 +1,298 @@
+#!/bin/bash
+
+###
+### variables
+###
+
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+
+
+###
+### script frame
+###
+
+# if script is run standalone, not sourced from another script, load script frame
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
+then
+    # script is sourced
+    :
+else
+    # script is not sourced, run standalone
+    if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
+    then
+        . "$SCRIPT_DIR"/1_script_frame.sh
+    else
+        echo ''
+        echo "script for functions and prerequisits is missing, exiting..."
+        echo ''
+        exit
+    fi
+fi
+
+
+###
+### command line tools
+###
+
+checking_command_line_tools
+
+
+###
+### homebrew
+###
+
+checking_homebrew
+
+
+### keepingyouawake
+if [[ "$KEEPINGYOUAWAKE" != "active" ]]
+then
+    echo ''
+    activating_keepingyouawake
+    echo ''
+else
+    echo ''
+fi
+
+
+### starting sudo
+start_sudo
+
+
+### installing mas
+# mas has its own formula for all macos versions
+# if mas in homebrew core is not working or out of date use
+# https://github.com/mas-cli/homebrew-tap
+# when used brew info $item 2>/dev/null has to be used in homebrew update script to avoid warnings
+brew tap mas-cli/tap
+brew tap-pin mas-cli/tap
+brew install mas
+# to unpin and get back to homebrew-core version
+#brew tap-unpin mas-cli/tap
+
+# install version from homebrew-core
+#brew install mas
+echo ''
+
+### parallel
+checking_parallel
+
+
+### mas login
+
+function mas_login() {
+    
+    mas signout
+    sleep 3
+    
+    #echo ''
+    MAS_APPLE_ID="    "
+    read -r -p "please enter apple id to log into appstore: " MAS_APPLE_ID
+    #echo $MAS_APPLE_ID
+    
+    if [[ "$MAS_APPLE_ID" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$ ]]
+    then
+        :
+    else
+        echo "this is not a valid apple-id, exiting..."
+        exit
+    fi
+    
+    #mas signin --dialog "$MAS_APPLE_ID"
+    mas signin "$MAS_APPLE_ID"
+	
+}
+#mas_login
+
+
+function mas_login_applescript() {
+    
+    if [[ "$MAS_APPLE_ID" == "" ]]
+    then
+        echo ''
+        MAS_APPLE_ID="    "
+        read -r -p "please enter apple id to log into appstore: " MAS_APPLE_ID
+        #echo $MAS_APPLE_ID
+    else
+        :
+    fi
+    
+    if [[ "$MAS_APPSTORE_PASSWORD" == "" ]]
+    then
+        echo ''
+        echo "please enter appstore password..."
+        MAS_APPSTORE_PASSWORD="    "
+    
+        # ask for password twice
+        #while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
+    
+        # only ask for password once
+        stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && stty echo && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''
+        echo ''
+    else
+        :
+    fi
+    
+    mas signout
+    sleep 3
+
+	osascript <<EOF
+    tell application "App Store"
+        try
+    	    activate
+    	    delay 5
+    	end try
+    end tell
+
+    tell application "System Events"
+    	tell process "App Store"
+    		set frontmost to true
+    		click menu item 15 of menu "Store" of menu bar item "Store" of menu bar 1
+    		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
+    		delay 2
+    		tell application "System Events" to keystroke "$MAS_APPLE_ID"
+    		delay 2
+    		tell application "System Events" to keystroke return
+    		delay 2
+    		tell application "System Events" to keystroke "$MAS_APPSTORE_PASSWORD"
+    		delay 2
+    		tell application "System Events" to keystroke return
+    	end tell
+    end tell
+    
+    tell application "App Store"
+        try
+            delay 10
+    	    quit
+    	end try
+    end tell
+    
+EOF
+ 
+}
+
+
+### quitting a few apps before continuing
+
+echo "quitting some apps before installation..."
+echo ''
+
+	osascript <<EOF
+    
+    tell application "VirusScannerPlus"
+        try
+    	    quit
+    	end try
+    end tell
+    
+    tell application "AudioSwitcher"
+        try
+    	    quit
+    	end try
+    end tell
+    
+EOF
+
+
+###
+
+install_mas_apps() {
+# always use _ instead of - because some sh commands called by parallel would give errors
+	#echo doing it for $1
+	if [[ "$USE_PARALLELS" == "yes" ]]
+	then
+		# if parallels is used i needs to redefined
+		i="$1"
+	else
+		:
+	fi
+	#echo ''
+	#echo "$i"
+	MAS_NUMBER=$(echo "$i" | awk '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+	#echo $MAS_NUMBER
+	MAS_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	#echo $MAS_NAME
+	echo installing app "$MAS_NAME"...
+	if [[ "$INSTALLATION_METHOD" == "parallel" ]]
+	then
+	    # formatting of output gets lost
+	    #mas install --force "$MAS_NUMBER" | grep "Installed"
+	    #mas install --force "$MAS_NUMBER"
+	    mas install "$MAS_NUMBER"
+	else
+	    #mas install --force "$MAS_NUMBER"
+	    mas install "$MAS_NUMBER"
+	fi
+	            
+}
+export -f install_mas_apps
+
+
+### installing mas apps
+#echo ''
+
+if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
+then
+	
+	mas_login_applescript
+
+    echo "the app store has to be quit before continuing..."
+    while ps aux | grep 'App Store.app' | grep -v grep > /dev/null; do sleep 1; done
+    echo ''
+
+	echo "installing mas appstore apps..."
+    mas_apps=$(cat "$SCRIPT_DIR"/_lists/04_mas_apps.txt | sed '/^#/ d' | sort -k 2 -t $'\t' --ignore-case)
+    if [[ "$mas_apps" == "" ]]
+    then
+    	:
+    else
+	    if [[ "$INSTALLATION_METHOD" == "parallel" ]]
+	    then
+	        printf '%s\n' "${mas_apps[@]}" | tr "\n" "\0" | xargs -0 -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	        i="{}"
+	        install_mas_apps
+	        '
+	    else
+	    	old_IFS=$IFS
+	        IFS=$'\n'
+        	for i in ${mas_apps[@]}
+        	do
+        		IFS=$old_IFS
+        		#export USE_PARALLELS="no"
+        		install_mas_apps
+        		echo ''
+        	done
+        	#unset USE_PARALLELS
+	    fi
+	fi
+
+else
+	:
+fi
+   
+    
+# cleaning up
+#echo ''
+#echo "cleaning up..."
+# appstore cache should clean itself or should be cleaned by mas
+
+
+# if script is run standalone, not sourced from another script, load script frame
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
+then
+    # script is sourced
+    :
+else
+    # script is not sourced, run standalone
+    CHECK_IF_FORMULAE_INSTALLED="no"
+    CHECK_IF_CASKS_INSTALLED="no"
+    echo ''
+    . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
+fi
+
+
+###
+
+stop_sudo

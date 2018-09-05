@@ -1,2 +1,2 @@
-xquartz
-java
+#xquartz
+#java

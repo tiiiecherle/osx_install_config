@@ -99,10 +99,17 @@ then
     :
 else
     # macos versions 10.14 and up
-    echo ''
-    echo "installing sdk headers..."
-    #sudo install -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
-    sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+    if [[ $(xcrun --show-sdk-path) == "" ]]
+    then
+        echo ''
+        echo "installing sdk headers..."
+        #sudo install -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
+        sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+    else
+        echo ''
+        echo "sdk headers already installed..."
+        xcrun --show-sdk-path
+    fi
 fi
 
 echo ''

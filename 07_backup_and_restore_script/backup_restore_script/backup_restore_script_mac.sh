@@ -215,27 +215,27 @@ function create_tmp_backup_script_fifo2() {
     builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo2" &
 }
 
-function delete_tmp_backup_script_fifo3() {
-    if [ -e "/tmp/tmp_backup_script_fifo3" ]
+function delete_tmp_homebrew_script_fifo() {
+    if [ -e "/tmp/tmp_homebrew_script_fifo" ]
     then
-        rm "/tmp/tmp_backup_script_fifo3"
+        rm "/tmp/tmp_homebrew_script_fifo"
     else
         :
     fi
-    if [ -e "/tmp/run_from_backup_script3" ]
+    if [ -e "/tmp/run_for_homebrew" ]
     then
-        rm "/tmp/run_from_backup_script3"
+        rm "/tmp/run_for_homebrew"
     else
         :
     fi
 }
 
-function create_tmp_backup_script_fifo3() {
-    delete_tmp_backup_script_fifo3
-    touch "/tmp/run_from_backup_script3"
-    echo "1" > "/tmp/run_from_backup_script3"
-    mkfifo -m 600 "/tmp/tmp_backup_script_fifo3"
-    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo3" &
+function create_tmp_homebrew_script_fifo() {
+    delete_tmp_homebrew_script_fifo
+    touch "/tmp/run_for_homebrew"
+    echo "1" > "/tmp/run_for_homebrew"
+    mkfifo -m 600 "/tmp/tmp_homebrew_script_fifo"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_homebrew_script_fifo" &
 }
 
 function databases_apps_security_permissions() {
@@ -367,12 +367,12 @@ MACOS_VERSION=$(sw_vers -productVersion)
 if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
 then
     # script is session master and not run from another script (S on mac Ss on linux)
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
 else
     # script is not session master and run from another script (S+ on mac and linux)
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_backup_script_fifo3; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; exit" EXIT
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
+    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; exit" EXIT
 fi
 set -e
 
@@ -1604,7 +1604,7 @@ function backup_restore {
             then
                 echo ""
                 echo "installing casks..."
-                create_tmp_backup_script_fifo3
+                create_tmp_homebrew_script_fifo
                 # this has to run in a new shell due to variables, functions, etc.
                 # so do not source this script
                 # tee does not capture the output format, so e.g. you can not see the download progress of casks, use scripts command to keep output formats
