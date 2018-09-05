@@ -418,6 +418,7 @@ sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceMicrophon
 
 MICROPHONEAPPS=(
 "VirtualBox                                                             1"
+"VirtualBox Menulet                                                     1"
 )
 
 INPUT_ARRAY="MICROPHONEAPPS"[@]
