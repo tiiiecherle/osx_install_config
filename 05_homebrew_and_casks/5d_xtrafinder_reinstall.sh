@@ -15,29 +15,7 @@ if [[ "$SUDOPASSWORD" != "" ]]
 then
     #USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
     :
-elif [[ -e /tmp/run_from_backup_script3 ]] && [[ $(cat /tmp/run_from_backup_script3) == 1 ]]
-then
-    function delete_tmp_backup_script_fifo3() {
-        if [ -e "/tmp/tmp_backup_script_fifo3" ]
-        then
-            rm "/tmp/tmp_backup_script_fifo3"
-        else
-            :
-        fi
-        if [ -e "/tmp/run_from_backup_script3" ]
-        then
-            rm "/tmp/run_from_backup_script3"
-        else
-            :
-        fi
-    }
-    unset SUDOPASSWORD
-    SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo3" | head -n 1)
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-    delete_tmp_backup_script_fifo3
-    #set +a
 else
-
     # function for reading secret string (POSIX compliant)
     enter_password_secret()
     {
