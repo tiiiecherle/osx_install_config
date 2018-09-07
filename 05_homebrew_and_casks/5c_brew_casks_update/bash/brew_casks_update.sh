@@ -988,23 +988,15 @@ else
     echo "homebrew is installed..."
 fi
 
-# checking if homebrew-cask is installed
-#if [[ $(brew cask --version | grep "homebrew-cask") == "" ]]
-#then
-#    echo "homebrew-cask not installed, exiting script..."
-#    exit
-#else
-#    echo "homebrew-cask is installed..."
-#fi
-#echo ''
-
-brew cask --version 2>&1 >/dev/null
-if [[ $? -eq 0 ]]
+# as of 2018-10-31 brew cask --version is deprecated
+#brew cask --version 2>&1 >/dev/null
+#if [[ $? -eq 0 ]]
+if [[ $(brew --version | grep homebrew-cask) != "" ]]
 then
     echo "homebrew-cask is installed..."
 else
-    echo "homebrew-cask not installed, exiting script..."
-    exit
+    echo "homebrew-cask not installed, skipping respective script parts..."
+    HOMEBREW_CASK_IS_INSTALLED="no"
 fi
 echo ''
 
