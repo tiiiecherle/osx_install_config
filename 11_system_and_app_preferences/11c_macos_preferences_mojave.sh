@@ -1278,6 +1278,31 @@ EOF
     ##
     sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Keyboard Dim Time" -int -1
     
+    # if mac has touchbar, configure more settings
+    if [[ $(pgrep "ControlStrip") != "" ]]
+    then
+        #echo "touchbar is present"
+        
+        # touchbar without fn keys
+        # fullControlStrip
+        # app
+        # functionKeys
+        defaults write com.apple.touchbar.agent PresentationModeGlobal -string functionKeys
+        
+        # touchbar when pressing fn
+        # fullControlStrip
+        # app
+        defaults write com.apple.touchbar.agent PresentationModeFnModes -dict-add functionKeys -string fullControlStrip
+        
+        # activating settings
+        killall ControlStrip
+        
+    else
+        #echo "no touchbar present"
+        :
+    fi
+    
+    
     # use all F1, F2, etc. keys as standard function keys
     # 1=yes, 0=no
     defaults write NSGlobalDomain com.apple.keyboard.fnState -int 1
@@ -1384,17 +1409,19 @@ EOF
     # follow the keyboard focus while zoomed in
     #defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true
     
-    # force Click and haptic feedback
+    # force click and haptic feedback
     #defaults write NSGlobalDomain com.apple.trackpad.forceClick -bool true
     #defaults write com.AppleMultitouchTrackpad ActuateDetents -bool true
-    #defaults write com.AppleMultitouchTrackpad ForceSuppressed -bool false
+    # true = force klick off
+    # fallse = force klick on
+    defaults write com.apple.AppleMultitouchTrackpad ForceSuppressed -bool true
     
     # haptic feedback for force touch
     # 0 = light
     # 1 = medium
     # 2 = firm
-    #defaults write com.AppleMultitouchTrackpad FirstClickThreshold -int 1
-    #defaults write com.AppleMultitouchTrackpad SecondClickThreshold -int 1
+    defaults write com.apple.AppleMultitouchTrackpad FirstClickThreshold -int 1
+    defaults write com.apple.AppleMultitouchTrackpad SecondClickThreshold -int 1
     
     # trackpad cursor speed
     defaults write NSGlobalDomain com.apple.trackpad.scaling -float 0.875
