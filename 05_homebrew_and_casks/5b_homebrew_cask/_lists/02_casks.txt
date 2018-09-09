@@ -83,6 +83,6 @@ vnc-viewer
 vox
 witch
 x-lite
-xact
+#xact
 xnconvert
 #zipeg

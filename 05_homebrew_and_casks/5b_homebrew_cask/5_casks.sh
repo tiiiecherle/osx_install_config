@@ -216,6 +216,13 @@ then
 	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
 	then
 	    #start_sudo
+	    
+        if [[ -e "/Library/Internet Plug-Ins/flashplayer.xpt" ]]
+        then
+            sudo rm -f "/Library/Internet Plug-Ins/flashplayer.xpt"
+        else
+            :
+        fi
         ${USE_PASSWORD} | brew cask zap --force flash-npapi
 	    #stop_sudo
 	    echo ''
@@ -238,7 +245,12 @@ then
 	    if [[ -e /Users/$USER/Library/Preferences/com.adobe.Reader.plist ]]
 	    then
 	        mv /Users/$USER/Library/Preferences/com.adobe.Reader.plist /tmp/com.adobe.Reader.plist
-	        sudo rm -f /Library/Preferences/com.adobe.reader.DC.WebResource.plist
+	        if [[ -e /Library/Preferences/com.adobe.reader.DC.WebResource.plist ]]
+	        then
+	            sudo rm -f /Library/Preferences/com.adobe.reader.DC.WebResource.plist
+	        else
+	            :
+	        fi
 	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
 	        mv /tmp/com.adobe.Reader.plist /Users/$USER/Library/Preferences/com.adobe.Reader.plist
 	    else

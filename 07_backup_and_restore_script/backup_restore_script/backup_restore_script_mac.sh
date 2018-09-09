@@ -1666,7 +1666,7 @@ then
     # script is run with
     # export OPTION=RESTORE; time "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
     # tee does not capture the output format, so e.g. you couldn`t see the download progress of casks
-    backup_restore 2>&1 | tee "$HOME"/Desktop/backup_restore_log.txt
+    backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt
 elif [[ "$OPTION" == "RESTORE" ]]
 then
     # script is run with

@@ -15,7 +15,7 @@ TARGZFILE="$DESKTOPBACKUPFOLDER".tar.gz.gpg
 function archiving_tar_gz {
     
     # calculating backup folder size
-    PVSIZE=$(gdu -scb "$DESKTOPBACKUPFOLDER" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo $i*1.0 | bc | cut -d'.' -f1  ) ; done)
+    PVSIZE=$(gdu -scb "$DESKTOPBACKUPFOLDER" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo $i*1.0 | bc | cut -d'.' -f1); done)
     #echo "PVSIZE is "$PVSIZE""
     
     # compressing and checking integrity of backup folder on desktop
@@ -31,7 +31,7 @@ function archiving_tar_gz {
 function archiving_tar_gz_gpg {
     
     # calculating backup folder size
-    PVSIZE=$(gdu -scb "$DESKTOPBACKUPFOLDER" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo $i*1.0 | bc | cut -d'.' -f1  ) ; done)
+    PVSIZE=$(gdu -scb "$DESKTOPBACKUPFOLDER" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo $i*1.0 | bc | cut -d'.' -f1); done)
     #echo "PVSIZE is "$PVSIZE""
     
     # compressing and checking integrity of backup folder on desktop
