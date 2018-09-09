@@ -167,16 +167,19 @@ hosts_file_install_update() {
                 #sudo -u $loggedInUser brew uninstall --ignore-dependencies python@2
             fi
             # the project drops python2 support, so make sure python3 is used
-            #if [[ $PYTHON2_INSTALLED == "yes" ]] && [[ $PYTHON3_INSTALLED == "yes" ]]
-            #then
-            #    PYTHON_VERSION='python3'
-            #    PIP_VERSION='pip3'
-            #else
-            #    PYTHON_VERSION='python'
-            #    PIP_VERSION='pip'
-            #fi
             PYTHON_VERSION='python3'
             PIP_VERSION='pip3'
+            if [[ $PYTHON_VERSION == "python3" ]]
+            then
+                if [[ $(which pip3) == "" ]]
+                then
+                    sudo -u $loggedInUser brew reinstall python
+                else
+                    :
+                fi   
+            else
+                :
+            fi
         fi
         
         # listing installed python versions
@@ -205,6 +208,7 @@ hosts_file_install_update() {
 
         ### updating
         # updating pip itself
+        sudo pip install --upgrade pip
         sudo -u $loggedInUser ${PIP_VERSION} install --upgrade pip
         
         # updating all pip modules
