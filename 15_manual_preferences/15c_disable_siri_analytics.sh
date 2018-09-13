@@ -9,6 +9,6 @@ do
 done
 
 echo ''
-echo "the changes need a logout to take effect"
+echo "the changes need a reboot to take effect"
 echo ''
 echo "done ;)"
