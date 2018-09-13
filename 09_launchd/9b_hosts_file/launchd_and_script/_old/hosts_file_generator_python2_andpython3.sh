@@ -133,6 +133,8 @@ hosts_file_install_update() {
                 echo "pip is installed..."
                 #:
             fi
+            PYTHON_VERSION='python'
+            PIP_VERSION='pip'
         else
             echo ''
             echo "homebrew is installed..."
@@ -171,6 +173,9 @@ hosts_file_install_update() {
             else
                 :
             fi
+            # the project drops python2 support, so make sure python3 is used
+            PYTHON_VERSION='python3'
+            PIP_VERSION='pip3'
         fi
         
         # listing installed python versions
@@ -192,21 +197,10 @@ hosts_file_install_update() {
         else
             :
         fi
-        
-        # the project is python3 only (from 2018-09), so make sure python3 is used
-        if [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) != "3" ]] && [[ $(compgen -c python | grep "^python3$") == "" ]]
-        then
-            echo "python3 is not installed, exiting..."
-            echo ''
-            exit
-        else
-            PYTHON_VERSION='python3'
-            PIP_VERSION='pip3'
-        fi
-        
         echo ''
         echo "python version used in script is $PYTHON_VERSION with $PIP_VERSION..."
         echo ''
+
 
         ### updating
         # updating pip itself
@@ -235,16 +229,15 @@ hosts_file_install_update() {
         # installing dependencies
         if [[ $PYTHON_VERSION == 'python3' ]]
         then
-            #if [[ $(cat /Applications/hosts_file_generator/requirements.txt | grep "lxml==4.1.1") != "" ]]
-            #then
-            #    sed -i '' "s|lxml.*|lxml>=4.2.4|" /Applications/hosts_file_generator/requirements.txt
-            #else
-            #    :
-            #fi
+            if [[ $(cat /Applications/hosts_file_generator/requirements.txt | grep "lxml==4.1.1") != "" ]]
+            then
+                sed -i '' "s|lxml.*|lxml>=4.2.4|" /Applications/hosts_file_generator/requirements.txt
+            else
+                :
+            fi
             sudo -u $loggedInUser ${PIP_VERSION} install -r /Applications/hosts_file_generator/requirements.txt
         else
-            #sudo pip install -r /Applications/hosts_file_generator/requirements.txt
-            sudo pip install --user -r /Applications/hosts_file_generator/requirements.txt
+            sudo pip install -r /Applications/hosts_file_generator/requirements_python2.txt
         fi
         
         # backing up original hosts file
