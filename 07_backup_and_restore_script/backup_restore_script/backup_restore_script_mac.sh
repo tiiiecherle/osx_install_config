@@ -726,12 +726,13 @@ function backup_restore {
             CONT5="$(echo "$CONT5" | tr '[:upper:]' '[:lower:]')"    # tolower
             sleep 0.1
 
-            if [[ "$CONT3" == "y" || "$CONT3" == "yes" || "$CONT4" == "y" || "$CONT4" == "yes" || "$CONT5" == "y" || "$CONT5" == "yes" ]]
-            then
-                echo ''
-            else
-                :
-            fi
+            #if [[ "$CONT3" == "y" || "$CONT3" == "yes" || "$CONT4" == "y" || "$CONT4" == "yes" || "$CONT5" == "y" || "$CONT5" == "yes" ]]
+            #then
+            #    echo ''
+            #else
+            #    :
+            #fi
+            echo ''
             
             ### running backups
             # reminders
