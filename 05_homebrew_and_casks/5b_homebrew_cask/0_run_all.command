@@ -118,20 +118,34 @@ then
     #osascript 2>/dev/null <<EOF
     osascript <<EOF
     tell application "Terminal"
-    	if not (exists window 1) then reopen
-    	activate
-    	delay 2
-    	set newWindow1 to front window
-    	tell application "System Events" to keystroke "t" using command down
-    	#repeat while contents of selected tab of window 1 starts with linefeed
-    	delay 2
+    	if it is running then
+    		#if not (exists window 1) then
+    		if (count of every window) is 0 then
+    			reopen
+    			activate
+    			set Window1 to front window
+    			set runWindow to front window
+    		else
+    			activate
+    			delay 2
+    			set Window1 to front window
+    			#
+    			tell application "System Events" to keystroke "t" using command down
+    			delay 2
+    			set Window2 to front window
+    			set runWindow to front window
+    		end if
+    	else
+    		activate
+    		set Window1 to front window
+    		set runWindow to front window
+    	end if
+    	#delay 2
+        #    	
+        do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export MAS_APPLE_ID=\"$MAS_APPLE_ID\"; export MAS_APPSTORE_PASSWORD=\"$MAS_APPSTORE_PASSWORD\"; (time  \"$SCRIPT_DIR/6_mas_appstore.sh\") && echo ''" in runWindow
     	#
-    	#end repeat
-    	set newWindow2 to front window
-    	#set newTab's selected to true
-    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export MAS_APPLE_ID=\"$MAS_APPLE_ID\"; export MAS_APPSTORE_PASSWORD=\"$MAS_APPSTORE_PASSWORD\"; (time  \"$SCRIPT_DIR/6_mas_appstore.sh\") && echo ''" in newWindow2
     	delay 40
-        set frontmost of newWindow1 to true
+        set frontmost of Window1 to true
     end tell
 EOF
 
@@ -141,7 +155,6 @@ fi
 
 if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
 then
-    
     sleep 5
     create_tmp_homebrew_script_fifo
     identify_terminal
@@ -149,20 +162,34 @@ then
     #osascript 2>/dev/null <<EOF
     osascript <<EOF
     tell application "Terminal"
-    	if not (exists window 1) then reopen
-    	activate
-    	delay 2
-    	set newWindow1 to front window
-    	tell application "System Events" to keystroke "t" using command down
-    	#repeat while contents of selected tab of window 1 starts with linefeed
-    	delay 2
+    	if it is running then
+    		#if not (exists window 1) then
+    		if (count of every window) is 0 then
+    			reopen
+    			activate
+    			set Window1 to front window
+    			set runWindow to front window
+    		else
+    			activate
+    			delay 2
+    			set Window1 to front window
+    			#
+    			tell application "System Events" to keystroke "t" using command down
+    			delay 2
+    			set Window2 to front window
+    			set runWindow to front window
+    		end if
+    	else
+    		activate
+    		set Window1 to front window
+    		set runWindow to front window
+    	end if
+    	#delay 2
     	#
-    	#end repeat
-    	set newWindow2 to front window
-    	#set newTab's selected to true
-    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in newWindow2
+    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in runWindow
+    	#
     	delay 10
-        set frontmost of newWindow1 to true
+        set frontmost of Window1 to true
     end tell
 EOF
 
