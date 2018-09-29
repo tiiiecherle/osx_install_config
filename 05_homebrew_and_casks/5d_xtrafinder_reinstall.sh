@@ -236,7 +236,7 @@ ping -c 3 google.com > /dev/null 2>&1
 if [ $? -eq 0 ]
 then
     echo "we are online, running script..."
-    echo ''
+    #echo ''
     
     # starting sudo keep alive loop
     start_sudo
@@ -252,7 +252,8 @@ then
 	sleep 5
 	# uninstall
 	echo "uninstalling application..."
-	${USE_PASSWORD} | sudo /Volumes/XtraFinder/Uninstall.app/Contents/MacOS/Uninstall 1>/dev/null
+	${USE_PASSWORD} | sudo /Volumes/XtraFinder/Extra/Uninstall.app/Contents/MacOS/Uninstall 1>/dev/null
+	sleep 10
 	echo "installing application..."
 	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinder.pkg -target / 1>/dev/null
 	#sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
