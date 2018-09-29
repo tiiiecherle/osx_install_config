@@ -1,0 +1,11 @@
+by GUI
+
+# for all macs that have a t2 chip, e.g. macbook pro 2018
+# booting from usb is prevented by secure boot
+# to enable booting from an usb device, do...
+
+Reboot your mac to recovery mode (reboot with command + R pressed).
+Open Utilities - Start-Up-Security-Utility
+Set Secure Boot to Full Protection.
+Set External Boot to allow booting from external usb devices.
+Reboot
