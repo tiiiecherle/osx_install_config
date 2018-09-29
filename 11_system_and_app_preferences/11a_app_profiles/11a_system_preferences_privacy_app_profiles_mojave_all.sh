@@ -33,6 +33,7 @@ databases_apps_security_permissions
 
 
 ### applist
+# "System Events" has to be first list entry and has to be confirmed manually
 APP_LIST=(
 "System Events"
 iTerm
