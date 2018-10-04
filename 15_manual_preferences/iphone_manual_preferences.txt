@@ -1,0 +1,9 @@
+iPhone manual preferences
+
+Phone
+	Calls on other devices
+		activate Mac
+
+Messages
+	Text Message Forwarding
+		activate Mac
