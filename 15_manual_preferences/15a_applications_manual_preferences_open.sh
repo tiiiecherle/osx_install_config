@@ -129,8 +129,8 @@ applications_to_open=(
 "/Applications/Calendar.app"
 "/Applications/Contacts.app"
 "/Applications/Mail.app"
-#"/Applications/Microsoft Excel.app"
 "/Applications/Microsoft Word.app"
+"/Applications/Microsoft Excel.app"
 #"/Applications/Microsoft Office 2011/Microsoft Excel.app"
 #"/Applications/Microsoft Office 2011/Microsoft Word.app"
 "/Applications/Messages.app"
@@ -153,6 +153,15 @@ do
 		:
 	fi
 done
+
+if [[ "$USER" == "wolfgang" ]]
+then
+    i="/Users/$USER/PVGuardClient/installer/pvdownload.jnlp"
+    echo "opening $(basename "$i")"
+	open "$i"
+else
+    :
+fi
 
 # disable all siri analytics
 echo "waiting 30s for all apps to open..."
