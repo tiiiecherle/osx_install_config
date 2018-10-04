@@ -601,12 +601,12 @@ EOF
     # 2 = enabled as space
     # 3 = enabled as overlay
     
-    defaults write com.apple.dashboard dashboard-enabled-state -int 1
+    defaults write com.apple.dashboard db-enabled-state -int 1
     
     sleep 1
     if [ "$USER" == "wolfgang" ]
     then
-        defaults write com.apple.dashboard dashboard-enabled-state -int 2
+        defaults write com.apple.dashboard db-enabled-state -int 2
     else
         :
     fi
@@ -1507,9 +1507,10 @@ EOF
     #done
     
     # auto play appstore videos
-    # both settings and reboot needed
-    defaults write com.apple.appstore.plist AutoPlayVideoSetting -string "off"
-    defaults write ~/Library/Containers/com.apple.AppStore/Data/Library/Preferences/com.apple.appstore.plist AutoPlayVideoSetting -string "off"
+    defaults write ~/Library/Preferences/com.apple.AppStore.plist AutoPlayVideoSetting -string "off"
+    defaults write ~/Library/Preferences/com.apple.AppStore.plist UserSetAutoPlayVideoSetting -bool true
+    # if this setting is needed then a reboot seems to be needed, too
+    #defaults write ~/Library/Containers/com.apple.AppStore/Data/Library/Preferences/com.apple.appstore.plist AutoPlayVideoSetting -string "off"
     
     # in app reviews
     defaults write com.apple.commerce InAppReviewEnabled -bool false
@@ -1531,6 +1532,18 @@ EOF
     ###
     
     # see separate script
+    
+    
+    
+    ###
+    ### preferences extensions
+    ###
+    
+    # finder
+    defaults write pbs FinderActive -dict-add APPEXTENSION-com.apple.finder.CreatePDFQuickAction -bool true
+    defaults write pbs FinderActive -dict-add APPEXTENSION-com.apple.finder.MarkupQuickAction -bool true
+    defaults write pbs FinderActive -dict-add APPEXTENSION-com.apple.finder.RotateQuickAction -bool true
+    defaults write pbs FinderActive -dict-add APPEXTENSION-com.apple.finder.TrimQuickAction -bool true
     
     
     
@@ -1821,7 +1834,6 @@ EOF
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 3", path:"/Applications/Bartender 3.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"AudioSwitcher", path:"/Applications/AudioSwitcher.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Overflow", path:"/Applications/Overflow.app", hidden:true}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Dialectic", path:"/Applications/Dialectic.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"KeepingYouAwake", path:"/Applications/KeepingYouAwake.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 3", path:"/Applications/Alfred 3.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"/Applications/GeburtstagsChecker.app", hidden:false}'
@@ -2378,8 +2390,7 @@ EOF
     	General -bool true \
     	OpenWith -bool true \
     	Privileges -bool true
-    
-    
+
     
     ###
     ### totalfinder
@@ -3252,6 +3263,10 @@ EOF
     
     echo "calendar"
     
+    ### accepting privacy policy
+    defaults write com.apple.iCal "privacyPaneHasBeenAcknowledgedVersion" -int 4
+
+
     ### general
     
     # show 7 days
