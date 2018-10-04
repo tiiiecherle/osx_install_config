@@ -231,6 +231,7 @@ then
     fi
     
 	# making sure libreoffice gets installed as a dependency of libreoffice-language-pack
+	# installation would be refused if restored via restore script or already installed otherwise
 	if [[ -e "/Applications/LibreOffice.app" ]]
 	then
 	    ${USE_PASSWORD} | brew cask uninstall --force libreoffice
@@ -305,6 +306,16 @@ then
 	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
 	    :
     fi
+    # registering xtrafinder
+    SCRIPT_DIR_LICENSE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && pwd)")
+	if [[ -e "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh ]]
+	then
+	    "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh
+	else
+	    echo "script to register xtrafinder not found..."
+	fi
+	
+	# as xtrafinder is no longer installable by cask let`s install it that way ;)
 	echo "downloading xtrafinder..."
 	XTRAFINDER_INSTALLER="/Users/$USER/Desktop/XtraFinder.dmg"
 	#wget https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -O "$XTRAFINDER_INSTALLER"
@@ -321,6 +332,7 @@ then
 	echo "unmounting and removing installer file..."
 	hdiutil detach /Volumes/XtraFinder -quiet
 	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
+	
 else
 	:
 fi
@@ -404,8 +416,8 @@ fi
 if [[ "$USER" == "wolfgang" ]]
 then
     echo ''
-    brew cask uninstall java
-    brew cask install caskroom/versions/java8
+    ${USE_PASSWORD} | brew cask uninstall java
+    ${USE_PASSWORD} | brew cask install caskroom/versions/java8
     echo ''
 else
     :
