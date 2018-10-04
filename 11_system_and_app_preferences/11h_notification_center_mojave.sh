@@ -35,6 +35,7 @@ PLIST_FILE='~/Library/Preferences/com.apple.ncprefs.plist'
 # clean all extended attributes
 #xattr -c /Users/$USER/Library/Preferences/com.apple.ncprefs.plist
 open $(eval echo "$PLIST_FILE")
+#open -a BBEdit.app $(eval echo "$PLIST_FILE")
 sleep 5
 #osascript -e "tell application (path to frontmost application as text) to quit saving no"
 osascript -e "tell application \"Prefs Editor\" to quit saving no"
@@ -91,24 +92,30 @@ do
 	APP_PATH=$(echo "$application" | awk '{print $1}')
     FLAGS_VALUE=$(echo "$application" | awk '{print $2}')
     
-	BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' $(eval echo "$APP_PATH")/Contents/Info.plist)
-	echo "setting flags for $BUNDLE_IDENTIFIER..."
-
-	getting-needed-entry
-
-	#echo $NEEDED_ENTRY
-	if [[ $NEEDED_ENTRY != "" ]]
-	then
-	    /usr/libexec/PlistBuddy -c "Set apps:$NEEDED_ENTRY:flags $(eval echo "$FLAGS_VALUE")" $(eval echo "$PLIST_FILE")
-	else
-		echo "entry for $BUNDLE_IDENTIFIER does not exist, creating it..."
-	    ITEM1=$(echo \'Item $NUMBER_OF_ENTRIES\')
-	    #echo $ITEM1
-	   	/usr/libexec/PlistBuddy -c "Add apps:$ITEM1:bundle-id string $BUNDLE_IDENTIFIER" $(eval echo "$PLIST_FILE")
-	   	
+    if [[ -e "$APP_PATH" ]]
+    then
+    
+		BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' $(eval echo "$APP_PATH")/Contents/Info.plist)
+		echo "setting flags for $BUNDLE_IDENTIFIER..."
+	
 		getting-needed-entry
-		
-		/usr/libexec/PlistBuddy -c "Add apps:$NEEDED_ENTRY:flags integer $(eval echo "$FLAGS_VALUE")" $(eval echo "$PLIST_FILE")
+	
+		#echo $NEEDED_ENTRY
+		if [[ $NEEDED_ENTRY != "" ]]
+		then
+		    /usr/libexec/PlistBuddy -c "Set apps:$NEEDED_ENTRY:flags $(eval echo "$FLAGS_VALUE")" $(eval echo "$PLIST_FILE")
+		else
+			echo "entry for $BUNDLE_IDENTIFIER does not exist, creating it..."
+		    ITEM1=$(echo \'Item $NUMBER_OF_ENTRIES\')
+		    #echo $ITEM1
+		   	/usr/libexec/PlistBuddy -c "Add apps:$ITEM1:bundle-id string $BUNDLE_IDENTIFIER" $(eval echo "$PLIST_FILE")
+		   	
+			getting-needed-entry
+			
+			/usr/libexec/PlistBuddy -c "Add apps:$NEEDED_ENTRY:flags integer $(eval echo "$FLAGS_VALUE")" $(eval echo "$PLIST_FILE")
+		fi
+	else
+		echo """$APP_PATH"" does not exist..."
 	fi
 
 done
@@ -142,18 +149,25 @@ do
 	APP_PATH=$(echo "$application" | awk '{print $1}')
     FLAGS_VALUE=$(echo "$application" | awk '{print $2}')
     
-	BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' $(eval echo "$APP_PATH")/Contents/Info.plist)
-	#echo "getting flags for $BUNDLE_IDENTIFIER..."
-
-	getting-needed-entry
-
-	#echo $NEEDED_ENTRY
-	if [[ $NEEDED_ENTRY != "" ]]
-	then
-	    ACTIVE_FLAG_VALUE=$(/usr/libexec/PlistBuddy -c "Print apps:$NEEDED_ENTRY:flags" $(eval echo "$PLIST_FILE"))
-	    printf "%-5s %-45s %10s %10s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE"
+    if [[ -e "$APP_PATH" ]]
+    then
+    
+		BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' $(eval echo "$APP_PATH")/Contents/Info.plist)
+		#echo "getting flags for $BUNDLE_IDENTIFIER..."
+	
+		getting-needed-entry
+	
+		#echo $NEEDED_ENTRY
+		if [[ $NEEDED_ENTRY != "" ]]
+		then
+		    ACTIVE_FLAG_VALUE=$(/usr/libexec/PlistBuddy -c "Print apps:$NEEDED_ENTRY:flags" $(eval echo "$PLIST_FILE"))
+		    printf "%-5s %-45s %10s %10s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE"
+		else
+			echo "entry for $BUNDLE_IDENTIFIER does not exist..."
+		fi
+		
 	else
-		echo "entry for $BUNDLE_IDENTIFIER does not exist..."
+		echo """$APP_PATH"" does not exist..."
 	fi
 
 done
