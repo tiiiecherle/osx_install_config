@@ -293,8 +293,8 @@ function give_apps_security_permissions() {
         sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
         #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
         # automation vbox backup app
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
         # automation brew cask update
 	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
 	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"

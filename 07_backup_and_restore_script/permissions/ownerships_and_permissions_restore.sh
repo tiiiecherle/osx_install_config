@@ -385,6 +385,8 @@ function backup_restore_permissions {
         sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
         # .command files
         sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
+        # .py files
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.py" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
         # bash files without extension
         #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' & pids+=($!)
         #
@@ -395,6 +397,8 @@ function backup_restore_permissions {
         sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
         # .command files
         sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
+        # .py files
+        sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.py" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
         # bash files without extension
         #sudo bash -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' & pids+=($!)
         #

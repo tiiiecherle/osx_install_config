@@ -21,7 +21,8 @@ if [[ $(osascript -e 'tell application "System Events" to get the name of every 
 then
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_signal", path:"/Users/'$USER'/Library/Scripts/run_on_login_signal.app", hidden:true}'
 else
-	:
+	osascript -e 'tell application "System Events" to delete login item "run_on_login_signal"'
+	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_signal", path:"/Users/'$USER'/Library/Scripts/run_on_login_signal.app", hidden:true}'
 fi
 
 rm -rf /Users/"$USER"/Library/Scripts/run_on_login_whatsapp.app
@@ -34,7 +35,8 @@ if [[ $(osascript -e 'tell application "System Events" to get the name of every 
 then
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_whatsapp", path:"/Users/'$USER'/Library/Scripts/run_on_login_whatsapp.app", hidden:true}'
 else
-	:
+	osascript -e 'tell application "System Events" to delete login item "run_on_login_whatsapp"'
+	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_whatsapp", path:"/Users/'$USER'/Library/Scripts/run_on_login_whatsapp.app", hidden:true}'
 fi
 
 
