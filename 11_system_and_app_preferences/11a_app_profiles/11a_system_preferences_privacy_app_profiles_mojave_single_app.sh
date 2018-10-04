@@ -36,18 +36,31 @@ databases_apps_security_permissions
 # "System Events" has to be first list entry and has to be confirmed manually
 APP_LIST=(
 "System Events"
-VLC
+iTerm
+#"run_on_login_signal														/Users/$USER/Library/Scripts/run_on_login_signal.app"
+#"run_on_login_whatsapp														/Users/$USER/Library/Scripts/run_on_login_whatsapp.app"
+"virtualbox_backup															/Users/$USER/Desktop/backup_macos/defaults_write/_scripts_final/07_backup_and_restore_script/vbox_backup/virtualbox_backup.app"
 )
 
 ### creating profiles
-for APP_ENTRY in "${APP_LIST[@]}"
+for APP_LINE in "${APP_LIST[@]}"
 do
-	echo ''
+
+	if [[ $(echo "$APP_LINE" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g') == "" ]]
+	then
+		APP_ENTRY="$APP_LINE"
+		APP_ENTRY_OPEN="$APP_LINE"
+	else
+		APP_ENTRY=$(echo "$APP_LINE" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+		APP_ENTRY_OPEN=$(echo "$APP_LINE" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	fi
+	echo ''	
 	echo "$APP_ENTRY"
+	echo "$APP_ENTRY_OPEN"
 	
 	tccutil reset AppleEvents
 	
-	if [[ "$$APP_ENTRY" == "$SOURCE_APP_NAME" ]]
+	if [[ "$APP_ENTRY" == "$SOURCE_APP_NAME" ]]
 	then
 		:
 	else
@@ -63,7 +76,7 @@ do
 		
 		sleep 0.5
 		
-		osascript -e "tell application \"$APP_ENTRY\" to «event BATFinit»" &
+		osascript -e "tell application \"$APP_ENTRY_OPEN\" to «event BATFinit»" &
 		
 		if [[ "$APP_ENTRY" == "BL Banking Launcher" ]]
 		then
@@ -115,7 +128,7 @@ EOF
 	
 	
 		# special events after opening the app
-		if [[ "$APP_ENTRY" == "Bartender 3" ]] || [[ "$APP_ENTRY" == "Dialectic" ]] || [[ "$APP_ENTRY" == "Finder" ]] || [[ "$APP_ENTRY" == "Alfred 3" ]] || [[ "$APP_ENTRY" == "GeburtstagsChecker" ]] || [[ "$APP_ENTRY" == "VirtualBox Menulet" ]] || [[ "$APP_ENTRY" == "iTerm" ]] || [[ "$APP_ENTRY" == "Terminal" ]] || [[ "$APP_ENTRY" == "Overflow" ]]
+		if [[ "$APP_ENTRY" == "Bartender 3" ]] || [[ "$APP_ENTRY" == "Finder" ]] || [[ "$APP_ENTRY" == "Alfred 3" ]] || [[ "$APP_ENTRY" == "GeburtstagsChecker" ]] || [[ "$APP_ENTRY" == "VirtualBox Menulet" ]] || [[ "$APP_ENTRY" == "iTerm" ]] || [[ "$APP_ENTRY" == "Terminal" ]] || [[ "$APP_ENTRY" == "Overflow" ]]
 		then
 			:
 		elif [[ "$APP_ENTRY" == "XtraFinder" ]]

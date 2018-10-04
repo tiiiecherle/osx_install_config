@@ -41,7 +41,7 @@ Terminal
 Finder
 "BL Banking Launcher"
 XtraFinder
-brew_casks_update
+"brew_casks_update															/Applications/brew_casks_update.app"
 video_720p_h265_aac_shrink
 video_1080p_h265_aac_shrink
 gui_apps_backup
@@ -58,7 +58,6 @@ PasswordWallet
 "Ondesoft AudioBook Converter"
 "VNC Viewer"
 "Commander One"
-Dialectic
 "Alfred 3"
 GeburtstagsChecker
 pdf_200dpi_shrink
@@ -66,21 +65,29 @@ iTunes
 Mail
 backup_files_tar_gz
 virtualbox_backup
-run_on_login_signal
-run_on_login_whatsapp
+"run_on_login_signal														/Users/$USER/Library/Scripts/run_on_login_signal.app"
+"run_on_login_whatsapp														/Users/$USER/Library/Scripts/run_on_login_whatsapp.app"
 EagleFiler
 "iStat Menus"
 )
 
 ### creating profiles
-for APP_ENTRY in "${APP_LIST[@]}"
+for APP_LINE in "${APP_LIST[@]}"
 do
-	echo ''
+
+	if [[ $(echo "$APP_LINE" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g') == "" ]]
+	then
+		APP_ENTRY="$APP_LINE"
+		APP_ENTRY_OPEN="$APP_LINE"
+	else
+		APP_ENTRY=$(echo "$APP_LINE" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+		APP_ENTRY_OPEN=$(echo "$APP_LINE" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	fi
+	echo ''	
 	echo "$APP_ENTRY"
+	#echo "$APP_ENTRY_OPEN"
 	
-	tccutil reset AppleEvents
-	
-	if [[ "$$APP_ENTRY" == "$SOURCE_APP_NAME" ]]
+	if [[ "$APP_ENTRY" == "$SOURCE_APP_NAME" ]]
 	then
 		:
 	else
@@ -96,7 +103,7 @@ do
 		
 		sleep 0.5
 		
-		osascript -e "tell application \"$APP_ENTRY\" to «event BATFinit»" &
+		osascript -e "tell application \"$APP_ENTRY_OPEN\" to «event BATFinit»" &
 		
 		if [[ "$APP_ENTRY" == "BL Banking Launcher" ]]
 		then
@@ -148,7 +155,7 @@ EOF
 	
 	
 		# special events after opening the app
-		if [[ "$APP_ENTRY" == "Bartender 3" ]] || [[ "$APP_ENTRY" == "Dialectic" ]] || [[ "$APP_ENTRY" == "Finder" ]] || [[ "$APP_ENTRY" == "Alfred 3" ]] || [[ "$APP_ENTRY" == "GeburtstagsChecker" ]] || [[ "$APP_ENTRY" == "VirtualBox Menulet" ]] || [[ "$APP_ENTRY" == "iTerm" ]] || [[ "$APP_ENTRY" == "Terminal" ]] || [[ "$APP_ENTRY" == "Overflow" ]]
+		if [[ "$APP_ENTRY" == "Bartender 3" ]] || [[ "$APP_ENTRY" == "Finder" ]] || [[ "$APP_ENTRY" == "Alfred 3" ]] || [[ "$APP_ENTRY" == "GeburtstagsChecker" ]] || [[ "$APP_ENTRY" == "VirtualBox Menulet" ]] || [[ "$APP_ENTRY" == "iTerm" ]] || [[ "$APP_ENTRY" == "Terminal" ]] || [[ "$APP_ENTRY" == "Overflow" ]]
 		then
 			:
 		elif [[ "$APP_ENTRY" == "XtraFinder" ]]
