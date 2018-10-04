@@ -4,7 +4,6 @@
 409183694	Keynote
 715768417	Microsoft Remote Desktop
 483820530	QR Journal
-921458519	DrCleaner
 1292198261	iMazing HEIC Converter
 509182449	Photo Transfer App
 456624497	Brightness Slider
