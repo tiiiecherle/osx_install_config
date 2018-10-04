@@ -1,0 +1,6 @@
+1	copy /defaults_write/_scripts_final/07_backup_and_restore_script/unarchive/unarchive_tar_gz_perms_progress_all_in_folder.command
+	to backup folder containing .tar.gz.gpg files
+	# this is important or it will loose ownership and permissions
+	double click unarchive_tar_gz_perms_progress_all_in_folder.command
+
+2	restore backup files to right location
