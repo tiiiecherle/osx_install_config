@@ -272,7 +272,6 @@ PasswordWallet
 "Ondesoft AudioBook Converter"
 "VNC Viewer"
 "Commander One"
-Dialectic
 "Alfred 3"
 GeburtstagsChecker
 pdf_200dpi_shrink
@@ -363,7 +362,6 @@ sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBo
 
 CONTACTSAPPS=(
 "gui_apps_backup                                                        1"
-"Dialectic                                                              1"
 "Alfred 3                                                               1"
 "GeburtstagsChecker                                                     1"
 )

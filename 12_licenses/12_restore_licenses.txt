@@ -14,7 +14,6 @@ extfs mac
 DONE BY RESTORE SCRIPT
 
 monkey bilanz					
-dialectic						
 eagle filer						
 imazing
 istat menus
