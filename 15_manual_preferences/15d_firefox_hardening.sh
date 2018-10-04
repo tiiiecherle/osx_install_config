@@ -5,7 +5,7 @@ CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
 
 if [[ "$CONT1" == "r" || "$CONT1" == "reset" ]]
 then
-	FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox/" -name "*.default")
+	FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox/" -name "*.default*")
 	# bookmarks
 	if [[ -e "$FIREFOX_PROFILE_PATH" ]]
 	then
@@ -28,7 +28,7 @@ then
 	fi
 	#
 	/Applications/Firefox.app/Contents/MacOS/firefox -CreateProfile default
-	FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox" -name "*.default")
+	FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox" -name "*.default*")
 	if [[ -e /tmp/places.sqlite ]]
 	then
 		mv /tmp/places.sqlite "$FIREFOX_PROFILE_PATH"/places.sqlite
