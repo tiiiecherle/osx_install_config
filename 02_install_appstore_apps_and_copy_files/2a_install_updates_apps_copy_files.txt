@@ -1,0 +1,17 @@
+1	do all system updates
+	softwareupdate --list && softwareupdate -i -a --verbose
+	sudo reboot
+	softwareupdate --list && softwareupdate -i -a --verbose
+	...
+
+2	# connect to the app store and download all your bought apps
+	# done with mas-cli in 05_homebrew_and_casks/5b_homebrew_cask/0_run_all.command
+
+3	# installing XCode not needed for homebrew
+	# command line tools are sufficent
+	# done in 05_homebrew_and_casks/5b_homebrew_cask/0_run_all.command
+
+4	copy over backup for restoring with script
+		current personal backup folder
+		/_installer/macos/defaults_write
+		/_installer/macos/installer
