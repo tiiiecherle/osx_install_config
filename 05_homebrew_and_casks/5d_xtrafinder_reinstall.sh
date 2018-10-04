@@ -240,6 +240,15 @@ then
     
     # starting sudo keep alive loop
     start_sudo
+    
+    # registering xtrafinder
+    SCRIPT_DIR_LICENSE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+	if [[ -e "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh ]]
+	then
+	    "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh
+	else
+	    echo "script to register xtrafinder not found..."
+	fi
         	
 	# as xtrafinder is no longer installable by cask let`s install it that way ;)
     echo ''
@@ -307,10 +316,9 @@ then
     	# show open in new window
     	defaults write com.apple.finder XtraFinder_XFOpenInNewWindowPlugin -bool true
     	
-    	
     	# autostart
     	osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"/Applications/XtraFinder.app", hidden:false}'
-    
+    	
     else
     	:
     fi
