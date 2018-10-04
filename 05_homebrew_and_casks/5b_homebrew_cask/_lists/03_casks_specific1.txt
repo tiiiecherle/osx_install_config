@@ -6,7 +6,5 @@ jameica
 jdownloader
 #macupdate
 #remote-buddy
-signal
 spotify
 transmission
-whatsapp
