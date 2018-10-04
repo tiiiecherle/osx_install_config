@@ -170,12 +170,12 @@ echo Deluge
 m	/Applications/Deluge.app
 
 # Dialectic
-echo Dialectic
-m	/Applications/Dialectic.app
-m	/Applications/dialectic_login
-u	~/Library/Application Support/Dialectic
-u	~/Library/Preferences/com.jen.dialectic.dialer.snomipphone.plist
-u	~/Library/Preferences/com.jen.dialectic.plist
+#echo Dialectic
+#m	/Applications/Dialectic.app
+#m	/Applications/dialectic_login
+#u	~/Library/Application Support/Dialectic
+#u	~/Library/Preferences/com.jen.dialectic.dialer.snomipphone.plist
+#u	~/Library/Preferences/com.jen.dialectic.plist
 
 # Disk Inventory X
 echo Disk Inventory X
@@ -548,6 +548,7 @@ u	~/Library/Services/Run in Terminal.workflow
 m	~/Library/Services/Create Symlink.workflow
 u	~/Library/Preferences/pbs.plist
 u	~/Library/Services/Tag Orange.workflow
+u	~/Library/Services/dial_snom.workflow
 # /System/Library/CoreServices/pbs -flush
 
 # Signal
