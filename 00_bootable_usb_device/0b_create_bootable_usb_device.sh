@@ -106,7 +106,7 @@ fi
 
 ### variables
 # adjust installer path and name and run the following command in terminal and enter admin password
-INSTALLERPATH="/Applications/macOS Mojave.app"
+INSTALLERPATH="/Applications/Install macOS Mojave.app"
 VOLUMENAME="Untitled"
 VOLUMEPATH="/Volumes/$VOLUMENAME"
 MACOS_VERSION=$(sw_vers -productVersion)
