@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 
 ###
 ### variables
@@ -79,6 +79,8 @@ echo ''
 ### parallel
 checking_parallel
 
+### accepting privacy policy
+defaults write ~/Library/Preferences/com.apple.AppStore.plist ASAcknowledgedOnboardingVersion -int 1
 
 ### mas login
 

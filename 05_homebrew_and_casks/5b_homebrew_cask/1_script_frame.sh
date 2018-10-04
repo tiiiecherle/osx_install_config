@@ -207,6 +207,13 @@ then
     KEEPINGYOUAWAKE="active"
 	open -g /Applications/KeepingYouAwake.app
     open -g keepingyouawake:///activate
+    sleep 1
+    if [[ -e "/tmp/quarantine_keepingyouawake.xattr" ]]
+    then    
+        xattr -w com.apple.quarantine `cat "/tmp/quarantine_keepingyouawake.xattr"` "/Applications/KeepingYouAwake.app"
+    else
+        :
+    fi
 else
         :
 fi
@@ -219,6 +226,13 @@ then
     KEEPINGYOUAWAKE=""
     #open -g /Applications/KeepingYouAwake.app
     open -g keepingyouawake:///deactivate
+    sleep 1
+    if [[ -e "/tmp/quarantine_keepingyouawake.xattr" ]]
+    then    
+        xattr -w com.apple.quarantine `cat "/tmp/quarantine_keepingyouawake.xattr"` "/Applications/KeepingYouAwake.app"
+    else
+        :
+    fi
 else
     :
 fi

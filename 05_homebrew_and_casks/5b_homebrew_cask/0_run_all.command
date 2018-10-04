@@ -202,8 +202,8 @@ fi
 # waiting for the scripts in the separate tabs to finish
 echo ''
 echo "waiting for casks and mas scripts..."
-while ps aux | grep /5_casks.sh | grep -v grep > /dev/null; do sleep 1; done
-while ps aux | grep /6_mas_appstore.sh | grep -v grep > /dev/null; do sleep 1; done
+while ps aux | grep /5_casks.sh | grep -v grep >/dev/null; do sleep 1; done
+while ps aux | grep /6_mas_appstore.sh | grep -v grep >/dev/null; do sleep 1; done
 
 echo ''
 . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh

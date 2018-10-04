@@ -105,6 +105,10 @@ else
     echo ''
     echo "installing keepingyouawake..."
     builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    # avoiding "this dapplication is downloaded from the internet. do you really want to open it?" message on first run
+    # must be reset from .xattr file or be reinstalling later
+    xattr -p com.apple.quarantine "/Applications/KeepingYouAwake.app" > /tmp/quarantine_keepingyouawake.xattr
+    xattr -d com.apple.quarantine "/Applications/KeepingYouAwake.app"
 fi
 #activating_keepingyouawake
 
