@@ -242,6 +242,7 @@ then
     start_sudo
     
     # registering xtrafinder
+    echo ''
     SCRIPT_DIR_LICENSE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
 	if [[ -e "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh ]]
 	then
