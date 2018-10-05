@@ -90,7 +90,8 @@ fi
 
 
 ### casks
-read -p "do you want to install casks apps? select no when using restore script on clean install (Y/n)? " CONT2_BREW
+#read -p "do you want to install casks apps? select no when using restore script on clean install (Y/n)? " CONT2_BREW
+read -p "do you want to install casks apps? (Y/n)? " CONT2_BREW
 CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 echo ''
 

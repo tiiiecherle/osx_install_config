@@ -245,7 +245,7 @@ then
     echo ''
 
 	echo "installing mas appstore apps..."
-    mas_apps=$(cat "$SCRIPT_DIR"/_lists/04_mas_apps.txt | sed '/^#/ d' | sort -k 2 -t $'\t' --ignore-case)
+    mas_apps=$(cat "$SCRIPT_DIR"/_lists/04_mas_apps.txt | sed '/^#/ d'  | sed '/^$/d' | sort -k 2 -t $'\t' --ignore-case)
     if [[ "$mas_apps" == "" ]]
     then
     	:

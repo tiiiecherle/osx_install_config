@@ -861,7 +861,7 @@ function backup_restore {
             
             # backup
             #
-            echo ""
+            #echo ""
             echo "starting backup..."
             #    
             BACKUP_RESTORE_LIST="$SCRIPT_DIR"/list/backup_restore_list.txt
@@ -1236,10 +1236,11 @@ function backup_restore {
             #echo ''
             
             # casks install
-            printf '\n'
-            sleep 0.1         
-            read -p "do you want to install casks after restoring the backup (Y/n)? " CONT1
-            CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
+            #printf '\n'
+            #sleep 0.1         
+            #read -p "do you want to install casks after restoring the backup (Y/n)? " CONT6
+            #CONT6="$(echo "$CONT6" | tr '[:upper:]' '[:lower:]')"    # tolower
+            CONT6="no"
             #echo ''
             
             # stopping services and backing up files
@@ -1601,7 +1602,7 @@ function backup_restore {
             /System/Library/CoreServices/pbs -flush
             
             ### casks install
-            if [[ "$CONT1" == "y" || "$CONT1" == "yes" || "$CONT1" == "" ]]
+            if [[ "$CONT6" == "y" || "$CONT6" == "yes" || "$CONT6" == "" ]]
             then
                 echo ""
                 echo "installing casks..."

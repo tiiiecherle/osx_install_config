@@ -121,8 +121,8 @@ echo Chromium
 u	~/Library/Application Support/Chromium
 
 # Clover Configurator Pro
-#m	/Applications/Clover Configurator Pro.app
-#m	~/Library/Preferences/com.m79softwares.Clover-Configurator-Pro.plist
+m	/Applications/Clover Configurator Pro.app
+m	~/Library/Preferences/com.m79softwares.Clover-Configurator-Pro.plist
 
 # coconutBattery
 #echo coconutBattery
@@ -268,7 +268,6 @@ echo IINA
 u	~/Library/Preferences/com.colliderli.iina.plist
 
 # ImageOptim
-echo ImageOptim
 #m	/Applications/ImageOptim.app
 m	~/Library/Preferences/net.pornel.ImageOptim.plist
 
@@ -323,7 +322,7 @@ u	~/Library/Preferences/info.marcel-dierkes.KeepingYouAwake.plist
 # Keka
 echo Keka
 #m	/Applications/Keka.app
-m	~/Library/Containers/com.aone.keka/Data/Library/Preferences/com.aone.keka.plist
+m	~/Library/Preferences/com.aone.keka.plist
 
 # Keychain
 echo Keychain
@@ -331,9 +330,9 @@ u	~/Library/Preferences/com.apple.keychainaccess.plist
 u	~/Library/Keychains
 
 # LaunchAgents
-#echo LaunchAgents
-#u	~/Library/LaunchAgents/com.run_script_on_network_change.plist
-#u	~/Library/LaunchAgents/com.run_script_on_boot.plist
+echo LaunchAgents
+u	~/Library/LaunchAgents/com.run_script_on_network_change.plist
+u	~/Library/LaunchAgents/com.run_script_on_boot.plist
 
 # LaunchDaemons
 echo LaunchDaemons
@@ -533,7 +532,7 @@ m	~/Library/Preferences/sekn.ResizeIt.plist
 # Safari
 echo Safari
 m	~/Library/Safari/Extensions
-#m	~/Library/Preferences/com.apple.Safari.Extensions.plist
+m	~/Library/Preferences/com.apple.Safari.Extensions.plist
 m	~/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist
 u	~/Library/Safari/Bookmarks.plist
 
@@ -585,8 +584,8 @@ echo ssh
 u	~/.ssh
 
 # SyncTwoFolders
-#echo SyncTwoFolders
-#m	/Applications/SyncTwoFolders.app
+echo SyncTwoFolders
+m	/Applications/SyncTwoFolders.app
 
 # Telegram
 #echo Telegram

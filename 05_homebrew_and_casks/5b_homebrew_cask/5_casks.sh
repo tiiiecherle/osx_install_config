@@ -180,7 +180,7 @@ then
 	#for caskstoinstall_pre in "${casks_pre[@]}"
 	
 	### option 2 for separate list file
-    casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g')
+    casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
     if [[ "$casks_pre" == "" ]]
     then
     	:
@@ -264,7 +264,7 @@ then
 	echo ''
 	
 	echo "installing casks..."
-	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g')
+	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
     if [[ "$casks" == "" ]]
     then
     	:
@@ -344,7 +344,7 @@ then
     then
         echo ''
     	echo "installing casks specific1..."
-    	casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g')
+    	casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
     	if [[ "$casks_specific1" == "" ]]
 	    then
 	    	:
