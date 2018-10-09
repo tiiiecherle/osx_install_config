@@ -84,9 +84,9 @@ sudo()
 # before running download and install the latest version of java jre from www.java.com or through homebrew cask
 
 # restoring functionality of apps that need java 6 without installing apple java
-#sudo mkdir -p /System/Library/Java/JavaVirtualMachines/1.6.0.jdk
-#sudo ln -s '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents' /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents
-#sudo mkdir -p /System/Library/Java/Support/Deploy.bundle
+sudo mkdir -p /System/Library/Java/JavaVirtualMachines/1.6.0.jdk
+sudo ln -s '/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents' /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents
+sudo mkdir -p /System/Library/Java/Support/Deploy.bundle
 
 
 # to undo this do
