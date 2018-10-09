@@ -797,7 +797,8 @@ cask-install-updates() {
     done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
     stop_sudo
     
-    # updating virtualbox-extension-pack if it is outdated
+    ### manual installations after install
+    
     #if [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "yes" ]]
     #then
     #    start_sudo
@@ -811,6 +812,13 @@ cask-install-updates() {
     #else
     #    :
     #fi
+    
+    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" | grep libreoffice-language-pack) != "" ]]
+	then
+	    open "/usr/local/Caskroom/libreoffice-language-pack/6.1.2/LibreOffice Language Pack.app"
+	else
+	    :
+	fi
     
     #read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
     #CONT_LATEST="N"

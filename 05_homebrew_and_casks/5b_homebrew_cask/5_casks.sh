@@ -289,7 +289,15 @@ then
 	        	#stop_sudo
 	        done
 	    fi
+	    # manual installations after install
 		#open "/opt/homebrew-cask/Caskroom/paragon-extfs/latest/FSinstaller.app" &
+		#if [[ $(echo "$casks" | grep libreoffice-language-pack) != "" ]]
+		if [[ $(brew cask list | grep libreoffice-language-pack) != "" ]]
+		then
+		    open "/usr/local/Caskroom/libreoffice-language-pack/6.1.2/LibreOffice Language Pack.app"
+		else
+		    :
+		fi
 	fi
 	
 	# as xtrafinder is no longer installable by cask let`s install it that way ;)
