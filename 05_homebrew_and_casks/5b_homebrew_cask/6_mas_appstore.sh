@@ -151,6 +151,14 @@ function mas_login_applescript() {
     tell application "System Events"
     	tell process "App Store"
     		set frontmost to true
+    		delay 2
+    		### on first run when installing the appstore asks for accepting privacy policy
+    		try
+			    click button 2 of UI element 1 of sheet 1 of window 1
+			    #click button "Weiter" of UI element 1 of sheet 1 of window 1
+			    delay 3
+		    end try
+		    ### login
     		click menu item 15 of menu "Store" of menu bar item "Store" of menu bar 1
     		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
     		delay 2
