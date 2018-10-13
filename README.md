@@ -28,10 +28,10 @@ Table of contents
 [Usage](#usage)  
 [0 Bootable usb device](#0bootable-usb-device)  
 [1 NVRAM, system integrity protection and secure boot](#1nvram-system-integrity-protection-and-secure-boot)  
-[2	Install AppStore apps and copy files](#2install-appstore-apps-and-copy-files)
+[2	System Update and copy files](#2system-update-and-copy-files)
 [3	Network Configuration](#3network-configuration)  
 [4	SSD Optimizations](#4ssd-optimizations)  
-[5	Homebrew and Casks](#5homebrew-and-casks)  
+[5	Homebrew, Mas and Casks](#5homebrew-mas-and-casks)  
 [6	Manual app installation](#6manual-app-installation)  
 [7	Backup and restore script](#7backup-and-restore-script)  
 [8	Java 6](#8java-6)  
@@ -118,9 +118,9 @@ All Macs with T2 Chips, e.g. the MacBook Pro 2018 have an additional security fe
 0. Reboot
 
 
-2	Install AppStore apps and copy files
+2	System Update and copy files
 -----
-File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts.
+File 2a updates macOS on the command line if the system should not be up to date. File 2b is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts.
 
 
 3	Network Configuration
@@ -147,16 +147,19 @@ Adjust to your needs and run it.
 Do not run it if your volume is not an ssd.
 
 
-5	Homebrew and Casks
+5	Homebrew, Mas and Casks
 -----
 Homebrew is a really nice project and a package manager for macOS. In addition with homebrew cask it allows you to install and update software packages, players, plugins and apps on macOS.
+
+Mas makes it possible to install and update apps from the macOS appstore on the command line.
 
 You will find more information here:
 
 * [homebrew](http://brew.sh)
-* [homebrew cask](http://caskroom.io)
+* [homebrew-cask](http://caskroom.io)
+* [mas-cli](https://github.com/mas-cli/mas)
 
-These scripts install macOS Command Line Tools, homebrew and homebrew-cask. Additionally it takes care of installing homebrew formulas, macOS-plugins and macOS-apps from a given list directly to the /Applications folder without linking them. It is like downloading and installing them to this directory manually but a lot more comfortable. To make it very easy for keeping everything up-to-date an updater script with with a macOS-app Wrapper is also included.
+These scripts install macOS Command Line Tools, homebrew, mas and homebrew-cask. Additionally it takes care of installing homebrew formulas,, apps from the app store, macOS-plugins and macOS-apps from a given list directly to the /Applications folder without linking them. It is like downloading and installing them to this directory manually but a lot more comfortable. To make it very easy for keeping everything up-to-date an updater script with with a macOS-app Wrapper is also included.
 
 Adjust the scripts and install lists to your needs and run them.
 
