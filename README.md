@@ -28,7 +28,7 @@ Table of contents
 [Usage](#usage)  
 [0 Bootable usb device](#0bootable-usb-device)  
 [1 NVRAM, system integrity protection and secure boot](#1nvram-system-integrity-protection-and-secure-boot)  
-[2	System Update and copy files](#2system-update-and-copy-files)
+[2	System Update and copy files](#2system-update-and-copy-files)  
 [3	Network Configuration](#3network-configuration)  
 [4	SSD Optimizations](#4ssd-optimizations)  
 [5	Homebrew, Mas and Casks](#5homebrew-mas-and-casks)  
