@@ -27,9 +27,9 @@ Table of contents
 
 [Usage](#usage)  
 [0 Bootable usb device](#0bootable-usb-device)  
-[1 NVRAM and system integrity protection](#1nvram-and-system-integrity-protection)  
-[2	Network Configuration](#2network-configuration)  
-[3	Install AppStore apps and copy files](#3install-appstore-apps-and-copy-files)  
+[1 NVRAM, system integrity protection and secure boot](#1nvram-system-integrity-protection-and-secure-boot)  
+[2	Install AppStore apps and copy files](#2install-appstore-apps-and-copy-files)
+[3	Network Configuration](#3network-configuration)  
 [4	SSD Optimizations](#4ssd-optimizations)  
 [5	Homebrew and Casks](#5homebrew-and-casks)  
 [6	Manual app installation](#6manual-app-installation)  
@@ -84,7 +84,7 @@ Select the usb device as device to install from.
 When formatting your drive be sure to select macOS Extended (Journaled) for best compatibility. I always rename my drives for easier use of the terminal with a name without spaces. So all scripts from me are using `macintosh_hd` as name for the main partition of the installed macOS.
 
 
-1	NVRAM and system integrity protection
+1	NVRAM, system integrity protection and secure boot
 -----
 Script 1a adjusts NVRAM parameters. Adjust to your needs and run it.
 
@@ -94,11 +94,11 @@ As I want and need to do some changes to the system with the following scripts I
 
 As of now the system integrity protection has to be deactivated manually in the recovery.
 
-##### Terminal
+##### Disable System Integrity Protection in Recovery Mode Terminal
 
-0. Reboot your mac to recovery mode (reboot with command + R pressed).
-0. Open Utilities.
-0. Open Terminal.
+0. Reboot your mac to recovery mode (reboot with command + R pressed)
+0. Open Utilities
+0. Open Terminal
 0. `csrutil status`
 0. `csrutil disable`
 0. `csrutil status`
@@ -106,7 +106,24 @@ As of now the system integrity protection has to be deactivated manually in the 
 
 To re-enable it, reboot to recovery and type `csrutil enable`.
 
-2	Network Configuration
+##### Disable Secure Boot in Recovery Mode
+
+All Macs with T2 Chips, e.g. the MacBook Pro 2018 have an additional security feature which disables booting from external devices by default. To enable booting from external usb devices, follow these steps:
+
+0. Reboot your mac to recovery mode (reboot with command + R pressed)
+0. Open Utilities
+0. Open Start-Up-Security-Utility
+0. Set Secure Boot to whatever protection you like
+0. Set External Boot to allow booting from external usb devices
+0. Reboot
+
+
+2	Install AppStore apps and copy files
+-----
+File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts.
+
+
+3	Network Configuration
 -----
 As there were a lot of problems in earlier macOS versions with network configurations, especially wifi, this script deletes all locations and adds them in a new clean configuration file.
 
@@ -122,11 +139,6 @@ sudo rm -rf /Library/Preferences/SystemConfiguration/NetworkInterfaces.plist
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist
 sudo reboot
 ```
-
-3	Install AppStore apps and copy files
------
-File 3a is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts.
-
 
 4	SSD Optimizations
 -----
