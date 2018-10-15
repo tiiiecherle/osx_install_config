@@ -36,6 +36,8 @@ default_open_with=(
 "LSHandlerContentType           public.comma-separated-values-text          org.libreoffice.script"        # .csv
 "LSHandlerContentType           org.oasis-open.opendocument.text            org.libreoffice.script"        # .odt
 "LSHandlerContentType           public.shell-script                         com.coteditor.coteditor"        # .sh
+"LSHandlerContentType           public.php-script                           com.coteditor.coteditor"        # .php
+"LSHandlerContentType           public.css                                 com.coteditor.coteditor"        # .css
 "LSHandlerContentTagClass       public.filename-extension                   com.coteditor.coteditor LSHandlerContentTag     conf"       # .conf
 "LSHandlerContentType           com.adobe.pdf                               com.apple.preview"              # .pdf
 "LSHandlerContentType           public.zip-archive                          cx.c3.theunarchiver"            # .zip
