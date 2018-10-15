@@ -587,20 +587,11 @@ EOF
     # false = yes, true = no
     ##
     defaults write com.apple.spaces spans-displays -bool false
-    
-    sleep 1
-    if [ "$USER" == "wolfgang" ]
-    then
-    	defaults write com.apple.spaces spans-displays -bool true
-    else
-        :
-    fi
-    
+
     # dashboard as setting
     # 1 = disabled
     # 2 = enabled as space
     # 3 = enabled as overlay
-    
     defaults write com.apple.dashboard db-enabled-state -int 1
     
     sleep 1
