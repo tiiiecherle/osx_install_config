@@ -294,8 +294,9 @@ then
 		#if [[ $(echo "$casks" | grep libreoffice-language-pack) != "" ]]
 		if [[ $(brew cask list | grep libreoffice-language-pack) != "" ]]
 		then
-		    open "/usr/local/Caskroom/libreoffice-language-pack/6.1.2/LibreOffice Language Pack.app"
-		else
+            LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+            open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"		
+        else
 		    :
 		fi
 	fi
