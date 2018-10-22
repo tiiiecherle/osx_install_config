@@ -97,10 +97,11 @@ else
     
     if [[ "$INSTALLATION_METHOD" == "parallel" ]]
     then
-    #echo ''
+        #echo ''
         # parallel install not working, do not put a & at the end of the line or the script would hang and not finish
         #${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265 2> /dev/null | grep "/Cellar/.*files,"
         #${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+        # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more
         if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-libx265") == "" ]]
         then
             echo "installing formula ffmpeg with x265..."
@@ -110,6 +111,7 @@ else
         fi
     else
         #${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+        # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more
         if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-libx265") == "" ]]
         then
             echo "installing formula ffmpeg with x265..."
