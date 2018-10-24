@@ -3120,7 +3120,7 @@ EOF
     
     # sort by
     ##
-    defaults write com.apple.AddressBook ABNameSortingFormat -string "sortingLastName sortingFirstName"
+    defaults write ~/Library/Preferences/com.apple.AddressBook ABNameSortingFormat -string "sortingLastName sortingFirstName"
     
     # short name format
     # 0 = full name
@@ -3141,24 +3141,24 @@ EOF
     
     # address format
     ##
-    defaults write com.apple.AddressBook ABDefaultAddressCountryCode -string "de"
+    defaults write ~/Library/Preferences/com.apple.AddressBook ABDefaultAddressCountryCode -string "de"
     
     # vcard format
     # false = 3.0
     # true = 2.1
-    defaults write com.apple.AddressBook ABUse21vCardFormat -bool false
+    defaults write ~/Library/Preferences/com.apple.AddressBook ABUse21vCardFormat -bool false
     
     # enable private me card
     ##
-    defaults write com.apple.AddressBook ABPrivateVCardFieldsEnabled -bool false
+    defaults write ~/Library/Preferences/com.apple.AddressBook ABPrivateVCardFieldsEnabled -bool false
     
     # export notes in vcards
     ##
-    defaults write com.apple.AddressBook ABIncludeNotesInVCard -bool true
+    defaults write ~/Library/Preferences/com.apple.AddressBook ABIncludeNotesInVCard -bool true
     
     # export photos in vcards
     ##
-    defaults write com.apple.AddressBook ABIncludePhotosInVCard -bool true
+    defaults write ~/Library/Preferences/com.apple.AddressBook ABIncludePhotosInVCard -bool true
     
     
     ###
