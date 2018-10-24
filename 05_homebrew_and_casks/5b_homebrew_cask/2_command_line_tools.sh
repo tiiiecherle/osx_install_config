@@ -52,9 +52,9 @@ fi
 #if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ "$(ls -A "$(xcode-select -print-path)")" ]]
 if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ -nz "$(ls -A "$(xcode-select -print-path)")" ]]
 then
-  	echo command line tools are installed...
+  	echo "command line tools are installed..."
 else
-	echo command line tools are not installed, installing...
+	echo "command line tools are not installed, installing..."
 	# prompting the softwareupdate utility to list the command line tools
     touch "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
     sleep 3
