@@ -150,246 +150,127 @@ cleanup_all_homebrew() {
     #brew cask style 1> /dev/null
 }
 
-cleanup_formulae_parallel() {
-    TMP_DIR_FORMULAE_VERSIONS=/tmp/formulae_versions
-    export TMP_DIR_FORMULAE_VERSIONS
-    if [ -e "$TMP_DIR_FORMULAE_VERSIONS" ]
+cleanup_formulae() { 
+    if [[ ! -s "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS" ]]
     then
-        if [ "$(ls -A $TMP_DIR_FORMULAE_VERSIONS/)" ]
-        then
-            rm "$TMP_DIR_FORMULAE_VERSIONS"/*    
-        else
-            :
-        fi
+    	# file is empty or does not exist
+    	:
     else
-        :
+    	# file exists and is not empty
+        sort "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS" -o "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
+    
+        while IFS='' read -r line || [[ -n "$line" ]]
+        do
+                FORMULA=$(echo "$line" | awk '{print $2}')
+                #echo ''
+            	#echo "$(echo "$line" | awk '{print $1}') versions of $FORMULA are installed..."
+            	#echo "uninstalling all outdated versions..."
+            	if [[ -e "$BREW_FORMULAE_PATH"/"$FORMULA" ]]
+            	then
+            	    # uninstall old versions
+                    local FORMULA_INFO=$(brew info --json=v1 "$FORMULA" | jq .[])
+                    local FORMULA_NAME=$(echo "$FORMULA_INFO" | jq -r '.name')
+                    local FORMULA_REVISION=$(echo "$FORMULA_INFO" | jq -r '.revision')
+                    if [[ "$FORMULA_REVISION" == "0" ]]
+                    then
+                        #local NEW_VERSION=$(echo "$FORMULA_INFO" | grep -e "$FORMULA: .*" | cut -d" " -f3 | sed 's/,//g')
+                        local NEW_VERSION=$(echo "$FORMULA_INFO" | jq -r '.versions.stable')
+                    else
+                        #local NEW_VERSION=$(echo $(echo "$FORMULA_INFO" | grep -e "$FORMULA: .*" | cut -d" " -f3 | sed 's/,//g')_"$FORMULA_REVISION")
+                        local NEW_VERSION=$(echo $(echo "$FORMULA_INFO" | jq -r '.versions.stable')_"$FORMULA_REVISION")
+                    fi
+            	    local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAE_PATH"/"$FORMULA" | sort -V)
+            	    local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | tail -n 1)
+            	    #local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEW_VERSION")
+            	    # alternatively always keep latest version installed and not the latest version from homebrew
+            	    local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEWEST_INSTALLED_VERSION")
+            	    for i in $VERSIONS_TO_UNINSTALL
+                    do
+                        #echo $i
+                        # deleting version entry
+                        if [[ -e "$BREW_FORMULAE_PATH"/"$FORMULA"/"$i" && $(echo "$i") != "" ]]
+                        then
+                            rm -rf "$BREW_FORMULAE_PATH"/"$FORMULA"/"$i"
+                        else
+                            :
+                        fi
+                        # deleting metadata version entry
+                        if [[ -e "$BREW_FORMULAE_PATH"/"$FORMULA"/.metadata/"$i" && $(echo "$i") != "" ]]
+                        then
+                            rm -rf "$BREW_FORMULAE_PATH"/"$FORMULA"/.metadata/"$i"
+                        else
+                            :
+                        fi
+                    done
+            	else
+            	    :
+            	fi
+        done <"$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
     fi
-    mkdir -p "$TMP_DIR_FORMULAE_VERSIONS"/
-    DATE_LIST_FILE_FORMULAE_VERSIONS=$(echo "formulae_versions"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    export DATE_LIST_FILE_FORMULAE_VERSIONS
-    touch "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
-    
-    formulae_check_for_multiple_installed_versions() {
-        # always use _ instead of - because some sh commands called by parallel would give errors
-        local FORMULA="$1"
-        #local FORMULA_INFO=$(brew info $FORMULA)
-        FORMULA_INFO=$(brew info --json=v1 "$FORMULA" | jq .[])
-        #echo FORMULA_INFO is $FORMULA_INFO
-        #local FORMULA_NAME=$(echo "$FORMULA_INFO" | grep -e "$FORMULA: .*" | cut -d" " -f1 | sed 's/://g' | awk '{print $NF}' FS=/)
-        local FORMULA_NAME=$(echo "$FORMULA_INFO" | jq -r '.name')
-        # getting value directly
-        #local FORMULA_NAME=$(brew info --json=v1 $FORMULA | jq -r '.[].name')
-        #echo FORMULA_NAME is $FORMULA_NAME
-        # make sure you have jq installed via brew
-        #local FORMULA_REVISION=$(brew info "$FORMULA" --json=v1 | jq . | grep revision | grep -o '[0-9]')
-        local FORMULA_REVISION=$(echo "$FORMULA_INFO" | jq -r '.revision')
-        #echo FORMULA_REVISION is $FORMULA_REVISION
-        if [[ "$FORMULA_REVISION" == "0" ]]
-        then
-            #local NEW_VERSION=$(echo "$FORMULA_INFO" | grep -e "$FORMULA: .*" | cut -d" " -f3 | sed 's/,//g')
-            local NEW_VERSION=$(echo "$FORMULA_INFO" | jq -r '.versions.stable')
-        else
-            #local NEW_VERSION=$(echo $(echo "$FORMULA_INFO" | grep -e "$FORMULA: .*" | cut -d" " -f3 | sed 's/,//g')_"$FORMULA_REVISION")
-            local NEW_VERSION=$(echo $(echo "$FORMULA_INFO" | jq -r '.versions.stable')_"$FORMULA_REVISION")
-        fi
-        #echo NEW_VERSION is $NEW_VERSION
-        local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAE_PATH"/"$FORMULA" | sort -V)
-        local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
-        
-        if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
-        then
-            echo -e "$NUMBER_OF_INSTALLED_VERSIONS\t$FORMULA_NAME" >> "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
-        else
-            :
-        	#echo "only one version installed..."
-        fi 
-
-        FORMULA=""
-        FORMULA_INFO=""
-        FORMULA_NAME=""
-        NEW_VERSION=""
-        INSTALLED_VERSIONS=""
-        NUMBER_OF_INSTALLED_VERSIONS=""
-    }
-    export -f formulae_check_for_multiple_installed_versions
-    
-    parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k formulae_check_for_multiple_installed_versions ::: "$(brew list)"
-    wait
-    
-    sort "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS" -o "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
-
-    while IFS='' read -r line || [[ -n "$line" ]]
-    do
-            FORMULA=$(echo "$line" | awk '{print $2}')
-            #echo ''
-        	#echo "$(echo "$line" | awk '{print $1}') versions of $FORMULA are installed..."
-        	#echo "uninstalling all outdated versions..."
-        	if [[ -e "$BREW_FORMULAE_PATH"/"$FORMULA" ]]
-        	then
-        	    # uninstall old versions
-                local FORMULA_INFO=$(brew info --json=v1 "$FORMULA" | jq .[])
-                local FORMULA_NAME=$(echo "$FORMULA_INFO" | jq -r '.name')
-                local FORMULA_REVISION=$(echo "$FORMULA_INFO" | jq -r '.revision')
-                if [[ "$FORMULA_REVISION" == "0" ]]
-                then
-                    #local NEW_VERSION=$(echo "$FORMULA_INFO" | grep -e "$FORMULA: .*" | cut -d" " -f3 | sed 's/,//g')
-                    local NEW_VERSION=$(echo "$FORMULA_INFO" | jq -r '.versions.stable')
-                else
-                    #local NEW_VERSION=$(echo $(echo "$FORMULA_INFO" | grep -e "$FORMULA: .*" | cut -d" " -f3 | sed 's/,//g')_"$FORMULA_REVISION")
-                    local NEW_VERSION=$(echo $(echo "$FORMULA_INFO" | jq -r '.versions.stable')_"$FORMULA_REVISION")
-                fi
-        	    local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAE_PATH"/"$FORMULA" | sort -V)
-        	    local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | tail -n 1)
-        	    #local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEW_VERSION")
-        	    # alternatively always keep latest version installed and not the latest version from homebrew
-        	    local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEWEST_INSTALLED_VERSION")
-        	    for i in $VERSIONS_TO_UNINSTALL
-                do
-                    #echo $i
-                    # deleting version entry
-                    if [[ -e "$BREW_FORMULAE_PATH"/"$FORMULA"/"$i" && $(echo "$i") != "" ]]
-                    then
-                        rm -rf "$BREW_FORMULAE_PATH"/"$FORMULA"/"$i"
-                    else
-                        :
-                    fi
-                    # deleting metadata version entry
-                    if [[ -e "$BREW_FORMULAE_PATH"/"$FORMULA"/.metadata/"$i" && $(echo "$i") != "" ]]
-                    then
-                        rm -rf "$BREW_FORMULAE_PATH"/"$FORMULA"/.metadata/"$i"
-                    else
-                        :
-                    fi
-                done
-        	else
-        	    :
-        	fi
-        #
-        FORMULA=""
-        FORMULA_INFO=""
-        FORMULA_NAME=""
-        NEW_VERSION=""
-        INSTALLED_VERSIONS=""
-        VERSIONS_TO_UNINSTALL=""
-    done <"$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
 
     # checking if more than version is installed by using
     # brew list --versions
-    
-    #echo ''
-    #echo 'cleaning finished ;)'
+
 }
 
-cleanup_casks_parallel() {
-    TMP_DIR_CASK_VERSIONS=/tmp/cask_versions
-    export TMP_DIR_CASK_VERSIONS
-    if [ -e "$TMP_DIR_CASK_VERSIONS" ]
+cleanup_casks() {
+    if [[ ! -s "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASKS_VERSIONS" ]]
     then
-        if [ "$(ls -A $TMP_DIR_CASK_VERSIONS/)" ]
-        then
-            rm "$TMP_DIR_CASK_VERSIONS"/*    
-        else
-            :
-        fi
+    	# file is empty or does not exist
+    	:
     else
-        :
+    	# file exists and is not empty    
+        sort "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASKS_VERSIONS" -o "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASKS_VERSIONS"
+    
+        while IFS='' read -r line || [[ -n "$line" ]]
+        do
+                CASK=$(echo "$line" | awk '{print $2}')
+                #echo ''
+            	#echo "$(echo "$line" | awk '{print $1}') versions of $CASK are installed..."
+            	#echo "uninstalling all outdated versions..."
+            	if [[ -e "$BREW_CASKS_PATH"/"$CASK" ]]
+            	then
+            	    # uninstall old versions
+                    local CASK_INFO=$(brew cask info --json=v1 "$CASK" | jq .[])
+                    #local CASK_INFO=$(brew cask info "$CASK")
+                    local CASK_NAME=$(echo "$CASK_INFO" | jq -r '.name | .[]')
+                    #local CASK_NAME=$(echo "$CASK" | cut -d ":" -f1 | xargs)
+                    local NEW_VERSION=$(echo "$CASK_INFO" | jq -r '.version')
+                    #local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
+            	    local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK" | sort -V)
+            	    local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | tail -n 1)
+            	    #local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEW_VERSION")
+            	    # alternatively always keep latest version installed and not the latest version from homebrew
+            	    local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEWEST_INSTALLED_VERSION")
+            	    for i in $VERSIONS_TO_UNINSTALL
+                    do
+                        #echo $i
+                        # deleting version entry
+                        if [[ -e "$BREW_CASKS_PATH"/"$CASK"/"$i" && $(echo "$i") != "" ]]
+                        then
+                            rm -rf "$BREW_CASKS_PATH"/"$CASK"/"$i"
+                        else
+                            :
+                        fi
+                        # deleting metadata version entry
+                        if [[ -e "$BREW_CASKS_PATH"/"$CASK"/.metadata/"$i" && $(echo "$i") != "" ]]
+                        then
+                            rm -rf "$BREW_CASKS_PATH"/"$CASK"/.metadata/"$i"
+                        else
+                            :
+                        fi
+                    done
+            	else
+            	    :
+            	fi
+        done <"$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASKS_VERSIONS"
     fi
-    mkdir -p "$TMP_DIR_CASK_VERSIONS"/
-    DATE_LIST_FILE_CASK_VERSIONS=$(echo "casks_versions"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    export DATE_LIST_FILE_CASK_VERSIONS
-    touch "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
-    
-    cask_check_for_multiple_installed_versions() {
-        # always use _ instead of - because some sh commands called by parallel would give errors
-        local CASK="$1"
-        local CASK_INFO=$(brew cask info --json=v1 "$CASK" | jq .[])
-        #local CASK_INFO=$(brew cask info "$CASK")
-        local CASK_NAME=$(echo "$CASK_INFO" | jq -r '.name | .[]')
-        #local CASK_NAME=$(echo "$CASK" | cut -d ":" -f1 | xargs)
-        local NEW_VERSION=$(echo "$CASK_INFO" | jq -r '.version')
-        #local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
-        local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK" | sort -V)
-        local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
-        if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
-        then
-            echo -e "$NUMBER_OF_INSTALLED_VERSIONS\t$CASK_NAME" >> "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
-        else
-            :
-        	#echo "only one version installed..."
-        fi 
-
-        CASK=""
-        CASK_INFO=""
-        CASK_NAME=""
-        NEW_VERSION=""
-        INSTALLED_VERSIONS=""
-        NUMBER_OF_INSTALLED_VERSIONS=""
-    }
-    export -f cask_check_for_multiple_installed_versions
-
-    parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k cask_check_for_multiple_installed_versions ::: "$(brew cask list)"
-    wait
-    
-    sort "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS" -o "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
-
-    while IFS='' read -r line || [[ -n "$line" ]]
-    do
-            CASK=$(echo "$line" | awk '{print $2}')
-            #echo ''
-        	#echo "$(echo "$line" | awk '{print $1}') versions of $CASK are installed..."
-        	#echo "uninstalling all outdated versions..."
-        	if [[ -e "$BREW_CASKS_PATH"/"$CASK" ]]
-        	then
-        	    # uninstall old versions
-                local CASK_INFO=$(brew cask info --json=v1 "$CASK" | jq .[])
-                #local CASK_INFO=$(brew cask info "$CASK")
-                local CASK_NAME=$(echo "$CASK_INFO" | jq -r '.name | .[]')
-                #local CASK_NAME=$(echo "$CASK" | cut -d ":" -f1 | xargs)
-                local NEW_VERSION=$(echo "$CASK_INFO" | jq -r '.version')
-                #local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
-        	    local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK" | sort -V)
-        	    local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | tail -n 1)
-        	    #local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEW_VERSION")
-        	    # alternatively always keep latest version installed and not the latest version from homebrew
-        	    local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEWEST_INSTALLED_VERSION")
-        	    for i in $VERSIONS_TO_UNINSTALL
-                do
-                    #echo $i
-                    # deleting version entry
-                    if [[ -e "$BREW_CASKS_PATH"/"$CASK"/"$i" && $(echo "$i") != "" ]]
-                    then
-                        rm -rf "$BREW_CASKS_PATH"/"$CASK"/"$i"
-                    else
-                        :
-                    fi
-                    # deleting metadata version entry
-                    if [[ -e "$BREW_CASKS_PATH"/"$CASK"/.metadata/"$i" && $(echo "$i") != "" ]]
-                    then
-                        rm -rf "$BREW_CASKS_PATH"/"$CASK"/.metadata/"$i"
-                    else
-                        :
-                    fi
-                done
-        	else
-        	    :
-        	fi
-        #
-        CASK=""
-        CASK_INFO=""
-        CASK_NAME=""
-        NEW_VERSION=""
-        INSTALLED_VERSIONS=""
-        VERSIONS_TO_UNINSTALL=""
-    done <"$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASK_VERSIONS"
 
     # checking if more than version is installed by using
     # brew cask list --versions
     
-    #echo ''
-    #echo 'cleaning finished ;)'
 }
 
-# upgrading all homebrew formulae
 formulae_show_updates_parallel() {
     # always use _ instead of - because some sh commands called by parallel would give errors
 
@@ -411,6 +292,7 @@ formulae_show_updates_parallel() {
     TMP_DIR_FORMULAE=/tmp/formulae_updates
     export TMP_DIR_FORMULAE
 
+    # update formulae preparation
     if [ -e "$TMP_DIR_FORMULAE" ]
     then
         if [ "$(ls -A $TMP_DIR_FORMULAE/)" ]
@@ -423,9 +305,28 @@ formulae_show_updates_parallel() {
         :
     fi
     mkdir -p "$TMP_DIR_FORMULAE"/
-    DATE_LIST_FILE_BREW=$(echo "brew_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    export DATE_LIST_FILE_BREW
-    touch "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW"
+    DATE_LIST_FILE_FORMULAE=$(echo "brew_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    export DATE_LIST_FILE_FORMULAE
+    touch "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE"
+
+    # cleanup formulae preparation
+    TMP_DIR_FORMULAE_VERSIONS=/tmp/formulae_versions
+    export TMP_DIR_FORMULAE_VERSIONS
+    if [ -e "$TMP_DIR_FORMULAE_VERSIONS" ]
+    then
+        if [ "$(ls -A $TMP_DIR_FORMULAE_VERSIONS/)" ]
+        then
+            rm "$TMP_DIR_FORMULAE_VERSIONS"/*    
+        else
+            :
+        fi
+    else
+        :
+    fi
+    mkdir -p "$TMP_DIR_FORMULAE_VERSIONS"/
+    DATE_LIST_FILE_FORMULAE_VERSIONS=$(echo "formulae_versions"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    export DATE_LIST_FILE_FORMULAE_VERSIONS
+    touch "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
 
     formulae_show_updates_parallel_inside() {
         # always use _ instead of - because some sh commands called by parallel would give errors
@@ -456,6 +357,8 @@ formulae_show_updates_parallel() {
         local NUMBER_OF_FORMULA=$(echo "$INSTALLED_FORMULAE" | cat -n | grep "$FORMULA$" | awk '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
         local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAE_PATH"/"$FORMULA" | sort -V)
         #echo INSTALLED_VERSIONS is "$INSTALLED_VERSIONS"
+        local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//')
+        #echo NUMBER_OF_INSTALLED_VERSIONS is "$NUMBER_OF_INSTALLED_VERSIONS"
         local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | tail -n 1)
         #echo NEWEST_INSTALLED_VERSION is "$NEWEST_INSTALLED_VERSION"
         local CHECK_RESULT=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo ok || echo outdated)
@@ -478,10 +381,20 @@ formulae_show_updates_parallel() {
         printf "%+7s %-2s %-22s %-17s %-17s %-10s\n" "$NUMBER_OF_FORMULA/$NUMBER_OF_INSTALLED_FORMULAE" "  " "$NAME_PRINT" "$CURRENT_INSTALLED_VERSION_PRINT" "$NEW_VERSION_PRINT" "$CHECK_RESULT_PRINT"
                 
         # installing if not up-to-date and not excluded
-        if [[ "$CHECK_RESULT" == "outdated" ]] && [[ ${CASK_EXCLUDES} != *"$FORMULA_NAME"* ]]
+        if [[ "$CHECK_RESULT" == "outdated" ]] && [[ ${CASK_EXCLUDES} != *"$FORMULA"* ]]
         then
-            echo "$FORMULA_NAME" >> "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW"
+            echo "$FORMULA" >> "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE"
         fi
+        
+        # cleanup entries
+        if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
+        then
+            echo -e "$NUMBER_OF_INSTALLED_VERSIONS\t$FORMULA" >> "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
+        else
+            :
+        	#echo "only one version installed..."
+        fi
+        
     }
     export -f formulae_show_updates_parallel_inside
     
@@ -494,40 +407,57 @@ formulae_show_updates_parallel() {
 formulae_install_updates() {
     echo "installing brew formulae updates..."
     
-    # sorting the outdated casks file after using parallel which can change output order
-    sort "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" -o "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW"
-        
-    while IFS='' read -r line || [[ -n "$line" ]]
-    do
-        echo 'updating '"$line"'...'
-        ${USE_PASSWORD} | brew upgrade "$line"
-        echo 'removing old installed versions of '"$line"'...'
-        ${USE_PASSWORD} | brew cleanup "$line"
-        echo ''
-    done <"$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW"
-    
-    if [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW") == "" ]]
+    if [[ ! -s "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" ]]
     then
-        echo "no brew formula updates available..."
+    	# file is empty or does not exist
+    	echo "no formulae updates available..."
     else
-        echo "installing brew formulae updates finished ;)"
-    fi
-    # special ffmpeg
-    # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more
-    if [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "ffmpeg") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "fdk-aac") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "sdl2") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "freetype") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "libass") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "libvorbis") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "libvpx") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "opus") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_BREW" | grep "x265") != "" ]]
-    then
-        #${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
-        if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-libx265") == "" ]]
+    	# file exists and is not empty
+        
+        # sorting the outdated casks file after using parallel which can change output order
+        sort "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" -o "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE"
+            
+        while IFS='' read -r line || [[ -n "$line" ]]
+        do
+            FORMULA="$line"
+            
+            echo 'updating '"$FORMULA"'...'
+            ${USE_PASSWORD} | brew upgrade "$FORMULA"
+            echo 'removing old installed versions of '"$FORMULA"'...'
+            ${USE_PASSWORD} | brew cleanup "$FORMULA"
+            echo ''
+            
+            # cleanup entries
+            local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAE_PATH"/"$FORMULA" | sort -V)
+            local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//')
+            if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
+            then
+                echo -e "$NUMBER_OF_INSTALLED_VERSIONS\t$FORMULA" >> "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
+            else
+                :
+            	#echo "only one version installed..."
+            fi
+        done <"$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE"
+        
+        # special ffmpeg
+        # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more
+        if [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "ffmpeg") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "fdk-aac") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "sdl2") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "freetype") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "libass") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "libvorbis") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "libvpx") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "opus") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "x265") != "" ]]
         then
-            echo "rebuilding ffmpeg due to components updates..."
-            ${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+            #${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+            if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-libx265") == "" ]]
+            then
+                echo "rebuilding ffmpeg due to components updates..."
+                ${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+            else
+                :
+            fi
         else
             :
         fi
-    else
-        :
+        
+        echo "installing formulae updates finished ;)"
+        
     fi
-    
 }
 
 # selectively upgrade casks
@@ -548,6 +478,7 @@ casks_show_updates_parallel() {
     #printf '=%.0s' {1..80}
     #printf '\n'
     
+    # update casks preparation
     TMP_DIR_CASK=/tmp/cask_updates
     export TMP_DIR_CASK
     if [ -e "$TMP_DIR_CASK" ]
@@ -562,12 +493,28 @@ casks_show_updates_parallel() {
         :
     fi
     mkdir -p "$TMP_DIR_CASK"/
-    DATE_LIST_FILE_CASK=$(echo "casks_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    export DATE_LIST_FILE_CASK
-    DATE_LIST_FILE_CASK_LATEST=$(echo "casks_update_latest"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    export DATE_LIST_FILE_CASK_LATEST
-    touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
-    touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
+    DATE_LIST_FILE_CASKS=$(echo "casks_update"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    export DATE_LIST_FILE_CASKS
+    touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
+    
+    # cleanup formulae preparation
+    TMP_DIR_CASK_VERSIONS=/tmp/cask_versions
+    export TMP_DIR_CASK_VERSIONS
+    if [ -e "$TMP_DIR_CASK_VERSIONS" ]
+    then
+        if [ "$(ls -A $TMP_DIR_CASK_VERSIONS/)" ]
+        then
+            rm "$TMP_DIR_CASK_VERSIONS"/*    
+        else
+            :
+        fi
+    else
+        :
+    fi
+    mkdir -p "$TMP_DIR_CASK_VERSIONS"/
+    DATE_LIST_FILE_CASKS_VERSIONS=$(echo "casks_versions"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    export DATE_LIST_FILE_CASKS_VERSIONS
+    touch "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASKS_VERSIONS"
     
     casks_show_updates_parallel_inside() {
         # always use _ instead of - because some sh commands called by parallel would give errors
@@ -582,6 +529,8 @@ casks_show_updates_parallel() {
         local NUMBER_OF_CASK=$(echo "$INSTALLED_CASKS" | cat -n | grep "$CASK$" | awk '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
         local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK" | sort -V)
         #echo INSTALLED_VERSIONS is "$INSTALLED_VERSIONS"
+        local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
+        #echo NUMBER_OF_INSTALLED_VERSIONS is "$NUMBER_OF_INSTALLED_VERSIONS"
         local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | tail -n 1)
         #echo NEWEST_INSTALLED_VERSION is "$NEWEST_INSTALLED_VERSION"
         local CHECK_RESULT=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo ok || echo outdated)
@@ -603,131 +552,140 @@ casks_show_updates_parallel() {
         printf "%+7s %-2s %-22s %-17s %-17s %-10s\n" "$NUMBER_OF_CASK/$NUMBER_OF_INSTALLED_CASKS" "  " "$CASK_NAME_PRINT" "$CURRENT_INSTALLED_VERSION_PRINT" "$NEW_VERSION_PRINT" "$CHECK_RESULT_PRINT"
 
         # installing if not up-to-date and not excluded
-        if [[ "$CHECK_RESULT" == "outdated" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
+        if [[ "$CHECK_RESULT" == "outdated" ]] && [[ ${CASK_EXCLUDES} != *"$CASK"* ]]
         then
-            echo "$CASK_NAME" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
+            echo "$CASK" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
         fi
         
-        if [[ "$NEW_VERSION" == "latest" ]] && [[ ${CASK_EXCLUDES} != *"$CASK_NAME"* ]]
+        # cleanup entries
+        if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
         then
-            echo "$CASK_NAME" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
+            echo -e "$NUMBER_OF_INSTALLED_VERSIONS\t$CASK" >> "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASKS_VERSIONS"
+        else
+            :
+        	#echo "only one version installed..."
         fi
+        
+        CONT_LATEST="$(echo "$CONT_LATEST" | tr '[:upper:]' '[:lower:]')"    # tolower
+    	if [[ "$CONT_LATEST" == "y" || "$CONT_LATEST" == "yes" ]]
+        then
+            if [[ "$NEW_VERSION" == "latest" ]] && [[ ${CASK_EXCLUDES} != *"$CASK"* ]]
+            then
+                echo "$CASK" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
+            fi
+        else
+            :
+        fi
+                    
     }
     export -f casks_show_updates_parallel_inside
 
     parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k casks_show_updates_parallel_inside ::: "$(echo "$INSTALLED_CASKS")"
     wait
 
-    #echo "listing casks updates finished ;)"
-    
+    #echo "listing casks updates finished ;)"  
 }
 
 casks_install_updates() {
     echo "installing casks updates..."
     
-    # virtualbox has to be updated before virtualbox-extension-pack
-    # checking if there is an update for virtualbox-extension-pack available, deleting the line in the file and install it manually later
-    # done by sorting the file after using parallel which can change output order
-    #if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" | grep virtualbox-extension-pack) == "" ]]
-    #then
-    #    VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE=no
-    #else
-    #    VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE=yes
-    #    sed -i '' '/virtualbox-extension-pack/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
-    #    sed -i '' '/virtualbox/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
-    #fi
-    #echo "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE"
-    
-    # sorting the outdated casks file after using parallel which can change output order
-    sort "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" -o "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
-    
-    start_sudo
-    applications_to_reinstall=(
-    "adobe-acrobat-reader"
-    )
-    for i in "${applications_to_reinstall[@]}"
-    do
-    	if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" | grep "$i") != "" ]]
-    	then
-            echo 'updating '"$i"'...'
-            ${USE_PASSWORD} | brew cask reinstall "$i"
-            #sed -i "" "/""$i""/d" "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
-            sed -i '' '/'"$i"'/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
-            echo ''
-    	else
-    		:
-    	fi
-    done
-
-    # updating all casks that are out of date
-    while IFS='' read -r line || [[ -n "$line" ]]
-    do
-        echo 'updating '"$line"'...'
-        # uninstall deletes autostart entries
-        #sudo brew cask uninstall "$line" --force
-        #${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
-        #sudo brew cask install "$line" --force
-        # reinstall deletes autostart entries as it runs uninstall and then install
-        #${USE_PASSWORD} | brew cask reinstall "$line" --force
-        ${USE_PASSWORD} | brew cask install "$line" --force
-        echo ''
-    done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK"
-    stop_sudo
-    
-    ### manual installations after install
-    
-    #if [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "yes" ]]
-    #then
-    #    start_sudo
-    #    echo 'updating virtualbox...'
-    #    ${USE_PASSWORD} | brew cask reinstall virtualbox --force
-    #    echo ''
-    #    echo 'updating virtualbox-extension-pack...'
-    #    ${USE_PASSWORD} | brew cask reinstall virtualbox-extension-pack --force
-    #    stop_sudo
-    #    echo ''
-    #else
-    #    :
-    #fi
-    
-    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK" | grep libreoffice-language-pack) != "" ]]
-	then
-        LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-        open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"	
-    else
-	    :
-	fi
-    
-    #read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
-    #CONT_LATEST="N"
-    CONT_LATEST="$(echo "$CONT_LATEST" | tr '[:upper:]' '[:lower:]')"    # tolower
-	if [[ "$CONT_LATEST" == "y" || "$CONT_LATEST" == "yes" ]]
+    if [[ ! -s "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" ]]
     then
+    	# file is empty or does not exist
+        echo "no casks updates available..."
+    else
+    	# file exists and is not empty
+    
+        # virtualbox has to be updated before virtualbox-extension-pack
+        # checking if there is an update for virtualbox-extension-pack available, deleting the line in the file and install it manually later
+        # done by sorting the file after using parallel which can change output order
+        #if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep virtualbox-extension-pack) == "" ]]
+        #then
+        #    VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE=no
+        #else
+        #    VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE=yes
+        #    sed -i '' '/virtualbox-extension-pack/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
+        #    sed -i '' '/virtualbox/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
+        #fi
+        #echo "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE"
+        
+        # sorting the outdated casks file after using parallel which can change output order
+        sort "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" -o "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
+        
         start_sudo
-        echo 'updating all installed casks that show "latest" as version...'
-        echo ''
+        applications_to_reinstall=(
+        "adobe-acrobat-reader"
+        )
+        for i in "${applications_to_reinstall[@]}"
+        do
+        	if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep "$i") != "" ]]
+        	then
+                echo 'updating '"$i"'...'
+                ${USE_PASSWORD} | brew cask reinstall "$i"
+                #sed -i "" "/""$i""/d" "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
+                sed -i '' '/'"$i"'/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
+                echo ''
+        	else
+        		:
+        	fi
+        done
+    
+        # updating all casks that are out of date
         while IFS='' read -r line || [[ -n "$line" ]]
         do
-            echo 'updating '"$line"'...'
-            # uninstall deletes autostart entries          
+            CASK="$line"
+            
+            echo 'updating '"$CASK"'...'
+            # uninstall deletes autostart entries
+            #sudo brew cask uninstall "$line" --force
             #${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
-            ${USE_PASSWORD} | brew cask install "$line" --force
+            #sudo brew cask install "$line" --force
+            # reinstall deletes autostart entries as it runs uninstall and then install
+            #${USE_PASSWORD} | brew cask reinstall "$line" --force
+            ${USE_PASSWORD} | brew cask install "$CASK" --force
             echo ''
-        done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK_LATEST"
+            
+            # cleanup entries
+            local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK" | sort -V)
+            local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
+            if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
+            then
+                echo -e "$NUMBER_OF_INSTALLED_VERSIONS\t$CASK" >> "$TMP_DIR_CASK_VERSIONS"/"$DATE_LIST_FILE_CASKS_VERSIONS"
+            else
+                :
+            	#echo "only one version installed..."
+            fi
+        done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
         stop_sudo
-    else
-        echo 'skipping all installed casks that show "latest" as version...'
-        #echo ''
+        
+        ### manual installations after install
+        
+        #if [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "yes" ]]
+        #then
+        #    start_sudo
+        #    echo 'updating virtualbox...'
+        #    ${USE_PASSWORD} | brew cask reinstall virtualbox --force
+        #    echo ''
+        #    echo 'updating virtualbox-extension-pack...'
+        #    ${USE_PASSWORD} | brew cask reinstall virtualbox-extension-pack --force
+        #    stop_sudo
+        #    echo ''
+        #else
+        #    :
+        #fi
+        
+        if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep libreoffice-language-pack) != "" ]]
+    	then
+            LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+            open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"	
+        else
+    	    :
+    	fi
+    
+        echo "installing casks updates finished ;)"
+
     fi
 
-    #if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK") == "" ]] && [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "no" ]]
-    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASK") == "" ]]
-    then
-        echo "no cask updates available..."
-    else
-        echo "installing casks updates finished ;)"
-    fi
-    
 }
 
 ###
@@ -804,9 +762,8 @@ function unset_variables() {
     unset USE_PASSWORD
     unset TMP_DIR_FORMULAE
     unset TMP_DIR_CASK
-    unset DATE_LIST_FILE_BREW
-    unset DATE_LIST_FILE_CASK
-    unset DATE_LIST_FILE_CASK_LATEST
+    unset DATE_LIST_FILE_FORMULAE
+    unset DATE_LIST_FILE_CASKS
     unset BREW_FORMULAE_PATH
     unset BREW_CASKS_PATH  
 }
@@ -997,6 +954,10 @@ then
         ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
     }
     
+    #read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
+    #export CONT_LATEST
+    export CONT_LATEST="N"
+    
     homebrew_update
     #
     echo ''
@@ -1028,10 +989,10 @@ then
     cleanup_all_homebrew & pids+=($!)
     if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
     then
-        cleanup_formulae_parallel & pids+=($!)
-        cleanup_casks_parallel & pids+=($!)
+        cleanup_formulae & pids+=($!)
+        cleanup_casks & pids+=($!)
     else
-        cleanup_formulae_parallel & pids+=($!)
+        cleanup_formulae & pids+=($!)
     fi
     wait "${pids[@]}"
     echo 'cleaning finished ;)'
