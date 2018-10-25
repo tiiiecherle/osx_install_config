@@ -363,7 +363,7 @@ formulae_show_updates_parallel() {
         #echo NEWEST_INSTALLED_VERSION is "$NEWEST_INSTALLED_VERSION"
         local CHECK_RESULT=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo ok || echo outdated)
         #echo CHECK_RESULT is $CHECK_RESULT
-        local NAME_PRINT=$(echo "$FORMULA_NAME" | awk -v len=20 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        local NAME_PRINT=$(echo "$FORMULA" | awk -v len=20 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         local CURRENT_INSTALLED_VERSION_PRINT=$(echo "$NEWEST_INSTALLED_VERSION" | cut -d ":" -f1 | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         local NEW_VERSION_PRINT=$(echo "$NEW_VERSION" | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         if [[ $CHECK_RESULT == "ok" ]]
@@ -535,7 +535,7 @@ casks_show_updates_parallel() {
         #echo NEWEST_INSTALLED_VERSION is "$NEWEST_INSTALLED_VERSION"
         local CHECK_RESULT=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo ok || echo outdated)
         #echo CHECK_RESULT is $CHECK_RESULT
-        local CASK_NAME_PRINT=$(echo "$CASK_NAME" | awk -v len=20 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        local CASK_NAME_PRINT=$(echo "$CASK" | awk -v len=20 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         local CURRENT_INSTALLED_VERSION_PRINT=$(echo "$NEWEST_INSTALLED_VERSION" | cut -d ":" -f1 | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         local NEW_VERSION_PRINT=$(echo "$NEW_VERSION" | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         if [[ $CHECK_RESULT == "ok" ]]
