@@ -13,3 +13,5 @@
 409203825	Numbers
 888806818	Password Factory
 509148961	SMARTReporter
+1436953057	GhosteryLite
+1121192229	Better

@@ -536,6 +536,9 @@ m	~/Library/Safari/Extensions
 #m	~/Library/Preferences/com.apple.Safari.Extensions.plist
 m	~/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist
 u	~/Library/Safari/Bookmarks.plist
+#u	~/Library/Group Containers/5Q42VF5GXA.better.fyi
+u	~/Library/Group Containers/*.better.fyi
+u	~/Library/Group Containers/*.ghostery.lite
 
 # Scripts
 echo Scripts
