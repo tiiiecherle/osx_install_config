@@ -916,50 +916,38 @@ function backup_restore {
                         :
                     fi   
                      	
-                	# if starting with m and space / tab or with u and space / tab
-                	if [[ $line =~ ^m[[:blank:]] ]] || [[ $line =~ ^u[[:blank:]] ]]
+                	# if starting with m and space / tab
+                	if [[ $line =~ ^m[[:blank:]] ]]
                 	then
                         ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
                         #echo "$ENTRY"
                         DIRNAME_ENTRY=$(dirname "$ENTRY")
-                        #echo DIRNAME_ENTRY is "$DIRNAME_ENTRY"
+                        #echo "$DIRNAME_ENTRY"
                         BASENAME_ENTRY=$(basename "$ENTRY")
-                        #echo BASENAME_ENTRY is "$BASENAME_ENTRY"
-                        if [[ "$ENTRY" =~ '*' ]]
+                        #echo "$BASENAME_ENTRY"
+                        if [ -e "$ENTRY" ]
                         then
-                            ENTRY_WITH_ASTERISK="$ENTRY"
-                            if [[ "$DIRNAME_ENTRY" =~ '*' ]]
-                            then
-                                ROOTDIR_PATH=$(echo "$DIRNAME_ENTRY" | cut -d "/" -f2)
-                                #echo ROOTDIR_PATH is "$ROOTDIR_PATH"
-                                ENTRY="$(find "/$ROOTDIR_PATH" -path "$DIRNAME_ENTRY" -name "$BASENAME_ENTRY" 2> /dev/null)"
-                            else
-                                ENTRY="$(find "$DIRNAME_ENTRY" -name "$BASENAME_ENTRY" 2> /dev/null)"
-                            fi
-                            if [[ $(echo "$ENTRY" | wc -l | sed 's/^ *//' | sed 's/ *$//') -gt 1 ]]
-                            then
-                                TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
-                                echo "`tput setaf 1``tput bold`"$ENTRY_WITH_ASTERISK" gave multiple results, please be more specific with the entry, only using first line of results...`tput sgr0`" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
-                                ENTRY=$(echo "$ENTRY" | head -n 1)
-                            else
-                                :
-                            fi
-                            DIRNAME_ENTRY=$(dirname "$ENTRY")
-                            BASENAME_ENTRY=$(basename "$ENTRY")
-                            if [[ "$ENTRY" == "" ]]
-                            then
-                                ENTRY="$ENTRY_WITH_ASTERISK"
-                                DIRNAME_ENTRY=$(dirname "$ENTRY")
-                                BASENAME_ENTRY=$(basename "$ENTRY")
-                            else
-                                :
-                            fi
+                            cd "$DIRNAME_ENTRY"
+                            mkdir -p "$DESTINATION$DIRNAME_ENTRY"
+                            sudo rsync -a "$BASENAME_ENTRY" "$DESTINATION$DIRNAME_ENTRY"
                         else
-                            :
+                			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
+                            #echo "        ""$ENTRY" does not exist, skipping...
+                            echo "$BASENAME_ENTRY" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
                         fi
-                        #echo ENTRY is "$ENTRY"
-                        #echo DIRNAME_ENTRY is "$DIRNAME_ENTRY"
-                        #echo BASENAME_ENTRY is "$BASENAME_ENTRY"
+                    else
+                        :
+                    fi
+                    
+                    # if starting with u and space / tab
+                	if [[ $line =~ ^u[[:blank:]] ]]
+                	then
+                        ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
+                        #echo "$ENTRY"
+                        DIRNAME_ENTRY=$(dirname "$ENTRY")
+                        #echo "$DIRNAME_ENTRY"
+                        BASENAME_ENTRY=$(basename "$ENTRY")
+                        #echo "$BASENAME_ENTRY"
                         if [ -e "$ENTRY" ]
                         then
                             cd "$DIRNAME_ENTRY"
@@ -1009,6 +997,7 @@ function backup_restore {
             ulimit -n 4096
             sudo -E parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k "$TMP_BACKUP_FUNCTION_SCRIPT" ::: "$(cat "$BACKUP_RESTORE_LIST")"
             wait
+            #
                      
             # resetting terminal settings or further input will not work
             #reset
@@ -1020,7 +1009,7 @@ function backup_restore {
             echo ''
             # opening app for archiving
             #osascript -e 'tell application "Keka.app" to activate'
-
+            
             #open -g -a "$SCRIPT_DIR"/archive/archive_tar_gz.app
             #osascript -e 'display dialog "backup finished, starting archiving..."'
             #osascript -e 'tell application "'"$SCRIPT_DIR"'/archive/archive_tar_gz.app" to activate'
@@ -1317,66 +1306,12 @@ function backup_restore {
             	    LOWERCASESECTION=master
                     SECTIONUSER="$MASTERUSER"
                     RESTORESECTIONDIR="$RESTOREMASTERDIR"
-                else
-                    :
-                fi
-                
-                # if starting with u and space / tab
-                if [[ $line =~ ^u[[:blank:]] ]]
-            	then
-            	    LOWERCASESECTION=user
-                    SECTIONUSER="$USERUSER"
-                    RESTORESECTIONDIR="$RESTOREUSERDIR"
-                else
-                    :
-                fi
-                
-             	# if starting with m and space / tab or with u and space / tab
-            	if [[ $line =~ ^m[[:blank:]] ]] || [[ $line =~ ^u[[:blank:]] ]]
-            	then
-                    ENTRY=$(echo "$line" | cut -f2 | sed -e 's/[ /]\{2,\}/\//')
-                    if [[ "$ENTRY" =~ '*' ]]
-                    then
-                        ENTRY_WITH_ASTERISK="$ENTRY"
-                        ENTRY_FROM=$(echo "$ENTRY" | sed 's|~|'"/Users/$SECTIONUSER"'|')
-                        RESTORE_FROM=$(echo "$RESTORESECTIONDIR$ENTRY_FROM")
-                        DIRNAME_RESTORE_FROM=$(dirname "$RESTORE_FROM")
-                        #echo DIRNAME_RESTORE_FROM is "$DIRNAME_RESTORE_FROM"
-                        BASENAME_RESTORE_FROM=$(basename "$RESTORE_FROM")
-                        #echo BASENAME_RESTORE_FROM is "$BASENAME_RESTORE_FROM"
-                        if [[ "$DIRNAME_RESTORE_FROM" =~ '*' ]]
-                        then
-                            ROOTDIR_PATH="$RESTORESECTIONDIR"
-                            #echo ROOTDIR_PATH is "$ROOTDIR_PATH"
-                            ENTRY_RESTORE_FROM="$(find "$ROOTDIR_PATH" -path "$DIRNAME_RESTORE_FROM" -name "$BASENAME_RESTORE_FROM" 2> /dev/null)"
-                        else
-                            ENTRY_RESTORE_FROM="$(find "$DIRNAME_RESTORE_FROM" -mindepth 1 -maxdepth 1 -name "$BASENAME_RESTORE_FROM" 2> /dev/null)"
-                        fi
-                        if [[ $(echo "$ENTRY_RESTORE_FROM" | wc -l | sed 's/^ *//' | sed 's/ *$//') -gt 1 ]]
-                        then
-                            TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
-                            echo -e "\033[1;31m$ENTRY_WITH_ASTERISK gave multiple results, please be more specific with the entry, only using first line of results...\033[0m" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
-                            ENTRY_RESTORE_FROM=$(echo "$ENTRY_RESTORE_FROM" | head -n 1)
-                        else
-                            :
-                        fi
-                        ENTRY=$(echo "$ENTRY_RESTORE_FROM" | sed 's|'"^$RESTORESECTIONDIR"'||' | sed 's|'"^/Users/$SECTIONUSER"'|~|')
-                        if [[ "$ENTRY" == "" ]]
-                        then
-                            ENTRY="$ENTRY_WITH_ASTERISK"
-                        else
-                            :
-                        fi
-                    else
-                        :
-                    fi
-                    #echo ENTRY is "$ENTRY"
                     #
-                    ENTRY_FROM=$(echo "$ENTRY" | sed 's|~|'"/Users/$SECTIONUSER"'|')
-                    ENTRY_TO=$(echo "$ENTRY" | sed 's|~|'"$HOMEFOLDER"'|')
+                    ENTRY_TO=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
+                    ENTRY_FROM=$(echo "$line" | cut -f2 | sed 's|~|'"/Users/$SECTIONUSER"'|' | sed -e 's/[ /]\{2,\}/\//')
                     #
-                    RESTORE_FROM=$(echo "$RESTORESECTIONDIR$ENTRY_FROM")
-                    RESTORE_TO=$(echo "$RESTORETODIR$ENTRY_TO")
+                    RESTORE_FROM=$(echo "$RESTORESECTIONDIR$ENTRY_FROM" | sed -e 's/[ /]\{2,\}/\//')
+                    RESTORE_TO=$(echo "$RESTORETODIR$ENTRY_TO" | sed -e 's/[ /]\{2,\}/\//')
                     #
                     DIRNAME_RESTORE_FROM=$(dirname "$RESTORE_FROM")
                     #echo "$DIRNAME_RESTORE_FROM"
@@ -1388,12 +1323,13 @@ function backup_restore {
                     #
                     TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
                     #
-                    if [[ -e "$RESTORE_FROM" ]]
+                    sudo mkdir -p "$DIRNAME_RESTORE_TO"
+                    if [ -e "$DIRNAME_RESTORE_TO" ]
                     then
-                        sudo mkdir -p "$DIRNAME_RESTORE_TO"
-                        if [[ -e "$DIRNAME_RESTORE_TO" ]]
+                        if [ -e "$RESTORE_FROM" ]
                         then
-                            if [[ -e "$RESTORE_TO" ]]
+                            #sudo mkdir -p "$DIRNAME_RESTORE_TO"
+                            if [ -e "$RESTORE_TO" ]
                             then
                                 cd "$DIRNAME_RESTORE_TO"
                                 sudo rm -rf "$BASENAME_RESTORE_TO"
@@ -1406,11 +1342,63 @@ function backup_restore {
                             echo '     '
                             sudo rsync -a "$BASENAME_RESTORE_FROM" "$DIRNAME_RESTORE_TO"
                         else
-                            echo "$DIRNAME_RESTORE_TO" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                            echo "no "$ENTRY_FROM" in "$LOWERCASESECTION" backup - skipping..." | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                            echo ''
                         fi
                     else
-                        echo "no "$ENTRY_FROM" in "$LOWERCASESECTION" backup - skipping..." | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
-                        echo ''
+                        echo "$DIRNAME_RESTORE_TO" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                    fi
+                else
+                    :
+                fi
+                
+                # if starting with u and space / tab
+            	if [[ $line =~ ^u[[:blank:]] ]]
+            	then
+            	    LOWERCASESECTION=user
+                    SECTIONUSER="$USERUSER"
+                    RESTORESECTIONDIR="$RESTOREUSERDIR"
+                    #
+                    ENTRY_TO=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
+                    ENTRY_FROM=$(echo "$line" | cut -f2 | sed 's|~|'"/Users/$SECTIONUSER"'|' | sed -e 's/[ /]\{2,\}/\//')
+                    #
+                    RESTORE_FROM=$(echo "$RESTORESECTIONDIR$ENTRY_FROM" | sed -e 's/[ /]\{2,\}/\//')
+                    RESTORE_TO=$(echo "$RESTORETODIR$ENTRY_TO" | sed -e 's/[ /]\{2,\}/\//')
+                    #
+                    DIRNAME_RESTORE_FROM=$(dirname "$RESTORE_FROM")
+                    #echo "$DIRNAME_RESTORE_FROM"
+                    BASENAME_RESTORE_FROM=$(basename "$RESTORE_FROM")
+                    #echo "$DIRNAME_RESTORE_FROM"
+                    DIRNAME_RESTORE_TO=$(dirname "$RESTORE_TO")
+                    #echo "$DIRNAME_RESTORE_TO"
+                    BASENAME_RESTORE_TO=$(basename "$RESTORE_TO")
+                    #
+                    TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+                    #
+                    sudo mkdir -p "$DIRNAME_RESTORE_TO"
+                    if [ -e "$DIRNAME_RESTORE_TO" ]
+                    then
+                        if [ -e "$RESTORE_FROM" ]
+                        then
+                            #sudo mkdir -p "$DIRNAME_RESTORE_TO"
+                            if [ -e "$RESTORE_TO" ]
+                            then
+                                cd "$DIRNAME_RESTORE_TO"
+                                sudo rm -rf "$BASENAME_RESTORE_TO"
+                            else
+                                :
+                            fi
+                            cd "$DIRNAME_RESTORE_FROM"
+                            echo "$RESTORE_FROM" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                            echo "to ""$RESTORE_TO" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                            echo '     '
+                            sudo rsync -a "$BASENAME_RESTORE_FROM" "$DIRNAME_RESTORE_TO"
+                        else
+                            echo "no "$ENTRY_FROM" in "$LOWERCASESECTION" backup - skipping..." | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                            echo ''
+                        fi
+                    else
+                        echo "$DIRNAME_RESTORE_TO" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
                     fi
                 else
                     :
@@ -1457,8 +1445,9 @@ function backup_restore {
             #
             ulimit -n 4096
             sudo -E parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k "$TMP_RESTORE_FUNCTION_SCRIPT" ::: "$(cat "$BACKUP_RESTORE_LIST")"
-            wait 
-
+            wait
+            #   
+            
             # resetting terminal settings or further input will not work
             #reset
             #stty "$STTY_ORIG"
