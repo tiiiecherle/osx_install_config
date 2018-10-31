@@ -45,7 +45,7 @@ do
 	fi
 	cp -a "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_VERSION".app "$SCRIPT_DIR"/dmg/"$BREW_CASKS_UPDATE_VERSION"/app/"$BREW_CASKS_UPDATE_VERSION".app
 	
-	echo copying app to backup script dir...
+	echo "copying app to backup script dir..."
 	mkdir -p "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_homebrew
 	if [ -e "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_homebrew/"$BREW_CASKS_UPDATE_VERSION".app ]
 	then
