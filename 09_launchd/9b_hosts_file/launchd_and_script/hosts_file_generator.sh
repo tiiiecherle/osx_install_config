@@ -284,23 +284,23 @@ hosts_file_install_update() {
     
         ### customization
         # commenting out lines
-        # sport1
         #sudo sed -i '' '/cdn-static.liverail.com/s/^/#/g' /etc/hosts
         #or
         #sudo awk -i inplace '/cdn-static.liverail.com/ {$0="#"$0}1' /etc/hosts
-        #sudo sed -i '' '/c.amazon-adsystem.com/s/^/#/g' /etc/hosts
-        sudo sed -i '' '/probe.yieldlab.net/s/^/#/g' /etc/hosts
-        # anti-adblock popup
+        ## sport1
+        #sudo sed -i '' '/probe.yieldlab.net/s/^/#/g' /etc/hosts
+        # anti-adblock
+        sudo sed -i '' '/0.0.0.0 prod.appnexus.map.fastly.net/s/^/#/g' /etc/hosts
         sudo sed -i '' '/0.0.0.0 acdn.adnxs.com/s/^/#/g' /etc/hosts
-        # spiegel.de
-        sudo sed -i '' '/imagesrv.adition.com/s/^/#/g' /etc/hosts        
-		# google shopping
+        ## spiegel.de
+        #sudo sed -i '' '/imagesrv.adition.com/s/^/#/g' /etc/hosts        
+		## google shopping
         sudo sed -i '' '/www.googleadservices.com/s/^/#/g' /etc/hosts
         sudo sed -i '' '/0.0.0.0 ad.doubleclick.net/s/^/#/g' /etc/hosts
         sudo sed -i '' '/pagead.l.doubleclick.net/s/^/#/g' /etc/hosts
-        # wimbledon
-        sudo sed -i '' '/0.0.0.0 secure.brightcove.com/s/^/#/g' /etc/hosts
-        # sma
+        ## wimbledon
+        #sudo sed -i '' '/0.0.0.0 secure.brightcove.com/s/^/#/g' /etc/hosts
+        ## sma
         sudo sed -i '' '/0.0.0.0 eu.*.force.com/s/^/#/g' /etc/hosts
         #sudo sed -i '' '/0.0.0.0 eu1.*.force.com/s/^/#/g' /etc/hosts
         #sudo sed -i '' '/0.0.0.0 eu10.force.com/s/^/#/g' /etc/hosts
