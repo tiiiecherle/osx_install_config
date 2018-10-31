@@ -560,6 +560,13 @@ echo Signal
 #u	/Applications/Signal.app
 u	~/Library/Application Support/Signal
 
+# Sky Go
+echo Sky Go
+u	~/Applications/Sky Go.app
+u	~/Library/Application Support/Sky Go
+u	~/Library/Preferences/com.bskyb.skygoplayer.helper.plist
+u	~/Library/Preferences/com.bskyb.skygoplayer.plist
+
 # Skype
 echo Skype
 #u	/Applications/Skype.app
