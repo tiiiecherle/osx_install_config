@@ -80,28 +80,28 @@ sudo()
 ### 
 
 # script directory
-SCRIPTDIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-#echo $SCRIPTDIR
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+#echo $SCRIPT_DIR
 
 # uninstalling possible old files
 echo "uninstalling possible old files..."
-. "$SCRIPTDIR"/launchd_and_script/uninstall_hosts_and_launchdservice.sh
+. "$SCRIPT_DIR"/launchd_and_script/uninstall_hosts_and_launchdservice.sh
 wait
 
 # hosts install / update file
 echo "installing hosts update script..."
 sudo mkdir -p /Library/Scripts/custom/
-sudo cp "$SCRIPTDIR"/launchd_and_script/hosts_file_generator.sh /Library/Scripts/custom/hosts_file_generator.sh
+sudo cp "$SCRIPT_DIR"/launchd_and_script/hosts_file_generator.sh /Library/Scripts/custom/hosts_file_generator.sh
 sudo chown -R root:wheel /Library/Scripts/custom/
 sudo chmod -R 755 /Library/Scripts/custom/
 
 # launcd service file
 echo "installing launchd service..."
-sudo cp "$SCRIPTDIR"/launchd_and_script/com.hostsfile.install_update.plist /Library/LaunchDaemons/com.hostsfile.install_update.plist
+sudo cp "$SCRIPT_DIR"/launchd_and_script/com.hostsfile.install_update.plist /Library/LaunchDaemons/com.hostsfile.install_update.plist
 sudo chown root:wheel /Library/LaunchDaemons/com.hostsfile.install_update.plist
 sudo chmod 644 /Library/LaunchDaemons/com.hostsfile.install_update.plist
 
-# forcing later script update by setting last modification time of /etc/hosts earlier
+# forcing update on next run by setting last modification time of /etc/hosts earlier
 sudo touch -mt 201512010000 /etc/hosts
 
 # run installation
@@ -140,6 +140,19 @@ echo "opening /etc/hosts and logfile..."
 open /etc/hosts
 #nano /var/log/hosts_file_update.log
 open /var/log/hosts_file_update.log
+
+# syncing to install latest version when using backup script
+echo ''
+echo "copying script to backup script dir..."
+SCRIPTS_FINAL_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+if [[ -e "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script ]]
+then
+    mkdir -p "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_hosts
+    cp "$SCRIPT_DIR"/launchd_and_script/hosts_file_generator.sh "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_hosts/hosts_file_generator.sh
+else
+	echo ""$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script not found, skipping copying file to backup script directory..."
+fi
+
 
 echo ''
 echo 'done ;)'

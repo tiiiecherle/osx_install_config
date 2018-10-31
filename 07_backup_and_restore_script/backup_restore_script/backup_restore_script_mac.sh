@@ -1081,10 +1081,10 @@ function backup_restore {
             echo ''
             echo 'backup finished ;)'
             osascript -e 'display notification "complete ;)" with title "Backup Script"'
-            echo ''
             
-            # installing homebrew update script
-            echo "updating homebrew formulas and casks..."
+            # installing / updating homebrew update script
+            echo ''
+            echo "updating homebrew formulae and casks app..."
         	BREW_CASKS_UPDATE_APP="brew_casks_update"
             if [ -e /Applications/"$BREW_CASKS_UPDATE_APP".app ]
             then
@@ -1100,17 +1100,38 @@ function backup_restore {
             xattr -dr com.apple.quarantine /Applications/"$BREW_CASKS_UPDATE_APP".app
             # running homebrew update script
             create_tmp_backup_script_fifo2
+            echo "updating homebrew formulae and casks..."
         	open /Applications/"$BREW_CASKS_UPDATE_APP".app
         	
+        	# installing / updating homebrew update script
+        	if [[ -e "$SCRIPT_DIR"/update_hosts/hosts_file_generator.sh ]]
+        	then
+                echo ''
+                echo "updating hosts update script..."
+                sudo mkdir -p /Library/Scripts/custom/
+                sudo cp "$SCRIPT_DIR"/update_hosts/hosts_file_generator.sh /Library/Scripts/custom/hosts_file_generator.sh
+                sudo chown -R root:wheel /Library/Scripts/custom/
+                sudo chmod -R 755 /Library/Scripts/custom/
+                echo "updating hosts file..."
+                # forcing update on next run by setting last modification time of /etc/hosts earlier
+                sudo touch -mt 201512010000 /etc/hosts
+                sudo /Library/Scripts/custom/hosts_file_generator.sh | grep "updating hosts file SUCCESSFULL\|FAILED..." &
+            else
+                echo ""$SCRIPT_DIR"/update_hosts/hosts_file_generator.sh not found, skipping updating hosts script..."
+            fi
+        	
         	# waiting for the process to finish
-        	echo "waiting for updating homebrew formulas and casks..."
+        	echo ''
+        	echo "waiting for updating hosts file, homebrew formulae and casks..."
         	#sleep 5
             while ps aux | grep ''"$BREW_CASKS_UPDATE_APP"'.app/Contents' | grep -v grep > /dev/null; do sleep 1; done
             while ps aux | grep /brew_casks_update.sh | grep -v grep > /dev/null; do sleep 1; done
+            while ps aux | grep /hosts_file_generator.sh | grep -v grep > /dev/null; do sleep 1; done
             
             echo ''
-            echo "updating homebrew formulas and casks finished ;)"
+            echo "updating hosts file, homebrew formulae and casks finished ;)"
             osascript -e 'display notification "complete ;)" with title "Update Script"'
+            echo ''
             
             ###
             ### additional settings and commands
@@ -1145,7 +1166,7 @@ function backup_restore {
                 # no local time machine backups found
                 :
             else
-                echo ''
+                #echo ''
                 echo "local time machine backups found, deleting..."
                 for i in $(tmutil listlocalsnapshotdates | grep -v '[a-zA-Z]')
                 do
