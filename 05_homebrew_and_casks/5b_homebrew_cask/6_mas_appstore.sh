@@ -66,14 +66,15 @@ start_sudo
 # if mas in homebrew core is not working or out of date use
 # https://github.com/mas-cli/homebrew-tap
 # when used brew info $item 2>/dev/null has to be used in homebrew update script to avoid warnings
-brew tap mas-cli/tap
-brew tap-pin mas-cli/tap
-brew install mas
+#brew tap mas-cli/tap
+#brew tap-pin mas-cli/tap
+#brew install mas
 # to unpin and get back to homebrew-core version
 #brew tap-unpin mas-cli/tap
 
 # install version from homebrew-core
-#brew install mas
+brew install mas
+
 echo ''
 
 ### parallel
@@ -111,75 +112,95 @@ function mas_login() {
 
 function mas_login_applescript() {
     
-    if [[ "$MAS_APPLE_ID" == "" ]]
+    # macos 10.14 only
+    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.') != "10.14" ]]
     then
         echo ''
-        MAS_APPLE_ID="    "
-        read -r -p "please enter apple id to log into appstore: " MAS_APPLE_ID
-        #echo $MAS_APPLE_ID
+        echo "this part of the script to login to the appstore automatically via applescript is only compatible with macos 10.14 mojave..."
+        echo "please login to the appstore manually and press enter when logged in..."
+        read -p "are you logged in on the appstore (Y/n)? " CONT1_MAS
+        CONT1_MAS="$(echo "$CONT1_MAS" | tr '[:upper:]' '[:lower:]')"    # tolower
+        if [[ "$CONT1_MAS" == "y" || "$CONT1_MAS" == "yes" || "$CONT1_MAS" == "" ]]
+        then
+            :
+        else
+            echo ''
+            echo "exiting script..."
+            echo ''
+            exit
+        fi
     else
-        :
-    fi
+        if [[ "$MAS_APPLE_ID" == "" ]]
+        then
+            echo ''
+            MAS_APPLE_ID="    "
+            read -r -p "please enter apple id to log into appstore: " MAS_APPLE_ID
+            #echo $MAS_APPLE_ID
+        else
+            :
+        fi
+        
+        if [[ "$MAS_APPSTORE_PASSWORD" == "" ]]
+        then
+            echo ''
+            echo "please enter appstore password..."
+            MAS_APPSTORE_PASSWORD="    "
+        
+            # ask for password twice
+            #while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
+        
+            # only ask for password once
+            stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && stty echo && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''
+            echo ''
+        else
+            :
+        fi
+        
+        mas signout
+        sleep 3
     
-    if [[ "$MAS_APPSTORE_PASSWORD" == "" ]]
-    then
-        echo ''
-        echo "please enter appstore password..."
-        MAS_APPSTORE_PASSWORD="    "
+    	osascript <<EOF
+        tell application "App Store"
+            try
+        	    activate
+        	    delay 5
+        	end try
+        end tell
     
-        # ask for password twice
-        #while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
-    
-        # only ask for password once
-        stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && stty echo && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''
-        echo ''
-    else
-        :
-    fi
-    
-    mas signout
-    sleep 3
-
-	osascript <<EOF
-    tell application "App Store"
-        try
-    	    activate
-    	    delay 5
-    	end try
-    end tell
-
-    tell application "System Events"
-    	tell process "App Store"
-    		set frontmost to true
-    		delay 2
-    		### on first run when installing the appstore asks for accepting privacy policy
-    		try
-			    click button 2 of UI element 1 of sheet 1 of window 1
-			    #click button "Weiter" of UI element 1 of sheet 1 of window 1
-			    delay 3
-		    end try
-		    ### login
-    		click menu item 15 of menu "Store" of menu bar item "Store" of menu bar 1
-    		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
-    		delay 2
-    		tell application "System Events" to keystroke "$MAS_APPLE_ID"
-    		delay 2
-    		tell application "System Events" to keystroke return
-    		delay 2
-    		tell application "System Events" to keystroke "$MAS_APPSTORE_PASSWORD"
-    		delay 2
-    		tell application "System Events" to keystroke return
-    	end tell
-    end tell
-    
-    tell application "App Store"
-        try
-            delay 10
-    	    quit
-    	end try
-    end tell
-    
+        tell application "System Events"
+        	tell process "App Store"
+        		set frontmost to true
+        		delay 2
+        		### on first run when installing the appstore asks for accepting privacy policy
+        		try
+    			    click button 2 of UI element 1 of sheet 1 of window 1
+    			    #click button "Weiter" of UI element 1 of sheet 1 of window 1
+    			    delay 3
+    		    end try
+    		    ### login
+        		click menu item 15 of menu "Store" of menu bar item "Store" of menu bar 1
+        		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
+        		delay 2
+        		tell application "System Events" to keystroke "$MAS_APPLE_ID"
+        		delay 2
+        		tell application "System Events" to keystroke return
+        		delay 2
+        		tell application "System Events" to keystroke "$MAS_APPSTORE_PASSWORD"
+        		delay 2
+        		tell application "System Events" to keystroke return
+        	end tell
+        end tell
+        
+        tell application "App Store"
+            try
+                delay 10
+        	    quit
+        	end try
+        end tell
+        
 EOF
+
+    fi
  
 }
 

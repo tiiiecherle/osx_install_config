@@ -341,18 +341,22 @@ MACOS_VERSION=$(sw_vers -productVersion)
 
 # macos 10.14 and higher
 #if [[ $(echo $MACOS_VERSION | cut -f1 -d'.') == "10" ]] && [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-# macos 10.14 only
-if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.') != "10.14" ]]
-then
-    #echo "this script is only compatible with macos 10.14 mojave and newer, exiting..."
-    #echo ''
-    echo "this script is only compatible with macos 10.14 mojave, exiting..."
-    echo ''
-    exit
-else
-    :
-fi
+#then
+#    echo "this script is only compatible with macos 10.14 mojave and newer, exiting..."
+#    echo ''
+#else
+#    :
+#fi
 
+# macos 10.14 only
+#if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.') != "10.14" ]]
+#then
+#    echo "this script is only compatible with macos 10.14 mojave, exiting..."
+#    echo ''
+#    exit
+#else
+#    :
+#fi
 
 ###
 
