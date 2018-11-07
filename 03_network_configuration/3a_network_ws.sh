@@ -98,34 +98,49 @@ sudo()
 ### configuring network
 ###
 
+# names of devices
+# networksetup -listallhardwareports
+ETHERNET_DEVICE="Ethernet"
+WLAN_DEVICE="Wi-Fi"
+
 # deleting all network locations
 #echo please ignore error about missing preferences.plist file, it will be created automatically
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist >/dev/null 2>&1
+sleep 2
 
 # creating new location automatic
 echo adding location automatic
 sudo networksetup -createlocation "Automatisch" populate >/dev/null 2>&1
-sleep 3
+sleep 2
 sudo networksetup -switchtolocation "Automatisch"
+sleep 2
+sudo networksetup -setv6off "$ETHERNET_DEVICE"
+#sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
+sleep 2
+sudo networksetup -setv6off "$WLAN_DEVICE"
+#sudo networksetup -setv6automatic "$WLAN_DEVICE"
 echo ""
-sleep 3
+sleep 2
 
 # creating new location office_lan
 echo adding location office_lan
 sudo networksetup -createlocation "office_lan"
-sleep 3
+sleep 2
 sudo networksetup -switchtolocation "office_lan"
 echo ""
-sleep 3
-sudo networksetup -createnetworkservice "Ethernet" "Ethernet"
-sleep 3
-sudo networksetup -setmanual "Ethernet" 172.16.1.6 255.255.255.0 172.16.1.1
-sleep 3
-sudo networksetup -setdnsservers "Ethernet" 172.16.1.1
-sleep 3
+sleep 2
+sudo networksetup -createnetworkservice "$ETHERNET_DEVICE" "$ETHERNET_DEVICE"
+sleep 2
+sudo networksetup -setmanual "$ETHERNET_DEVICE" 172.16.1.6 255.255.255.0 172.16.1.1
+sleep 2
+sudo networksetup -setdnsservers "$ETHERNET_DEVICE" 172.16.1.1
+sleep 2
+sudo networksetup -setv6off "$ETHERNET_DEVICE"
+#sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
+sleep 2
 
 # deleting created preferences backup file
-sleep 3
+#sleep 2
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old >/dev/null 2>&1
 
 # echo script finished
@@ -133,8 +148,8 @@ sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old >/dev
 echo "all network locations created ;)"
 
 # changing to automatic location
-echo "changing to location automatic" 
-sudo networksetup -switchtolocation "Automatisch"
+echo "changing to location office_lan" 
+sudo networksetup -switchtolocation "office_lan"
 echo ""
 echo "done ;)" 
 
