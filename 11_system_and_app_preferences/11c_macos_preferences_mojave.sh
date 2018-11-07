@@ -3244,9 +3244,10 @@ EOF
     
     
     # enable the debug menu in disk utility
-    #defaults write com.apple.DiskUtility DUDebugMenuEnabled -bool true
     #defaults write com.apple.DiskUtility advanced-image-options -bool true
     
+    # show all devices
+    defaults write com.apple.DiskUtility SidebarShowAllDevices -bool true
     
     
     ###
