@@ -159,6 +159,7 @@ then
     sleep 5
     create_tmp_homebrew_script_fifo
     identify_terminal
+    UPDATE_HOMEBREW="no"
 
     #osascript 2>/dev/null <<EOF
     osascript <<EOF
@@ -187,7 +188,7 @@ then
     	end if
     	#delay 2
     	#
-    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in runWindow
+    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in runWindow
     	#
     	delay 10
         set frontmost of Window1 to true

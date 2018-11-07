@@ -208,7 +208,7 @@ then
 	open -g /Applications/KeepingYouAwake.app
     open -g keepingyouawake:///activate
     sleep 1
-    if [[ -e "/tmp/quarantine_keepingyouawake.xattr" ]]
+    if [ -e /tmp/quarantine_keepingyouawake.xattr ]
     then    
         xattr -w com.apple.quarantine `cat "/tmp/quarantine_keepingyouawake.xattr"` "/Applications/KeepingYouAwake.app"
     else
@@ -227,7 +227,7 @@ then
     #open -g /Applications/KeepingYouAwake.app
     open -g keepingyouawake:///deactivate
     sleep 1
-    if [[ -e "/tmp/quarantine_keepingyouawake.xattr" ]]
+    if [ -e /tmp/quarantine_keepingyouawake.xattr ]
     then    
         xattr -w com.apple.quarantine `cat "/tmp/quarantine_keepingyouawake.xattr"` "/Applications/KeepingYouAwake.app"
     else
@@ -327,6 +327,25 @@ function remove_apps_security_permissions_stop() {
         else
             :
         fi
+    fi
+}
+
+homebrew_update() {
+    if [[ "$UPDATE_HOMEBREW" == "no" ]]
+    then
+        :
+    else
+        echo ''
+        echo "updating homebrew..."
+        brew update-reset 1> /dev/null 2> >(grep -v "Reset branch" 1>&2) && brew analytics off 1> /dev/null && brew update 1> /dev/null && brew prune 1> /dev/null && brew doctor 1> /dev/null
+        
+        BREW_PATH=$(brew --repository)
+        # working around a --json=v1 bug until it`s fixed
+        # https://github.com/Homebrew/homebrew-cask/issues/52427
+        #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$(brew --repository)"/Library/Homebrew/cask/cask.rb
+        sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$BREW_PATH"/Library/Homebrew/cask/cask.rb
+    
+        echo 'updating homebrew finished ;)'
     fi
 }
 
@@ -454,7 +473,7 @@ NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
 #echo $NUMBER_OF_MAX_JOBS
 #NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
 # due to connection issues with too many downloads at the same time limiting the maximum number of jobs for now
-NUMBER_OF_MAX_JOBS_ROUNDED=4
+NUMBER_OF_MAX_JOBS_ROUNDED=5
 #echo $NUMBER_OF_MAX_JOBS_ROUNDED
 
 

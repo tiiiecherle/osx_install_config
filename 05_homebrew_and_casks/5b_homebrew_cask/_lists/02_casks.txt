@@ -18,6 +18,7 @@ alfred
 angry-ip-scanner
 appcleaner
 #apptivate
+avg-antivirus
 bartender
 bbedit
 brackets

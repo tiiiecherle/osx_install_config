@@ -110,13 +110,73 @@ function remove_apps_security_permissions_stop() {
     fi
 }
 
+install_casks_parallel_xargs() {
+# always use _ instead of - because some sh commands called by parallel would give errors
+if [[ "$USE_PARALLELS" == "yes" ]]
+then
+	# if parallels is used i needs to redefined
+	i="$1"
+else
+	:
+fi
+#
+#if [[ $(brew cask info "$i" | grep "Not installed") != "" ]]
+if [[ $(brew cask list | grep "^$i$") == "" ]]
+then
+    echo installing cask "$i"...
+    builtin printf "$SUDOPASSWORD\n" | brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
+    #
+    if [[ "$i" == "avg-antivirus" ]]
+    then 
+    	sleep 2
+    	osascript -e "tell app \"/Applications/AVGAntivirus.app\" to quit" >/dev/null 2>&1
+    fi
+    if [[ "$i" == "teamviewer" ]]
+    then 
+    	sleep 2
+    	osascript -e "tell app \"/Applications/TeamViewer.app\" to quit" >/dev/null 2>&1
+    fi
+    if [[ "$i" == "libreoffice-language-pack" ]]
+    then 
+        LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+        open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+    fi
+else
+    # listing dependencies
+    #brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]'
+    brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]' >/dev/null 2>&1 && CASK_HAS_DEPENDENCIES="yes" || CASK_HAS_DEPENDENCIES="no"
+    #echo CASK_HAS_DEPENDENCIES for $i is $CASK_HAS_DEPENDENCIES
+    if [[ "$CASK_HAS_DEPENDENCIES" == "yes" ]]
+    then
+        #CASK_DEPENDENCIES=$(brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]')
+        #echo CASK_DEPENDENCIES for $i is $CASK_DEPENDENCIES
+        for d in $(brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]')
+        do
+            #echo d for $i is $d
+            if [[ $(brew cask list | grep "^$d$") == "" ]]
+            then
+                echo installing missing dependency "$d"...
+                builtin printf "$SUDOPASSWORD\n" | brew cask install --force "$d" 2> /dev/null | grep "successfully installed"
+            else
+                :
+            fi
+        done
+    else
+        :
+    fi    
+    echo cask "$i" already installed...
+fi
+}
+export -f install_casks_parallel_xargs
+            
+
 
 ###
 ### homebrew
 ###
 
 checking_homebrew
-
+homebrew_update
 
 ### keepingyouawake
 if [[ "$KEEPINGYOUAWAKE" != "active" ]]
@@ -210,61 +270,138 @@ fi
 
 if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
 then
-    #echo ''
+
+	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+    
 	echo "uninstalling and cleaning some casks..."
-	# making sure flash gets installed on reinstall
-	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
-	then
-	    #start_sudo
-	    
-        if [[ -e "/Library/Internet Plug-Ins/flashplayer.xpt" ]]
-        then
-            sudo rm -f "/Library/Internet Plug-Ins/flashplayer.xpt"
+	
+	#if [[ $(brew cask info flash-npapi | grep "Not installed") != "" ]]
+	if [[ $(brew cask list | grep "^flash-npapi$") == "" ]]
+    then
+    	# making sure flash gets installed on reinstall
+    	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
+    	then
+    	    #start_sudo
+    	    
+            if [[ -e "/Library/Internet Plug-Ins/flashplayer.xpt" ]]
+            then
+                sudo rm -f "/Library/Internet Plug-Ins/flashplayer.xpt"
+            else
+                :
+            fi
+            ${USE_PASSWORD} | brew cask zap --force flash-npapi
+    	    #stop_sudo
+    	    echo ''
         else
             :
         fi
-        ${USE_PASSWORD} | brew cask zap --force flash-npapi
-	    #stop_sudo
-	    echo ''
     else
         :
     fi
     
 	# making sure libreoffice gets installed as a dependency of libreoffice-language-pack
 	# installation would be refused if restored via restore script or already installed otherwise
-	if [[ -e "/Applications/LibreOffice.app" ]]
-	then
-	    ${USE_PASSWORD} | brew cask uninstall --force libreoffice
-	    echo ''
-	else
-	    :
-	fi
+	#if [[ $(brew cask info libreoffice | grep "Not installed") != "" ]] || [[ $(brew cask info libreoffice-language-pack | grep "Not installed") != "" ]]
+	if [[ $(brew cask list | grep "^libreoffice$") == "" ]] || [[ $(brew cask list | grep "^libreoffice-language-pack$") == "" ]]
+    then
+    	if [[ -e "/Applications/LibreOffice.app" ]]
+    	then
+    	    ${USE_PASSWORD} | brew cask uninstall --force libreoffice
+    	    ${USE_PASSWORD} | brew cask uninstall --force libreoffice-language-pack
+    	    echo ''
+    	else
+    	    :
+    	fi
+    else
+        :
+    fi
 	
 	# making sure adobe-acrobat-reader gets installed on reinstall
-	if [[ -e "/Applications/Adobe Acrobat Reader DC.app" ]]
-	then
-	    if [[ -e /Users/$USER/Library/Preferences/com.adobe.Reader.plist ]]
-	    then
-	        mv /Users/$USER/Library/Preferences/com.adobe.Reader.plist /tmp/com.adobe.Reader.plist
-	        if [[ -e /Library/Preferences/com.adobe.reader.DC.WebResource.plist ]]
-	        then
-	            sudo rm -f /Library/Preferences/com.adobe.reader.DC.WebResource.plist
-	        else
-	            :
-	        fi
-	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
-	        mv /tmp/com.adobe.Reader.plist /Users/$USER/Library/Preferences/com.adobe.Reader.plist
-	    else
-	        sudo rm -f /Library/Preferences/com.adobe.reader.DC.WebResource.plist
-	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
-	    fi
-	else
-	    :
-	fi
-	echo ''
+	#if [[ $(brew cask info adobe-acrobat-reader | grep "Not installed") != "" ]]
+	if [[ $(brew cask list | grep "^adobe-acrobat-reader$") == "" ]]
+    then
+    	if [[ -e "/Applications/Adobe Acrobat Reader DC.app" ]]
+    	then
+    	    if [[ -e /Users/$USER/Library/Preferences/com.adobe.Reader.plist ]]
+    	    then
+    	        mv /Users/$USER/Library/Preferences/com.adobe.Reader.plist /tmp/com.adobe.Reader.plist
+    	        if [[ -e /Library/Preferences/com.adobe.reader.DC.WebResource.plist ]]
+    	        then
+    	            sudo rm -f /Library/Preferences/com.adobe.reader.DC.WebResource.plist
+    	        else
+    	            :
+    	        fi
+    	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
+    	        mv /tmp/com.adobe.Reader.plist /Users/$USER/Library/Preferences/com.adobe.Reader.plist
+    	    else
+    	        sudo rm -f /Library/Preferences/com.adobe.reader.DC.WebResource.plist
+    	        ${USE_PASSWORD} | brew cask zap --force adobe-acrobat-reader
+    	    fi
+    	else
+    	    :
+    	fi
+    	echo ''
+    else
+        :
+    fi
+	
+	uninstall_avg_antivirus() {
+	#if [[ $(brew cask info avg-antivirus | grep "Not installed") != "" ]]
+	if [[ $(brew cask list | grep "^avg-antivirus$") == "" ]]
+    then
+    	# making sure avg-antivirus gets installed on reinstall
+    	if [[ $(printf '%s\n' "${casks[@]}" | grep avg-antivirus) != "" ]] && [[ -e "/Applications/AVGAntivirus.app" ]]
+    	then
+            avg_config_files=(
+            "/Users/$USER/Library/Preferences/com.avg.Antivirus.plist"
+            "/Library/Application Support/AVGAntivirus/config/com.avg.proxy.conf"
+            "/Library/Application Support/AVGAntivirus/config/com.avg.update.conf"
+            "/Library/Application Support/AVGAntivirus/config/com.avg.daemon.conf"
+            "/Library/Application Support/AVGAntivirus/config/com.avg.daemon.whls"
+            "/Library/Application Support/AVGAntivirus/config/com.avg.fileshield.conf"
+            )
+            for i in "${avg_config_files[@]}"
+            do
+                DIRNAME_ENTRY=$(dirname "$i")
+                BASENAME_ENTRY=$(basename "$i")
+            	if [ -e "$i" ]
+            	then
+    	            sudo mv "$i" /tmp/"$BASENAME_ENTRY"
+            	else
+            		:
+            	fi
+            done
+            #if [[ -e "/Library/Application Support/AVGAntivirus" ]]; then sudo rm -rf "/Library/Application Support/AVGAntivirus"; fi
+            if [[ -e "/Library/Application Support/AVGHUB" ]]; then sudo rm -rf "/Library/Application Support/AVGHUB"; fi
+            ${USE_PASSWORD} | brew cask zap --force avg-antivirus
+            ${USE_PASSWORD} | brew cask install --force avg-antivirus
+            sleep 2
+            osascript -e "tell app \"/Applications/AVGAntivirus.app\" to quit" >/dev/null 2>&1
+            sleep 2
+            for i in "${avg_config_files[@]}"
+            do
+                DIRNAME_ENTRY=$(dirname "$i")
+                BASENAME_ENTRY=$(basename "$i")
+            	if [ -e /tmp/"$BASENAME_ENTRY" ]
+            	then
+            	    sudo mkdir -p "$DIRNAME_ENTRY"
+    	            sudo mv /tmp/"$BASENAME_ENTRY" "$i" 
+            	else
+            		:
+            	fi
+            done
+            defaults write /Users/$USER/Library/Preferences/com.avg.Antivirus.plist improveSecurity -bool false
+    	else
+    	    :
+    	fi
+    	echo ''
+    else
+        :
+    fi
+	}
+	uninstall_avg_antivirus
 	
 	echo "installing casks..."
-	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
     if [[ "$casks" == "" ]]
     then
     	:
@@ -273,8 +410,8 @@ then
 	    then
 	        #start_sudo
 	        printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-	            echo installing cask {}...
-	            builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
+                    i="{}"
+                    install_casks_parallel_xargs
 	        '
 	        #stop_sudo
 	    else
@@ -289,16 +426,6 @@ then
 	        	#stop_sudo
 	        done
 	    fi
-	    # manual installations after install
-		#open "/opt/homebrew-cask/Caskroom/paragon-extfs/latest/FSinstaller.app" &
-		#if [[ $(echo "$casks" | grep libreoffice-language-pack) != "" ]]
-		if [[ $(brew cask list | grep libreoffice-language-pack) != "" ]]
-		then
-            LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-            open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"		
-        else
-		    :
-		fi
 	fi
 	
 	# as xtrafinder is no longer installable by cask let`s install it that way ;)
@@ -324,23 +451,28 @@ then
 	    echo "script to register xtrafinder not found..."
 	fi
 	
-	# as xtrafinder is no longer installable by cask let`s install it that way ;)
-	echo "downloading xtrafinder..."
-	XTRAFINDER_INSTALLER="/Users/$USER/Desktop/XtraFinder.dmg"
-	#wget https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -O "$XTRAFINDER_INSTALLER"
-	curl https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -o "$XTRAFINDER_INSTALLER" --progress-bar
-	#open "$XTRAFINDER_INSTALLER"
-	hdiutil attach "$XTRAFINDER_INSTALLER" -quiet
-	sleep 5
-	echo "installing application..."
-	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinder.pkg -target / 1>/dev/null
-	#sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
-	sleep 1
-	#echo "waiting for installer to finish..."
-	#while ps aux | grep 'installer' | grep -v grep > /dev/null; do sleep 1; done
-	echo "unmounting and removing installer file..."
-	hdiutil detach /Volumes/XtraFinder -quiet
-	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
+	if [[ -e "/Applications/XtraFinder.app" ]]
+	then
+    	echo "xtrafinder already installed..."
+	else
+    	# as xtrafinder is no longer installable by cask let`s install it that way ;)
+    	echo "downloading xtrafinder..."
+    	XTRAFINDER_INSTALLER="/Users/$USER/Desktop/XtraFinder.dmg"
+    	#wget https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -O "$XTRAFINDER_INSTALLER"
+    	curl https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -o "$XTRAFINDER_INSTALLER" --progress-bar
+    	#open "$XTRAFINDER_INSTALLER"
+    	hdiutil attach "$XTRAFINDER_INSTALLER" -quiet
+    	sleep 5
+    	echo "installing application..."
+    	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinder.pkg -target / 1>/dev/null
+    	#sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
+    	sleep 1
+    	#echo "waiting for installer to finish..."
+    	#while ps aux | grep 'installer' | grep -v grep > /dev/null; do sleep 1; done
+    	echo "unmounting and removing installer file..."
+    	hdiutil detach /Volumes/XtraFinder -quiet
+    	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
+    fi
 	
 else
 	:
@@ -360,12 +492,12 @@ then
 	    else
 	        if [[ "$INSTALLATION_METHOD" == "parallel" ]]
 	        then
-	            #start_sudo
-	            printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-	                echo installing cask {}...
-	                builtin printf '"$SUDOPASSWORD\n"' | brew cask install --force {} 2> /dev/null | grep "successfully installed"
-	            '
-	            #stop_sudo
+                #start_sudo
+                printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+                    i="{}"
+                    install_casks_parallel_xargs
+                '
+                #stop_sudo
 	        else
 	            old_IFS=$IFS
 	            IFS=$'\n'
