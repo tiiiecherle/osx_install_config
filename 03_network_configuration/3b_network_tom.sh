@@ -98,87 +98,62 @@ sudo()
 ### configuring network
 ###
 
-# ask if thunderbolt bridge on macbook pro is already created, if not stop script
-# preferences - network - preferences - virtual devices - add bridge - Thunderbolt-Bridge as bridge0
-#       activate thunderbolt 1 (en1) & thunderbolt 2 (en2) & thunderbolt ethernet (en5)
-#       deactivate WLAN
-
-#read -p "Is the Thunderbolt-Ethernet adapter connected (y/n)?" CONT
-#if [ "$CONT" == "y" ]
-#then
-#echo "continuing script..."
-
-# creating and switching to _temp network location, not necessary when deleting preferences.plist
-#echo creating and switching to _temp network location
-#sudo networksetup -createlocation _temp
-#sleep 3
-#sudo networksetup -switchtolocation _temp
-#sleep 3
-
-# deleting all locations except _temp, not necessary when deleting preferences.plist
-#NETWORKLOCATIONS=$(networksetup -listlocations | grep -Ev '_temp')
-#for item in ${NETWORKLOCATIONS//\\n/}; do
-#echo deleting location $item
-#sudo networksetup -deletelocation $item
-#done
-
-# name of ethernet device
+# names of devices
 # networksetup -listallhardwareports
 ETHERNET_DEVICE="USB 10/100/1000 LAN"
+WLAN_DEVICE="Wi-Fi"
 
 # deleting all network locations
 #echo please ignore error about missing preferences.plist file, it will be created automatically
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist >/dev/null 2>&1
+sleep 2
 
 # creating new location automatic
 echo adding location automatic
 sudo networksetup -createlocation "Automatisch" populate >/dev/null 2>&1
-sleep 3
+sleep 2
 sudo networksetup -switchtolocation "Automatisch"
+sleep 2
+sudo networksetup -setv6off "$ETHERNET_DEVICE"
+#sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
+sleep 2
+sudo networksetup -setv6off "$WLAN_DEVICE"
+#sudo networksetup -setv6automatic "$WLAN_DEVICE"
 echo ""
-sleep 3
+sleep 2
 
 # creating new location office_lan
 echo adding location office_lan
 sudo networksetup -createlocation "office_lan"
-sleep 3
+sleep 2
 sudo networksetup -switchtolocation "office_lan"
 echo ""
-sleep 3
+sleep 2
 sudo networksetup -createnetworkservice "$ETHERNET_DEVICE" "$ETHERNET_DEVICE"
-#sudo networksetup -createnetworkservice Thunderbolt-Bridge bridge0
-sleep 3
+sleep 2
 sudo networksetup -setmanual "$ETHERNET_DEVICE" 172.16.1.4 255.255.255.0 172.16.1.1
-sleep 3
+sleep 2
 sudo networksetup -setdnsservers "$ETHERNET_DEVICE" 172.16.1.1
-sleep 3
+sleep 2
+sudo networksetup -setv6off "$ETHERNET_DEVICE"
+#sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
+sleep 2
 
 # creating new location wlan only dhcp
 echo adding location wlan
 sudo networksetup -createlocation "wlan"
-sleep 3
+sleep 2
 sudo networksetup -switchtolocation "wlan"
 echo ""
-sleep 3
-sudo networksetup -createnetworkservice "WLAN" Wi-Fi
-#sudo networksetup -createnetworkservice WLAN en0
-sleep 3
-#sudo networksetup -setmanual "WLAN" 192.168.1.202 255.255.255.0 192.168.1.1
-#sleep 3
-#sudo networksetup -setdnsservers "WLAN" 192.168.1.1
-#sleep 3
-#sudo networksetup -setv6LinkLocal Wi-Fi
-#sudo networksetup -setv6off Wi-Fi
-#sudo networksetup -setv6automatic Wi-Fi
-sleep 3
-
-# deleting _temp network location, not necessary when deleting preferences.plist
-#echo deleting _temp network location
-#sudo networksetup -deletelocation _temp
-#sleep 3
+sleep 2
+sudo networksetup -createnetworkservice "$WLAN_DEVICE" "$WLAN_DEVICE"
+sleep 2
+sudo networksetup -setv6off "$WLAN_DEVICE"
+#sudo networksetup -setv6automatic "$WLAN_DEVICE"
+sleep 2
 
 # deleting created preferences backup file
-sleep 3
+#sleep 2
 sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old >/dev/null 2>&1
 
 # echo script finished
@@ -186,14 +161,10 @@ sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old >/dev
 echo "all network locations created ;)"
 
 # changing to automatic location
-echo "changing to location automatic" 
-sudo networksetup -switchtolocation "Automatisch"
+echo "changing to location wlan" 
+sudo networksetup -switchtolocation "wlan"
 echo ""
 echo "done ;)" 
-
-#else
-#echo "please connect your Thunderbolt-Ethernet adapter before running the script... exiting..."
-#fi
 
 
 
