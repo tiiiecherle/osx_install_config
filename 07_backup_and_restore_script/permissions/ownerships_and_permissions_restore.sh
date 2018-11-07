@@ -324,6 +324,15 @@ function backup_restore_permissions {
     else
         :
     fi
+    if [ -e "/Library/Application Support/AVGAntivirus/config" ]
+    then
+        sudo bash -c 'find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 chmod 644'
+        sudo bash -c 'find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 chown root:wheel'
+        sudo bash -c 'find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 chmod 644'
+        sudo bash -c 'find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 chown root:wheel'
+    else
+        :
+    fi
     
     # user folder ~
     echo "setting ownerships and permissions inside the user folder..."

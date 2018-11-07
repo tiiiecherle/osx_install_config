@@ -70,6 +70,16 @@ m	/Applications/Audio Splitter.app
 echo AudioSwitcher
 m	/Applications/AudioSwitcher.app
 
+# AVG Antivirus
+echo AVG Antivirus
+#m	/Applications/AVGAntivirus.app
+m	~/Library/Preferences/com.avg.Antivirus.plist
+m	/Library/Application Support/AVGAntivirus/config/com.avg.proxy.conf
+m	/Library/Application Support/AVGAntivirus/config/com.avg.update.conf
+m	/Library/Application Support/AVGAntivirus/config/com.avg.daemon.conf
+m	/Library/Application Support/AVGAntivirus/config/com.avg.daemon.whls
+m	/Library/Application Support/AVGAntivirus/config/com.avg.fileshield.conf
+
 # backupList+
 #echo backupList+
 #m	/Applications/backupList+.app
@@ -539,6 +549,7 @@ u	~/Library/Safari/Bookmarks.plist
 #u	~/Library/Group Containers/5Q42VF5GXA.better.fyi
 u	~/Library/Group Containers/*.better.fyi
 u	~/Library/Group Containers/*.ghostery.lite
+u	~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions
 
 # Scripts
 echo Scripts

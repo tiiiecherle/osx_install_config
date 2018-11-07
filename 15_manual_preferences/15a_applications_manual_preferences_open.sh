@@ -137,10 +137,11 @@ applications_to_open=(
 "/Applications/The Unarchiver.app"
 #"/Applications/Xcode.app"
 "/Applications/iMazing.app"
-"/Applications/VirusScannerPlus.app"
+#"/Applications/VirusScannerPlus.app"
 "/Applications/Macs Fan Control.app"
 #"/Applications/Signal.app"
 "/Applications/Keka.app"
+"/Applications/AVGAntivirus.app"
 )
 
 for i in "${applications_to_open[@]}"
