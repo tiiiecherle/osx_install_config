@@ -202,7 +202,7 @@ fi
 . "$SCRIPT_DIR"/4_homebrew_formulae.sh
 
 # waiting for the scripts in the separate tabs to finish
-echo ''
+#echo ''
 echo "waiting for casks and mas scripts..."
 while ps aux | grep /5_casks.sh | grep -v grep >/dev/null; do sleep 1; done
 while ps aux | grep /6_mas_appstore.sh | grep -v grep >/dev/null; do sleep 1; done

@@ -123,12 +123,12 @@ brew install vitorgalvao/tiny-scripts/cask-repair
 # brew cask style
 
 # installing parallel as dependency for the other scripts
-echo ''
-echo "installing parallel..."
 if [[ "$(which parallel)" == "" ]]
 then
-    brew install parallel
     echo ''
+    echo "installing parallel..."
+    brew install parallel
+    #echo ''
 else
     :
 fi
