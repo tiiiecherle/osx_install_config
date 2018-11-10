@@ -157,7 +157,7 @@ m	~/Library/Containers/com.coteditor.CotEditor/Data/Library/Preferences/com.cote
 # Cyberduck
 echo Cyberduck
 #m	/Applications/Cyberduck.app
-m	~/Library/Group Containers/G69SCX94XU.duck
+u	~/Library/Group Containers/G69SCX94XU.duck
 m	~/Library/Preferences/ch.sudo.cyberduck.plist
 
 # Dashboard
