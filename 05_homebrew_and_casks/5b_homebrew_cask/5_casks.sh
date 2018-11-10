@@ -275,6 +275,21 @@ then
     
 	echo "uninstalling and cleaning some casks..."
 	
+	#if [[ $(brew cask info java | grep "Not installed") != "" ]]
+	if [[ $(brew cask list | grep "^java$") == "" ]]
+    then
+    	# making sure flash gets installed on reinstall
+    	if [[ -e "/Library/Java/JavaVirtualMachines/" ]] && [[ -n "$(ls -A /Library/Java/JavaVirtualMachines/)" ]]
+    	then
+            ${USE_PASSWORD} | brew cask zap --force java
+    	    echo ''
+        else
+            :
+        fi
+    else
+        :
+    fi
+	
 	#if [[ $(brew cask info flash-npapi | grep "Not installed") != "" ]]
 	if [[ $(brew cask list | grep "^flash-npapi$") == "" ]]
     then
@@ -428,33 +443,33 @@ then
 	    fi
 	fi
 	
-	# as xtrafinder is no longer installable by cask let`s install it that way ;)
-	# automation permissions
-	echo ''
-	echo "setting security permissions for xtrafinder..."
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-    then
-        # macos versions until and including 10.13 
-		:
-    else
-        # macos versions 10.14 and up
-        # working, but does not show in gui of system preferences, use csreq for the entry to show
-	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
-	    :
-    fi
-    # registering xtrafinder
-    SCRIPT_DIR_LICENSE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && pwd)")
-	if [[ -e "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh ]]
-	then
-	    "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh
-	else
-	    echo "script to register xtrafinder not found..."
-	fi
-	
 	if [[ -e "/Applications/XtraFinder.app" ]]
 	then
     	echo "xtrafinder already installed..."
 	else
+    	# as xtrafinder is no longer installable by cask let`s install it that way ;)
+    	# automation permissions
+    	echo ''
+    	echo "setting security permissions for xtrafinder..."
+        if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+        then
+            # macos versions until and including 10.13 
+    		:
+        else
+            # macos versions 10.14 and up
+            # working, but does not show in gui of system preferences, use csreq for the entry to show
+    	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.trankynam.XtraFinder',0,1,1,?,NULL,0,'com.apple.finder',?,NULL,?);"
+    	    :
+        fi
+        # registering xtrafinder
+        SCRIPT_DIR_LICENSE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && pwd)")
+    	if [[ -e "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh ]]
+    	then
+    	    "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh
+    	else
+    	    echo "script to register xtrafinder not found..."
+    	fi
+    	
     	# as xtrafinder is no longer installable by cask let`s install it that way ;)
     	echo "downloading xtrafinder..."
     	XTRAFINDER_INSTALLER="/Users/$USER/Desktop/XtraFinder.dmg"
