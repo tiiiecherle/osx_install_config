@@ -1208,6 +1208,17 @@ EOF
     #sudo systemsetup -getsleep
     #sudo systemsetup -getwakeonnetworkaccess
     
+    # automatic graphics switching
+    # 0 = integrated (less powerfull)
+    # 1 = dedicated (separate graphics card)
+    # 2 = auto switch (default)
+    if [[ $USER == "tom" ]]
+    then
+        sudo pmset -a gpuswitch 2
+    else
+        :
+    fi
+    
     # set standbydelay on battery and ac power delay to 10 min (default is 3 hours = 10800), set in seconds
     #sudo pmset -a standbydelay 600
     
