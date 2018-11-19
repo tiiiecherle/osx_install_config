@@ -1222,11 +1222,15 @@ EOF
     # set standbydelay on battery and ac power delay to 10 min (default is 3 hours = 10800), set in seconds
     #sudo pmset -a standbydelay 600
     
+    # halfdim - display sleep will use an intermediate half-brightness state between full brightness and fully off (boolean)
+    # 0 = off
+    # 1 = on
+    
     # on battery
-    sudo pmset -b sleep 20 disksleep 15 displaysleep 10 halfdim 5
+    sudo pmset -b sleep 20 disksleep 15 displaysleep 10 halfdim 1
     
     # on power adapter
-    sudo pmset -c sleep 20 disksleep 15 displaysleep 10 halfdim 5
+    sudo pmset -c sleep 20 disksleep 15 displaysleep 10 halfdim 1
     
     # disable automatic sleep when display off on battery (should only be used with disksleep 0)
     #sudo pmset -b sleep 0
@@ -1849,6 +1853,7 @@ EOF
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Oversight", path:"/Applications/OverSight.app/Contents/Library/LoginItems/OverSight Helper.app", hidden:false}'
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Virus Scanner Plus", path:"/Applications/VirusScannerPlus.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Better", path:"/Applications/Better.app", hidden:false}'
+    osascript -e 'tell application "System Events" to make login item at end with properties {name:"AdGuard for Safari", path:"/Applications/AdGuard for Safari.app", hidden:false}'
     
     # adding some more startup-items for specified user if script is run on multiple macs with different users
     if [[ "$USER" == "tom" ]]
@@ -2894,11 +2899,17 @@ EOF
     # play sound for other mail actions
     defaults write com.apple.mail PlayMailSounds -bool true
     
-    # show unread messages in dock (1=inbox only)
+    # show unread messages in dock
+    # 1 = inboxes only
+    # 2 = all mailboxes
     defaults write com.apple.mail MailDockBadge -int 1
     
-    # notification for new messages (2=vips only)
-    defaults write com.apple.mail MailUserNotificationScope -int 2
+    # notification for new messages
+    # 1 = inboxes only
+    # 2 = vips only
+    # 3 = contacts
+    # 5 = all mailboxes
+    defaults write com.apple.mail MailUserNotificationScope -int 1
     
     # delete not edited attachment downloads
     # each attachment that is opened gets "downloaded" (pop3 and imap)
