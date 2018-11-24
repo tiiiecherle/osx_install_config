@@ -2439,6 +2439,9 @@ EOF
     
     	echo "xtrafinder"
     	
+    	# automatically check for updates
+    	defaults write com.apple.finder XFAutomaticChecksForUpdate -bool true
+    	
     	# enable copy / cut - paste
     	defaults write com.apple.finder XtraFinder_XFCutAndPastePlugin -bool true
     	
@@ -2670,10 +2673,10 @@ EOF
     
     WEBSITE_SAFARI_DATABASE="/Users/$USER/Library/Safari/PerSitePreferences.db"
     
+    # general preferences
     # /Users/$USER/Library/Safari/PerSitePreferences.db
     # sqlite3 /Users/$USER/Library/Safari/PerSitePreferences.db
     # .tables
-    # select * from default_preferences;
     # .headers ON
     # select * from default_preferences;
     # id|preference|default_value
@@ -2684,14 +2687,29 @@ EOF
     # xx|PerSitePreferencesMicrophone|0
     # example
     # UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesCamera';
+    # select * from default_preferences;
+    # .quit
+    
+    # per site preferences
+    # /Users/$USER/Library/Safari/PerSitePreferences.db
+    # sqlite3 /Users/$USER/Library/Safari/PerSitePreferences.db
+    # .tables
+    # .headers ON
+    # select * from preference_values;
+    # id|domain|preference|preference_value|timestamp
+    # 1|watch.nba.com|PerSitePreferencesAutoplay|0|
+    # example
+    # UPDATE preference_values SET preference_value='0' WHERE (preference='PerSitePreferencesAutoplay' and domain='watch.nba.com');
     # select * from preference_values;
     # .quit
     
     # checking values
     # sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;"
+    # sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from preference_values;"
     
     # resetting / deleting values
     # sqlite3 "$WEBSITE_SAFARI_DATABASE" "delete from default_preferences WHERE preference='PerSitePreferencesMicrophone';"
+    # sqlite3 "$WEBSITE_SAFARI_DATABASE" "delete from preference_values WHERE preference='PerSitePreferencesMicrophone';"
     
     # use reader
     # off = 0
@@ -2723,6 +2741,9 @@ EOF
     else
         sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesAutoplay'"
     fi
+    # per site preferences
+    sqlite3 "$WEBSITE_SAFARI_DATABASE" "delete from preference_values WHERE preference='PerSitePreferencesAutoplay';"
+    sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into preference_values (domain, preference, preference_value) values ('watch.nba.com', 'PerSitePreferencesAutoplay', '0');"
     
     # default page zoom
     # 1 = 100%, 1.25 = 125%, etc.

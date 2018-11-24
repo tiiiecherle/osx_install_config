@@ -237,9 +237,9 @@ cleanup_casks() {
                     #local CASK_NAME=$(echo "$CASK" | cut -d ":" -f1 | xargs)
                     local NEW_VERSION=$(echo "$CASK_INFO" | jq -r '.version')
                     #local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
-            	    local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK" | sort -V)
-            	    local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | tail -n 1)
-            	    #local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEW_VERSION")
+            	    local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
+            	    local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | head -n 1)
+            	    #local NEWEST_INSTALLED_VERSION="$NEW_VERSION"
             	    # alternatively always keep latest version installed and not the latest version from homebrew
             	    local VERSIONS_TO_UNINSTALL=$(echo "$INSTALLED_VERSIONS" | grep -v "$NEWEST_INSTALLED_VERSION")
             	    for i in $VERSIONS_TO_UNINSTALL
@@ -364,7 +364,8 @@ formulae_show_updates_parallel() {
         local CHECK_RESULT=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo ok || echo outdated)
         #echo CHECK_RESULT is $CHECK_RESULT
         local NAME_PRINT=$(echo "$FORMULA" | awk -v len=20 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
-        local CURRENT_INSTALLED_VERSION_PRINT=$(echo "$NEWEST_INSTALLED_VERSION" | cut -d ":" -f1 | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        local CURRENT_INSTALLED_VERSION_PRINT=$(echo "$NEWEST_INSTALLED_VERSION" | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        #local CURRENT_INSTALLED_VERSION_PRINT=$(echo "$NEWEST_INSTALLED_VERSION" | cut -d ":" -f1 | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         local NEW_VERSION_PRINT=$(echo "$NEW_VERSION" | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         if [[ $CHECK_RESULT == "ok" ]]
         then
@@ -527,16 +528,18 @@ casks_show_updates_parallel() {
         #local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
         local NUMBER_OF_INSTALLED_CASKS=$(echo "$INSTALLED_CASKS" | wc -l | sed 's/^ *//' | sed 's/ *$//')
         local NUMBER_OF_CASK=$(echo "$INSTALLED_CASKS" | cat -n | grep "$CASK$" | awk '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
-        local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK" | sort -V)
+        local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
         #echo INSTALLED_VERSIONS is "$INSTALLED_VERSIONS"
         local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
         #echo NUMBER_OF_INSTALLED_VERSIONS is "$NUMBER_OF_INSTALLED_VERSIONS"
-        local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | tail -n 1)
+        local NEWEST_INSTALLED_VERSION=$(echo "$INSTALLED_VERSIONS" | head -n 1)
+        #local NEWEST_INSTALLED_VERSION="$NEW_VERSION"
         #echo NEWEST_INSTALLED_VERSION is "$NEWEST_INSTALLED_VERSION"
         local CHECK_RESULT=$(echo "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo ok || echo outdated)
         #echo CHECK_RESULT is $CHECK_RESULT
         local CASK_NAME_PRINT=$(echo "$CASK" | awk -v len=20 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
-        local CURRENT_INSTALLED_VERSION_PRINT=$(echo "$NEWEST_INSTALLED_VERSION" | cut -d ":" -f1 | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        local CURRENT_INSTALLED_VERSION_PRINT=$(echo "$NEWEST_INSTALLED_VERSION" | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        #local CURRENT_INSTALLED_VERSION_PRINT=$(echo "$NEWEST_INSTALLED_VERSION" | cut -d ":" -f1 | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         local NEW_VERSION_PRINT=$(echo "$NEW_VERSION" | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         if [[ $CHECK_RESULT == "ok" ]]
         then
@@ -646,7 +649,7 @@ casks_install_updates() {
             echo ''
             
             # cleanup entries
-            local INSTALLED_VERSIONS=$(ls -1 "$BREW_CASKS_PATH"/"$CASK" | sort -V)
+            local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
             local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
             if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
             then

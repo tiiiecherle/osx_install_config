@@ -5,6 +5,7 @@ coreutils
 parallel
 gnupg
 #
+openssl
 git
 rename
 wget

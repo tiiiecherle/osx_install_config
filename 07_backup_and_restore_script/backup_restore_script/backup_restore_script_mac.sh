@@ -574,6 +574,9 @@ function backup_restore {
         fi
         
         # checking homebrew including script dependencies
+        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+        #echo ''
+        #echo "loggedInUser is $loggedInUser..."
         if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
         then
             echo homebrew is not installed, exiting...

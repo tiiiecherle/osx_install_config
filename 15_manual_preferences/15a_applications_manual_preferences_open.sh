@@ -118,8 +118,8 @@ trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM 
 echo "opening apps for applying preferences manually..."
 
 applications_to_open=(
-"/Applications/Safari.app"
-"/Applications/Firefox.app"
+#"/Applications/Safari.app"
+#"/Applications/Firefox.app"
 "/Applications/Adobe Acrobat Reader DC.app"
 "/Applications/Adobe Acrobat X Pro/Adobe Acrobat Pro.app"
 "/Applications/AppCleaner.app"
@@ -154,6 +154,10 @@ do
 		:
 	fi
 done
+
+# google consent
+open -a "/Applications/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
+open "/Applications/Firefox.app" && sleep 2 && open -a "/Applications/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 
 if [[ "$USER" == "wolfgang" ]]
 then

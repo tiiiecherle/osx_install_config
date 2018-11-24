@@ -292,6 +292,9 @@ then
     
     	echo "xtrafinder"
     	
+    	# automatically check for updates
+    	defaults write com.apple.finder XFAutomaticChecksForUpdate -bool true
+    	
     	# enable copy / cut - paste
     	defaults write com.apple.finder XtraFinder_XFCutAndPastePlugin -bool true
     	
