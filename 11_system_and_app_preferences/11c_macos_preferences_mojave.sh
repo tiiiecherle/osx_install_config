@@ -3089,6 +3089,15 @@ EOF
     # flag color to display
     # 1=orange
     defaults write com.apple.mail FlagColorToDisplay -int 1
+
+    # grammar checking
+    defaults write com.apple.mail WebGrammarCheckingEnabled -bool false
+    
+    # spelling checking
+    defaults write com.apple.mail WebContinuousSpellCheckingEnabled -bool true
+    
+    # automatic spelling correction
+    defaults write com.apple.mail WebAutomaticSpellingCorrectionEnabled -bool false
     
     
     
