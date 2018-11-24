@@ -16,3 +16,5 @@
 1436953057	GhosteryLite
 1121192229	Better
 1440147259	AdGuard for Safari
+824183456	Affinity Photo
+824171161	Affinity Designer
