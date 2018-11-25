@@ -42,6 +42,7 @@ checking_command_line_tools
 ###
 
 checking_homebrew
+homebrew_update
 
 
 ### keepingyouawake

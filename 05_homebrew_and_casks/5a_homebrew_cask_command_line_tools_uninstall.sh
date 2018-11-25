@@ -129,7 +129,13 @@ CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 # casks zap
 if [[ "$CONT2_BREW" == "n" || "$CONT2_BREW" == "no" || "$CONT2_BREW" == "" ]]
 then
-    :
+    # backing up specifications of latest installed casks
+    echo ''
+    echo "backing up /usr/local/Caskroom/. to /tmp/Caskroom/..."
+    #ls -la /usr/local/Caskroom/
+    mkdir -p /tmp/Caskroom
+    cp -a /usr/local/Caskroom/. /tmp/Caskroom/
+    #ls -la /tmp/Caskroom/
 else
     #start_sudo
     echo ''

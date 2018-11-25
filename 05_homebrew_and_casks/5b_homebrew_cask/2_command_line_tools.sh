@@ -76,7 +76,7 @@ sudo xcode-select --switch /Library/Developer/CommandLineTools
 
 function command_line_tools_update() {
     # updating command line tools and system
-    echo ''
+    #echo ''
     echo "checking for command line tools update..."
     COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.'))
     # or sw_vers | awk 'BEGIN { FS = ":[ \t]*" } /ProductVersion/ { print $2 }' | cut -f1,2 -d'.'

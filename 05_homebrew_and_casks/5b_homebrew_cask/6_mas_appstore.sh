@@ -115,7 +115,7 @@ function mas_login_applescript() {
     # macos 10.14 only
     if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.') != "10.14" ]]
     then
-        echo ''
+        #echo ''
         echo "this part of the script to login to the appstore automatically via applescript is only compatible with macos 10.14 mojave..."
         echo "please login to the appstore manually and press enter when logged in..."
         read -p "are you logged in on the appstore (Y/n)? " CONT1_MAS

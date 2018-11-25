@@ -221,6 +221,35 @@ fi
 
 # installing homebrew packages
 #echo ''
+
+if [[ -e "/tmp/Caskroom" ]]
+then
+    #echo ''
+    if [[ "$CONT_CASKROOM" == "" ]]
+    then
+        read -p "$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n) ')" CONT_CASKROOM
+        CONT_CASKROOM="$(echo "$CONT_CASKROOM" | tr '[:upper:]' '[:lower:]')"    # tolower
+    else
+        :
+    fi
+    #
+    if [[ "$CONT_CASKROOM" =~ ^(y|yes)$ || "$CONT_CASKROOM" == "" ]]
+    then
+        echo "restoring /tmp/Caskroom/. to /usr/local/Caskroom/..."
+        if [[ -e "/usr/local/Caskroom" ]]
+        then
+            cp -a /tmp/Caskroom/. /usr/local/Caskroom/
+        else
+            echo "/usr/local/Caskroom/ not found, skipping restore..."
+        fi
+    else
+        :
+    fi
+    echo ''
+else
+    :
+fi
+
 echo "installing casks..."
 echo ''
 

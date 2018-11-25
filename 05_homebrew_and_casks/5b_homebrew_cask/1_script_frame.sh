@@ -449,7 +449,7 @@ fi
 
 
 ### checking if online
-echo ''
+#echo ''
 echo "checking internet connection..."
 ping -c 3 google.com > /dev/null 2>&1
 if [ $? -eq 0 ]

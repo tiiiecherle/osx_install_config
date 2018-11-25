@@ -93,6 +93,19 @@ fi
 #read -p "do you want to install casks apps? select no when using restore script on clean install (Y/n)? " CONT2_BREW
 read -p "do you want to install casks apps? (Y/n)? " CONT2_BREW
 CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
+if [[ -e "/tmp/Caskroom" ]]
+then
+    read -p "$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n) ')" CONT_CASKROOM
+    if [[ "$CONT_CASKROOM" == "" ]]
+    then
+        CONT_CASKROOM=y
+    else
+        :
+    fi
+    CONT_CASKROOM="$(echo "$CONT_CASKROOM" | tr '[:upper:]' '[:lower:]')"    # tolower
+else
+    :
+fi
 echo ''
 
 if [[ "$CONT2_BREW" =~ ^(y|yes|n|no)$ || "$CONT2_BREW" == "" ]]
@@ -109,6 +122,8 @@ fi
 ### scripts
 . "$SCRIPT_DIR"/2_command_line_tools.sh
 . "$SCRIPT_DIR"/3_homebrew_caskbrew.sh
+UPDATE_HOMEBREW="yes"
+homebrew_update
 
 if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
 then
@@ -188,7 +203,7 @@ then
     	end if
     	#delay 2
     	#
-    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in runWindow
+    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export CONT_CASKROOM=\"$CONT_CASKROOM\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in runWindow
     	#
     	delay 10
         set frontmost of Window1 to true
@@ -199,6 +214,7 @@ else
     CHECK_IF_CASKS_INSTALLED="no"
 fi
 
+UPDATE_HOMEBREW="no"
 . "$SCRIPT_DIR"/4_homebrew_formulae.sh
 
 # waiting for the scripts in the separate tabs to finish
