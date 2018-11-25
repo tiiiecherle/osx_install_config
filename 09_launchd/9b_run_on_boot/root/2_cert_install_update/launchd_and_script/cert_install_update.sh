@@ -120,9 +120,28 @@ cert_check() {
     #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
     # recommended way
     loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-    #echo ''
-    #echo "loggedInUser is $loggedInUser..."
-    
+    NUM=0
+    MAX_NUM=15
+    SLEEP_TIME=3
+    # waiting for loggedInUser to be available
+    while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+    do
+        sleep "$SLEEP_TIME"
+        NUM=$(($NUM+1))
+        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+    done
+    echo ''
+    #echo "NUM is $NUM..."
+    echo "loggedInUser is $loggedInUser..."
+    if [[ "$loggedInUser" == "" ]]
+    then
+        WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
+        echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
+        exit
+    else
+        :
+    fi
+      
     # sourcing .bash_profile or setting PATH
     # as the script is run as root from a launchd it would not detect the brew command and would fail checking if brew is installed
     #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"

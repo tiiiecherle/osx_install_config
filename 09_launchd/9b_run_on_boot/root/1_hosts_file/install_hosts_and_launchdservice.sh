@@ -144,7 +144,7 @@ open /var/log/hosts_file_update.log
 # syncing to install latest version when using backup script
 echo ''
 echo "copying script to backup script dir..."
-SCRIPTS_FINAL_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+SCRIPTS_FINAL_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && cd .. && pwd)")
 if [[ -e "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script ]]
 then
     mkdir -p "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_hosts
