@@ -136,6 +136,7 @@ else
     if [[ $(brew list | grep qtfaststart) != "" ]]
     then
         brew link --overwrite qtfaststart
+        echo ''
     else
         :
     fi
