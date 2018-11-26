@@ -140,7 +140,7 @@ applications_to_open=(
 #"/Applications/VirusScannerPlus.app"
 "/Applications/Macs Fan Control.app"
 #"/Applications/Signal.app"
-#"/Applications/Keka.app"
+"/Applications/Keka.app"
 "/Applications/AVGAntivirus.app"
 )
 

@@ -438,14 +438,14 @@ then
     	else
     	    :
     	fi
-    	echo ''
+    	#echo ''
     else
         :
     fi
 	}
 	uninstall_avg_antivirus
 	
-	#echo ''
+	echo ''
 	
 	echo "installing casks..."
     if [[ "$casks" == "" ]]
