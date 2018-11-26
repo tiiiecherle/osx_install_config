@@ -77,13 +77,13 @@ install_update_certificate() {
     echo quit | openssl s_client -showcerts -connect "$SERVER_IP":443 2>/dev/null > /tmp/"$CERTIFICATE_NAME".crt
 
     # add certificate to keychain and trust all
-    #sudo security add-trusted-cert -d -r trustAsRoot -k "/Users/$USER/Library/Keychains/login.keychain" "/Users/$USER/Desktop/cacert.pem"
+    #sudo security add-trusted-cert -d -r trustAsRoot -k "$KEYCHAIN" "/Users/$USER/Desktop/cacert.pem"
 
     # add certificate to keychain and no value set
-    #sudo security add-trusted-cert -r trustAsRoot -k "/Users/$USER/Library/Keychains/login.keychain" "/Users/$USER/Desktop/cacert.pem"
+    #sudo security add-trusted-cert -r trustAsRoot -k "$KEYCHAIN" "/Users/$USER/Desktop/cacert.pem"
     
     # add certificate to keychain and trust ssl
-    sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "/System/Library/Keychains/SystemRootCertificates.keychain" /tmp/"$CERTIFICATE_NAME".crt
+    sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
     
     # checking that certificate is installed, not untrusted and matches the domain
     # exporting certificate
@@ -92,7 +92,7 @@ install_update_certificate() {
     then
         echo "the certificate is installed, trusted and working..."
     else
-        echo "there seems to be a problem with the installation of the cerificate..."
+        echo "there seems to be a problem with the installation of the certificate..."
     fi
 
 }
@@ -189,8 +189,8 @@ cert_check() {
     then
         :
     else
-        echo "server not found, waiting 120s for next try..."
-        sleep 120
+        echo "server not found, waiting 60s for next try..."
+        sleep 60
     fi
  
     # checking if online
