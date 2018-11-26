@@ -127,6 +127,18 @@ else
     # HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source --force ...
     # brew reinstall -s --force ...
     # if this is not working, install with option --HEAD which installs the current git version that is build from souce and compiled with all options
+    
+    # solving
+    # Warning: You have unlinked kegs in your Cellar
+    # Leaving kegs unlinked can lead to build-trouble and cause brews that depend on
+    # those kegs to fail to run properly once built. Run `brew link` on these:
+    # qtfaststart
+    if [[ $(brew list | grep qtfaststart) != "" ]]
+    then
+        brew link --overwrite qtfaststart
+    else
+        :
+    fi
 fi
 
 # if script is run standalone, not sourced from another script, load script frame

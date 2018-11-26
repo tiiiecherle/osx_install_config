@@ -181,14 +181,14 @@ else
 	    echo ''
 	    echo checking casks specific1 installation...
 	    printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
-	item="{}"
-	if [[ $(brew cask list | grep "^$item$") != "" ]]; 
-	then 
-		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
-	else 
-		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
-	fi
-	        '
+		item="{}"
+		if [[ $(brew cask list | grep "^$item$") != "" ]]; 
+		then 
+			printf "%-50s\e[1;32mok\e[0m%-10s\n" "$item"; 
+		else 
+			printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$item"; 
+		fi
+	    '
 	else
 	    :
 	fi

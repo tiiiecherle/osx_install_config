@@ -14,9 +14,9 @@ htop		# if htop is not working, use glances instead
 #duti
 ghostscript
 xpdf
-ffmpeg
+ffmpeg		# video encoding script
 #imagemagick
-qtfaststart
+qtfaststart	# video encoding script
 jq
 cliclick
 python

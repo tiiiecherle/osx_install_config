@@ -227,7 +227,7 @@ then
     #echo ''
     if [[ "$CONT_CASKROOM" == "" ]]
     then
-        read -p "$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n) ')" CONT_CASKROOM
+        read -p "$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')" CONT_CASKROOM
         CONT_CASKROOM="$(echo "$CONT_CASKROOM" | tr '[:upper:]' '[:lower:]')"    # tolower
     else
         :
@@ -250,8 +250,8 @@ else
     :
 fi
 
-echo "installing casks..."
-echo ''
+#echo "installing casks..."
+#echo ''
 
 # xquartz
 #read -p "do you want to install xquartz (Y/n)? " CONT1_BREW
@@ -438,12 +438,14 @@ then
     	else
     	    :
     	fi
-    	echo ''
+    	#echo ''
     else
         :
     fi
 	}
 	uninstall_avg_antivirus
+	
+	echo ''
 	
 	echo "installing casks..."
     if [[ "$casks" == "" ]]
@@ -593,7 +595,7 @@ else
     # script is not sourced, run standalone
     CHECK_IF_FORMULAE_INSTALLED="no"
     CHECK_IF_MASAPPS_INSTALLED="no"
-    echo ''
+    #echo ''
     . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
 fi
 

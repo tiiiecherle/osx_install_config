@@ -107,6 +107,8 @@ function stop_sudo() {
 ###
 ###
 
+echo ''
+
 # asking for casks zap
 read -p "do you want to zap / uninstall all casks including preferences (y/N)? " CONT2_BREW
 CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
@@ -129,13 +131,19 @@ CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 # casks zap
 if [[ "$CONT2_BREW" == "n" || "$CONT2_BREW" == "no" || "$CONT2_BREW" == "" ]]
 then
-    # backing up specifications of latest installed casks
-    echo ''
-    echo "backing up /usr/local/Caskroom/. to /tmp/Caskroom/..."
-    #ls -la /usr/local/Caskroom/
-    mkdir -p /tmp/Caskroom
-    cp -a /usr/local/Caskroom/. /tmp/Caskroom/
-    #ls -la /tmp/Caskroom/
+    if [[ -e "/usr/local/Caskroom" ]]
+    then
+        # backing up specifications of latest installed casks
+        echo ''
+        echo "backing up /usr/local/Caskroom/. to /tmp/Caskroom/..."
+        #ls -la /usr/local/Caskroom/
+        mkdir -p /tmp/Caskroom
+        cp -a /usr/local/Caskroom/. /tmp/Caskroom/
+        #ls -la /tmp/Caskroom/
+    else
+        echo ''
+        echo "/usr/local/Caskroom/ not found, skipping backup..."
+    fi
 else
     #start_sudo
     echo ''

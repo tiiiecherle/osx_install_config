@@ -13,19 +13,27 @@ then
     function delete_tmp_homebrew_script_fifo() {
         if [ -e "/tmp/tmp_homebrew_script_fifo" ]
         then
-            rm "/tmp/tmp_homebrew_script_fifo"
+            rm -f "/tmp/tmp_homebrew_script_fifo"
+        else
+            :
+        fi
+        if [ -e "/tmp/tmp_homebrew_script_mas_fifo" ]
+        then
+            rm -f "/tmp/tmp_homebrew_script_mas_fifo"
         else
             :
         fi
         if [ -e "/tmp/run_for_homebrew" ]
         then
-            rm "/tmp/run_for_homebrew"
+            rm -f "/tmp/run_for_homebrew"
         else
             :
         fi
     }
     unset SUDOPASSWORD
+    unset MAS_APPSTORE_PASSWORD
     SUDOPASSWORD=$(cat "/tmp/tmp_homebrew_script_fifo" | head -n 1)
+    MAS_APPSTORE_PASSWORD=$(cat "/tmp/tmp_homebrew_script_mas_fifo" | head -n 1)
     USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
     delete_tmp_homebrew_script_fifo
     #set +a
@@ -245,6 +253,12 @@ function delete_tmp_homebrew_script_fifo() {
     else
         :
     fi
+    if [ -e "/tmp/tmp_homebrew_script_mas_fifo" ]
+    then
+        rm -f "/tmp/tmp_homebrew_script_mas_fifo"
+    else
+        :
+    fi
     if [ -e "/tmp/run_for_homebrew" ]
     then
         rm "/tmp/run_for_homebrew"
@@ -259,6 +273,8 @@ function create_tmp_homebrew_script_fifo() {
     echo "1" > "/tmp/run_for_homebrew"
     mkfifo -m 600 "/tmp/tmp_homebrew_script_fifo"
     builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_homebrew_script_fifo" &
+    mkfifo -m 600 "/tmp/tmp_homebrew_script_mas_fifo"
+    builtin printf "$MAS_APPSTORE_PASSWORD\n" > "/tmp/tmp_homebrew_script_mas_fifo" &
 }
 
 
