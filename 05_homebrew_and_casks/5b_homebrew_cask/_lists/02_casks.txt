@@ -62,6 +62,7 @@ nextcloud
 onyx
 #oversight
 #plex-media-server
+photosync
 prefs-editor
 progressive-downloader
 quicksilver

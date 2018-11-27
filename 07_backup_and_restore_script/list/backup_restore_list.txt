@@ -218,7 +218,7 @@ m	~/Library/Preferences/de.filezilla.plist
 
 # Firefox
 echo Firefox
-m	/Applications/Firefox.app
+#m	/Applications/Firefox.app
 u	~/Library/Application Support/Firefox
 u	~/Library/Preferences/org.mozilla.firefox.plist
 
@@ -473,8 +473,8 @@ m	~/Library/Preferences/com.brinscall.pdfunlock.plist
 m	~/Library/Preferences/PDFUnlock.plist
 
 # PhotoSync
-echo PhotoSync
-u	/Applications/PhotoSync.app
+#echo PhotoSync
+#u	/Applications/PhotoSync.app
 
 # Plex Media Server
 #echo Plex Media Server
@@ -587,7 +587,7 @@ u	~/Library/Preferences/com.skype.skype.plist
 
 # SMARTReporter
 echo SMARTReporter
-m	/Applications/SMARTReporter.app
+#m	/Applications/SMARTReporter.app
 m	~/Library/Preferences/com.corecode.SMARTReporter.plist
 
 # smb service
@@ -673,7 +673,7 @@ u	~/.config
 
 # VeraCrypt
 echo VeraCrypt
-#u	~/Library/Application Support/VeraCrypt
+u	~/Library/Application Support/VeraCrypt
 u	~/Library/Preferences/org.idrix.VeraCrypt.plist
 
 # VideoMonkey
