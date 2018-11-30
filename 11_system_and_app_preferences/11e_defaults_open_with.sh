@@ -137,6 +137,11 @@ do
     done
 done
 
+echo ''
+echo "cleaning launchservices (open with) index..."
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user 
+echo ''
+
 echo "done ;)"
 echo "the changes need a reboot to take effect..."
 #echo "initializing reboot"
