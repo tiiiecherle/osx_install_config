@@ -152,10 +152,6 @@ sudo networksetup -setv6off "$WLAN_DEVICE"
 #sudo networksetup -setv6automatic "$WLAN_DEVICE"
 sleep 2
 
-# deleting created preferences backup file
-#sleep 2
-sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist.old >/dev/null 2>&1
-
 # echo script finished
 #echo ""
 echo "all network locations created ;)"
