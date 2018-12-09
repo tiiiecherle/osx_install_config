@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SERVICE_NAME=com.hostsfile.install_update
+
 # moving back original hosts file
 if [ -f /etc/hosts.orig ];
 then
@@ -25,9 +27,11 @@ else
 fi
 
 # unloading launchd service
-if [[ $(sudo launchctl list | grep hostsfile.install_update) != "" ]];
+if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]];
 then
-    sudo launchctl unload /Library/LaunchDaemons/com.hostsfile.install_update.plist
+    sudo launchctl unload /Library/LaunchDaemons/"$SERVICE_NAME".plist
+    sudo launchctl disable system/"$SERVICE_NAME"
+    sudo launchctl remove "$SERVICE_NAME"
 else
     :
 fi

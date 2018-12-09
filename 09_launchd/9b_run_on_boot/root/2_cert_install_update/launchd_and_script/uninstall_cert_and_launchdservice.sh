@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SERVICE_NAME=com.cert.install_update
+
 # deleting update script
 if [ -f /Library/Scripts/custom/cert_install_update.sh ];
 then
@@ -9,17 +11,19 @@ else
 fi
 
 # unloading launchd service
-if [[ $(sudo launchctl list | grep cert.install_update) != "" ]];
+if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]];
 then
-    sudo launchctl unload /Library/LaunchDaemons/com.cert.install_update.plist
+    sudo launchctl unload /Library/LaunchDaemons/"$SERVICE_NAME".plist
+    sudo launchctl disable system/"$SERVICE_NAME"
+    sudo launchctl remove "$SERVICE_NAME"
 else
     :
 fi
 
 # deleting launchd service
-if [ -f /Library/LaunchDaemons/com.cert.install_update.plist ];
+if [ -f /Library/LaunchDaemons/"$SERVICE_NAME".plist ];
 then
-    sudo rm /Library/LaunchDaemons/com.cert.install_update.plist
+    sudo rm /Library/LaunchDaemons/"$SERVICE_NAME".plist
 else
     :
 fi

@@ -131,7 +131,7 @@ echo "uninstalling possible old files..."
 . "$SCRIPT_DIR"/launchd_and_script/uninstall_cert_and_launchdservice.sh
 wait
 
-# hosts install / update file
+# cert install / update file
 echo "installing cert install/update script..."
 sudo mkdir -p /Library/Scripts/custom/
 sudo cp "$SCRIPT_DIR"/launchd_and_script/cert_install_update.sh /Library/Scripts/custom/cert_install_update.sh
@@ -140,7 +140,7 @@ sudo chmod -R 755 /Library/Scripts/custom/
 sudo sed -i '' 's/^CERTIFICATE_NAME=.*/'"$CERTIFICATE_NAME_VARIABLE"'/' /Library/Scripts/custom/cert_install_update.sh
 sudo sed -i '' 's/^SERVER_IP=.*/'"$SERVER_IP_VARIABLE"'/' /Library/Scripts/custom/cert_install_update.sh
 
-# launcd service file
+# launchd service file
 echo "installing launchd service..."
 sudo cp "$SCRIPT_DIR"/launchd_and_script/com.cert.install_update.plist /Library/LaunchDaemons/com.cert.install_update.plist
 sudo chown root:wheel /Library/LaunchDaemons/com.cert.install_update.plist
@@ -163,9 +163,11 @@ echo "enabling launchd service..."
 if [[ $(sudo launchctl list | grep cert.install_update) != "" ]];
 then
     sudo launchctl unload /Library/LaunchDaemons/com.cert.install_update.plist
+    sudo launchctl disable system/com.cert.install_update
 else
     :
 fi
+sudo launchctl enable system/com.cert.install_update
 sudo launchctl load /Library/LaunchDaemons/com.cert.install_update.plist
 echo "checking if launchd service is enabled..."
 sudo launchctl list | grep cert.install_update

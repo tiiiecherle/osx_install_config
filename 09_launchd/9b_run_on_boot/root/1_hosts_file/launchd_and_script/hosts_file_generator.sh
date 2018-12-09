@@ -5,6 +5,8 @@ then
     echo script is not run as root, exiting...
     exit
 else
+    :
+fi
 
 EXECTIME=$(date '+%Y-%m-%d %T')
 LOGFILE=/var/log/hosts_file_update.log
@@ -366,4 +368,3 @@ hosts_file_install_update() {
 #(time hosts_file_install_update) 2>&1 | sudo tee -a $LOGFILE
 # does not work, so the whole script has to be run as root or the privileges of the logfile have to be changed before and after running the script
 
-fi
