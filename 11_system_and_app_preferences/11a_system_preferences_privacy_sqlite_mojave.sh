@@ -329,6 +329,7 @@ ACCESSIBILITYAPPS=(
 "video_720p_h265_aac_shrink                                             1"
 "video_1080p_h265_aac_shrink                                            1"
 "gui_apps_backup                                                        1"
+"backup_files_tar_gz                                                    1"
 "BL Banking Launcher                                                    1"
 "decrypt_finder_input_gpg_progress                                      1"
 "unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress        1"
