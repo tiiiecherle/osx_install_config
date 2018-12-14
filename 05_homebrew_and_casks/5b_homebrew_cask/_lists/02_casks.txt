@@ -59,6 +59,7 @@ macs-fan-control
 mucommander
 namechanger
 nextcloud
+ondesoft-audiobook-converter
 onyx
 #oversight
 #plex-media-server
