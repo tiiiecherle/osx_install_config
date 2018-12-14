@@ -244,6 +244,7 @@ then
     "/Users/$USER/github"
     "/Users/$USER/Desktop/files"
     "/Users/$USER/Documents"
+    "/Users/$USER/Library/Application Support/MobileSync"
     )
 
 else
@@ -261,6 +262,7 @@ then
     "/Users/$USER/Eigene_Dateien_wsmac"
     "/Users/$USER/Documents"
     "/Users/$USER/Downloads"
+    "/Users/$USER/Library/Application Support/MobileSync"
     )
 
 else
