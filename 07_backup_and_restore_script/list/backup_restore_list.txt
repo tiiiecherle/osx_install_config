@@ -48,9 +48,10 @@ echo Apple Mail
 u	~/Library/Mail
 u	~/Library/Containers/com.apple.mail/Data/Library/Preferences/com.apple.mail.plist
 
-# Apple Mobile Sync
-echo Apple Mobile Sync
-u	~/Library/Application Support/MobileSync
+# Apple Mobile Sync 
+# included in files backup
+#echo Apple Mobile Sync
+#u	~/Library/Application Support/MobileSync
 
 # AppCleaner
 echo AppCleaner
@@ -413,7 +414,7 @@ m	~/Library/Application Support/Nextcloud
 
 # Ondesoft AudioBook Converter
 echo Ondesoft AudioBook Converter
-m	/Applications/Ondesoft AudioBook Converter.app
+#m	/Applications/Ondesoft AudioBook Converter.app
 u	~/Library/Preferences/com.ondesoft.audiobookconverter.plist
 
 # OnyX
