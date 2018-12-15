@@ -106,7 +106,31 @@ network_select() {
         else
             echo "changing to location "$ETHERNET_LOCATION"..." 
             sudo networksetup -switchtolocation "$ETHERNET_LOCATION"
+            printf '\n\n'
             sleep 10
+            # special characters in the device name need to be escaped or worked around
+            #ETHERNET_DEVICE_ESCAPED="$(echo $ETHERNET_DEVICE | sed 's/\//\\\//g')"
+            #echo "$ETHERNET_DEVICE_ESCAPED"
+            #ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk '/Hardware Port: '"$ETHERNET_DEVICE_ESCAPED"'/{getline; print $2}')
+            ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
+            #echo "$ETHERNET_DEVICE_ID"
+            if [[ $(sudo -u $loggedInUser command -v vboxmanage) != "" ]]
+            then
+                if [[ "$ETHERNET_DEVICE_ID" =~ ^en[0-9]$ ]]
+                then
+                    for VBOX in $(sudo -u $loggedInUser vboxmanage list vms | awk -F'"|"' '{print $2}')
+                    do
+                        echo "changing virtualbox network to "$ETHERNET_DEVICE_ID" for vbox "$VBOX"..."
+                        sudo -u $loggedInUser vboxmanage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$ETHERNET_DEVICE_ID"
+                    done
+                else
+                    echo "ETHERNET_DEVICE_ID is empty or has a wrong format..."
+                fi
+            else
+                # virtualbox is not installed
+                #echo "virtualbox is not installed..."
+                :
+            fi
         fi
     else
         :
@@ -121,8 +145,28 @@ network_select() {
         else
             echo "changing to location "$WLAN_LOCATION"..." 
             sudo networksetup -switchtolocation "$WLAN_LOCATION"
-            echo ''
+            printf '\n\n'
             sleep 10
+            #WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk '/Hardware Port: '"$WLAN_DEVICE"'/{getline; print $2}')
+            WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
+            #echo "$WLAN_DEVICE_ID"
+            if [[ $(sudo -u $loggedInUser command -v vboxmanage) != "" ]]
+            then
+                if [[ "$WLAN_DEVICE_ID" =~ ^en[0-9]$ ]]
+                then
+                    for VBOX in $(sudo -u $loggedInUser vboxmanage list vms | awk -F'"|"' '{print $2}')
+                    do
+                        echo "changing virtualbox network to "$WLAN_DEVICE_ID" for vbox "$VBOX"..."
+                        sudo -u $loggedInUser vboxmanage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$WLAN_DEVICE_ID"
+                    done
+                else
+                    echo "WLAN_DEVICE_ID is empty or has a wrong format..."
+                fi
+            else
+                # virtualbox is not installed
+                #echo "virtualbox is not installed..."
+                :
+            fi
         fi
     else
         :
