@@ -3132,6 +3132,17 @@ EOF
     /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Horizontal Spacing" 1'
     /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Vertical Spacing" 1'
     
+    # paste of a lot of commands does only work in iterm2 when editing / lowering default paste speed
+    defaults write com.googlecode.iterm2 QuickPasteBytesPerCall -int 83
+    defaults write com.googlecode.iterm2 QuickPasteDelayBetweenCalls -float 0.08065756
+    # lower values in steps to try if working by clicking edit - paste special - paste slower
+    # check values in preferences advanced - search for paste 
+    # defaults read com.googlecode.iterm2 | grep Quick
+    # defaults
+    # number of bytes to paste in each chunk when pasting normally		 667
+    # dealy in seconds between chunks when pasting normally			     0.01530456
+    
+    
     ###
     ### activity monitor
     ###
