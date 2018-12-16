@@ -176,6 +176,7 @@ wait
 
 #echo "opening logfile..."
 #nano /var/log/network_select.log
+#open /var/log/network_select.log
 #open /var/log/"$SCRIPT_NAME".log
 
 #echo ''

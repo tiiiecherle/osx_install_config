@@ -130,15 +130,15 @@ hosts_file_install_update() {
         fi
         
         # sourcing .bash_profile or setting PATH
-        # as the script is run as root from a launchd it would not detect the brew command and would fail checking if brew is installed
-        #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-        if [[ -e /Users/$loggedInUser/.bash_profile ]]
+        # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
+        # brew installs command line binary to /usr/local/bin/brew
+        if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
         then
             . /Users/$loggedInUser/.bash_profile
         else
-            :
+            #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+            PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
         fi
-        
         
         ### python version
         if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]

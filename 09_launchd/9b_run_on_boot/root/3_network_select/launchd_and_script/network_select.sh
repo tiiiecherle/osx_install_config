@@ -81,6 +81,17 @@ network_select() {
         :
     fi
     
+    # sourcing .bash_profile or setting PATH
+    # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
+    # virtualbox installed through homebrew-cask installs command line binary to /usr/local/bin/VBoxManage
+    if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
+    then
+        . /Users/$loggedInUser/.bash_profile
+    else
+        #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+        PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+    fi
+    
     # names of devices
     # networksetup -listallhardwareports
     ETHERNET_DEVICE="USB 10/100/1000 LAN"
@@ -114,21 +125,21 @@ network_select() {
             #ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk '/Hardware Port: '"$ETHERNET_DEVICE_ESCAPED"'/{getline; print $2}')
             ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
             #echo "$ETHERNET_DEVICE_ID"
-            if [[ $(sudo -u $loggedInUser command -v vboxmanage) != "" ]]
+            if [[ $(sudo -u $loggedInUser command -v VBoxManage) != "" ]]
             then
                 if [[ "$ETHERNET_DEVICE_ID" =~ ^en[0-9]$ ]]
                 then
-                    for VBOX in $(sudo -u $loggedInUser vboxmanage list vms | awk -F'"|"' '{print $2}')
+                    for VBOX in $(sudo -u $loggedInUser VBoxManage list vms | awk -F'"|"' '{print $2}')
                     do
                         echo "changing virtualbox network to "$ETHERNET_DEVICE_ID" for vbox "$VBOX"..."
-                        sudo -u $loggedInUser vboxmanage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$ETHERNET_DEVICE_ID"
+                        sudo -u $loggedInUser VBoxManage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$ETHERNET_DEVICE_ID"
                     done
                 else
                     echo "ETHERNET_DEVICE_ID is empty or has a wrong format..."
                 fi
             else
                 # virtualbox is not installed
-                #echo "virtualbox is not installed..."
+                echo "virtualbox is not installed..."
                 :
             fi
         fi
@@ -150,21 +161,21 @@ network_select() {
             #WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk '/Hardware Port: '"$WLAN_DEVICE"'/{getline; print $2}')
             WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
             #echo "$WLAN_DEVICE_ID"
-            if [[ $(sudo -u $loggedInUser command -v vboxmanage) != "" ]]
+            if [[ $(sudo -u $loggedInUser command -v VBoxManage) != "" ]]
             then
                 if [[ "$WLAN_DEVICE_ID" =~ ^en[0-9]$ ]]
                 then
-                    for VBOX in $(sudo -u $loggedInUser vboxmanage list vms | awk -F'"|"' '{print $2}')
+                    for VBOX in $(sudo -u $loggedInUser VBoxManage list vms | awk -F'"|"' '{print $2}')
                     do
                         echo "changing virtualbox network to "$WLAN_DEVICE_ID" for vbox "$VBOX"..."
-                        sudo -u $loggedInUser vboxmanage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$WLAN_DEVICE_ID"
+                        sudo -u $loggedInUser VBoxManage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$WLAN_DEVICE_ID"
                     done
                 else
                     echo "WLAN_DEVICE_ID is empty or has a wrong format..."
                 fi
             else
                 # virtualbox is not installed
-                #echo "virtualbox is not installed..."
+                echo "virtualbox is not installed..."
                 :
             fi
         fi
