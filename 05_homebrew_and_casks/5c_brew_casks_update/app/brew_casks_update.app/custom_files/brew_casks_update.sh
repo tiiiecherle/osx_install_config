@@ -660,35 +660,42 @@ casks_install_updates() {
             fi
         done <"$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
         stop_sudo
-        
-        ### manual installations after install
-        
-        #if [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "yes" ]]
-        #then
-        #    start_sudo
-        #    echo 'updating virtualbox...'
-        #    ${USE_PASSWORD} | brew cask reinstall virtualbox --force
-        #    echo ''
-        #    echo 'updating virtualbox-extension-pack...'
-        #    ${USE_PASSWORD} | brew cask reinstall virtualbox-extension-pack --force
-        #    stop_sudo
-        #    echo ''
-        #else
-        #    :
-        #fi
-        
-        if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep libreoffice-language-pack) != "" ]]
-    	then
-            LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-            open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"	
-        else
-    	    :
-    	fi
     
         echo "installing casks updates finished ;)"
 
     fi
 
+}
+
+post_cask_installations() {
+    
+    ### manual installations after install
+    
+    #if [[ "$VIRTUALBOX_EXTENSION_UPDATE_AVAILABLE" == "yes" ]]
+    #then
+    #    start_sudo
+    #    echo 'updating virtualbox...'
+    #    ${USE_PASSWORD} | brew cask reinstall virtualbox --force
+    #    echo ''
+    #    echo 'updating virtualbox-extension-pack...'
+    #    ${USE_PASSWORD} | brew cask reinstall virtualbox-extension-pack --force
+    #    stop_sudo
+    #    echo ''
+    #else
+    #    :
+    #fi
+    
+    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep libreoffice-language-pack) != "" ]]
+	then
+	    echo ''
+        echo "installing libreoffice language pack..."
+        LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+        open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"	
+        #echo ''
+    else
+	    :
+	fi
+    
 }
 
 ###
@@ -998,7 +1005,15 @@ then
         cleanup_formulae & pids+=($!)
     fi
     wait "${pids[@]}"
+    
     echo 'cleaning finished ;)'
+    
+    if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
+    then
+        post_cask_installations
+    else
+        :
+    fi
 
 else
     echo "not online, skipping updates..."
