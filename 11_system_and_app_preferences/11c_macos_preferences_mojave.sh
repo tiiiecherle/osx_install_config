@@ -230,7 +230,8 @@ trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM 
 ### uuid
 
 #uuid1=$(system_profiler SPHardwareDataType | grep "Hardware UUID" | awk -F":" '{print $2}' | awk '{gsub(/^[ \t]+|[ \t]+$/, "")}1')
-uuid1=$(/usr/sbin/system_profiler SPHardwareDataType | grep "Hardware UUID" | cut -c22-57)
+#uuid1=$(/usr/sbin/system_profiler SPHardwareDataType | grep "Hardware UUID" | cut -c22-57)
+uuid1=$(python  -c 'import uuid; print uuid.uuid1()')
 
 echo "user uuid is $uuid1"
 echo ''
