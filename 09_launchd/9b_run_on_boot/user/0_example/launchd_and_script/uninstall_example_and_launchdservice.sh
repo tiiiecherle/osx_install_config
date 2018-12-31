@@ -8,13 +8,13 @@ SERVICE_INSTALL_PATH=/Users/$USER/Library/LaunchAgents
 SCRIPT_NAME=example
 SCRIPT_INSTALL_PATH=/Users/$USER/Library/Scripts
 
-LOGDIR=/Users/"$USER"/Library/Logs
-LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
-
 # UniqueID of loggedInUser
 loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 #UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
 UNIQUE_USER_ID=$(id -u "$loggedInUser")
+
+LOGDIR=/Users/"$loggedInUser"/Library/Logs
+LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
 
 
 ### deleting script
