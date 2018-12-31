@@ -35,7 +35,7 @@ else
     :
 fi
 
-# enabling hosts file install update launchd service
+# enabling launchd service
 # checking if installed and disabled, if yes, enable
 for i in "${other_launchd_services[@]}"
 do

@@ -103,7 +103,7 @@ echo "uninstalling possible old files..."
 wait
 
 # script file
-echo "installing network select script..."
+echo "installing script..."
 sudo mkdir -p /Library/Scripts/custom/
 sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_NAME".sh /Library/Scripts/custom/"$SCRIPT_NAME".sh
 sudo chown -R root:wheel /Library/Scripts/custom/
@@ -115,15 +115,15 @@ sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SERVICE_NAME".plist /Library/LaunchDa
 sudo chown root:wheel /Library/LaunchDaemons/"$SERVICE_NAME".plist
 sudo chmod 644 /Library/LaunchDaemons/"$SERVICE_NAME".plist
 
-# run installation
-echo "running network select install script..."
+# run script
+echo "running script..."
 
 # has to be run as root because sudo cannot write to logfile with root priviliges for the function with sudo tee
 # otherwise the privileges of the logfile would have to be changed before running inside the script
 # sudo privileges inside the called script will not timeout
 # script will run as root later anyway
 #echo ''
-sudo bash -c "/Library/Scripts/custom/network_select.sh" &
+sudo bash -c "/Library/Scripts/custom/"$SCRIPT_NAME".sh" &
 wait < <(jobs -p)
 
 ### unloading and disabling launchdservices launched by network_select
@@ -156,7 +156,7 @@ done
 
 # launchd service
 echo ""
-if [[ $(sudo launchctl list | grep network.select) != "" ]];
+if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]];
 then
     sudo launchctl unload /Library/LaunchDaemons/"$SERVICE_NAME".plist
     sudo launchctl disable system/"$SERVICE_NAME"

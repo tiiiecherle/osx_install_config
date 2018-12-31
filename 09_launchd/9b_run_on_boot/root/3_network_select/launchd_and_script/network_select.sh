@@ -16,9 +16,10 @@ echo ''
 
 # logfile
 EXECTIME=$(date '+%Y-%m-%d %T')
-LOGFILE=/var/log/"$SCRIPT_NAME".log
+LOGDIR=/var/log
+LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
 
-if [ -f $LOGFILE ]
+if [[ -f "$LOGFILE" ]]
 then
     # only macos takes care of creation time, linux doesn`t because it is not part of POSIX
     LOGFILEAGEINSECONDS="$(( $(date +"%s") - $(stat -f "%B" $LOGFILE) ))"
@@ -32,19 +33,19 @@ then
     else
         # deleting logfile
         echo "deleting logfile..."
-        sudo rm $LOGFILE
-        sudo touch $LOGFILE
-        sudo chmod 644 $LOGFILE
-        #sudo chmod 666 $LOGFILE
+        sudo rm "$LOGFILE"
+        sudo touch "$LOGFILE"
+        sudo chmod 644 "$LOGFILE"
+        #sudo chmod 666 "$LOGFILE"
     fi
 else
-    sudo touch $LOGFILE
-    sudo chmod 644 $LOGFILE
-    #sudo chmod 666 $LOGFILE
+    sudo touch "$LOGFILE"
+    sudo chmod 644 "$LOGFILE"
+    #sudo chmod 666 "$LOGFILE"
 fi
 
-sudo echo "" >> $LOGFILE
-sudo echo $EXECTIME >> $LOGFILE
+sudo echo "" >> "$LOGFILE"
+sudo echo $EXECTIME >> "$LOGFILE"
 
 network_select() {
     
@@ -229,5 +230,5 @@ network_select() {
     done
 }
 
-(time network_select) 2>&1 | tee -a $LOGFILE
-echo ''
+(time network_select) 2>&1 | tee -a "$LOGFILE"
+echo '' >> "$LOGFILE"
