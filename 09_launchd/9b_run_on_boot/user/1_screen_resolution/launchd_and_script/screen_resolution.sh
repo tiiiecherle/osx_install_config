@@ -147,7 +147,7 @@ screen_resolution() {
         then
             if [[ $(echo $DISPLAYS | grep "$DISPLAY_TO_SET") == "" ]]
             then
-                echo "display to set is not connected..."
+                echo "display "$DISPLAY_TO_SET" is not connected..."
             else
                 # checking current display resolution
                 DISPLAY_RESOLUTION=$("$PYTHON_VERSION" "$DISPLAY_MANAGER_INSTALL_PATH"/display_manager.py show all | awk '/"main"/{getline; print $2}')
