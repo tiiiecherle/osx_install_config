@@ -99,6 +99,7 @@ MACOS_VERSION=$(sw_vers -productVersion)
 if [[ -e "/Applications/TotalFinder.app" ]]
 then
 	
+	echo ''
 	echo "totalfinder"
 	
 	# do not restore windows and tabs after reboot (does not exist in version 1.7.3 and above)
@@ -126,7 +127,8 @@ fi
 if [ -e "/Applications/XtraFinder.app" ]
 then
 
-	echo "xtrafinder"
+	echo ''
+    echo "xtrafinder"
 	
 	# automatically check for updates
 	defaults write com.apple.finder XFAutomaticChecksForUpdate -bool true
@@ -163,10 +165,11 @@ fi
 
 ### iterm 2                                                      
 
-echo "iterm 2"
-
 if [[ -e "/Applications/iTerm.app" ]]
 then
+    
+    echo ''
+    echo "iterm 2"
 
     # make terminal font sf mono available in other apps
     cp -a /Applications/Utilities/Terminal.app/Contents/Resources/Fonts/* /Users/$USER/Library/Fonts/
@@ -201,6 +204,9 @@ fi
 
 if [[ $(find "/Applications/" -mindepth 1 -maxdepth 1 -name "Microsoft *.app") != "" ]]
 then
+    
+    echo ''
+    echo "office"
 
     # user name and initials
     defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist" Name "`finger $USER | awk -F: '{ print $3 }' | head -n1 | sed 's/^ //'`"
@@ -244,10 +250,123 @@ else
 fi
 
 
+### libreoffice
+
+if [[ -e "/Applications/LibreOffice.app" ]]
+then
+
+    echo ''
+    echo "libreoffice"
+
+    LIBREOFFICE_CONFIG="/Users/$USER/Library/Application Support/LibreOffice/4/user/registrymodifications.xcu"
+    
+    # deleting possible old entries and end of file
+    sed -i '' '/RecentDocsThumbnail/d' "$LIBREOFFICE_CONFIG"
+    sed -i '' '/PickListSize/d' "$LIBREOFFICE_CONFIG"
+    sed -i '' '/\<\/oor:items\>/d' "$LIBREOFFICE_CONFIG"
+    
+    # adding new entries and end of file
+    # do not show thumbnails of recent documents in start screen
+    echo '<item oor:path="/org.openoffice.Office.Common/History"><prop oor:name="RecentDocsThumbnail" oor:op="fuse"><value>false</value></prop></item>' >> "$LIBREOFFICE_CONFIG"
+    # do not show any recent documents in start screen
+    echo '<item oor:path="/org.openoffice.Office.Common/History"><prop oor:name="PickListSize" oor:op="fuse"><value>0</value></prop></item>' >> "$LIBREOFFICE_CONFIG"
+    # adding end of config file
+    echo '</oor:items>' >> "$LIBREOFFICE_CONFIG"
+    
+    # if checking content of config file after starting the app entries will be sorted alphabetically, not in the last lines
+    
+    # to set these preferences manually
+    # open /Applications/LibreOffice.app
+    # preferences - libreoffice - advanced - expert - search for settings name, e.g. RecentDocsThumbnail or PickListSize
+    # set and apply
+
+else
+	:
+fi
+
+
+### avast
+
+if [[ -e "/Applications/Avast.app" ]]
+then
+
+    echo ''
+    echo "avast"
+
+    #echo "setting preferences..."
+    AVAST_DAEMON_CONFIG='/Library/Application Support/Avast/config/com.avast.daemon.conf'
+    if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^STATISTICS*") == "" ]]
+    then
+        sudo bash -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
+        sudo bash -c "echo 'STATISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
+    else
+        :
+    fi
+    if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^HEURISTICS*") == "" ]]
+    then
+        #sudo bash -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
+        sudo bash -c "echo 'HEURISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
+    else
+        :
+    fi
+    
+    AVAST_PROXY_CONFIG='/Library/Application Support/Avast/config/com.avast.proxy.conf'
+    sudo bash -c "cat > '$AVAST_PROXY_CONFIG' << 'EOF'
+    {
+        \"mailshield\" : 
+        {
+            \"markMailHeaders\" : false
+        },
+        \"webshield\" : 
+        {
+            \"enabled\" : false
+        }
+    }
+    EOF
+    "
+
+    # notification durations
+    AVAST_HELPER_CONFIG='/Users/'$USER'/Library/Preferences/com.avast.helper.plist'  
+    defaults write "$AVAST_HELPER_CONFIG" InfoPopupDuration -int 5
+    defaults write "$AVAST_HELPER_CONFIG" UpdatePopupDuration -int 5
+
+    echo "restarting avast services to make the changes take effect..."
+    AVAST_BACKEND='/Applications/Avast.app/Contents/Backend/hub'
+    if [[ -e "$AVAST_BACKEND" ]]
+    then
+        echo "stopping avast services..."
+        sh "$AVAST_BACKEND"/usermodules/010_helper.sh stop >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/010_daemon.sh stop >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/014_fileshield.sh stop >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/020_service.sh stop >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/030_proxy.sh stop >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/060_wifiguard.sh stop >/dev/null 2>&1
+        sleep 1
+        echo "starting avast services..."
+        sh "$AVAST_BACKEND"/usermodules/010_helper.sh start >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/010_daemon.sh start >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/014_fileshield.sh start >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/020_service.sh start >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/030_proxy.sh start >/dev/null 2>&1
+        sudo sh "$AVAST_BACKEND"/modules/060_wifiguard.sh start >/dev/null 2>&1
+    else
+        echo "avast services not found, skipping..."
+    fi
+
+else
+	:
+fi
+
+
 ###
 ### unsetting password
 ###
 
 unset SUDOPASSWORD
 
+
+
+echo ''
+echo "done ;)"
+echo ''
 
