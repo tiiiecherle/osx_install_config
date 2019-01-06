@@ -3,9 +3,9 @@
 ### variables
 UNINSTALL_SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 
-SERVICE_NAME=com.example_root.show
+SERVICE_NAME=com.hostsfile.install_update
 SERVICE_INSTALL_PATH=/Library/LaunchDaemons
-SCRIPT_NAME=example_root
+SCRIPT_NAME=hosts_file_generator
 SCRIPT_INSTALL_PATH=/Library/Scripts/custom
 
 # UniqueID of loggedInUser
@@ -55,6 +55,31 @@ else
 fi
 
 
+### uninstalling hosts file generator
+if [[ -d /Applications/hosts_file_generator ]]
+then
+    sudo rm -rf /Applications/hosts_file_generator
+else
+    :
+fi
+
+
+### moving back original hosts file
+if [[ -f /etc/hosts.orig ]]
+then
+    sudo cp -a /etc/hosts.orig /etc/hosts
+else
+    :
+fi
+
+
+### activating changed hosts file
+echo ''
+echo "activating changed hosts file..."
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder
+
+
 ### checking installation
 if [[ $(ps aux | grep /install_"$SCRIPT_NAME"_and_launchdservice.sh | grep -v grep) == "" ]]
 then
@@ -65,6 +90,7 @@ then
 else
     :
 fi
+
 
 
 #echo ''

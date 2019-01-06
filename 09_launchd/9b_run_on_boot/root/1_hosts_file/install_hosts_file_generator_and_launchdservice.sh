@@ -76,89 +76,106 @@ sudo()
 
 
 ###
-### installing and running hostsfile updater
+### installing and running script and launchdservice
 ### 
 
-# script directory
+### variables
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-#echo $SCRIPT_DIR
 
-# uninstalling possible old files
+SERVICE_NAME=com.hostsfile.install_update
+SERVICE_INSTALL_PATH=/Library/LaunchDaemons
+SCRIPT_NAME=hosts_file_generator
+SCRIPT_INSTALL_PATH=/Library/Scripts/custom
+
+LOGDIR=/var/log
+LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+
+# UniqueID of loggedInUser
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+#UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
+UNIQUE_USER_ID=$(id -u "$loggedInUser")
+
+
+### uninstalling possible old files
+echo ''
 echo "uninstalling possible old files..."
-. "$SCRIPT_DIR"/launchd_and_script/uninstall_hosts_and_launchdservice.sh
+. "$SCRIPT_DIR"/launchd_and_script/uninstall_"$SCRIPT_NAME"_and_launchdservice.sh
 wait
 
-# hosts install / update file
-echo "installing hosts update script..."
-sudo mkdir -p /Library/Scripts/custom/
-sudo cp "$SCRIPT_DIR"/launchd_and_script/hosts_file_generator.sh /Library/Scripts/custom/hosts_file_generator.sh
-sudo chown -R root:wheel /Library/Scripts/custom/
-sudo chmod -R 755 /Library/Scripts/custom/
 
-# launchd service file
+### script file
+echo "installing script..."
+sudo mkdir -p "$SCRIPT_INSTALL_PATH"/
+sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_NAME".sh "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh
+sudo chown -R root:wheel "$SCRIPT_INSTALL_PATH"/
+sudo chmod -R 755 "$SCRIPT_INSTALL_PATH"/
+
+
+### launchd service file
 echo "installing launchd service..."
-sudo cp "$SCRIPT_DIR"/launchd_and_script/com.hostsfile.install_update.plist /Library/LaunchDaemons/com.hostsfile.install_update.plist
-sudo chown root:wheel /Library/LaunchDaemons/com.hostsfile.install_update.plist
-sudo chmod 644 /Library/LaunchDaemons/com.hostsfile.install_update.plist
+sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SERVICE_NAME".plist "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+sudo chown root:wheel "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+sudo chmod 644 "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
-# forcing update on next run by setting last modification time of /etc/hosts earlier
-sudo touch -mt 201512010000 /etc/hosts
 
-# run installation
-echo "installing and running hosts file generator..."
+### run script
+echo ''
+echo "running installed script..."
 
 # has to be run as root because sudo cannot write to logfile with root priviliges for the function with sudo tee
 # otherwise the privileges of the logfile would have to be changed before running inside the script
 # sudo privileges inside the called script will not timeout
 # script will run as root later anyway
-echo ''
-sudo bash -c "/Library/Scripts/custom/hosts_file_generator.sh" &
+#echo ''
+sudo bash -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
 wait < <(jobs -p)
 
-# launchd service
-echo ""
-echo "enabling launchd service..."
-if [[ $(sudo launchctl list | grep hostsfile.install_update) != "" ]];
+
+### launchd service
+echo ''
+if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]];
 then
-    sudo launchctl unload /Library/LaunchDaemons/com.hostsfile.install_update.plist
-    sudo launchctl disable system/com.hostsfile.install_update
+    sudo launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+    sudo launchctl disable system/"$SERVICE_NAME"
 else
     :
 fi
-sudo launchctl enable system/com.hostsfile.install_update
-sudo launchctl load /Library/LaunchDaemons/com.hostsfile.install_update.plist
-echo "checking if launchd service is enabled..."
-sudo launchctl list | grep hostsfile.install_update
-#echo ""
-#echo "waiting 60s for updating in background..."
-#sleep 60
-#ls -la /etc/hosts
+sudo launchctl enable system/"$SERVICE_NAME"
+sudo launchctl load "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
-# hosts filesize
-#du -h /etc/hosts
+echo "waiting 5s for launchdservice to load before checking installation..."
+sleep 5
 
-echo "opening /etc/hosts and logfile..."
-#nano /etc/hosts
-open /etc/hosts
-#nano /var/log/hosts_file_update.log
-open /var/log/hosts_file_update.log
 
-# syncing to install latest version when using backup script
+### checking installation
+echo ''
+echo "checking installation..."
+sudo "$SCRIPT_DIR"/launchd_and_script/checking_installation.sh
+wait
+
+#echo ''
+#echo "opening logfile..."
+#open "$LOGFILE"
+
+
+### syncing to install latest version when using backup script
 echo ''
 echo "copying script to backup script dir..."
 SCRIPTS_FINAL_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && cd .. && pwd)")
 if [[ -e "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script ]]
 then
     mkdir -p "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_hosts
-    cp "$SCRIPT_DIR"/launchd_and_script/hosts_file_generator.sh "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_hosts/hosts_file_generator.sh
+    cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_NAME".sh "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/update_hosts/"$SCRIPT_NAME".sh
 else
 	echo ""$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script not found, skipping copying file to backup script directory..."
 fi
 
 
-echo ''
+#echo ''
 echo 'done ;)'
 echo ''
+
+
 
 ###
 ### unsetting password

@@ -2,16 +2,55 @@
 
 if [ $(id -u) -ne 0 ]
 then 
-    echo script is not run as root, exiting...
+    echo "script is not run as root, exiting..."
     exit
 else
     :
 fi
 
-EXECTIME=$(date '+%Y-%m-%d %T')
-LOGFILE=/var/log/hosts_file_update.log
+### variables
+SERVICE_NAME=com.hostsfile.install_update
+SCRIPT_NAME=hosts_file_generator
 
-if [ -f $LOGFILE ]
+echo ''
+
+
+### waiting for logged in user
+#echo "LOGNAME is $(logname)..."
+#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
+#stat -f%Su /dev/console
+#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
+# recommended way
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+NUM=0
+MAX_NUM=15
+SLEEP_TIME=3
+# waiting for loggedInUser to be available
+while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+do
+    sleep "$SLEEP_TIME"
+    NUM=$(($NUM+1))
+    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+done
+#echo ''
+#echo "NUM is $NUM..."
+#echo "loggedInUser is $loggedInUser..."
+if [[ "$loggedInUser" == "" ]]
+then
+    WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
+    echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
+    exit
+else
+    :
+fi
+
+
+### logfile
+EXECTIME=$(date '+%Y-%m-%d %T')
+LOGDIR=/var/log
+LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+
+if [[ -f "$LOGFILE" ]]
 then
     # only macos takes care of creation time, linux doesn`t because it is not part of POSIX
     LOGFILEAGEINSECONDS="$(( $(date +"%s") - $(stat -f "%B" $LOGFILE) ))"
@@ -25,23 +64,39 @@ then
     else
         # deleting logfile
         echo "deleting logfile..."
-        sudo rm $LOGFILE
-        sudo touch $LOGFILE
-        sudo chmod 644 $LOGFILE
-        #sudo chmod 666 $LOGFILE
+        sudo rm "$LOGFILE"
+        sudo touch "$LOGFILE"
+        sudo chmod 644 "$LOGFILE"
     fi
 else
-    sudo touch $LOGFILE
-    sudo chmod 644 $LOGFILE
-    #sudo chmod 666 $LOGFILE
+    sudo touch "$LOGFILE"
+    sudo chmod 644 "$LOGFILE"
 fi
 
-sudo echo "" >> $LOGFILE
-sudo echo $EXECTIME >> $LOGFILE
+sudo echo "" >> "$LOGFILE"
+sudo echo $EXECTIME >> "$LOGFILE"
 
+
+### function
 hosts_file_install_update() {
-
-    # checking modification date of /etc/hosts
+    
+    ### loggedInUser
+    echo "loggedInUser is $loggedInUser..."
+    
+    ### sourcing .bash_profile or setting PATH
+    # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
+    # needed if binary is installed in a special directory
+    if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
+    then
+        . /Users/$loggedInUser/.bash_profile
+    else
+        #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+        PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+    fi
+    
+    
+    ### script
+	# checking modification date of /etc/hosts
     UPDATEEACHDAYS=4
     if [ "$(find /etc/* -name 'hosts' -type f -maxdepth 0 -mtime +"$UPDATEEACHDAYS"d | grep -x '/etc/hosts')" == "" ]
     then
@@ -54,7 +109,7 @@ hosts_file_install_update() {
     
     # giving the online check some time if run on laptop to switch to correct network profile on boot
     ping -c5 google.com >/dev/null 2>&1
-    if [ "$?" = 0 ]
+    if [[ "$?" = 0 ]]
     then
         :
     else
@@ -64,7 +119,7 @@ hosts_file_install_update() {
  
     # checking if online
     ping -c5 google.com >/dev/null 2>&1
-    if [ "$?" = 0 ]
+    if [[ "$?" = 0 ]]
     then
         echo "we are online, updating hosts file..."
     
@@ -72,11 +127,11 @@ hosts_file_install_update() {
         mkdir -p /Applications/hosts_file_generator/
     
         # downloading / updating hosts file creator from git repository
-        if [ -d /Applications/hosts_file_generator/.git ];
+        if [[ -d /Applications/hosts_file_generator/.git ]]
         then
             # updating
             echo "updating hosts file generator..."
-            if [ -d /Applications/hosts_file_generator/ ];
+            if [[ -d /Applications/hosts_file_generator/ ]]
             then
                 cd /Applications/hosts_file_generator/
                 sudo git fetch --all
@@ -89,7 +144,7 @@ hosts_file_install_update() {
         else
             # installing
             echo "downloading hosts file generator..."
-            if [ -d /Applications/hosts_file_generator/ ];
+            if [[ -d /Applications/hosts_file_generator/ ]]
             then
                 sudo rm -rf /Applications/hosts_file_generator/
                 mkdir -p /Applications/hosts_file_generator/
@@ -98,48 +153,8 @@ hosts_file_install_update() {
                 :
             fi
         fi
-           
-             
-        ### getting logged in user
-        #echo "LOGNAME is $(logname)..."
-        #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-        #stat -f%Su /dev/console
-        #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-        # recommended way
-        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-        NUM=0
-        MAX_NUM=15
-        SLEEP_TIME=3
-        # waiting for loggedInUser to be available
-        while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
-        do
-            sleep "$SLEEP_TIME"
-            NUM=$(($NUM+1))
-            loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-        done
-        echo ''
-        #echo "NUM is $NUM..."
-        echo "loggedInUser is $loggedInUser..."
-        if [[ "$loggedInUser" == "" ]]
-        then
-            WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
-            echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
-            exit
-        else
-            :
-        fi
-        
-        # sourcing .bash_profile or setting PATH
-        # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
-        # brew installs command line binary to /usr/local/bin/brew
-        if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
-        then
-            . /Users/$loggedInUser/.bash_profile
-        else
-            #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-            PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-        fi
-        
+            
+                   
         ### python version
         if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
         then
@@ -228,6 +243,7 @@ hosts_file_install_update() {
         echo ''
         echo "python version used in script is $PYTHON_VERSION with $PIP_VERSION..."
         echo ''
+
 
         ### updating
         # updating pip itself
@@ -352,19 +368,10 @@ hosts_file_install_update() {
         echo ''
         
     else
-        echo "we are not not online, skipping update of hosts file... exiting script..."
+        echo "we are not not online, skipping update of hosts file, exiting script..."
     fi
-    
+	
 }
 
-#sleep 30
-#echo "waiting 30s to get the system ready..."
-
-(time hosts_file_install_update) 2>&1 | tee -a $LOGFILE
-
-#sudo chmod 644 $LOGFILE
-#sudo chmod 666 $LOGFILE
-
-#(time hosts_file_install_update) 2>&1 | sudo tee -a $LOGFILE
-# does not work, so the whole script has to be run as root or the privileges of the logfile have to be changed before and after running the script
-
+(time hosts_file_install_update) 2>&1 | tee -a "$LOGFILE"
+echo '' >> "$LOGFILE"
