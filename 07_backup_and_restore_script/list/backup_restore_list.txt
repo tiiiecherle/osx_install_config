@@ -71,15 +71,21 @@ m	/Applications/Audio Splitter.app
 echo AudioSwitcher
 m	/Applications/AudioSwitcher.app
 
+# Avast
+echo Avast
+#m	/Applications/Avast.app
+m	/Library/Application Support/Avast/config/com.avast.daemon.conf
+m	/Library/Application Support/Avast/config/com.avast.proxy.conf
+m	~/Library/Preferences/com.avast.helper.plist
+
 # AVG Antivirus
-echo AVG Antivirus
-#m	/Applications/AVGAntivirus.app
-m	~/Library/Preferences/com.avg.Antivirus.plist
-m	/Library/Application Support/AVGAntivirus/config/com.avg.proxy.conf
-m	/Library/Application Support/AVGAntivirus/config/com.avg.update.conf
-m	/Library/Application Support/AVGAntivirus/config/com.avg.daemon.conf
-m	/Library/Application Support/AVGAntivirus/config/com.avg.daemon.whls
-m	/Library/Application Support/AVGAntivirus/config/com.avg.fileshield.conf
+#echo AVG Antivirus
+#m	/Applications/Avast.app
+#m	/Library/Application Support/AVGAntivirus/config/com.avg.proxy.conf
+#m	/Library/Application Support/AVGAntivirus/config/com.avg.update.conf
+#m	/Library/Application Support/AVGAntivirus/config/com.avg.daemon.conf
+#m	/Library/Application Support/AVGAntivirus/config/com.avg.daemon.whls
+#m	/Library/Application Support/AVGAntivirus/config/com.avg.fileshield.conf
 
 # backupList+
 #echo backupList+

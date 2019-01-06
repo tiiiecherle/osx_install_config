@@ -18,7 +18,8 @@ alfred
 angry-ip-scanner
 appcleaner
 #apptivate
-avg-antivirus
+avast-security
+#avg-antivirus
 bartender
 bbedit
 brackets
@@ -33,10 +34,10 @@ disk-inventory-x
 eaglefiler
 easyfind
 flash-npapi
-filezilla
+#filezilla
 firefox
 google-earth-pro
-google-earth-web-plugin
+#google-earth-web-plugin
 handbrake
 hex-fiend
 #ibackup

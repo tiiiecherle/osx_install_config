@@ -131,6 +131,11 @@ then
     	sleep 2
     	osascript -e "tell app \"/Applications/AVGAntivirus.app\" to quit" >/dev/null 2>&1
     fi
+    if [[ "$i" == "avast-security" ]]
+    then 
+    	sleep 2
+    	osascript -e "tell app \"/Applications/Avast.app\" to quit" >/dev/null 2>&1
+    fi
     if [[ "$i" == "teamviewer" ]]
     then 
     	sleep 2
@@ -389,7 +394,7 @@ then
         :
     fi
 	
-	uninstall_avg_antivirus() {
+	reinstall_avg_antivirus() {
 	#if [[ $(brew cask info avg-antivirus | grep "Not installed") != "" ]]
 	if [[ $(brew cask list | grep "^avg-antivirus$") == "" ]]
     then
@@ -443,7 +448,80 @@ then
         :
     fi
 	}
-	uninstall_avg_antivirus
+	reinstall_avg_antivirus
+	
+	reinstall_avast_security() {
+	#if [[ $(brew cask info avast-security | grep "Not installed") != "" ]]
+	if [[ $(brew cask list | grep "^avast-security$") == "" ]]
+    then
+    	# making sure avast-security gets installed on reinstall
+    	if [[ $(printf '%s\n' "${casks[@]}" | grep avast-security) != "" ]] && [[ -e "/Applications/Avast.app" ]]
+    	then
+            avast_config_files=(
+            "/Users/$USER/Library/Preferences/com.avast.helper.plist"
+            "/Library/Application Support/Avast/config/com.avast.daemon.conf"
+            "/Library/Application Support/Avast/config/com.avast.proxy.conf"
+            )
+            for i in "${avast_config_files[@]}"
+            do
+                DIRNAME_ENTRY=$(dirname "$i")
+                BASENAME_ENTRY=$(basename "$i")
+            	if [ -e "$i" ]
+            	then
+    	            sudo mv "$i" /tmp/"$BASENAME_ENTRY"
+            	else
+            		:
+            	fi
+            done
+            ${USE_PASSWORD} | brew cask zap --force avast-security
+            ${USE_PASSWORD} | brew cask install --force avast-security
+            sleep 2
+            osascript -e "tell app \"/Applications/Avast.app\" to quit" >/dev/null 2>&1
+            sleep 2
+            for i in "${avast_config_files[@]}"
+            do
+                DIRNAME_ENTRY=$(dirname "$i")
+                BASENAME_ENTRY=$(basename "$i")
+            	if [ -e /tmp/"$BASENAME_ENTRY" ]
+            	then
+            	    sudo mkdir -p "$DIRNAME_ENTRY"
+    	            sudo mv /tmp/"$BASENAME_ENTRY" "$i" 
+            	else
+            		:
+            	fi
+            done
+            # restarting avast services to make the changes take effect
+            echo "restarting avast services to make the changes take effect..."
+            AVAST_BACKEND='/Applications/Avast.app/Contents/Backend/hub'
+            if [[ -e "$AVAST_BACKEND" ]]
+            then
+                echo "stopping avast services..."
+                sh "$AVAST_BACKEND"/usermodules/010_helper.sh stop >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/010_daemon.sh stop >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/014_fileshield.sh stop >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/020_service.sh stop >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/030_proxy.sh stop >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/060_wifiguard.sh stop >/dev/null 2>&1
+                sleep 1
+                echo "starting avast services..."
+                sh "$AVAST_BACKEND"/usermodules/010_helper.sh start >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/010_daemon.sh start >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/014_fileshield.sh start >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/020_service.sh start >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/030_proxy.sh start >/dev/null 2>&1
+                sudo sh "$AVAST_BACKEND"/modules/060_wifiguard.sh start >/dev/null 2>&1
+            else
+                echo "avast services not found, skipping..."
+            fi
+    	else
+    	    :
+    	fi
+    	echo ''
+    else
+        :
+    fi
+	}
+	reinstall_avast_security
 	
 	#echo ''
 	
