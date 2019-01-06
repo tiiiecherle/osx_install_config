@@ -1,12 +1,21 @@
 #!/bin/bash
 
-### variables
-SERVICE_NAME=com.example.show
-SERVICE_INSTALL_PATH=/Users/$USER/Library/LaunchAgents
-SCRIPT_NAME=example
-SCRIPT_INSTALL_PATH=/Users/$USER/Library/Scripts
+if [ $(id -u) -ne 0 ]
+then 
+    echo "script is not run as root, exiting..."
+    exit
+else
+    :
+fi
 
-LOGDIR=/Users/"$USER"/Library/Logs
+
+### variables
+SERVICE_NAME=com.example_root.show
+SERVICE_INSTALL_PATH=/Library/LaunchDaemons
+SCRIPT_NAME=example_root
+SCRIPT_INSTALL_PATH=/Library/Scripts/custom
+
+LOGDIR=/var/log
 LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
 
 # UniqueID of loggedInUser
@@ -25,7 +34,7 @@ do
         echo "$i is installed..."
     
         # checking if running
-        if [[ $(launchctl list | grep "$i") != "" ]]
+        if [[ $(sudo launchctl list | grep "$i") != "" ]]
         then
             echo "$i is running..."
         else
@@ -35,7 +44,7 @@ do
         # checking if enabled
         #launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i"
         #
-        if [[ $(launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i" | grep false) != "" ]]
+        if [[ $(sudo launchctl print-disabled system | grep "$i" | grep false) != "" ]]
         then
             #echo "$i is installed and enabled..."
             echo "$i is enabled..."

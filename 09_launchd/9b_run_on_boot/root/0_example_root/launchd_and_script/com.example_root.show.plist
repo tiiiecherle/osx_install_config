@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.example.show</string>
+	<string>com.example_root.show</string>
 	<key>ProgramArguments</key>
 	<array>
 		<string>bash</string>
 		<string>-c</string>
-		<string>/Users/$USER/Library/Scripts/example.sh</string>
+		<string>/Library/Scripts/custom/example_root.sh</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

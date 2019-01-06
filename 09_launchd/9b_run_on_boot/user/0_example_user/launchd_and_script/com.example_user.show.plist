@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.run_script_on_boot</string>
+	<string>com.example_user.show</string>
 	<key>ProgramArguments</key>
 	<array>
 		<string>bash</string>
 		<string>-c</string>
-		<string>/Library/Scripts/run_on_boot_as_root.sh</string>
+		<string>/Users/$USER/Library/Scripts/example_user.sh</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

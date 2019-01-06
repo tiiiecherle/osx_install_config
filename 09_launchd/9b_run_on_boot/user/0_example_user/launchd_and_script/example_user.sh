@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ### variables
-SERVICE_NAME=com.example.show
-SCRIPT_NAME=example
+SERVICE_NAME=com.example_user.show
+SCRIPT_NAME=example_user
 
 echo ''
 
@@ -70,10 +70,11 @@ echo $EXECTIME >> "$LOGFILE"
 
 
 ### function
-screen_resolution() {
+example_function() {
     
-    # loggedInUser
+    ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
+    
     
     ### sourcing .bash_profile or setting PATH
     # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
@@ -88,8 +89,9 @@ screen_resolution() {
     
     
     ### script
-    echo "running ;)"
+    echo "running as user ;)"
+    
 }
 
-(time screen_resolution) 2>&1 | tee -a "$LOGFILE"
+(time example_function) 2>&1 | tee -a "$LOGFILE"
 echo '' >> "$LOGFILE"

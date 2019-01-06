@@ -3,9 +3,9 @@
 ### variables
 UNINSTALL_SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 
-SERVICE_NAME=com.example.show
+SERVICE_NAME=com.example_user.show
 SERVICE_INSTALL_PATH=/Users/$USER/Library/LaunchAgents
-SCRIPT_NAME=example
+SCRIPT_NAME=example_user
 SCRIPT_INSTALL_PATH=/Users/$USER/Library/Scripts
 
 # UniqueID of loggedInUser
@@ -68,6 +68,8 @@ else
     :
 fi
 
+
+### checking installation
 if [[ $(ps aux | grep /install_"$SCRIPT_NAME"_and_launchdservice.sh | grep -v grep) == "" ]]
 then
     echo ''

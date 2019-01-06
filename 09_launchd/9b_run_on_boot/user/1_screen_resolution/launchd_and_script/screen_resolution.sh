@@ -72,8 +72,9 @@ echo $EXECTIME >> "$LOGFILE"
 ### function
 screen_resolution() {
     
-    # loggedInUser
+    ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
+    
     
     ### sourcing .bash_profile or setting PATH
     # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
