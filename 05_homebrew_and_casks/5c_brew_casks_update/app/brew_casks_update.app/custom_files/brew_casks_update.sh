@@ -135,11 +135,17 @@ number_of_parallel_processes() {
 }
 
 cleanup_all_homebrew() {
+    # making sure brew cache exists
+    mkdir -p "$(brew --cache)"
+    chown "$USER":staff "$(brew --cache)"
+    chmod 755 "$(brew --cache)"
+    
     #brew cleanup
     brew cleanup 1> /dev/null
     brew cleanup --prune=0 1> /dev/null
-    # should do the same withou output, but just to make sure              
-    rm -rf $(brew --cache)
+    # should do the same withou output, but just to make sure 
+                
+    rm -rf "$(brew --cache)"/{,.[!.],..?}*
     # brew cask cleanup is deprecated from 2018-09
     #brew cask cleanup
     #brew cask cleanup 1> /dev/null
