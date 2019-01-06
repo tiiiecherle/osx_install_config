@@ -2400,78 +2400,7 @@ EOF
     	OpenWith -bool true \
     	Privileges -bool true
 
-    
-    ###
-    ### totalfinder
-    ###
-    
-    if [ -e "/Applications/TotalFinder.app" ]
-    then
-    	
-    	echo "totalfinder"
-    	
-    	# do not restore windows and tabs after reboot (does not exist in version 1.7.3 and above)
-    	#defaults write com.apple.finder TotalFinderDontRestoreTabsState -bool yes
-    	
-    	# keep original finder icon in dock
-    	defaults write com.binaryage.totalfinder TotalFinderDontCustomizeDockIcon -bool true
-    	
-    	# allow copy of paths in context menu
-    	#defaults write com.binaryage.totalfinder TotalFinderCopyPathMenuEnabled -bool true
-    	
-    	# disable totalfinder tabs
-    	defaults write com.binaryage.totalfinder TotalFinderTabsDisabled -bool true
-    	
-    	# display totalfinder icon in menu bar
-    	#defaults write com.binaryage.totalfinder TotalFinderShowStatusItem -bool false
-    	
-    else
-    	:
-    fi
-    
-    
-    
-    ###
-    ### xtrafinder
-    ###
-    
-    if [ -e "/Applications/XtraFinder.app" ]
-    then
-    
-    	echo "xtrafinder"
-    	
-    	# automatically check for updates
-    	defaults write com.apple.finder XFAutomaticChecksForUpdate -bool true
-    	
-    	# enable copy / cut - paste
-    	defaults write com.apple.finder XtraFinder_XFCutAndPastePlugin -bool true
-    	
-    	# disable xtrafinder tabs
-    	defaults write com.apple.finder XtraFinder_XFTabPlugin -bool false
-    	
-    	# # disable xtrafinder menu bar icon
-    	#defaults write com.apple.finder XtraFinder_ShowStatusBarIcon -bool false
-    	
-    	
-    	### right click finder plugins
-    	
-    	# show copy path
-    	#defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin -bool true
-    	
-    	# path type options
-    	# 0 = path, 3 = hfs path, 4 = terminal path
-    	defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin_Default -integer 0
-    	
-    	# show make symbolic link
-    	defaults write com.apple.finder XtraFinder_XFMakeSymbolicLinkActionPlugin -bool false
-    	
-    	# show open in new window
-    	defaults write com.apple.finder XtraFinder_XFOpenInNewWindowPlugin -bool true
-    
-    else
-    	:
-    fi
-    
+
     
     ###
     ### launchpad
@@ -3103,10 +3032,10 @@ EOF
     
     
     ###
-    ### terminal & iterm 2                                                      
+    ### terminal                                                  
     ###
     
-    echo "terminal & iterm 2"
+    echo "terminal"
     
     # only use utf-8 in terminal
     defaults write com.apple.terminal StringEncodings -array 4
@@ -3125,23 +3054,7 @@ EOF
     defaults write com.apple.terminal SecureKeyboardEntry -bool true
     # check
     #defaults read -app Terminal SecureKeyboardEntry
-    
-    # make terminal font sf mono available in other apps
-    cp -a /Applications/Utilities/Terminal.app/Contents/Resources/Fonts/* /Users/$USER/Library/Fonts/
-    # set it in iterm2
-    /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Normal Font" "SFMono-Regular 11"'
-    /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Horizontal Spacing" 1'
-    /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Vertical Spacing" 1'
-    
-    # paste of a lot of commands does only work in iterm2 when editing / lowering default paste speed
-    defaults write com.googlecode.iterm2 QuickPasteBytesPerCall -int 83
-    defaults write com.googlecode.iterm2 QuickPasteDelayBetweenCalls -float 0.08065756
-    # lower values in steps to try if working by clicking edit - paste special - paste slower
-    # check values in preferences advanced - search for paste 
-    # defaults read com.googlecode.iterm2 | grep Quick
-    # defaults
-    # number of bytes to paste in each chunk when pasting normally		 667
-    # dealy in seconds between chunks when pasting normally			     0.01530456
+
     
     
     ###
@@ -3482,49 +3395,7 @@ EOF
     # preventing photos from opening automatically when devices are plugged in
     defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
     
-    
-    
-    ###
-    ### GPGMail 2
-    ###
-    
-    
-    # disable signing emails by default
-    #defaults write ~/Library/Preferences/org.gpgtools.gpgmail SignNewEmailsByDefault -bool false
-    
-    
-    ###
-    ### office 2016
-    ###
-    
-    # user name and initials
-    defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist" Name "`finger $USER | awk -F: '{ print $3 }' | head -n1 | sed 's/^ //'`"
-    defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist" Initials "`finger $USER | awk -F: '{ print $3 }' | head -n1 | sed 's/^ //' | cut -c1-1`"
-    #defaults read "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist"
-    
-    # set default save location to local
-    defaults write ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave -bool true
-    #defaults delete ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave
-    # set theme to classic
-    defaults write ~/Library/Preferences/com.microsoft.office kCUIThemePreferencesThemeKeyPath -integer 1
-    # do not show documents popup on launch
-    defaults write ~/Library/Preferences/com.microsoft.office ShowDocStageOnLaunch -bool false
-    # do not send telemetry data and crash reports
-    defaults write ~/Library/Preferences/com.microsoft.autoupdate2.plist SendAllTelemetryEnabled -bool false
-    defaults write ~/Library/Preferences/com.microsoft.autoupdate.fba.plist SendAllTelemetryEnabled -bool false
-    
-    # app specific settings
-    for OFFICE_APP in Word Excel onenote.mac Outlook Powerpoint
-    do 
-        # do not send telemetry data and crash reports
-        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist SendAllTelemetryEnabled -bool false
-        # show ribbons
-        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kOUIRibbonDefaultCollapse -bool false
-        # skip first run popups
-        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kSubUIAppCompletedFirstRunSetup1507 -bool true
-    done
-    
-    
+        
     
     ###
     ### mojave specific app changes
