@@ -23,6 +23,11 @@ loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStor
 #UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
 UNIQUE_USER_ID=$(id -u "$loggedInUser")
 
+# logfiles
+logfiles_to_open=(
+"$LOGFILE"
+)
+
 
 ### checking status of services
 for i in "$SERVICE_NAME"
@@ -52,26 +57,26 @@ do
            #echo "$i is installed but disabled..."
            echo "$i is disabled..."
         fi
-        
-        # logfiles
-        echo ''
-        echo "opening logfiles..."
-        logfiles_to_open=(
-        "$LOGFILE"
-        )
-        
-        for i in "${logfiles_to_open[@]}"
-        do
-            if [[ -e "$i" ]]
-            then
-                open "$i"
-            else
-                echo "$i does not exist..."
-            fi
-        done
-        #
+
     else
        echo "$i is not installed..."
+    fi
+
+    echo ''
+            
+done
+
+
+### logfiles
+#echo ''
+echo "opening logfiles..."
+for i in "${logfiles_to_open[@]}"
+do
+    if [[ -e "$i" ]]
+    then
+        open "$i"
+    else
+        echo "$i does not exist..."
     fi
 done
 

@@ -66,7 +66,7 @@ fi
 launchctl enable user/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
 launchctl load "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
-echo "waiting 5s for launchdservice to load before checking installation..."
+echo "waiting 5s for launchd service to load before checking installation..."
 sleep 5
 
 
