@@ -74,18 +74,28 @@ sudo()
 }
 
 
+
 ###
-### installing and running network-select installer
+### installing and running script and launchd service
 ### 
 
-# script directory
+### variables
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-#echo $SCRIPT_DIR
 
-# variables
 SERVICE_NAME=com.network.select
+SERVICE_INSTALL_PATH=/Library/LaunchDaemons
 SCRIPT_NAME=network_select
+SCRIPT_INSTALL_PATH=/Library/Scripts/custom
 
+LOGDIR=/var/log
+LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+
+# UniqueID of loggedInUser
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+#UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
+UNIQUE_USER_ID=$(id -u "$loggedInUser")
+
+# other launchd services
 other_launchd_services=(
 com.hostsfile.install_update
 com.cert.install_update
@@ -96,39 +106,45 @@ launchd_services=(
 "$SERVICE_NAME"
 )
 
-# uninstalling possible old files
+
+### uninstalling possible old files
 echo ''
 echo "uninstalling possible old files..."
 . "$SCRIPT_DIR"/launchd_and_script/uninstall_"$SCRIPT_NAME"_and_launchdservice.sh
 wait
 
-# script file
+
+### script file
 echo "installing script..."
-sudo mkdir -p /Library/Scripts/custom/
-sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_NAME".sh /Library/Scripts/custom/"$SCRIPT_NAME".sh
-sudo chown -R root:wheel /Library/Scripts/custom/
-sudo chmod -R 755 /Library/Scripts/custom/
+sudo mkdir -p "$SCRIPT_INSTALL_PATH"/
+sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_NAME".sh "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh
+sudo chown -R root:wheel "$SCRIPT_INSTALL_PATH"/
+sudo chmod -R 755 "$SCRIPT_INSTALL_PATH"/
 
-# launchd service file
+
+### launchd service file
 echo "installing launchd service..."
-sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SERVICE_NAME".plist /Library/LaunchDaemons/"$SERVICE_NAME".plist
-sudo chown root:wheel /Library/LaunchDaemons/"$SERVICE_NAME".plist
-sudo chmod 644 /Library/LaunchDaemons/"$SERVICE_NAME".plist
+sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SERVICE_NAME".plist "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+sudo chown root:wheel "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+sudo chmod 644 "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
-# run script
-echo "running script..."
+
+### run script
+echo ''
+echo "running installed script..."
 
 # has to be run as root because sudo cannot write to logfile with root priviliges for the function with sudo tee
 # otherwise the privileges of the logfile would have to be changed before running inside the script
 # sudo privileges inside the called script will not timeout
 # script will run as root later anyway
 #echo ''
-sudo bash -c "/Library/Scripts/custom/"$SCRIPT_NAME".sh" &
+sudo bash -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
 wait < <(jobs -p)
 
-### unloading and disabling launchdservices launched by network_select
-#echo ''
-echo "unloading other launchdservices..."
+
+### unloading and disabling launchd services launched by network_select
+echo ''
+echo "unloading other launchd services..."
 for i in "${other_launchd_services[@]}"
 do
     if [[ $(sudo launchctl list | grep "$i") != "" ]];
@@ -141,7 +157,7 @@ do
 done
 
 echo ''
-echo "disabling other launchdservices..."
+echo "disabling other launchd services..."
 for i in "${other_launchd_services[@]}"
 do
     if [[ $(sudo launchctl print-disabled system | grep "$i" | grep false) != "" ]];
@@ -154,34 +170,38 @@ do
 done
 
 
-# launchd service
-echo ""
+### launchd service
+echo ''
 if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]];
 then
-    sudo launchctl unload /Library/LaunchDaemons/"$SERVICE_NAME".plist
+    sudo launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
     sudo launchctl disable system/"$SERVICE_NAME"
 else
     :
 fi
 sudo launchctl enable system/"$SERVICE_NAME"
-sudo launchctl load /Library/LaunchDaemons/"$SERVICE_NAME".plist
+sudo launchctl load "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
-echo "waiting 15s for other launchdservices to load before checking installation..."
-sleep 15
+echo "waiting 10s for launchd services to load before checking installation..."
+sleep 10
 
-# checking installation
+
+### checking installation
+echo ''
 echo "checking installation..."
 sudo "$SCRIPT_DIR"/launchd_and_script/checking_installation.sh
 wait
 
+#echo ''
 #echo "opening logfile..."
-#nano /var/log/network_select.log
-#open /var/log/network_select.log
-#open /var/log/"$SCRIPT_NAME".log
+#open "$LOGFILE"
+
 
 #echo ''
 echo 'done ;)'
 echo ''
+
+
 
 ###
 ### unsetting password

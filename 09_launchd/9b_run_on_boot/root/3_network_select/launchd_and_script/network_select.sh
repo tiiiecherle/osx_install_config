@@ -2,19 +2,61 @@
 
 if [ $(id -u) -ne 0 ]
 then 
-    echo script is not run as root, exiting...
+    echo "script is not run as root, exiting..."
     exit
 else
     :
 fi
 
-# variables
+### variables
 SERVICE_NAME=com.network.select
 SCRIPT_NAME=network_select
 
+# other launchd services
+other_launchd_services=(
+com.hostsfile.install_update
+com.cert.install_update
+)
+
+launchd_services=(
+"${other_launchd_services[@]}"
+"$SERVICE_NAME"
+)
+
 echo ''
 
-# logfile
+
+### waiting for logged in user
+#echo "LOGNAME is $(logname)..."
+#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
+#stat -f%Su /dev/console
+#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
+# recommended way
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+NUM=0
+MAX_NUM=15
+SLEEP_TIME=3
+# waiting for loggedInUser to be available
+while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+do
+    sleep "$SLEEP_TIME"
+    NUM=$(($NUM+1))
+    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+done
+#echo ''
+#echo "NUM is $NUM..."
+#echo "loggedInUser is $loggedInUser..."
+if [[ "$loggedInUser" == "" ]]
+then
+    WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
+    echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
+    exit
+else
+    :
+fi
+
+
+### logfile
 EXECTIME=$(date '+%Y-%m-%d %T')
 LOGDIR=/var/log
 LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
@@ -36,55 +78,26 @@ then
         sudo rm "$LOGFILE"
         sudo touch "$LOGFILE"
         sudo chmod 644 "$LOGFILE"
-        #sudo chmod 666 "$LOGFILE"
     fi
 else
     sudo touch "$LOGFILE"
     sudo chmod 644 "$LOGFILE"
-    #sudo chmod 666 "$LOGFILE"
 fi
 
 sudo echo "" >> "$LOGFILE"
 sudo echo $EXECTIME >> "$LOGFILE"
 
+
+### function
 network_select() {
     
-    ###
-    ### configuring network
-    ###
-    
-    ### getting logged in user
-    #echo "LOGNAME is $(logname)..."
-    #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-    #stat -f%Su /dev/console
-    #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-    # recommended way
-    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-    NUM=0
-    MAX_NUM=15
-    SLEEP_TIME=3
-    # waiting for loggedInUser to be available
-    while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
-    do
-        sleep "$SLEEP_TIME"
-        NUM=$(($NUM+1))
-        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-    done
-    #echo ''
-    #echo "NUM is $NUM..."
+    ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
-    if [[ "$loggedInUser" == "" ]]
-    then
-        WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
-        echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
-        exit
-    else
-        :
-    fi
     
-    # sourcing .bash_profile or setting PATH
+    
+    ### sourcing .bash_profile or setting PATH
     # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
-    # virtualbox installed through homebrew-cask installs command line binary to /usr/local/bin/VBoxManage
+    # needed if binary is installed in a special directory
     if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
     then
         . /Users/$loggedInUser/.bash_profile
@@ -93,7 +106,9 @@ network_select() {
         PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
     fi
     
-    # names of devices
+    
+    ### script
+	# names of devices
     # networksetup -listallhardwareports
     ETHERNET_DEVICE="USB 10/100/1000 LAN"
     WLAN_DEVICE="Wi-Fi"
@@ -184,16 +199,7 @@ network_select() {
         :
     fi
     
-    other_launchd_services=(
-    com.hostsfile.install_update
-    com.cert.install_update
-    )
-    
-    launchd_services=(
-    "${other_launchd_services[@]}"
-    "$SERVICE_NAME"
-    )
-    
+    # loading and disabling other launchd services
     for i in "${other_launchd_services[@]}"
     do
         echo ''
@@ -228,6 +234,7 @@ network_select() {
            echo "$i is not installed..."
         fi
     done
+	
 }
 
 (time network_select) 2>&1 | tee -a "$LOGFILE"
