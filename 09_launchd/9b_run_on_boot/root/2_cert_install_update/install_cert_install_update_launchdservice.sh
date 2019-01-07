@@ -74,13 +74,31 @@ sudo()
 }
 
 
+
 ###
+### installing and running script and launchdservice
+### 
+
+### variables
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+
+SERVICE_NAME=com.cert.install_update
+SERVICE_INSTALL_PATH=/Library/LaunchDaemons
+SCRIPT_NAME=cert_install_update
+SCRIPT_INSTALL_PATH=/Library/Scripts/custom
+
+LOGDIR=/var/log
+LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+
+# UniqueID of loggedInUser
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+#UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
+UNIQUE_USER_ID=$(id -u "$loggedInUser")
+
+
 ### homebrew and script dependencies
-###
 
 echo ''
-
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
 # checking homebrew and script dependencies
 if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
@@ -103,16 +121,8 @@ else
     echo "all script dependencies installed..."
 fi
 
-echo ''
 
-###
-### installing and running cert installer / updater
-### 
-
-# script directory
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-#echo $SCRIPT_DIR
-
+### certificate variables
 SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && cd .. && cd .. && pwd)")
 if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh ]]
 then
@@ -122,63 +132,82 @@ then
     SERVER_IP_VARIABLE=$(cat "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh | grep "^SERVER_IP")
     #echo "SERVER_IP_VARIABLE is $SERVER_IP_VARIABLE..."
 else
+    echo ''
     echo "script with variables not found, exiting..."
     exit
 fi
 
-# uninstalling possible old files
+
+### uninstalling possible old files
+echo ''
 echo "uninstalling possible old files..."
-. "$SCRIPT_DIR"/launchd_and_script/uninstall_cert_and_launchdservice.sh
+. "$SCRIPT_DIR"/launchd_and_script/uninstall_"$SCRIPT_NAME"_and_launchdservice.sh
 wait
 
-# cert install / update file
-echo "installing cert install/update script..."
-sudo mkdir -p /Library/Scripts/custom/
-sudo cp "$SCRIPT_DIR"/launchd_and_script/cert_install_update.sh /Library/Scripts/custom/cert_install_update.sh
-sudo chown -R root:wheel /Library/Scripts/custom/
-sudo chmod -R 755 /Library/Scripts/custom/
+
+### script file
+echo "installing script..."
+sudo mkdir -p "$SCRIPT_INSTALL_PATH"/
+sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_NAME".sh "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh
+sudo chown -R root:wheel "$SCRIPT_INSTALL_PATH"/
+sudo chmod -R 755 "$SCRIPT_INSTALL_PATH"/
+# setting certificate variables
 sudo sed -i '' 's/^CERTIFICATE_NAME=.*/'"$CERTIFICATE_NAME_VARIABLE"'/' /Library/Scripts/custom/cert_install_update.sh
 sudo sed -i '' 's/^SERVER_IP=.*/'"$SERVER_IP_VARIABLE"'/' /Library/Scripts/custom/cert_install_update.sh
 
-# launchd service file
-echo "installing launchd service..."
-sudo cp "$SCRIPT_DIR"/launchd_and_script/com.cert.install_update.plist /Library/LaunchDaemons/com.cert.install_update.plist
-sudo chown root:wheel /Library/LaunchDaemons/com.cert.install_update.plist
-sudo chmod 644 /Library/LaunchDaemons/com.cert.install_update.plist
 
-# run installation
-echo "running cert install/update script..."
+### launchd service file
+echo "installing launchd service..."
+sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SERVICE_NAME".plist "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+sudo chown root:wheel "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+sudo chmod 644 "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+
+
+### run script
+echo ''
+echo "running installed script..."
 
 # has to be run as root because sudo cannot write to logfile with root priviliges for the function with sudo tee
 # otherwise the privileges of the logfile would have to be changed before running inside the script
 # sudo privileges inside the called script will not timeout
 # script will run as root later anyway
-echo ''
-sudo bash -c "/Library/Scripts/custom/cert_install_update.sh" &
+#echo ''
+sudo bash -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
 wait < <(jobs -p)
 
-# launchd service
-echo ""
-echo "enabling launchd service..."
-if [[ $(sudo launchctl list | grep cert.install_update) != "" ]];
+
+### launchd service
+echo ''
+if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]];
 then
-    sudo launchctl unload /Library/LaunchDaemons/com.cert.install_update.plist
-    sudo launchctl disable system/com.cert.install_update
+    sudo launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+    sudo launchctl disable system/"$SERVICE_NAME"
 else
     :
 fi
-sudo launchctl enable system/com.cert.install_update
-sudo launchctl load /Library/LaunchDaemons/com.cert.install_update.plist
-echo "checking if launchd service is enabled..."
-sudo launchctl list | grep cert.install_update
+sudo launchctl enable system/"$SERVICE_NAME"
+sudo launchctl load "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
-echo "opening logfile..."
-#nano /var/log/cert_update.log
-open /var/log/cert_update.log
+echo "waiting 5s for launchdservice to load before checking installation..."
+sleep 5
 
+
+### checking installation
 echo ''
+echo "checking installation..."
+sudo "$SCRIPT_DIR"/launchd_and_script/checking_installation.sh
+wait
+
+#echo ''
+#echo "opening logfile..."
+#open "$LOGFILE"
+
+
+#echo ''
 echo 'done ;)'
 echo ''
+
+
 
 ###
 ### unsetting password

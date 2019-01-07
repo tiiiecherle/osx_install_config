@@ -2,16 +2,55 @@
 
 if [ $(id -u) -ne 0 ]
 then 
-    echo script is not run as root, exiting...
+    echo "script is not run as root, exiting..."
     exit
 else
     :
 fi
 
-EXECTIME=$(date '+%Y-%m-%d %T')
-LOGFILE=/var/log/cert_update.log
+### variables
+SERVICE_NAME=com.cert.install_update
+SCRIPT_NAME=cert_install_update
 
-if [ -f $LOGFILE ]
+echo ''
+
+
+### waiting for logged in user
+#echo "LOGNAME is $(logname)..."
+#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
+#stat -f%Su /dev/console
+#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
+# recommended way
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+NUM=0
+MAX_NUM=15
+SLEEP_TIME=3
+# waiting for loggedInUser to be available
+while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+do
+    sleep "$SLEEP_TIME"
+    NUM=$(($NUM+1))
+    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+done
+#echo ''
+#echo "NUM is $NUM..."
+#echo "loggedInUser is $loggedInUser..."
+if [[ "$loggedInUser" == "" ]]
+then
+    WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
+    echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
+    exit
+else
+    :
+fi
+
+
+### logfile
+EXECTIME=$(date '+%Y-%m-%d %T')
+LOGDIR=/var/log
+LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+
+if [[ -f "$LOGFILE" ]]
 then
     # only macos takes care of creation time, linux doesn`t because it is not part of POSIX
     LOGFILEAGEINSECONDS="$(( $(date +"%s") - $(stat -f "%B" $LOGFILE) ))"
@@ -25,36 +64,40 @@ then
     else
         # deleting logfile
         echo "deleting logfile..."
-        sudo rm $LOGFILE
-        sudo touch $LOGFILE
-        sudo chmod 644 $LOGFILE
-        #sudo chmod 666 $LOGFILE
+        sudo rm "$LOGFILE"
+        sudo touch "$LOGFILE"
+        sudo chmod 644 "$LOGFILE"
     fi
 else
-    sudo touch $LOGFILE
-    sudo chmod 644 $LOGFILE
-    #sudo chmod 666 $LOGFILE
+    sudo touch "$LOGFILE"
+    sudo chmod 644 "$LOGFILE"
 fi
 
-sudo echo "" >> $LOGFILE
-sudo echo $EXECTIME >> $LOGFILE
+sudo echo "" >> "$LOGFILE"
+sudo echo $EXECTIME >> "$LOGFILE"
 
 
-# do NOT add to "/Users/$USER/Library/Keychains/login.keychain"
-# does not work
-# use "/System/Library/Keychains/SystemRootCertificates.keychain"
+### additional functions
+certificate_variable_check() {
 
-KEYCHAIN="/System/Library/Keychains/SystemRootCertificates.keychain"
+    # do NOT add to "/Users/$USER/Library/Keychains/login.keychain"
+    # does not work
+    # use "/System/Library/Keychains/SystemRootCertificates.keychain"
+    
+    KEYCHAIN="/System/Library/Keychains/SystemRootCertificates.keychain"
+# has to be aligned left for search/replace of the variable
 CERTIFICATE_NAME="FILL_IN_NAME_HERE"
 SERVER_IP="FILL_IN_IP_HERE"
+    
+    if [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]] || [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]]
+    then
+        echo "at least one variable not set correctly, exiting..."
+        exit
+    else
+        :
+    fi
 
-if [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]] || [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]]
-then
-    echo "at least one variable not set correctly, exiting..."
-    exit
-else
-    :
-fi
+}
 
 install_update_certificate() {
 
@@ -111,56 +154,38 @@ check_weekday() {
     fi
 }
 
-cert_check() {
 
-    #check_weekday
+### function
+cert_check() {
     
-    ### getting logged in user
-    #echo "LOGNAME is $(logname)..."
-    #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-    #stat -f%Su /dev/console
-    #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-    # recommended way
-    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-    NUM=0
-    MAX_NUM=15
-    SLEEP_TIME=3
-    # waiting for loggedInUser to be available
-    while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
-    do
-        sleep "$SLEEP_TIME"
-        NUM=$(($NUM+1))
-        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-    done
-    #echo ''
-    #echo "NUM is $NUM..."
+    ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
-    if [[ "$loggedInUser" == "" ]]
-    then
-        WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
-        echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
-        exit
-    else
-        :
-    fi
-      
-    # sourcing .bash_profile or setting PATH
-    # as the script is run as root from a launchd it would not detect the brew command and would fail checking if brew is installed
-    #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-    if [[ -e /Users/$loggedInUser/.bash_profile ]]
+    
+    
+    ### sourcing .bash_profile or setting PATH
+    # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
+    # needed if binary is installed in a special directory
+    if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
     then
         . /Users/$loggedInUser/.bash_profile
     else
-        :
+        #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+        PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
     fi
+    
+    
+    ### script
+	certificate_variable_check
+
+    #check_weekday
     
     # checking homebrew and script dependencies
     if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
     then
-        echo homebrew is not installed, exiting...
+        echo "homebrew is not installed, exiting..."
         exit
     else
-        echo homebrew is installed...
+        echo "homebrew is installed..."
         # checking for missing dependencies
         for formula in openssl
         #for formula in 123
@@ -177,10 +202,10 @@ cert_check() {
         done
         if [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
         then
-            echo at least one needed homebrew tool is missing, exiting...
+            echo "at least one needed homebrew tool is missing, exiting..."
             exit
         else
-            echo needed homebrew tools are installed...     
+            echo "needed homebrew tools are installed..."   
         fi
         unset MISSING_SCRIPT_DEPENDENCY
     fi
@@ -267,13 +292,8 @@ cert_check() {
         echo "server not found, exiting script..."
         exit
     fi
-    
+	
 }
 
-(time cert_check) 2>&1 | tee -a $LOGFILE
-
-#sudo chmod 644 $LOGFILE
-#sudo chmod 666 $LOGFILE
-
-#(time cert_check) 2>&1 | sudo tee -a $LOGFILE
-# does not work, so the whole script has to be run as root or the privileges of the logfile have to be changed before and after running the script
+(time cert_check) 2>&1 | tee -a "$LOGFILE"
+echo '' >> "$LOGFILE"
