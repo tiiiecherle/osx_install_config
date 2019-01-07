@@ -136,16 +136,17 @@ number_of_parallel_processes() {
 
 cleanup_all_homebrew() {
     # making sure brew cache exists
-    mkdir -p "$(brew --cache)"
-    chown "$USER":staff "$(brew --cache)"
-    chmod 755 "$(brew --cache)"
+    HOMEBREW_CACHE_DIR=$(brew --cache)
+    mkdir -p "$HOMEBREW_CACHE_DIR"
+    chown "$USER":staff "$HOMEBREW_CACHE_DIR"/
+    chmod 755 "$HOMEBREW_CACHE_DIR"/
     
     #brew cleanup
     brew cleanup 1> /dev/null
     brew cleanup --prune=0 1> /dev/null
     # should do the same withou output, but just to make sure 
                 
-    rm -rf "$(brew --cache)"/{,.[!.],..?}*
+    rm -rf "$HOMEBREW_CACHE_DIR"/{,.[!.],..?}*
     # brew cask cleanup is deprecated from 2018-09
     #brew cask cleanup
     #brew cask cleanup 1> /dev/null
@@ -428,8 +429,13 @@ formulae_install_updates() {
         do
             FORMULA="$line"
             
-            echo 'updating '"$FORMULA"'...'
-            ${USE_PASSWORD} | brew upgrade "$FORMULA"
+            echo 'updating '"$FORMULA"'...'            
+            if [[ $(brew outdated | grep "$FORMULA") == "" ]]
+            then
+                echo "$FORMULA"" already up-to-date..."
+            else
+                ${USE_PASSWORD} | brew upgrade "$FORMULA"
+            fi
             echo 'removing old installed versions of '"$FORMULA"'...'
             ${USE_PASSWORD} | brew cleanup "$FORMULA"
             echo ''
