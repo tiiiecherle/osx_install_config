@@ -112,7 +112,8 @@ sudo()
 homebrew_update() {
     echo ''
     echo "updating homebrew..."
-    brew update-reset 1> /dev/null 2> >(grep -v "Reset branch" 1>&2) && brew analytics off 1> /dev/null && brew update 1> /dev/null && brew prune 1> /dev/null && brew doctor 1> /dev/null
+    # brew prune deprecated as of 2019-01, using brew cleanup at the end of the script instead
+    brew update-reset 1> /dev/null 2> >(grep -v "Reset branch" 1>&2) && brew analytics off 1> /dev/null && brew update 1> /dev/null && brew doctor 1> /dev/null
     
     # working around a --json=v1 bug until it`s fixed
     # https://github.com/Homebrew/homebrew-cask/issues/52427
@@ -430,7 +431,8 @@ formulae_install_updates() {
             FORMULA="$line"
             
             echo 'updating '"$FORMULA"'...'            
-            if [[ $(brew outdated | grep "$FORMULA") == "" ]]
+            if [[ $(brew outdated --quiet | grep "^$FORMULA$") == "" ]]
+            #[[ $(brew outdated --verbose | grep "^$FORMULA[[:space:]]") == "" ]]
             then
                 echo "$FORMULA"" already up-to-date..."
             else

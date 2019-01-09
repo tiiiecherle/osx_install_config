@@ -77,7 +77,8 @@ brew update
 brew upgrade
 # temporarily updating to the latest git status / commits, git update / upgrade will update to latest stable version when released
 #cd "$(brew --repository)" && git checkout master && git pull origin master && cd -
-brew prune
+# brew prune deprecated as of 2019-01, using brew cleanup instead
+brew cleanup 1> /dev/null
 brew doctor
 
 # cleaning up
