@@ -76,6 +76,7 @@ echo Avast
 #m	/Applications/Avast.app
 m	/Library/Application Support/Avast/config/com.avast.daemon.conf
 m	/Library/Application Support/Avast/config/com.avast.proxy.conf
+m	/Library/Application Support/Avast/config/com.avast.fileshield.conf
 m	~/Library/Preferences/com.avast.helper.plist
 
 # AVG Antivirus

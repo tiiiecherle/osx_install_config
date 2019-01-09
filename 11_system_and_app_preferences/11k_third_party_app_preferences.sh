@@ -310,20 +310,48 @@ then
         :
     fi
     
+    # files
+    AVAST_FILESHIELD_CONFIG='/Library/Application Support/Avast/config/com.avast.fileshield.conf'
+    sudo bash -c "cat > '$AVAST_FILESHIELD_CONFIG' << 'EOF'
+{
+    \"fileshield\" : 
+    {
+        \"enabled\" : true,
+        \"chest\" : true,
+        \"scanPup\" : true
+    }
+}
+
+EOF
+"
+
+    # mail and web
     AVAST_PROXY_CONFIG='/Library/Application Support/Avast/config/com.avast.proxy.conf'
     sudo bash -c "cat > '$AVAST_PROXY_CONFIG' << 'EOF'
+{
+    \"general\" : 
     {
-        \"mailshield\" : 
-        {
-            \"markMailHeaders\" : false
-        },
-        \"webshield\" : 
-        {
-            \"enabled\" : false
-        }
+        \"fsEnabled\" : true
+    },
+    \"mailshield\" : 
+    {
+        \"enabled\" : true,
+        \"markMailHeaders\" : false,
+        \"removeInfectedParts\" : true,
+        \"scanIpv6\" : false,
+        \"scanPup\" : true,
+        \"scanSsl\" : true
+    },
+    \"webshield\" : 
+    {
+        \"enabled\" : true,
+        \"enabledDownloadScan\" : true,
+        \"scanIpv6\" : false,
+        \"scanSsl\" : false
     }
-    EOF
-    "
+}
+EOF
+"
 
     # notification durations
     AVAST_HELPER_CONFIG='/Users/'$USER'/Library/Preferences/com.avast.helper.plist'  

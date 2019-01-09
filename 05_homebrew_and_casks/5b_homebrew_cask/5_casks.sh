@@ -461,6 +461,7 @@ then
             "/Users/$USER/Library/Preferences/com.avast.helper.plist"
             "/Library/Application Support/Avast/config/com.avast.daemon.conf"
             "/Library/Application Support/Avast/config/com.avast.proxy.conf"
+            "/Library/Application Support/Avast/config/com.avast.fileshield.conf"
             )
             for i in "${avast_config_files[@]}"
             do
