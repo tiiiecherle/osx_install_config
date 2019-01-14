@@ -431,7 +431,7 @@ formulae_install_updates() {
             FORMULA="$line"
             
             echo 'updating '"$FORMULA"'...'            
-            if [[ $(brew outdated --quiet | grep "^$FORMULA$") == "" ]]
+            if [[ $(brew outdated --quiet | grep "^$FORMULA$") == "" ]] && [[ $(brew outdated --quiet | grep "/$FORMULA$") == "" ]]
             #[[ $(brew outdated --verbose | grep "^$FORMULA[[:space:]]") == "" ]]
             then
                 echo "$FORMULA"" already up-to-date..."
