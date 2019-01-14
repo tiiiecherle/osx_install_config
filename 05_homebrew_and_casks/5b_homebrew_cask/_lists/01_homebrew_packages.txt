@@ -21,3 +21,4 @@ jq
 cliclick
 python
 node
+macosvpn

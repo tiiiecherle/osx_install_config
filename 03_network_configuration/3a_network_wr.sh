@@ -152,8 +152,22 @@ echo "changing to location office_lan"
 sudo networksetup -switchtolocation "office_lan"
 sleep 2
 sudo networksetup -setairportpower Wi-Fi off
-echo ""
-echo "done ;)" 
+sleep 2
+#echo ""
+#echo "done ;)" 
+
+
+### configuring vpn connections
+# script uses https://github.com/halo/macosvpn
+#echo "configuring vpn connections..."
+SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/vpn_connections_network_macos_wr.sh ]]
+then
+    "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/vpn_connections_network_macos_wr.sh
+else
+    echo ''
+    echo "script to configure vpn connections not found..."
+fi
 
 
 
