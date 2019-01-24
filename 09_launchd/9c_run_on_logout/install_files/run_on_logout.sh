@@ -36,17 +36,21 @@ run_cleaning1 () {
 	# cleaning safari
 	sudo -u $loggedInUser rm -f /Users/$loggedInUser/Library/Safari/History.db*
 	sudo -u $loggedInUser rm -f /Users/$loggedInUser/Library/Safari/LastSession.plist
-	sudo -u $loggedInUser rm -f /Users/$loggedInUser/Library/Safari/Downloads.plist &
+	sudo -u $loggedInUser rm -f /Users/$loggedInUser/Library/Safari/Downloads.plist
 	sudo -u $loggedInUser rm -f /Users/$loggedInUser/Library/Safari/KnownSitesUsingPlugIns.plist
 	sudo -u $loggedInUser rm -f /Users/$loggedInUser/Library/Safari/Downloads.plist
 	sudo -u $loggedInUser rm -f /Users/$loggedInUser/Library/Safari/TopSites.plist
-	#sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Safari/LocalStorage
-	find /Users/$loggedInUser/Library/Safari/LocalStorage/* -type f -not -name "*.nba.*" -print0 | xargs -0 rm -f
+	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Safari/LocalStorage
+	#find /Users/$loggedInUser/Library/Safari/LocalStorage/* -type f -not -name "*.nba.*" -print0 | xargs -0 rm -f
 	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Safari/Databases
 	sudo -u $loggedInUser rm -rf "/Users/$loggedInUser/Library/Safari/Favicon Cache"
 	sudo -u $loggedInUser rm -rf "/Users/$loggedInUser/Library/Safari/Template Icons"
 	sudo -u $loggedInUser rm -rf "/Users/$loggedInUser/Library/Safari/Touch Icons Cache"
-	# rest is already deleted from /Users/$loggedInUser/Library/Caches/*
+	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Containers/com.apple.Safari/Data/Library/Caches
+	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Cookies/com.apple.Safari.SearchHelper.binarycookies
+	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Cookies/Cookies.binarycookies
+	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Cookies/HSTS.plist
+	sudo -u $loggedInUser rm -rf "/Users/$loggedInUser/Library/Preferences/Macromedia/Flash Player/"
 	
 	# cleaning firefox storage
 	FIREFOX_PROFILES="/Users/$loggedInUser/Library/Application Support/Firefox/Profiles"
