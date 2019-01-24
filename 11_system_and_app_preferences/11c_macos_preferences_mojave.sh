@@ -2458,12 +2458,15 @@ EOF
     defaults write com.apple.Safari TopSitesGridArrangement -int 0
     
     # set safari download path
-    defaults write com.apple.Safari DownloadsPath -string ~/Downloads
+    defaults write com.apple.Safari DownloadsPath -string "/Users/$USER/Downloads"
+    #defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
     
     if [ "$USER" == "tom" ]
     then
-        mkdir -p ~/Desktop/files
-        defaults write com.apple.Safari DownloadsPath -string ~/Desktop/files
+        mkdir -p "/Users/$USER/Desktop/files"
+        #mkdir -p "~/Desktop/files"
+        defaults write com.apple.Safari DownloadsPath -string "/Users/$USER/Desktop/files"
+        #defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
     else
         :
     fi
