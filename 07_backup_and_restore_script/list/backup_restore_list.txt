@@ -335,8 +335,10 @@ m	~/Library/Preferences/org.keepassx.keepassx.plist
 # KeepingYouAwake
 echo KeepingYouAwake
 #m	/Applications/KeepingYouAwake.app
-m	~/Library/Application Support/KeepingYouAwake
-u	~/Library/Preferences/info.marcel-dierkes.KeepingYouAwake.plist
+#m	~/Library/Application Support/KeepingYouAwake
+m	~/Library/Containers/info.marcel-dierkes.KeepingYouAwake/Data/Documents
+#u	~/Library/Preferences/info.marcel-dierkes.KeepingYouAwake.plist
+u	~/Library/Containers/info.marcel-dierkes.KeepingYouAwake/Data/Library/Preferences/info.marcel-dierkes.KeepingYouAwake.plist
 
 # Keka
 echo Keka
