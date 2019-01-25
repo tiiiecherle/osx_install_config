@@ -486,6 +486,10 @@ formulae_install_updates() {
             else
                 :
             fi
+        else
+            :
+        fi
+        
         echo "installing formulae updates finished ;)"
         
     fi
