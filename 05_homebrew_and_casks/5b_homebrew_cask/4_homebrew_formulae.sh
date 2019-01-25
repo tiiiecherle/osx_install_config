@@ -105,8 +105,9 @@ else
         # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more
         if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-libx265") == "" ]]
         then
-            echo "installing formula ffmpeg with x265..."
-            ${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+            #echo "installing formula ffmpeg with x265..."
+            #${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+            :
         else
             :
         fi
@@ -115,8 +116,9 @@ else
         # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more
         if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-libx265") == "" ]]
         then
-            echo "installing formula ffmpeg with x265..."
-            ${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+            #echo "installing formula ffmpeg with x265..."
+            #${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+            :
         else
             :
         fi

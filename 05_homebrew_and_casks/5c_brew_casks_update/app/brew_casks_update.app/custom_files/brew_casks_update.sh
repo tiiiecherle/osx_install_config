@@ -436,6 +436,25 @@ formulae_install_updates() {
             then
                 echo "$FORMULA"" already up-to-date..."
             else
+                if [[ "$FORMULA" == "qtfaststart" ]]
+                then
+                    brew unlink ffmpeg
+                    #brew link --overwrite qtfaststart
+                    brew unlink qtfaststart && brew link qtfaststart
+                    brew reinstall qtfaststart
+                else
+                    :
+                fi
+                if [[ "$FORMULA" == "ffmpeg" ]]
+                then
+                    brew unlink qtfaststart
+                    #brew link --overwrite ffmpeg
+                    brew unlink ffmpeg && brew link ffmpeg
+                    brew reinstall ffmpeg
+                else
+                    :
+                fi
+                #
                 ${USE_PASSWORD} | brew upgrade "$FORMULA"
             fi
             echo 'removing old installed versions of '"$FORMULA"'...'
@@ -461,15 +480,12 @@ formulae_install_updates() {
             #${USE_PASSWORD} | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
             if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-libx265") == "" ]]
             then
-                echo "rebuilding ffmpeg due to components updates..."
-                ${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+                #echo "rebuilding ffmpeg due to components updates..."
+                #${USE_PASSWORD} | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+                :
             else
                 :
             fi
-        else
-            :
-        fi
-        
         echo "installing formulae updates finished ;)"
         
     fi
