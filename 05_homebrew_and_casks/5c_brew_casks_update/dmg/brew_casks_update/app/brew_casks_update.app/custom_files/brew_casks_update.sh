@@ -441,7 +441,6 @@ formulae_install_updates() {
                     brew unlink ffmpeg
                     #brew link --overwrite qtfaststart
                     brew unlink qtfaststart && brew link qtfaststart
-                    brew reinstall qtfaststart
                 else
                     :
                 fi
@@ -450,7 +449,6 @@ formulae_install_updates() {
                     brew unlink qtfaststart
                     #brew link --overwrite ffmpeg
                     brew unlink ffmpeg && brew link ffmpeg
-                    brew reinstall ffmpeg
                 else
                     :
                 fi
