@@ -118,7 +118,9 @@ homebrew_update() {
     # working around a --json=v1 bug until it`s fixed
     # https://github.com/Homebrew/homebrew-cask/issues/52427
     #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$(brew --repository)"/Library/Homebrew/cask/cask.rb
-    sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$BREW_PATH"/Library/Homebrew/cask/cask.rb
+    #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$BREW_PATH"/Library/Homebrew/cask/cask.rb
+    # fixed 2019-01-28
+    # https://github.com/Homebrew/brew/pull/5597
 
     echo 'updating homebrew finished ;)'
 }
@@ -438,22 +440,29 @@ formulae_install_updates() {
             else
                 if [[ "$FORMULA" == "qtfaststart" ]]
                 then
-                    brew unlink ffmpeg
-                    #brew link --overwrite qtfaststart
-                    brew unlink qtfaststart && brew link qtfaststart
-                else
-                    :
-                fi
-                if [[ "$FORMULA" == "ffmpeg" ]]
+                    if [[ $(brew list | grep ffmpeg) != "" ]]
+                    then
+                        brew unlink qtfaststart
+                        brew unlink ffmpeg && brew link ffmpeg
+                        brew link --overwrite qtfaststart
+                    else
+                        :
+                    fi
+                elif [[ "$FORMULA" == "ffmpeg" ]]
                 then
-                    brew unlink qtfaststart
-                    #brew link --overwrite ffmpeg
-                    brew unlink ffmpeg && brew link ffmpeg
+                    if [[ $(brew list | grep qtfaststart) != "" ]]
+                    then
+                        brew unlink ffmpeg
+                        brew unlink qtfaststart && brew link qtfaststart
+                        brew link --overwrite ffmpeg
+                    else
+                        :
+                    fi
                 else
                     :
                 fi
-                #
                 ${USE_PASSWORD} | brew upgrade "$FORMULA"
+                #
             fi
             echo 'removing old installed versions of '"$FORMULA"'...'
             ${USE_PASSWORD} | brew cleanup "$FORMULA"

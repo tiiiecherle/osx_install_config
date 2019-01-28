@@ -360,7 +360,9 @@ homebrew_update() {
         # working around a --json=v1 bug until it`s fixed
         # https://github.com/Homebrew/homebrew-cask/issues/52427
         #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$(brew --repository)"/Library/Homebrew/cask/cask.rb
-        sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$BREW_PATH"/Library/Homebrew/cask/cask.rb
+        #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$BREW_PATH"/Library/Homebrew/cask/cask.rb
+        # fixed 2019-01-28
+        # https://github.com/Homebrew/brew/pull/5597
     
         echo 'updating homebrew finished ;)'
     fi
