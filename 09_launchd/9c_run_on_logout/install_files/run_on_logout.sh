@@ -19,6 +19,7 @@ fi
 # recommended way
 loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 echo "loggedInUser is $loggedInUser..."
+#echo "loggedInUser is $loggedInUser" > /Users/$loggedInUser/Desktop/loggedInUser.txt
 
 # getting sum of number of reboots and shutdowns since installation
 NUM1=$(last reboot | grep reboot | wc -l | sed 's/ //g')
@@ -104,6 +105,20 @@ run_cleaning2 () {
 
 }
 
+reset_safari_download_location () {
+
+    if [[ "$loggedInUser" == "tom" ]]
+    then
+        #sudo -u $loggedInUser mkdir -p "/Users/$loggedInUser/Desktop/files"
+        #mkdir -p "~/Desktop/files"
+        sudo -u $loggedInUser defaults write com.apple.Safari DownloadsPath -string "/Users/$loggedInUser/Desktop/files"
+        #defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
+    else
+        sudo -u $loggedInUser defaults write com.apple.Safari DownloadsPath -string "/Users/$loggedInUser/Downloads"
+    fi
+        
+}
+
 
 DIVIDER=10
 # every reboot is counted as shutdown, too
@@ -117,6 +132,10 @@ else
 	#echo "number $NUM1 NOT divisible by $DIVIDER"
 	run_cleaning1
 fi
+
+sleep 0.1
+
+reset_safari_download_location
 
 sleep 0.1
 
