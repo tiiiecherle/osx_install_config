@@ -148,6 +148,7 @@ then
     create_tmp_homebrew_script_fifo
     identify_terminal
     UPDATE_HOMEBREW="no"
+    RUN_FROM_RUN_ALL_SCRIPT="yes"
 
     #osascript 2>/dev/null <<EOF
     osascript <<EOF
@@ -176,7 +177,7 @@ then
     	end if
     	#delay 2
         #    	
-        do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export MAS_APPLE_ID=\"$MAS_APPLE_ID\"; (time  \"$SCRIPT_DIR/6_mas_appstore.sh\") && echo ''" in runWindow
+        do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export MAS_APPLE_ID=\"$MAS_APPLE_ID\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; (time  \"$SCRIPT_DIR/6_mas_appstore.sh\") && echo ''" in runWindow
     	#
     	delay 40
         set frontmost of Window1 to true
@@ -195,6 +196,7 @@ then
     create_tmp_homebrew_script_fifo
     identify_terminal
     UPDATE_HOMEBREW="no"
+    RUN_FROM_RUN_ALL_SCRIPT="yes"
 
     #osascript 2>/dev/null <<EOF
     osascript <<EOF
@@ -223,7 +225,7 @@ then
     	end if
     	#delay 2
     	#
-    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export CONT_CASKROOM=\"$CONT_CASKROOM\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in runWindow
+    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export CONT_CASKROOM=\"$CONT_CASKROOM\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in runWindow
     	#
     	delay 10
         set frontmost of Window1 to true
@@ -245,6 +247,12 @@ UPDATE_HOMEBREW="no"
 echo "waiting for casks and mas scripts..."
 while ps aux | grep /5_casks.sh | grep -v grep >/dev/null; do sleep 1; done
 while ps aux | grep /6_mas_appstore.sh | grep -v grep >/dev/null; do sleep 1; done
+
+
+### cleaning up
+echo ''
+echo "cleaning up..."
+cleanup_all_homebrew
 
 
 ### checking success of installations

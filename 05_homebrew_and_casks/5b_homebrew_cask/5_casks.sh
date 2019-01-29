@@ -642,17 +642,6 @@ then
 else
     :
 fi
-    
-# cleaning up
-echo ''
-echo "cleaning up..."
-
-brew cleanup
-brew cleanup --prune=0
-# should do the same withou output, but just to make sure              
-rm -rf $(brew --cache)
-# brew cask cleanup is deprecated from 2018-09
-#brew cask cleanup
 
 # listing installed homebrew packages
 #echo "the following top-level homebrew packages incl. dependencies are installed..."
@@ -665,18 +654,24 @@ rm -rf $(brew --cache)
 #echo "the following casks are installed..."
 #brew cask list | tr "," "\n"
 
-# if script is run standalone, not sourced from another script, load script frame
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
+# if script is run standalone, not sourced from another script or run from run_all script
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$RUN_FROM_RUN_ALL_SCRIPT" == "yes" ]]
 then
-    # script is sourced
+    # script is sourced or run from run_all script
     :
 else
-    # script is not sourced, run standalone
-    CHECK_IF_FORMULAE_INSTALLED="no"
-    CHECK_IF_MASAPPS_INSTALLED="no"
-    #echo ''
-    . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
+    # script is not sourced and not run from run_all script, it is run standalone
+
+    # cleaning up
+    echo ''
+    echo "cleaning up..."
+    cleanup_all_homebrew
 fi
+
+CHECK_IF_FORMULAE_INSTALLED="no"
+CHECK_IF_MASAPPS_INSTALLED="no"
+#echo ''
+. "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
 
 # installing user specific casks
 if [[ "$USER" == "wolfgang" ]]

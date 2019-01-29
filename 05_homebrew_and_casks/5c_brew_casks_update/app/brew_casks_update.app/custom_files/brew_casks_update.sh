@@ -144,15 +144,21 @@ cleanup_all_homebrew() {
     chown "$USER":staff "$HOMEBREW_CACHE_DIR"/
     chmod 755 "$HOMEBREW_CACHE_DIR"/
     
-    #brew cleanup
     brew cleanup 1> /dev/null
+    # also seems to clear cleans hidden files and folders
     brew cleanup --prune=0 1> /dev/null
-    # should do the same withou output, but just to make sure 
-                
+    
     rm -rf "$HOMEBREW_CACHE_DIR"/{,.[!.],..?}*
     # brew cask cleanup is deprecated from 2018-09
     #brew cask cleanup
     #brew cask cleanup 1> /dev/null
+    
+    # brew cleanup has to be run after the rm -rf "$HOMEBREW_CACHE_DIR"/{,.[!.],..?}* again
+    # if not it will delete a file /Users/$USER/Library/Caches/Homebrew/.cleaned
+    # this file is produced by brew cleanup and is checked if brew cleanup was run in the last x days
+    # without the file brew thinks brew cleanup was not run and complains about it
+    # https://github.com/Homebrew/brew/issues/5644
+    brew cleanup 1> /dev/null
     
     # fixing red dots before confirming commit to cask-repair that prevent the commit from being made
     # https://github.com/vitorgalvao/tiny-scripts/issues/88

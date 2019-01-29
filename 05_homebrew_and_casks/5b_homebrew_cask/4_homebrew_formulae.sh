@@ -150,7 +150,13 @@ then
     # script is sourced
     :
 else
-    # script is not sourced, run standalone
+    # script is not sourced, it is run standalone
+
+    # cleaning up
+    echo ''
+    echo "cleaning up..."
+    cleanup_all_homebrew
+    
     CHECK_IF_CASKS_INSTALLED="no"
     CHECK_IF_MASAPPS_INSTALLED="no"
     . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
