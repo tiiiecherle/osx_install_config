@@ -164,6 +164,31 @@ SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. 
 if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/vpn_connections_network_macos_wr.sh ]]
 then
     "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/vpn_connections_network_macos_wr.sh
+    
+    ### adding entry
+    # show vpn in the menu bar
+    defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/vpn.menu"
+    # do not show vpm connection time in menu bar
+    # 0 = no
+    # 1 = yes
+    defaults write com.apple.networkConnect VPNShowTime 0
+    # make changes take effect
+    killall SystemUIServer -HUP
+    
+    ### deleting entry
+    # it seems deleting entries needs a reboot for the changes to take effect
+    # killall SystemUIServer -HUP is not enough
+
+    #NotPreferredMenuExtras=(
+    #"/System/Library/CoreServices/Menu Extras/vpn.menu"
+    #)
+    
+    #for varname in "${NotPreferredMenuExtras[@]}"; 
+    #do
+    #    /usr/libexec/PlistBuddy -c "Delete 'menuExtras:$(defaults read ~/Library/Preferences/com.apple.systemuiserver.plist menuExtras | cat -n | grep "$varname" | awk '{print SUM $1-2}') string'" ~/Library/Preferences/com.apple.systemuiserver.plist >/dev/null 2>&1
+    #    :
+    #done
+
 else
     echo ''
     echo "script to configure vpn connections not found..."
