@@ -306,8 +306,11 @@ EOF
     "/System/Library/CoreServices/Menu Extras/Clock.menu" \
     "/System/Library/CoreServices/Menu Extras/AirPort.menu" \
     "/System/Library/CoreServices/Menu Extras/Battery.menu"
-    
     # for keyboard use TextInput.menu
+    
+    # adding a single entry - example vpn
+    #defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/vpn.menu"
+    #killall SystemUIServer -HUP
     
     sleep 2
     killall SystemUIServer
@@ -327,6 +330,8 @@ EOF
     "/System/Library/CoreServices/Menu Extras/User.menu"
     )
     
+    # it seems deleting entries needs a reboot for the changes to take effect
+    # killall SystemUIServer -HUP is not enough
     for varname in "${NotPreferredMenuExtras[@]}"; 
     do
         /usr/libexec/PlistBuddy -c "Delete 'menuExtras:$(defaults read ~/Library/Preferences/com.apple.systemuiserver.plist menuExtras | cat -n | grep "$varname" | awk '{print SUM $1-2}') string'" ~/Library/Preferences/com.apple.systemuiserver.plist >/dev/null 2>&1
@@ -334,7 +339,7 @@ EOF
     done
     
     sleep 2
-    killall SystemUIServer
+    killall SystemUIServer -HUP
     sleep 5
     
     ### menu bar battery preferences
