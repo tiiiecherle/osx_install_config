@@ -105,20 +105,6 @@ run_cleaning2 () {
 
 }
 
-reset_safari_download_location () {
-
-    if [[ "$loggedInUser" == "tom" ]]
-    then
-        #sudo -u $loggedInUser mkdir -p "/Users/$loggedInUser/Desktop/files"
-        #mkdir -p "~/Desktop/files"
-        sudo -u $loggedInUser defaults write com.apple.Safari DownloadsPath -string "/Users/$loggedInUser/Desktop/files"
-        #defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
-    else
-        sudo -u $loggedInUser defaults write com.apple.Safari DownloadsPath -string "/Users/$loggedInUser/Downloads"
-    fi
-        
-}
-
 
 DIVIDER=10
 # every reboot is counted as shutdown, too
@@ -132,10 +118,6 @@ else
 	#echo "number $NUM1 NOT divisible by $DIVIDER"
 	run_cleaning1
 fi
-
-sleep 0.1
-
-reset_safari_download_location
 
 sleep 0.1
 
