@@ -1,6 +1,7 @@
 ### casks with long install times first
 xquartz
-java
+#java
+adoptopenjdk
 #gpgtools
 #osxfuse
 #silverlight

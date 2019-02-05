@@ -677,7 +677,8 @@ CHECK_IF_MASAPPS_INSTALLED="no"
 if [[ "$USER" == "wolfgang" ]]
 then
     echo ''
-    ${USE_PASSWORD} | brew cask uninstall java
+    #${USE_PASSWORD} | brew cask uninstall java
+    ${USE_PASSWORD} | brew cask uninstall adoptopenjdk
     ${USE_PASSWORD} | brew cask install caskroom/versions/java8
     echo ''
 else
