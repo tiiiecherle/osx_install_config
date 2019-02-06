@@ -370,7 +370,7 @@ formulae_show_updates_parallel() {
         fi
         #echo NEW_VERSION is $NEW_VERSION
         local NUMBER_OF_INSTALLED_FORMULAE=$(echo "$INSTALLED_FORMULAE" | wc -l | sed 's/^ *//' | sed 's/ *$//')
-        local NUMBER_OF_FORMULA=$(echo "$INSTALLED_FORMULAE" | cat -n | grep "$FORMULA$" | awk '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
+        local NUMBER_OF_FORMULA=$(echo "$INSTALLED_FORMULAE" | grep -n "^$FORMULA$" | awk -F: '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
         local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAE_PATH"/"$FORMULA" | sort -V)
         #echo INSTALLED_VERSIONS is "$INSTALLED_VERSIONS"
         local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//')
@@ -574,7 +574,7 @@ casks_show_updates_parallel() {
         local NEW_VERSION=$(echo "$CASK_INFO" | jq -r '.version')
         #local NEW_VERSION=$(echo "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
         local NUMBER_OF_INSTALLED_CASKS=$(echo "$INSTALLED_CASKS" | wc -l | sed 's/^ *//' | sed 's/ *$//')
-        local NUMBER_OF_CASK=$(echo "$INSTALLED_CASKS" | cat -n | grep "$CASK$" | awk '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
+        local NUMBER_OF_CASK=$(echo "$INSTALLED_CASKS" | grep -n "^$CASK$" | awk -F: '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
         local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
         #echo INSTALLED_VERSIONS is "$INSTALLED_VERSIONS"
         local NUMBER_OF_INSTALLED_VERSIONS=$(echo "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
