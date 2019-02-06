@@ -678,8 +678,9 @@ if [[ "$USER" == "wolfgang" ]]
 then
     echo ''
     #${USE_PASSWORD} | brew cask uninstall java
-    ${USE_PASSWORD} | brew cask uninstall adoptopenjdk
+    #${USE_PASSWORD} | brew cask uninstall adoptopenjdk
     ${USE_PASSWORD} | brew cask install caskroom/versions/java8
+    #${USE_PASSWORD} | brew cask install AdoptOpenJDK/openjdk/adoptopenjdk8
     echo ''
 else
     :
