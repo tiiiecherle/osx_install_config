@@ -93,9 +93,20 @@ screen_resolution() {
     echo ''
     if [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) != "3" ]] && [[ $(compgen -c python | grep "^python3$") == "" ]]
     then
-        echo "python3 is not installed, using python2..."
+        echo "python3 is not installed, using apple python2..."
         PYTHON_VERSION='python'
         PIP_VERSION='pip'
+        for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
+        do
+            if [[ $("$PIP_VERSION" list | grep "$i") == "" ]]
+            then
+                echo ''
+                echo "installing python module "$i"..."
+                sudo "$PIP_VERSION" install "$i"
+            else
+                echo "python module "$i" already installed..."
+            fi
+        done
     else
         echo "python3 is installed, checking modules..."
         PYTHON_VERSION='python3'
@@ -104,7 +115,9 @@ screen_resolution() {
         do
             if [[ $("$PIP_VERSION" list | grep "$i") == "" ]]
             then
-                "$PIP_VERSION" install "$i"
+                echo ''
+                echo "installing python module "$i"..."
+                sudo -u $loggedInUser "$PIP_VERSION" install "$i"
             else
                 echo "python3 module "$i" already installed..."
             fi
