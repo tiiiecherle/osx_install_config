@@ -732,7 +732,7 @@ post_cask_installations() {
     #    :
     #fi
     
-    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep libreoffice-language-pack) != "" ]]
+    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep "^libreoffice-language-pack$") != "" ]]
 	then
 	    echo ''
         echo "installing libreoffice language pack..."
