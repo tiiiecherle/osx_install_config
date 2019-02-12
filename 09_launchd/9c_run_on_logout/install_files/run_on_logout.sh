@@ -49,7 +49,8 @@ run_cleaning1 () {
 	sudo -u $loggedInUser rm -rf "/Users/$loggedInUser/Library/Safari/Touch Icons Cache"
 	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Containers/com.apple.Safari/Data/Library/Caches
 	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Cookies/com.apple.Safari.SearchHelper.binarycookies
-	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Cookies/Cookies.binarycookies
+	# cookies moved to run_cleaning2
+	#sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Cookies/Cookies.binarycookies
 	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Cookies/HSTS.plist
 	sudo -u $loggedInUser rm -rf "/Users/$loggedInUser/Library/Preferences/Macromedia/Flash Player/"
 	
@@ -95,6 +96,9 @@ run_cleaning2 () {
 	rm -rf /Library/Caches/*
 	rm -rf /System/Library/Caches/*
 	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Caches/*
+	
+	# safari cookies
+	sudo -u $loggedInUser rm -rf /Users/$loggedInUser/Library/Cookies/Cookies.binarycookies
 	
 	# cleaning dnscaches
 	dns_caches () {
