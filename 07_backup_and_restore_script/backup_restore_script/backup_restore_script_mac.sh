@@ -345,6 +345,18 @@ function remove_apps_security_permissions_stop() {
     #sleep 1
 }
 
+ask_for_variable() {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
 
 ### variables
 databases_apps_security_permissions
@@ -378,7 +390,7 @@ set -e
 
 echo ''
 
-if [ "$OPTION" == "" ]
+if [[ "$OPTION" == "" ]]
 then
     # choosing the backup and defining $BACKUP variable
     PS3="Please select option by typing the number: "
@@ -428,10 +440,10 @@ function backup_restore {
     if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/ //g') == "1" ]]
     then
         SELECTEDUSER="$SYSTEMUSERS"
-        if [ "$OPTION" == "BACKUP" ]
+        if [[ "$OPTION" == "BACKUP" ]]
         then
             echo "only one user account on the system, backing up user ""$SELECTEDUSER""..."
-        elif [ "$OPTION" == "RESTORE" ]
+        elif [[ "$OPTION" == "RESTORE" ]]
         then
             echo "only one user account on the system, restoring to user ""$SELECTEDUSER""..."
         else
@@ -439,10 +451,10 @@ function backup_restore {
         fi
         echo ''
     else
-        if [ "$OPTION" == "BACKUP" ]
+        if [[ "$OPTION" == "BACKUP" ]]
         then
             PS3="Please select user to backup by typing the number: "
-        elif [ "$OPTION" == "RESTORE" ]
+        elif [[ "$OPTION" == "RESTORE" ]]
         then
             PS3="Please select user to restore to by typing the number: "
         else
@@ -459,7 +471,7 @@ function backup_restore {
     
     # check1 if a valid user was selected
     USERCHECK=$(find /Users -maxdepth 1 -name "$SELECTEDUSER" -exec basename {} \;)
-    if [ "$SELECTEDUSER" != "$USERCHECK" ]
+    if [[ "$SELECTEDUSER" != "$USERCHECK" ]]
     then
         echo "no valid user selected - exiting script because of no real username..."
         echo ''
@@ -469,7 +481,7 @@ function backup_restore {
     fi
     
     # check2 if a valid user was selected
-    if [ "$SELECTEDUSER" == "" ]
+    if [[ "$SELECTEDUSER" == "" ]]
     then
         echo "no valid user selected - exiting script because of empty username..."
         exit
@@ -478,12 +490,13 @@ function backup_restore {
     fi
     
     # confirm run
-    read -p "do you want to run the script with option ""$OPTION"" and for user ""$SELECTEDUSER"" (Y/n)? " CONT_SCRIPT
-    CONT_SCRIPT="$(echo "$CONT_SCRIPT" | tr '[:upper:]' '[:lower:]')"    # tolower
-    echo $CONT_SCRIPT
+    VARIABLE_TO_CHECK="$RUN_SCRIPT"
+    QUESTION_TO_ASK="do you want to run the script with option ""$OPTION"" and for user ""$SELECTEDUSER"" (Y/n)? "
+    ask_for_variable
+    RUN_SCRIPT="$VARIABLE_TO_CHECK"
     sleep 0.1
-    #
-    if [[ "$CONT_SCRIPT" == "" || "$CONT_SCRIPT" == "y" || "$CONT_SCRIPT" == "yes" ]]
+    
+    if [[ "$RUN_SCRIPT" =~ ^(yes|y)$ ]]
     then
         :
     else
@@ -502,7 +515,7 @@ function backup_restore {
     echo HOMEFOLDER is "$HOMEFOLDER"
     
     # checking if user directory exists
-    if [ -d "$HOMEFOLDER" ]
+    if [[ -d "$HOMEFOLDER" ]]
     then
         echo "user home directory exists - running script..."
         echo ''
@@ -524,7 +537,7 @@ function backup_restore {
         while IFS='' read -r line || [[ -n "$line" ]]
         do
             LINENUMBER=$(($LINENUMBER+1))
-        	if [ ! "$line" == "" ] && [[ ! $line =~ ^[\#] ]] && [[ ! $line =~ ^m[[:blank:]] ]] && [[ ! $line =~ ^u[[:blank:]] ]] && [[ ! $line =~ ^echo[[:blank:]] ]]
+        	if [[ ! "$line" == "" ]] && [[ ! $line =~ ^[\#] ]] && [[ ! $line =~ ^m[[:blank:]] ]] && [[ ! $line =~ ^u[[:blank:]] ]] && [[ ! $line =~ ^echo[[:blank:]] ]]
         	then
                 echo "wrong syntax for entry in line "$LINENUMBER": "$line""
                 SYNTAXERRORS=$(($SYNTAXERRORS+1))
@@ -665,7 +678,7 @@ function backup_restore {
 
             #echo ''
             # checking if valid path for backup was selected
-            if [ -e "$TARGZSAVEDIR" ]
+            if [[ -e "$TARGZSAVEDIR" ]]
             then
                 echo "backup will be saved to "$TARGZSAVEDIR""
                 sleep 0.1
@@ -677,14 +690,51 @@ function backup_restore {
             sleep 0.1
             
             ### asking for backups
-            # virtualbox backup
-            if [ "$SELECTEDUSER" == tom ]
+            if [[ -e "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".txt ]]
             then
-                read -p "do you want to backup virtualbox images (y/N)? " CONT1
-                CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
+                echo "backup profile found..."
+                #echo ''
+                while IFS='' read -r line || [[ -n "$line" ]]
+                do
+                    if [[ $(echo "$line" | grep "^#") != "" ]]
+                    then
+                        :
+                    else
+                        PROFILE_VARIABLE=$(echo "$line" | cut -d= -f 1)
+                        # | awk -F'=' '{print $1}'
+                        VARIABLE_VALUE=$(echo "$line" | cut -d= -f 2 | tr -d '"')
+                        printf "%-25s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
+                    fi
+                done <"$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".txt
+                #cat "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".txt | grep -v "^#" && printf '\n'
+                echo ''
+                VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
+                QUESTION_TO_ASK="do you want to use these settings (Y/n)? "
+                ask_for_variable
+                RUN_WITH_PROFILE="$VARIABLE_TO_CHECK"
+                sleep 0.1
+                
+                if [[ "$RUN_WITH_PROFILE" =~ ^(yes|y)$ ]]
+                then
+                    echo ''
+                    . "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".txt
+                else
+                    echo ''
+                fi
+            else
+                :
+            fi            
+            
+            # virtualbox backup
+            if [[ "$SELECTEDUSER" == tom ]]
+            then
+                VARIABLE_TO_CHECK="$BACKUP_VBOX"
+                QUESTION_TO_ASK="do you want to backup virtualbox images (y/N)? "
+                ask_for_variable
+                BACKUP_VBOX="$VARIABLE_TO_CHECK"
                 sleep 0.1
                 #
-                if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
+                if [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]
                 then
                     # opening applescript which will ask for saving location of compressed file
                     echo "asking for directory to save the vbox backup to..."
@@ -692,12 +742,12 @@ function backup_restore {
                     sleep 0.5
                     #echo ''
                     # checking if valid path for backup was selected
-                    if [ -e "$VBOXSAVEDIR" ]
+                    if [[ -e "$VBOXSAVEDIR" ]]
                     then
                         echo "vbox backup will be saved to "$VBOXSAVEDIR""
                         sleep 0.1
-                        printf '\n'
-                        sleep 0.1
+                        #printf '\n'
+                        #sleep 0.1
                     else
                         echo "no valid path for saving the vbox backup selected, exiting script..."
                         exit
@@ -710,36 +760,38 @@ function backup_restore {
             fi
             
             # files backup
-            read -p "do you want to backup local files (y/N)? " CONT2
-            CONT2="$(echo "$CONT2" | tr '[:upper:]' '[:lower:]')"    # tolower
+            VARIABLE_TO_CHECK="$FILES_BACKUP"
+            QUESTION_TO_ASK="do you want to backup local files (y/N)? "
+            ask_for_variable
+            FILES_BACKUP="$VARIABLE_TO_CHECK"
             sleep 0.1
             
             # reminders backup
-            read -p "do you want to run a reminders backup (y/N)? " CONT3
-            CONT3="$(echo "$CONT3" | tr '[:upper:]' '[:lower:]')"    # tolower
+            VARIABLE_TO_CHECK="$REMINDERS_BACKUP"
+            QUESTION_TO_ASK="do you want to run a reminders backup (y/N)? "
+            ask_for_variable
+            REMINDERS_BACKUP="$VARIABLE_TO_CHECK"
             sleep 0.1
         
             # running contacts backup applescript
-            read -p "do you want to run a contacts backup (y/N)? " CONT4
-            CONT4="$(echo "$CONT4" | tr '[:upper:]' '[:lower:]')"    # tolower
+            VARIABLE_TO_CHECK="$CONTACTS_BACKUP"
+            QUESTION_TO_ASK="do you want to run a contacts backup (y/N)? "
+            ask_for_variable
+            CONTACTS_BACKUP="$VARIABLE_TO_CHECK"
             sleep 0.1
-        
+              
             # running calendars backup applescript
-            read -p "do you want to run an calendars backup (y/N)? " CONT5
-            CONT5="$(echo "$CONT5" | tr '[:upper:]' '[:lower:]')"    # tolower
+            VARIABLE_TO_CHECK="$CALENDARS_BACKUP"
+            QUESTION_TO_ASK="do you want to run a contacts backup (y/N)? "
+            ask_for_variable
+            CALENDARS_BACKUP="$VARIABLE_TO_CHECK"
             sleep 0.1
 
-            #if [[ "$CONT3" == "y" || "$CONT3" == "yes" || "$CONT4" == "y" || "$CONT4" == "yes" || "$CONT5" == "y" || "$CONT5" == "yes" ]]
-            #then
-            #    echo ''
-            #else
-            #    :
-            #fi
             echo ''
             
             ### running backups
             # reminders
-            if [[ "$CONT3" == "y" || "$CONT3" == "yes" ]]
+            if [[ "$REMINDERS_BACKUP" =~ ^(yes|y)$ ]]
             then
                 echo "running reminders backup... please do not touch the computer until the app quits..."
                 # cleaning up old backups (only keeping the latest 4)
@@ -762,7 +814,7 @@ function backup_restore {
             fi
             
             # contacts
-            if [[ "$CONT4" == "y" || "$CONT4" == "yes" ]]
+            if [[ "$CONTACTS_BACKUP" =~ ^(yes|y)$ ]]
             then
                 echo "running contacts backup... please do not touch the computer until the app quits..."
                 # cleaning up old backups (only keeping the latest 4)
@@ -797,7 +849,7 @@ function backup_restore {
             fi
             
             # calendar
-            if [[ "$CONT5" == "y" || "$CONT5" == "yes" ]]
+            if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]
             then
                 echo "running calendars backup... please do not touch the computer until the app quits..."
                 # cleaning up old backups (only keeping the latest 4)
@@ -834,7 +886,7 @@ function backup_restore {
             fi
             
             # files
-            if [[ "$CONT2" == "y" || "$CONT2" == "yes" ]]
+            if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]]            
             then
                 FILESTARGZSAVEDIR="$TARGZSAVEDIR"
                 FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
@@ -846,7 +898,7 @@ function backup_restore {
             fi
             
             # virtualbox
-            if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
+            if [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]
             then
                 echo "running virtualbox backup..."
                 export VBOXSAVEDIR
@@ -1066,14 +1118,14 @@ function backup_restore {
             echo ''
             echo "waiting for running backup scripts to finish..."
             
-            if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
+            if [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]
             then
                 while ps aux | grep /compress_and_move_vbox_backup.sh | grep -v grep > /dev/null; do sleep 1; done
             else
                 :
             fi
     
-            if [[ "$CONT2" == "y" || "$CONT2" == "yes" ]]
+            if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]]
             then
                 while ps aux | grep /backup_files.sh | grep -v grep > /dev/null; do sleep 1; done
             else
@@ -1226,9 +1278,12 @@ function backup_restore {
         if [[ $(echo "$RESTOREUSERDIR") == "" ]]
         then
             echo ''
-            read -p "restoreuserdir is empty, do you want to set it to the same directory as the restoremasterdir (Y/n)? " CONT5
-            CONT5="$(echo "$CONT5" | tr '[:upper:]' '[:lower:]')"    # tolower
-            if [[ "$CONT5" == "y" || "$CONT5" == "yes" || "$CONT5" == "" ]]
+            VARIABLE_TO_CHECK="$AUTO_SET_USER_DIR"
+            QUESTION_TO_ASK="restoreuserdir is empty, do you want to set it to the same directory as the restoremasterdir (Y/n)? "
+            ask_for_variable
+            AUTO_SET_USER_DIR="$VARIABLE_TO_CHECK"
+            
+            if [[ "$AUTO_SET_USER_DIR" =~ ^(yes|y)$ ]]
             then
                 RESTOREUSERDIR="$RESTOREMASTERDIR"
                 echo ''
@@ -1271,12 +1326,11 @@ function backup_restore {
             #echo ''
             
             # casks install
-            #printf '\n'
-            #sleep 0.1         
-            #read -p "do you want to install casks after restoring the backup (Y/n)? " CONT6
-            #CONT6="$(echo "$CONT6" | tr '[:upper:]' '[:lower:]')"    # tolower
-            CONT6="no"
-            #echo ''
+            #VARIABLE_TO_CHECK="$INSTALL_CASKS"
+            #QUESTION_TO_ASK="do you want to backup virtualbox images (y/N)? "
+            #ask_for_variable
+            #INSTALL_CASKS="$VARIABLE_TO_CHECK"
+            #sleep 0.1
             
             # stopping services and backing up files
             sudo launchctl stop org.cups.cupsd
@@ -1637,7 +1691,7 @@ function backup_restore {
             /System/Library/CoreServices/pbs -flush
             
             ### casks install
-            if [[ "$CONT6" == "y" || "$CONT6" == "yes" || "$CONT6" == "" ]]
+            if [[ "$INSTALL_CASKS" =~ ^(yes|y)$ ]]
             then
                 echo ""
                 echo "installing casks..."
