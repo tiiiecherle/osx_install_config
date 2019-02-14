@@ -22,7 +22,7 @@ sudo defaults write com.apple.loginwindow LogoutHook /Users/"$USER"/Library/Scri
 ### uninstall hook
 uninstall_hook() {
 	sudo defaults delete com.apple.loginwindow LogoutHook
-	rm -rf ~/Library/Scripts/run_on_logout.sh
+	rm -f ~/Library/Scripts/run_on_logout.sh
 }
 #uninstall_hook
 
