@@ -54,7 +54,7 @@ ask_for_variable() {
 		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
 		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
 	done
-	echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
 }
 
 ###
