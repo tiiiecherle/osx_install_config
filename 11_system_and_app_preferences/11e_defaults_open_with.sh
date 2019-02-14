@@ -15,16 +15,35 @@
 #
 # open /Users/$USER/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist
 
+
+### functions
+
+ask_for_variable() {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
+
 ###
 
 # option for cleaning launchservices index
 echo ''
-read -p "do you want to clean the launchservices (open with) index and the icon cache after setting the new defaults for open with (y/N)? " CONT1
-CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
+VARIABLE_TO_CHECK="$CLEAN_SERVICES_CACHE"
+QUESTION_TO_ASK="do you want to clean the launchservices (open with) index and the icon cache after setting the new defaults for open with (y/N)? "
+ask_for_variable
+CLEAN_SERVICES_CACHE="$VARIABLE_TO_CHECK"
+
 sleep 0.1
 echo ''
 
-if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
+if [[ "$CLEAN_SERVICES_CACHE" =~ ^(yes|y)$ ]]
 then
 
     # function for reading secret string (POSIX compliant)
@@ -221,7 +240,7 @@ do
     done
 done
 
-if [[ "$CONT1" == "y" || "$CONT1" == "yes" ]]
+if [[ "$CLEAN_SERVICES_CACHE" =~ ^(yes|y)$ ]]
 then
 
     #echo ''

@@ -4,11 +4,30 @@ echo ''
 echo "this script deletes all data (not app preferences plist files) from contacts, calendars and reminders. data will be restored from the respective servers..."
 echo ''
 
+
+### functions
+
+ask_for_variable () {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
+
 ###
 # attention, this script will delete all locally stored contacts, calendars and reminders
-read -r -p "do you really want to delete all locally stored contacts, calendars and reminders? [y/N] " answer
-response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
-if [[ $response == "y" || $response == "yes" ]]
+VARIABLE_TO_CHECK="$CLEAR_LOCAL_DATA"
+QUESTION_TO_ASK="do you really want to delete all locally stored contacts, calendars and reminders? (y/N) "
+ask_for_variable
+CLEAR_LOCAL_DATA="$VARIABLE_TO_CHECK"
+
+if [[ "$CLEAR_LOCAL_DATA" =~ ^(yes|y)$ ]]
 then
 	
 	echo ''

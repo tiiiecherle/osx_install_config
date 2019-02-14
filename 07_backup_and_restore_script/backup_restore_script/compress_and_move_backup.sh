@@ -11,6 +11,7 @@ TARGZFILE="$DESKTOPBACKUPFOLDER".tar.gz.gpg
 
 #set -e
 
+### functions
 # compressing and checking integrity of backup folder on desktop
 function archiving_tar_gz {
     
@@ -44,11 +45,28 @@ function archiving_tar_gz_gpg {
 
 }
 
-if [ -e "$TARGZFILE" ]
+ask_for_variable() {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
+###
+
+if [[ -e "$TARGZFILE" ]]
 then
-    read -p "file \"$TARGZFILE\" already exist, overwrite it (y/N)? " CONT_COMP1
-    CONT_COMP1="$(echo "$CONT_COMP1" | tr '[:upper:]' '[:lower:]')"    # tolower
-	if [[ "$CONT_COMP1" == "y" || "$CONT_COMP1" == "yes" ]]
+    VARIABLE_TO_CHECK="$OVERWRITE_LOCAL_FILE"
+    QUESTION_TO_ASK="file \"$TARGZFILE\" already exist, overwrite it (y/N)? "
+    ask_for_variable
+    OVERWRITE_LOCAL_FILE="$VARIABLE_TO_CHECK"
+    
+    if [[ "$OVERWRITE_LOCAL_FILE" =~ ^(yes|y)$ ]]
     then
         rm "$TARGZFILE"
         #archiving_tar_gz
@@ -65,17 +83,20 @@ fi
 echo "moving "$TARGZFILE""
 printf "%-7s" "to" "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && echo
 #echo "to "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")"..."
-if [ "$TARGZFILE" == "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]
+if [[ "$TARGZFILE" == "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]]
 then
     echo "backup und save directory are identical, moving not required..."
 else
-    if [ -d "$TARGZSAVEDIR" ]
+    if [[ -d "$TARGZSAVEDIR" ]]
     then
-        if [ -e "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]
+        if [[ -e "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]]
         then
-            read -p "file \"$TARGZSAVEDIR"/"$(basename "$TARGZFILE")\" already exist, overwrite it (y/N)? " CONT_COMP2
-    		CONT_COMP2="$(echo "$CONT_COMP2" | tr '[:upper:]' '[:lower:]')"    # tolower
-			if [[ "$CONT_COMP2" == "y" || "$CONT_COMP2" == "yes" ]]            
+            VARIABLE_TO_CHECK="$OVERWRITE_DESTINATION_FILE"
+            QUESTION_TO_ASK="file \"$TARGZSAVEDIR"/"$(basename "$TARGZFILE")\" already exist, overwrite it (y/N)? "
+            ask_for_variable
+            OVERWRITE_DESTINATION_FILE="$VARIABLE_TO_CHECK"
+            
+            if [[ "$OVERWRITE_DESTINATION_FILE" =~ ^(yes|y)$ ]]         
 			then
                 rm "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")"
                 pv "$TARGZFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && rm "$TARGZFILE" && printf "%-45s" "backup file successfully moved... " && echo -e "this is \033[1;32mOK\033[0m"

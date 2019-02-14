@@ -30,6 +30,24 @@ fi
 
 
 ###
+### functions
+###
+
+ask_for_variable() {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
+
+
+###
 ### script
 ###
 
@@ -44,20 +62,12 @@ echo ''
 
 
 ### asking for mas apps
-read -p "do you want to install appstore apps via mas? (Y/n)? " CONT3_BREW
-CONT3_BREW="$(echo "$CONT3_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
+VARIABLE_TO_CHECK="$CONT3_BREW"
+QUESTION_TO_ASK="do you want to install appstore apps via mas? (Y/n)? "
+ask_for_variable
+CONT3_BREW="$VARIABLE_TO_CHECK"
 
-if [[ "$CONT3_BREW" =~ ^(y|yes|n|no)$ || "$CONT3_BREW" == "" ]]
-then
-    :
-else
-    echo ''
-    echo "wrong input, exiting script..."
-    echo ''
-    exit
-fi
-
-if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
+if [[ "$CONT3_BREW" =~ ^(yes|y)$ ]]
 then
     if [[ "$MAS_APPLE_ID" == "" ]]
     then
@@ -90,18 +100,10 @@ fi
 
 
 ### asking for casks
-#read -p "do you want to install casks apps? select no when using restore script on clean install (Y/n)? " CONT2_BREW
-read -p "do you want to install casks apps? (Y/n)? " CONT2_BREW
-CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
-if [[ "$CONT2_BREW" =~ ^(y|yes|n|no)$ || "$CONT2_BREW" == "" ]]
-then
-    :
-else
-    #echo ''
-    echo "wrong input, exiting script..."
-    echo ''
-    exit
-fi
+VARIABLE_TO_CHECK="$CONT2_BREW"
+QUESTION_TO_ASK="do you want to install casks apps? (Y/n)? "
+ask_for_variable
+CONT2_BREW="$VARIABLE_TO_CHECK"
 
 if [[ -e "/tmp/Caskroom" ]]
 then
@@ -190,7 +192,7 @@ fi
 
 
 ### casks
-if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
+if [[ "$CONT2_BREW" =~ ^(yes|y)$ ]]
 then
     sleep 5
     create_tmp_homebrew_script_fifo

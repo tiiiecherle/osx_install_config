@@ -109,6 +109,17 @@ function mas_login() {
 }
 #mas_login
 
+ask_for_variable() {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
 
 function mas_login_applescript() {
     
@@ -118,9 +129,13 @@ function mas_login_applescript() {
         #echo ''
         echo "this part of the script to login to the appstore automatically via applescript is only compatible with macos 10.14 mojave..."
         echo "please login to the appstore manually and press enter when logged in..."
-        read -p "are you logged in on the appstore (Y/n)? " CONT1_MAS
-        CONT1_MAS="$(echo "$CONT1_MAS" | tr '[:upper:]' '[:lower:]')"    # tolower
-        if [[ "$CONT1_MAS" == "y" || "$CONT1_MAS" == "yes" || "$CONT1_MAS" == "" ]]
+        
+        VARIABLE_TO_CHECK="$CONT1_MAS"
+        QUESTION_TO_ASK="are you logged in on the appstore (Y/n)? "
+        ask_for_variable
+        CONT1_MAS="$VARIABLE_TO_CHECK"
+        
+        if [[ "$CONT1_MAS" =~ ^(yes|y)$ ]]
         then
             :
         else

@@ -65,9 +65,11 @@ done
 # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
 trap 'unset SUDOPASSWORD' EXIT
 
+
+### functions
+
 # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo()
-{
+sudo() {
     ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
     #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
     #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
@@ -96,6 +98,18 @@ function stop_sudo() {
     sudo -k
 }
 
+ask_for_variable() {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
 ###
 ### homebrew uninstall
 ###
@@ -110,18 +124,22 @@ function stop_sudo() {
 echo ''
 
 # asking for casks zap
-read -p "do you want to zap / uninstall all casks including preferences (y/N)? " CONT2_BREW
-CONT2_BREW="$(echo "$CONT2_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
-
+VARIABLE_TO_CHECK="$ZAP_CASKS"
+QUESTION_TO_ASK="do you want to zap / uninstall all casks including preferences (y/N)? "
+ask_for_variable
+ZAP_CASKS="$VARIABLE_TO_CHECK"
 
 # asking for command line tools uninstall
-read -p "do you want to uninstall developer tools (Y/n)? " CONT0_BREW
-CONT0_BREW="$(echo "$CONT0_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
-
+VARIABLE_TO_CHECK="$UNINSTALL_DEV_TOOLS"
+QUESTION_TO_ASK="do you want to uninstall developer tools (Y/n)? "
+ask_for_variable
+UNINSTALL_DEV_TOOLS="$VARIABLE_TO_CHECK"
 
 # asking for homebrew uninstall
-read -p "do you want to uninstall homebrew and all formulae (Y/n)? " CONT1_BREW
-CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
+VARIABLE_TO_CHECK="$UNINSTALL_HOMEBREW"
+QUESTION_TO_ASK="do you want to uninstall homebrew and all formulae (Y/n)? "
+ask_for_variable
+UNINSTALL_HOMEBREW="$VARIABLE_TO_CHECK"
 
 
 ###
@@ -129,7 +147,7 @@ CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 ###
 
 # casks zap
-if [[ "$CONT2_BREW" == "n" || "$CONT2_BREW" == "no" || "$CONT2_BREW" == "" ]]
+if [[ "$ZAP_CASKS" =~ ^(no|n)$ ]]
 then
     if [[ -e "/usr/local/Caskroom" ]]
     then
@@ -165,7 +183,7 @@ else
 fi
 
 # command line tools uninstall
-if [[ "$CONT0_BREW" == "y" || "$CONT0_BREW" == "yes" || "$CONT0_BREW" == "" ]]
+if [[ "$UNINSTALL_DEV_TOOLS" =~ ^(yes|y)$ ]]
 then
     echo ''
     echo "uninstalling developer tools..."
@@ -176,7 +194,7 @@ else
 fi
 
 # homebrew uninstall
-if [[ "$CONT1_BREW" == "y" || "$CONT1_BREW" == "yes" || "$CONT1_BREW" == "" ]]
+if [[ "$UNINSTALL_HOMEBREW" =~ ^(yes|y)$ ]]
 then
     echo ''
     echo "uninstalling homebrew and all formulae..."

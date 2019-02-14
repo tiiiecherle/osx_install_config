@@ -59,6 +59,18 @@ function kill_main_process()
     kill -13 $$
 }
 
+ask_for_variable() {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
 ### trapping
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
 [[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
@@ -116,10 +128,14 @@ do
     
     }
     
-    if [ -e "$VBOXTARGZFILE" ]
+    if [[ -e "$VBOXTARGZFILE" ]]
     then
-        read -p "file \"$VBOXTARGZFILE\" already exist, overwrite it (y/N)?" CONT1
-        if [ "$CONT1" == "y" ]
+        VARIABLE_TO_CHECK="$OVERWRITE_VBOX_BACKUP_FILE"
+        QUESTION_TO_ASK="file \"$VBOXTARGZFILE\" already exist, overwrite it (y/N)? "
+        ask_for_variable
+        OVERWRITE_VBOX_BACKUP_FILE="$VARIABLE_TO_CHECK"
+        
+        if [[ "$OVERWRITE_VBOX_BACKUP_FILE" =~ ^(yes|y)$ ]]
         then
             rm "$VBOXTARGZFILE"
             archiving_tar_gz

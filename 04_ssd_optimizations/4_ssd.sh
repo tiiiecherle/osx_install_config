@@ -65,12 +65,24 @@ done
 # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
 trap 'unset SUDOPASSWORD' EXIT
 
+### functions
 # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo()
-{
+sudo() {
     ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
     #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
     #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
+}
+
+ask_for_variable() {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
 }
 
 
@@ -79,9 +91,12 @@ sudo()
 ### ssd optimizations
 ###
 
-read -p "Is your disk an ssd, otherwise it is not recommended to run this script (y/N)?" CONT_SSD
-CONT_SSD="$(echo "$CONT_SSD" | tr '[:upper:]' '[:lower:]')"    # tolower
-if [[ "$CONT_SSD" == "y" || "$CONT_SSD" == "yes" ]]
+VARIABLE_TO_CHECK="$DISK_IS_SSD"
+QUESTION_TO_ASK="Is your disk an ssd, otherwise it is not recommended to run this script (y/N)? "
+ask_for_variable
+DISK_IS_SSD="$VARIABLE_TO_CHECK"
+
+if [[ "$DISK_IS_SSD" =~ ^(yes|y)$ ]]
 then
 echo "continuing script..."
 

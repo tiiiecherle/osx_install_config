@@ -615,9 +615,8 @@ casks_show_updates_parallel() {
             :
         	#echo "only one version installed..."
         fi
-        
-        CONT_LATEST="$(echo "$CONT_LATEST" | tr '[:upper:]' '[:lower:]')"    # tolower
-    	if [[ "$CONT_LATEST" == "y" || "$CONT_LATEST" == "yes" ]]
+    	
+    	if [[ "$CONT_LATEST" =~ ^(yes|y)$ ]]
         then
             if [[ "$NEW_VERSION" == "latest" ]] && [[ ${CASK_EXCLUDES} != *"$CASK"* ]]
             then
@@ -848,6 +847,19 @@ function stop_sudo() {
     sudo -k
 }
 
+ask_for_variable () {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
+
 ### trapping
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
 [[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
@@ -1011,9 +1023,11 @@ then
         ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
     }
     
-    #read -p 'do you want to update all installed casks that show "latest" as version (y/N)? ' CONT_LATEST
-    #export CONT_LATEST
-    export CONT_LATEST="N"
+    #VARIABLE_TO_CHECK="$CONT_LATEST"
+    #QUESTION_TO_ASK='do you want to update all installed casks that show "latest" as version (y/N)? '
+    #ask_for_variable
+    #CONT_LATEST="$VARIABLE_TO_CHECK"
+    CONT_LATEST="no"
     
     homebrew_update
     #

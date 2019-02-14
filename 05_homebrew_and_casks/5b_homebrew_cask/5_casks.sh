@@ -173,7 +173,18 @@ else
 fi
 }
 export -f install_casks_parallel_xargs
-            
+
+ask_for_variable () {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}          
 
 
 ###
@@ -229,16 +240,12 @@ fi
 
 if [[ -e "/tmp/Caskroom" ]]
 then
-    #echo ''
-    if [[ "$CONT_CASKROOM" == "" ]]
-    then
-        read -p "$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')" CONT_CASKROOM
-        CONT_CASKROOM="$(echo "$CONT_CASKROOM" | tr '[:upper:]' '[:lower:]')"    # tolower
-    else
-        :
-    fi
-    #
-    if [[ "$CONT_CASKROOM" =~ ^(y|yes)$ || "$CONT_CASKROOM" == "" ]]
+    VARIABLE_TO_CHECK="$CONT_CASKROOM"
+    QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')"
+    ask_for_variable
+    CONT_CASKROOM="$VARIABLE_TO_CHECK"
+    
+    if [[ "$CONT_CASKROOM" =~ ^(yes|y)$ ]]
     then
         echo "restoring /tmp/Caskroom/. to /usr/local/Caskroom/..."
         if [[ -e "/usr/local/Caskroom" ]]
@@ -254,13 +261,6 @@ then
 else
     :
 fi
-
-#echo "installing casks..."
-#echo ''
-
-# xquartz
-#read -p "do you want to install xquartz (Y/n)? " CONT1_BREW
-#CONT1_BREW="$(echo "$CONT1_BREW" | tr '[:upper:]' '[:lower:]')"    # tolower
 
 # installing some casks that have to go first for compatibility reasons
 if [[ "$CONT1_BREW" == "y" || "$CONT1_BREW" == "yes" || "$CONT1_BREW" == "" ]]

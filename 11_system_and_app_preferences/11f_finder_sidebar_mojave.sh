@@ -89,6 +89,17 @@ function remove_apps_security_permissions_stop() {
     fi
 }
 
+ask_for_variable () {
+	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
+	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
+	do
+		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
+		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
+		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
+	done
+	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
 
 ###
 
@@ -133,20 +144,17 @@ trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM 
 # -rwxr-xr-x    1 root  wheel  47724 14 Apr 02:07 mysides
 # https://github.com/mosen/mysides
 MYSIDESVERSION="1.0.1"
-read -r -p "do you want to install / update to mysides "$MYSIDESVERSION"? [y/N] " answer
-response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
-#echo $response
-# >= bash 4
-#if [[ $response =~ ^(yes|y|"")$ ]]
-# >= bash 3.2
-#if [[ $response =~ ^([yes]|[y]|[""])$ ]]
-#
-#if [[ $response == "y" || $response == "yes" || $response == "" ]]
-if [[ $response == "y" || $response == "yes" ]]
+
+VARIABLE_TO_CHECK="$INSTALL_UPDATE_MYSIDES"
+QUESTION_TO_ASK="do you want to install / update to mysides "$MYSIDESVERSION"? (y/N) "
+ask_for_variable
+INSTALL_UPDATE_MYSIDES="$VARIABLE_TO_CHECK"
+
+if [[ "$INSTALL_UPDATE_MYSIDES" =~ ^(yes|y)$ ]]
 then
 	echo "downloading and installing mysides..."
 	MYSIDESINSTALLER="/Users/$USER/Desktop/mysides-"$MYSIDESVERSION".pkg"
-	wget https://github.com/mosen/mysides/releases/download/v1.0.0/mysides-1.0.0.pkg -O "$MYSIDESINSTALLER"
+	wget https://github.com/mosen/mysides/releases/download/v"$MYSIDESVERSION"/mysides-"$MYSIDESVERSION".pkg -O "$MYSIDESINSTALLER"
 	open "$MYSIDESINSTALLER"
 	echo "waiting for installer to finish..."
 	while ps aux | grep 'Installer.app.*Installer' | grep -v grep > /dev/null; do sleep 1; done
@@ -197,9 +205,12 @@ fi
 if [[ $USER == wolfgang ]]
 then
 	echo ''
-	read -r -p $'to add entries form a network volume you have to be connected to the volume as the user that uses the links later.\nplease connect to /Volumes/office/ as the respective user.\nare you connected to /Volumes/office/ as the user that uses the links later? [Y/n] ' answer
-	response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
-	if [[ $response == "y" || $response == "yes" || $response == "" ]]
+	VARIABLE_TO_CHECK="$NETWORK_CONNECTED"
+    QUESTION_TO_ASK='to add entries form a network volume you have to be connected to the volume as the user that uses the links later.\nplease connect to /Volumes/office/ as the respective user.\nare you connected to /Volumes/office/ as the user that uses the links later? (Y/n) '
+    ask_for_variable
+    NETWORK_CONNECTED="$VARIABLE_TO_CHECK"
+    
+    if [[ "$NETWORK_CONNECTED" =~ ^(yes|y)$ ]]
 	then
 		mysides add Aufträge file:///Volumes/office/documents/gep/material/VIII%20Auftra%CC%88ge/
 		mysides add Scans file:///Volumes/office/documents/_scan

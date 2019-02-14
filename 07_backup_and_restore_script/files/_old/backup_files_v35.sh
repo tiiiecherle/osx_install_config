@@ -150,7 +150,7 @@ do
         then
             # asking for deleting existing file
             # default answer is "" and is defined as no
-            read -r -p "file $SAVEFILE already exists, do you want to overwrite it? [y/N] " response
+            read -r -p "file $SAVEFILE already exists, do you want to overwrite it? (y/N) " response
             response=$(echo $response | tr '[:upper:]' '[:lower:]')   # tolower
             if [[ "$response" =~ (^n.*|n) ]] || [[ "$response" == "" ]]
             then

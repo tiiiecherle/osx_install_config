@@ -8,7 +8,7 @@
 # -rwxr-xr-x    1 root  wheel  47724 14 Apr 02:07 mysides
 # https://github.com/mosen/mysides
 MYSIDESVERSION="1.0.1"
-read -r -p "do you want to install / update to mysides "$MYSIDESVERSION"? [y/N] " answer
+read -r -p "do you want to install / update to mysides "$MYSIDESVERSION"? (y/N) " answer
 response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
 #echo $response
 # >= bash 4
@@ -72,7 +72,7 @@ fi
 if [[ $USER == wolfgang ]]
 then
 	echo ''
-	read -r -p $'to add entries form a network volume you have to be connected to the volume as the user that uses the links later.\nplease connect to /Volumes/office/ as the respective user.\nare you connected to /Volumes/office/ as the user that uses the links later? [Y/n] ' answer
+	read -r -p $'to add entries form a network volume you have to be connected to the volume as the user that uses the links later.\nplease connect to /Volumes/office/ as the respective user.\nare you connected to /Volumes/office/ as the user that uses the links later? (Y/n) ' answer
 	response="$(echo "$answer" | tr '[:upper:]' '[:lower:]')"    # tolower
 	if [[ $response == "y" || $response == "yes" || $response == "" ]]
 	then
