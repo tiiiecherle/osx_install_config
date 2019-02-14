@@ -2463,17 +2463,14 @@ EOF
     defaults write com.apple.Safari TopSitesGridArrangement -int 0
     
     # set safari download path
-    defaults write com.apple.Safari DownloadsPath -string "/Users/$USER/Downloads"
-    #defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
-    
-    if [ "$USER" == "tom" ]
+    defaults write com.apple.Safari AlwaysPromptForDownloadFolder -bool false
+    if [[ "$loggedInUser" == "tom" ]]
     then
-        mkdir -p "/Users/$USER/Desktop/files"
-        #mkdir -p "~/Desktop/files"
-        defaults write com.apple.Safari DownloadsPath -string "/Users/$USER/Desktop/files"
+        mkdir -p "/Users/$loggedInUser/Desktop/files"
+        defaults write com.apple.Safari DownloadsPath -string "/Users/$loggedInUser/Desktop/files"
         #defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
     else
-        :
+        defaults write com.apple.Safari DownloadsPath -string "/Users/$loggedInUser/Downloads"
     fi
     
     # remove downloads list items
