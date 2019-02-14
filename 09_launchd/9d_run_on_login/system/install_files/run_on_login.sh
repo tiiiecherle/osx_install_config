@@ -47,6 +47,8 @@ fi
 
 reset_safari_download_location () {
 
+    sudo -u $loggedInUser defaults write com.apple.Safari AlwaysPromptForDownloadFolder -bool false
+
     if [[ "$loggedInUser" == "tom" ]]
     then
         #sudo -u $loggedInUser mkdir -p "/Users/$loggedInUser/Desktop/files"
