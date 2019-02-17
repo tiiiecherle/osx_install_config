@@ -7,9 +7,10 @@
 # are restored by the restore script if they were present at backup
 
 echo "opening safari apps that include extensions..."
-# should already be enabled by retoring ~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions
+# should already be enabled by restoring ~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions
 open "/Applications/Better.app"
 open "/Applications/GhosteryLite.app"
+open "/Applications/AdGuard for Safari.app"
 
 
 ### accepting self signed sever certificate
