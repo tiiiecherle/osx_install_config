@@ -138,6 +138,11 @@ number_of_parallel_processes() {
 }
 
 cleanup_all_homebrew() {
+
+    # old, no longer needed fixes
+    # brew cask style >/dev/null
+    # brew vendor-install ruby
+    
     # making sure brew cache exists
     HOMEBREW_CACHE_DIR=$(brew --cache)
     mkdir -p "$HOMEBREW_CACHE_DIR"
@@ -148,7 +153,12 @@ cleanup_all_homebrew() {
     # also seems to clear cleans hidden files and folders
     brew cleanup --prune=0 1> /dev/null
     
-    rm -rf "$HOMEBREW_CACHE_DIR"/{,.[!.],..?}*
+    if [[ -e "$HOMEBREW_CACHE_DIR" ]]
+    then
+        rm -rf "$HOMEBREW_CACHE_DIR"/{,.[!.],..?}*
+    else
+        :
+    fi
     # brew cask cleanup is deprecated from 2018-09
     #brew cask cleanup
     #brew cask cleanup 1> /dev/null
