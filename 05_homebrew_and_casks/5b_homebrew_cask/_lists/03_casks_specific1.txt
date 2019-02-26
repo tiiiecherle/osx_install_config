@@ -3,7 +3,7 @@ paragon-extfs
 deluge
 github
 jameica
-jdownloader
+#jdownloader
 #macupdate
 #remote-buddy
 spotify
