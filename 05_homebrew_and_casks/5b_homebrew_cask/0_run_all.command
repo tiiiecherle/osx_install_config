@@ -51,7 +51,7 @@ ask_for_variable() {
 ### script
 ###
 
-#echo ''
+echo ''
 echo "installing homebrew and homebrew casks..."
 echo ''
 
