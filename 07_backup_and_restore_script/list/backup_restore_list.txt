@@ -589,6 +589,7 @@ m	~/Library/Services/Create Symlink.workflow
 u	~/Library/Preferences/pbs.plist
 u	~/Library/Services/Tag Orange.workflow
 u	~/Library/Services/dial_snom.workflow
+u	~/Library/Services/split_pdfs.workflow
 # /System/Library/CoreServices/pbs -flush
 
 # Signal
