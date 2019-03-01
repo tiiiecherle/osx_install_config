@@ -380,6 +380,7 @@ do
                 #targz_and_progress
                 tar_gz_gpg_and_progress
             fi
+            unset OVERWRITE_EXISTING
         else
             #targz_and_progress
             tar_gz_gpg_and_progress
