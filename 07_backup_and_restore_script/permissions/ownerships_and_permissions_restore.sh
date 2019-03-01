@@ -334,6 +334,15 @@ function backup_restore_permissions {
         :
     fi
     
+    # network / wireguard
+    if [[ -e "/Library/Preferences/SystemConfiguration/preferences.plist" ]]
+    then
+        sudo chown root:wheel "/Library/Preferences/SystemConfiguration/preferences.plist"
+        sudo chmod 644 "/Library/Preferences/SystemConfiguration/preferences.plist"
+    else
+        :
+    fi
+    
     # user folder ~
     echo "setting ownerships and permissions inside the user folder..."
     #echo "SELECTEDUSER is $SELECTEDUSER"

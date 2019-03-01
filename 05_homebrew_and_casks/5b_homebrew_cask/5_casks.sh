@@ -399,7 +399,7 @@ then
 	if [[ $(brew cask list | grep "^avg-antivirus$") == "" ]]
     then
     	# making sure avg-antivirus gets installed on reinstall
-    	if [[ $(printf '%s\n' "${casks[@]}" | grep avg-antivirus) != "" ]] && [[ -e "/Applications/AVGAntivirus.app" ]]
+    	if [[ $(printf '%s\n' "${casks[@]}" | grep "^avg-antivirus$") != "" ]] && [[ -e "/Applications/AVGAntivirus.app" ]]
     	then
             avg_config_files=(
             "/Users/$USER/Library/Preferences/com.avg.Antivirus.plist"
@@ -455,7 +455,7 @@ then
 	if [[ $(brew cask list | grep "^avast-security$") == "" ]]
     then
     	# making sure avast-security gets installed on reinstall
-    	if [[ $(printf '%s\n' "${casks[@]}" | grep avast-security) != "" ]] && [[ -e "/Applications/Avast.app" ]]
+    	if [[ $(printf '%s\n' "${casks[@]}" | grep "^avast-security$") != "" ]] && [[ -e "/Applications/Avast.app" ]]
     	then
             avast_config_files=(
             "/Users/$USER/Library/Preferences/com.avast.helper.plist"
@@ -467,7 +467,7 @@ then
             do
                 DIRNAME_ENTRY=$(dirname "$i")
                 BASENAME_ENTRY=$(basename "$i")
-            	if [ -e "$i" ]
+            	if [[ -e "$i" ]]
             	then
     	            sudo mv "$i" /tmp/"$BASENAME_ENTRY"
             	else

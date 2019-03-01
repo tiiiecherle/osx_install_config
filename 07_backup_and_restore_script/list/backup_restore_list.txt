@@ -32,6 +32,14 @@ u	~/Library/Preferences/Adobe Photoshop CS5.1 Settings
 echo Adobe PDF Settings
 m	~/Library/Application Support/Adobe/Adobe PDF/Settings/ebook.joboptions
 
+# Affinity
+echo Affinity
+u	~/Library/Application Support/Affinity Publisher Beta/user/file_export_options.dat
+u	~/Library/Preferences/com.seriflabs.affinitypublisher.beta.plist
+u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/user/file_export_options.dat
+u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Preferences/com.seriflabs.affinitydesigner.plist
+u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Preferences/com.seriflabs.affinityphoto.plist
+
 # Alfred
 echo Alfred
 #m	/Applications/Alfred 3.app
@@ -72,12 +80,12 @@ echo AudioSwitcher
 m	/Applications/AudioSwitcher.app
 
 # Avast
-echo Avast
+#echo Avast
 #m	/Applications/Avast.app
-m	/Library/Application Support/Avast/config/com.avast.daemon.conf
-m	/Library/Application Support/Avast/config/com.avast.proxy.conf
-m	/Library/Application Support/Avast/config/com.avast.fileshield.conf
-m	~/Library/Preferences/com.avast.helper.plist
+#m	/Library/Application Support/Avast/config/com.avast.daemon.conf
+#m	/Library/Application Support/Avast/config/com.avast.proxy.conf
+#m	/Library/Application Support/Avast/config/com.avast.fileshield.conf
+#m	~/Library/Preferences/com.avast.helper.plist
 
 # AVG Antivirus
 #echo AVG Antivirus
@@ -103,7 +111,7 @@ u	~/Library/Preferences/com.surteesstudios.Bartender.plist
 echo BBEdit
 #m	/Applications/BBEdit.app
 m	~/Library/Application Support/BBEdit
-m	~/Library/Preferences/com.barebones.bbedit.plist
+m	~/Library/Containers/com.barebones.bbedit/Data/Library/Preferences/com.barebones.bbedit.plist
 
 # BL Banking
 echo BL Banking
@@ -136,7 +144,7 @@ m	/Applications/Checksum.app
 echo Chromium
 #m	/Applications/Chromium.app
 #u	/Applications/chromium
-u	~/Library/Application Support/Chromium
+#u	~/Library/Application Support/Chromium
 
 # Clover Configurator Pro
 #m	/Applications/Clover Configurator Pro.app
@@ -399,10 +407,10 @@ u	~/Library/Preferences/com.crystalidea.macsfancontrol.plist
 #m	/Applications/MacUpdate Desktop.app
 
 # MonKey Office
-echo MonKey Office 2018
-u	/Applications/MonKey Office 2018.app
+echo MonKey Office 2019
+u	/Applications/MonKey Office 2019.app
 u	~/Library/Application Support/ProSaldo
-u	~/Library/Preferences/com.prosaldo.monkeyoffice2018.plist
+u	~/Library/Preferences/com.prosaldo.monkeyoffice2019.plist
 
 # muCommander
 echo muCommander
@@ -441,6 +449,12 @@ echo Overflow
 m	/Applications/Overflow.app
 u	~/Library/Application Support/Overflow
 u	~/Library/Preferences/com.stuntsoftware.Overflow.plist
+
+# Overflow 3
+echo Overflow 3
+#m	/Applications/Overflow 3.app
+u	~/Library/Containers/com.stuntsoftware.Overflow3/Data/Library/Preferences/com.stuntsoftware.Overflow3.plist
+u	~/Library/Containers/com.stuntsoftware.Overflow3/Data/Library/Application Support/default.realm
 
 # Pages4
 #echo Pages4
@@ -534,7 +548,7 @@ m	~/Library/Preferences/com.blacktree.Quicksilver.plist
 
 # Remote Desktop
 echo Remote Desktop
-u	~/Library/Containers/com.microsoft.rdc.mac/Data/Library/Preferences/com.microsoft.rdc.mac.plist
+u	~/Library/Containers/com.microsoft.rdc.macos/Data/Library/Preferences/com.microsoft.rdc.macos.plist
 
 # Rename
 echo Rename
@@ -742,6 +756,10 @@ u	 ~/Library/Widgets/Wetter.wdgt
 # Winston
 #echo Winston
 #u	~/Library/Application Support/Winston
+
+# Wireguard
+echo Wireguard
+u	/Library/Preferences/SystemConfiguration/preferences.plist
 
 # Witch
 echo Witch

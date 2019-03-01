@@ -19,7 +19,7 @@ alfred
 angry-ip-scanner
 appcleaner
 #apptivate
-avast-security
+#avast-security
 #avg-antivirus
 bartender
 bbedit
