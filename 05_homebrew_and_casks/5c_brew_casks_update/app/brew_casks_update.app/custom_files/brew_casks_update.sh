@@ -113,7 +113,7 @@ homebrew_update() {
     echo ''
     echo "updating homebrew..."
     # brew prune deprecated as of 2019-01, using brew cleanup at the end of the script instead
-    brew update-reset 1> /dev/null 2> >(grep -v "Reset branch" 1>&2) && brew analytics off 1> /dev/null && brew update 1> /dev/null && brew doctor 1> /dev/null
+    brew update-reset 1> /dev/null 2> >(grep -v "Reset branch" 1>&2) && brew analytics off 1> /dev/null && brew update 1> /dev/null && brew doctor 1> /dev/null && brew cleanup 1> /dev/null
     
     # working around a --json=v1 bug until it`s fixed
     # https://github.com/Homebrew/homebrew-cask/issues/52427
@@ -138,17 +138,27 @@ number_of_parallel_processes() {
 }
 
 cleanup_all_homebrew() {
+
+    # old, no longer needed fixes
+    # brew cask style >/dev/null
+    # brew vendor-install ruby
+    
     # making sure brew cache exists
     HOMEBREW_CACHE_DIR=$(brew --cache)
     mkdir -p "$HOMEBREW_CACHE_DIR"
     chown "$USER":staff "$HOMEBREW_CACHE_DIR"/
     chmod 755 "$HOMEBREW_CACHE_DIR"/
     
-    brew cleanup 1> /dev/null
+    #brew cleanup 1> /dev/null
     # also seems to clear cleans hidden files and folders
     brew cleanup --prune=0 1> /dev/null
     
-    rm -rf "$HOMEBREW_CACHE_DIR"/{,.[!.],..?}*
+    if [[ -e "$HOMEBREW_CACHE_DIR" ]]
+    then
+        rm -rf "$HOMEBREW_CACHE_DIR"/{,.[!.],..?}*
+    else
+        :
+    fi
     # brew cask cleanup is deprecated from 2018-09
     #brew cask cleanup
     #brew cask cleanup 1> /dev/null
