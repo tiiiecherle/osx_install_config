@@ -257,11 +257,11 @@ Finder
 XtraFinder
 brew_casks_update
 video_720p_h265_aac_shrink
-video_1080p_h265_aac_shrink
 gui_apps_backup
 decrypt_finder_input_gpg_progress
 unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress
 Overflow
+"Overflow 3"
 "Script Editor"
 "System Preferences"
 witchdaemon
@@ -327,7 +327,6 @@ sudo sqlite3 "$DATABASE_SYSTEM" "DELETE FROM access"
 ACCESSIBILITYAPPS=(
 "brew_casks_update                                                      1"
 "video_720p_h265_aac_shrink                                             1"
-"video_1080p_h265_aac_shrink                                            1"
 "gui_apps_backup                                                        1"
 "backup_files_tar_gz                                                    1"
 "BL Banking Launcher                                                    1"
@@ -449,8 +448,6 @@ AUTOMATIONAPPS=(
 "unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress        Terminal                        1"
 "video_720p_h265_aac_shrink                                             System Events                   1"
 "video_720p_h265_aac_shrink                                             Terminal                        1"
-"video_1080p_h265_aac_shrink                                            System Events                   1"
-"video_1080p_h265_aac_shrink                                            Terminal                        1"
 "BL Banking Launcher                                                    System Events                   1"
 "BL Banking Launcher                                                    Terminal                        1"
 "backup_files_tar_gz                                                    System Events                   1"

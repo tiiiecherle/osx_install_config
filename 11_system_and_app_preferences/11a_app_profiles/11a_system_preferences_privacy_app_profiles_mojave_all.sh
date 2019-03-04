@@ -35,19 +35,20 @@ databases_apps_security_permissions
 ### applist
 # "System Events" has to be first list entry and has to be confirmed manually
 APP_LIST=(
+# keep "BL Banking Launcher" and brew_casks_update after "System Events" at the beginning in this order for the clicks to work
 "System Events"
+"BL Banking Launcher"
+"brew_casks_update															/Applications/brew_casks_update.app"
 iTerm
 Terminal
 Finder
-"BL Banking Launcher"
 XtraFinder
-"brew_casks_update															/Applications/brew_casks_update.app"
 video_720p_h265_aac_shrink
-video_1080p_h265_aac_shrink
 gui_apps_backup
 decrypt_finder_input_gpg_progress
 unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress
 Overflow
+"Overflow 3"
 "Script Editor"
 "System Preferences"
 witchdaemon
@@ -74,6 +75,8 @@ EagleFiler
 ### creating profiles
 for APP_LINE in "${APP_LIST[@]}"
 do
+
+	sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAppleEvents';"
 
 	if [[ $(echo "$APP_LINE" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g') == "" ]]
 	then
@@ -121,7 +124,26 @@ do
 			end tell
 		end try
 		
-		delay 2
+		# no delay after first tries needed for "BL Banking Launcher" and brew_casks_update
+		#delay 2
+		
+		try
+			tell application "System Events" 
+				tell process "UserNotificationCenter" 
+					click button "OK" of window 1
+				end tell
+			end tell
+		end try
+		
+		try
+			tell application "System Events" 
+				tell process "UserNotificationCenter" 
+					click button "OK" of window 1
+				end tell
+			end tell
+		end try
+		
+		delay 1
 		
 		try
 			tell application "System Events" 
@@ -141,7 +163,7 @@ do
 			end tell
 		end try
 		
-		delay 2
+		delay 3
 		
 		try
 			tell application "System Events" 
@@ -155,7 +177,7 @@ EOF
 	
 	
 		# special events after opening the app
-		if [[ "$APP_ENTRY" == "Bartender 3" ]] || [[ "$APP_ENTRY" == "Finder" ]] || [[ "$APP_ENTRY" == "Alfred 3" ]] || [[ "$APP_ENTRY" == "GeburtstagsChecker" ]] || [[ "$APP_ENTRY" == "VirtualBox Menulet" ]] || [[ "$APP_ENTRY" == "iTerm" ]] || [[ "$APP_ENTRY" == "Terminal" ]] || [[ "$APP_ENTRY" == "Overflow" ]]
+		if [[ "$APP_ENTRY" == "Bartender 3" ]] || [[ "$APP_ENTRY" == "Finder" ]] || [[ "$APP_ENTRY" == "Alfred 3" ]] || [[ "$APP_ENTRY" == "GeburtstagsChecker" ]] || [[ "$APP_ENTRY" == "VirtualBox Menulet" ]] || [[ "$APP_ENTRY" == "iTerm" ]] || [[ "$APP_ENTRY" == "Terminal" ]] || [[ "$APP_ENTRY" == "Overflow 3" ]]
 		then
 			:
 		elif [[ "$APP_ENTRY" == "XtraFinder" ]]
@@ -172,32 +194,10 @@ EOF
 		elif [[ "$APP_ENTRY" == "brew_casks_update" ]]
 		then
 			sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+			#sleep 3
+			while [[ $(ps aux | grep /brew_casks_update.sh | grep -v grep) == "" ]]
+			do 
 			osascript <<EOF
-			try
-				tell application "Terminal"
-					close (every window whose name contains "brew_casks_update")
-					delay 2
-					tell application "System Events"
-						keystroke return
-					end tell
-				end tell
-			end try
-			try
-				tell application "Terminal"
-					close (every window whose name contains "brew_casks_update")
-					delay 2
-					tell application "System Events"
-						keystroke return
-					end tell
-				end tell
-			end try
-EOF
-	
-		elif [[ "$APP_ENTRY" == "BL Banking Launcher" ]]
-		then
-			sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
-			osascript <<EOF
-			delay 3
 			try
 				tell application "System Events" 
 					tell process "UserNotificationCenter" 
@@ -205,15 +205,46 @@ EOF
 					end tell
 				end tell
 			end try
+			delay 1
+EOF
+			done
+			sleep 3
+			while ps aux | grep /brew_casks_update.sh | grep -v grep > /dev/null;
+			do 
+			osascript <<EOF
 			try
 				tell application "Terminal"
-					close (every window whose name contains "_blbanking")
+					close (every window whose name contains "brew_casks_update")
 					delay 2
 					tell application "System Events"
 						keystroke return
 					end tell
 				end tell
 			end try
+EOF
+			done
+
+		elif [[ "$APP_ENTRY" == "BL Banking Launcher" ]]
+		then
+			sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
+			#sleep 3
+			while [[ $(ps aux | grep /veracrypt_mount_blbanking.sh | grep -v grep) == "" ]]
+			do 
+			osascript <<EOF
+			try
+				tell application "System Events" 
+					tell process "UserNotificationCenter" 
+						click button "OK" of window 1
+					end tell
+				end tell
+			end try
+			delay 1
+EOF
+			done
+			sleep 3
+			while ps aux | grep /veracrypt_mount_blbanking.sh | grep -v grep > /dev/null;
+			do 
+			osascript <<EOF
 			try
 				tell application "Terminal"
 					close (every window whose name contains "_blbanking")
@@ -224,6 +255,7 @@ EOF
 				end tell
 			end try
 EOF
+			done
 		
 		elif [[ "$APP_ENTRY" == "gui_apps_backup" ]] || [[ "$APP_ENTRY" == "backup_files_tar_gz" ]] || [[ "$APP_ENTRY" == "virtualbox_backup" ]]
 		then
