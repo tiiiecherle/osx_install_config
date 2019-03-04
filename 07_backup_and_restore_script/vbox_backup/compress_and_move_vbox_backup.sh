@@ -146,7 +146,9 @@ do
         archiving_tar_gz
     fi
     
-    done
+    unset OVERWRITE_VBOX_BACKUP_FILE
+    
+done
 echo ''
 
 #echo ""
