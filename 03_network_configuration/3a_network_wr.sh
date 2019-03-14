@@ -153,21 +153,15 @@ sudo networksetup -switchtolocation "office_lan"
 sleep 2
 sudo networksetup -setairportpower Wi-Fi off
 sleep 2
-#echo ""
-#echo "done ;)" 
+echo ''
 
+### vpn connections
+show_vpn_in_menu_bar() {
 
-configure_fritz_vpn() {
-    ### configuring vpn connections
-    # script uses https://github.com/halo/macosvpn
-    #echo "configuring vpn connections..."
-    SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
-    if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/vpn_connections_network_macos_wr.sh ]]
+    ### adding entry
+    # show vpn in the menu bar
+    if [[ $(defaults read com.apple.systemuiserver menuExtras | grep "vpn.menu") == "" ]]
     then
-        "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/vpn_connections_network_macos_wr.sh
-        
-        ### adding entry
-        # show vpn in the menu bar
         defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/vpn.menu"
         # do not show vpm connection time in menu bar
         # 0 = no
@@ -175,27 +169,96 @@ configure_fritz_vpn() {
         defaults write com.apple.networkConnect VPNShowTime 0
         # make changes take effect
         killall SystemUIServer -HUP
-        
-        ### deleting entry
-        # it seems deleting entries needs a reboot for the changes to take effect
-        # killall SystemUIServer -HUP is not enough
+    else
+        :
+    fi
     
-        #NotPreferredMenuExtras=(
-        #"/System/Library/CoreServices/Menu Extras/vpn.menu"
-        #)
-        
-        #for varname in "${NotPreferredMenuExtras[@]}"; 
-        #do
-        #    /usr/libexec/PlistBuddy -c "Delete 'menuExtras:$(defaults read ~/Library/Preferences/com.apple.systemuiserver.plist menuExtras | cat -n | grep "$varname" | awk '{print SUM $1-2}') string'" ~/Library/Preferences/com.apple.systemuiserver.plist >/dev/null 2>&1
-        #    :
-        #done
+    ### deleting entry
+    # it seems deleting entries needs a reboot for the changes to take effect
+    # killall SystemUIServer -HUP is not enough
+
+    #NotPreferredMenuExtras=(
+    #"/System/Library/CoreServices/Menu Extras/vpn.menu"
+    #)
     
+    #for varname in "${NotPreferredMenuExtras[@]}"; 
+    #do
+    #    /usr/libexec/PlistBuddy -c "Delete 'menuExtras:$(defaults read ~/Library/Preferences/com.apple.systemuiserver.plist menuExtras | cat -n | grep "$varname" | awk '{print SUM $1-2}') string'" ~/Library/Preferences/com.apple.systemuiserver.plist >/dev/null 2>&1
+    #    :
+    #done
+}
+
+configure_fritz_vpn() {
+
+    echo ''
+    echo "vpn_connections..."
+    echo ''
+
+    ### loggedInUser
+    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+
+
+    ### checking homebrew and script dependencies
+    if [[ $(sudo -u "$loggedInUser" command -v brew) == "" ]]
+    then
+        echo "homebrew is not installed, skipping vpn profiles installation..."
+    else
+        echo "homebrew is installed..."
+        # checking for missing dependencies
+        for formula in gnu-tar pigz pv coreutils gnupg
+        do
+        	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
+        	then
+        		echo """$formula"" is NOT installed, installing..."
+                brew install "$formula"
+        	else
+        		#echo """$formula"" is installed..."
+        		:
+        	fi
+        done
+    fi
+    
+    
+    ### configuring vpn connections
+    # script uses https://github.com/halo/macosvpn
+    #echo "configuring vpn connections..."
+    SCRIPT_NAME="vpn_connections_network_macos_wr"
+    SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+    SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
+    if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".tar.gz.gpg ]]
+    then
+        echo ''
+		echo "unarchiving and decrypting vpn configuration script..."
+		
+		item="$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".tar.gz.gpg
+		OUTPUT_PATH="$SCRIPT_DIR_INPUT_KEEP"/
+		
+        # pure .gpg
+        #bash -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d -o '"$SCRIPT_DIR_INPUT_KEEP"/'"$SCRIPT_NAME"'.sh' && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
+        
+        # .tar.gz.gpg
+        bash -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d - | unpigz -dc - | gtar --same-owner -C '"$OUTPUT_PATH"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
+        
+        #echo ''			
+		if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
+		then
+		    USER_ID=`id -u`
+		    chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+		    chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+		    . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+		    rm -f "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+		    show_vpn_in_menu_bar
+		else
+		    echo "script to configure vpn connections not found..."
+        fi
     else
         echo ''
-        echo "script to configure vpn connections not found..."
+        echo "encrypted script to configure vpn connections not found..."
     fi
+    echo ''
 }
 configure_fritz_vpn
+
 
 
 ###
@@ -203,3 +266,7 @@ configure_fritz_vpn
 ###
 
 unset SUDOPASSWORD
+
+
+echo "done ;)" 
+echo ''
