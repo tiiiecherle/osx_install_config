@@ -155,6 +155,7 @@ sudo networksetup -setairportpower Wi-Fi off
 sleep 2
 echo ''
 
+
 ### vpn connections
 show_vpn_in_menu_bar() {
 

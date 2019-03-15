@@ -162,6 +162,7 @@ sudo networksetup -switchtolocation "wlan"
 sleep 2
 echo ''
 
+
 ### vpn connections
 show_vpn_in_menu_bar() {
 
