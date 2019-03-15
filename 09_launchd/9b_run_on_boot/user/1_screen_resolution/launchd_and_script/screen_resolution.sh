@@ -15,8 +15,8 @@ echo ''
 # recommended way
 loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 NUM=0
-MAX_NUM=15
-SLEEP_TIME=3
+MAX_NUM=45
+SLEEP_TIME=1
 # waiting for loggedInUser to be available
 while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
 do
