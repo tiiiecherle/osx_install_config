@@ -40,15 +40,9 @@ function set_dock_apps () {
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Calendar.app/$APP_TAIL"
-
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/Messages.app/$APP_TAIL"
  
 #    $DEF_W $DOCK 'persistent-apps' \
 #    -array-add "$APP_HEAD/Applications/Facetime.app/$APP_TAIL"
- 
-    $DEF_W $DOCK 'persistent-apps' \
-    -array-add "$APP_HEAD/Applications/iTunes.app/$APP_TAIL"
  
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Preview.app/$APP_TAIL"
@@ -58,29 +52,22 @@ function set_dock_apps () {
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Pages.app/$APP_TAIL"
 
-### office 2016
-
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Microsoft Excel.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Microsoft Word.app/$APP_TAIL"
+    
+    $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
     $DEF_W $DOCK 'persistent-apps' \
     -array-add "$APP_HEAD/Applications/Adobe InDesign CS5.5/Adobe InDesign CS5.5.app/$APP_TAIL"
     
-### office 2011
-
-    #$DEF_W $DOCK 'persistent-apps' \
-    #-array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Excel.app/$APP_TAIL"
-
-    #$DEF_W $DOCK 'persistent-apps' \
-    #-array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft Word.app/$APP_TAIL"
-
-    #$DEF_W $DOCK 'persistent-apps' \
-    #-array-add "$APP_HEAD/Applications/Microsoft Office 2011/Microsoft PowerPoint.app/$APP_TAIL"
-
-###
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/Affinity Publisher Beta.app/$APP_TAIL"
+    
+    $DEF_W $DOCK 'persistent-apps' \
+    -array-add "$APP_HEAD/Applications/pdf_200dpi_shrink.app/$APP_TAIL"
 
     $DEF_W $DOCK 'persistent-apps' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 
