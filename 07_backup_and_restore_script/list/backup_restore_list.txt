@@ -34,6 +34,7 @@ m	~/Library/Application Support/Adobe/Adobe PDF/Settings/ebook.joboptions
 
 # Affinity
 echo Affinity
+u	/Applications/Affinity Publisher Beta.app
 u	~/Library/Application Support/Affinity Publisher Beta/user/file_export_options.dat
 u	~/Library/Preferences/com.seriflabs.affinitypublisher.beta.plist
 u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/user/file_export_options.dat
