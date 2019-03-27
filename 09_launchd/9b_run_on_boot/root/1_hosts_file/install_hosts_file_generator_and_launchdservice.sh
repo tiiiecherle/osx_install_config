@@ -118,6 +118,10 @@ sudo chown root:wheel "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 sudo chmod 644 "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
 
+### forcing update on next run by setting last modification time of /etc/hosts earlier
+sudo touch -mt 201512010000 /etc/hosts
+
+
 ### run script
 echo ''
 echo "running installed script..."
@@ -129,6 +133,22 @@ echo "running installed script..."
 #echo ''
 sudo bash -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
 wait < <(jobs -p)
+
+
+### installing whitelist
+echo ''
+echo "checking for whitelist..."
+SCRIPTS_DEFAULTS_WRITE_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && cd .. && cd .. && pwd)")
+#echo "$SCRIPTS_DEFAULTS_WRITE_DIR"
+if [[ -e /Applications/hosts_file_generator/whitelist ]] && [[ -e "$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_"$USER" ]]
+then
+	echo "user whitelist file found, installing and re-running script..."
+    sudo bash -c 'cat '"$SCRIPTS_DEFAULTS_WRITE_DIR"'/_scripts_input_keep/hosts/whitelist_'"$USER"' > /Applications/hosts_file_generator/whitelist'
+    # script will run a second time when activating service to respect whitelist while updating
+    sudo touch -mt 201512010000 /etc/hosts
+else
+	echo "no user whitelist file found..."
+fi
 
 
 ### launchd service
@@ -159,7 +179,7 @@ wait
 
 
 ### syncing to install latest version when using backup script
-echo ''
+#echo ''
 echo "copying script to backup script dir..."
 SCRIPTS_FINAL_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && cd .. && cd .. && pwd)")
 if [[ -e "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script ]]
@@ -171,7 +191,7 @@ else
 fi
 
 
-#echo ''
+echo ''
 echo 'done ;)'
 echo ''
 
