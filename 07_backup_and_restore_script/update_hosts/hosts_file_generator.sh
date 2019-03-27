@@ -98,7 +98,7 @@ hosts_file_install_update() {
     ### script
 	# checking modification date of /etc/hosts
     UPDATEEACHDAYS=4
-    if [ "$(find /etc/* -name 'hosts' -type f -maxdepth 0 -mtime +"$UPDATEEACHDAYS"d | grep -x '/etc/hosts')" == "" ]
+    if [ "$(find /etc/* -name 'hosts' -maxdepth 0 -type f -mtime +"$UPDATEEACHDAYS"d | grep -x '/etc/hosts')" == "" ]
     then
         echo "/etc/hosts was already updated in the last "$UPDATEEACHDAYS" days, no need to update..."
         echo "exiting script..."
