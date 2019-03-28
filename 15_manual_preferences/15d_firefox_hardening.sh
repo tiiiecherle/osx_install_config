@@ -1,12 +1,13 @@
 #!/bin/bash
 
-read -p "do you want to Harden only or completely Reset and then harden firefox (H/r)? " CONT1
-CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
 
-if [[ "$CONT1" == "r" || "$CONT1" == "reset" ]]
-then
-	FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox/" -name "*.default*")
-	# bookmarks
+### variables
+FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox/" -name "*.default*")
+FIREFOX_PREFERENCES="/Users/""$USER""/Library/Application Support/Firefox"
+
+
+### functions
+reset_v1() {
 	if [[ -e "$FIREFOX_PROFILE_PATH" ]]
 	then
 		# bookmarks
@@ -39,12 +40,42 @@ then
 		mv /tmp/extensions "$FIREFOX_PROFILE_PATH"/extensions
 		mv /tmp/extensions.json "$FIREFOX_PROFILE_PATH"/extensions.json
 		mv /tmp/browser-extension-data "$FIREFOX_PROFILE_PATH"/browser-extension-data
-	    find "$FIREFOX_PROFILE_PATH" -type f -print0 | xargs -0 chmod 644
+		find "$FIREFOX_PROFILE_PATH" -type f -print0 | xargs -0 chmod 644
 		find "$FIREFOX_PROFILE_PATH" -type d -print0 | xargs -0 chmod 700
 		chown -R $USER:staff "$FIREFOX_PROFILE_PATH"/*
 	else
 		:
 	fi
+}
+
+reset_v2() {
+	if [[ -e "$FIREFOX_PROFILE_PATH" ]]
+	then
+		cd "$FIREFOX_PROFILE_PATH"
+		ls -1 "$FIREFOX_PROFILE_PATH" | \
+		grep -v "^places.sqlite$" | \
+		grep -v xulstore.json | \
+		grep -v extensions | \
+		grep -v extensions.json | \
+		grep -v browser-extension-data | \
+		xargs rm -rf
+		cd - >/dev/null 2>&1
+	
+		sqlite3 "$FIREFOX_PROFILE_PATH"/places.sqlite "DELETE FROM moz_historyvisits;"
+	else
+		:
+	fi
+}
+
+
+### script
+read -p "do you want to Harden only or completely Reset and then harden firefox (H/r)? " CONT1
+CONT1="$(echo "$CONT1" | tr '[:upper:]' '[:lower:]')"    # tolower
+
+if [[ "$CONT1" == "r" || "$CONT1" == "reset" ]]
+then
+	#reset_v1
+	reset_v2
 else
     :
 fi

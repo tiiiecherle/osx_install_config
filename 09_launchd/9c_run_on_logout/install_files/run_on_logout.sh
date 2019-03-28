@@ -55,10 +55,21 @@ run_cleaning1 () {
 	sudo -u $loggedInUser rm -rf "/Users/$loggedInUser/Library/Preferences/Macromedia/Flash Player/"
 	
 	# cleaning firefox storage
-	FIREFOX_PROFILES="/Users/$loggedInUser/Library/Application Support/Firefox/Profiles"
-	if [[ -e "$FIREFOX_PROFILES" ]]
-	then 
-		sudo -u $loggedInUser rm -rf "$FIREFOX_PROFILES"/*.default/storage/*
+	FIREFOX_PROFILE_PATH=$(find "/Users/""$loggedInUser""/Library/Application Support/Firefox/" -name "*.default*")
+	FIREFOX_PREFERENCES="/Users/$loggedInUser/Library/Application Support/Firefox/"
+	if [[ -e "$FIREFOX_PROFILE_PATH" ]]
+	then 		
+		cd "$FIREFOX_PROFILE_PATH"/storage
+		ls -1 "$FIREFOX_PROFILE_PATH"/storage | \
+		grep -v default | \
+		xargs sudo -u $loggedInUser rm -rf
+		cd - >/dev/null 2>&1
+		
+		cd "$FIREFOX_PROFILE_PATH"/storage/default
+		ls -1 "$FIREFOX_PROFILE_PATH"/storage/default | \
+		grep -v moz-extension+++ | \
+		xargs sudo -u $loggedInUser rm -rf
+		cd - >/dev/null 2>&1
 	else
 		:
 	fi
