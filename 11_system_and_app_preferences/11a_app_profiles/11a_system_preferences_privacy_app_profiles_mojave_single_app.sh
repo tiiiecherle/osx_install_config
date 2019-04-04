@@ -35,9 +35,7 @@ databases_apps_security_permissions
 ### applist
 # "System Events" has to be first list entry and has to be confirmed manually
 APP_LIST=(
-# keep "BL Banking Launcher" and brew_casks_update after "System Events" at the beginning in this order for the clicks to work
-"System Events"
-Finder
+MacPass
 )
 
 ### creating profiles

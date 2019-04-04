@@ -283,6 +283,7 @@ run_on_login_signal
 run_on_login_whatsapp
 EagleFiler
 "iStat Menus"
+MacPass
 )
 
 
@@ -345,6 +346,7 @@ ACCESSIBILITYAPPS=(
 "Ondesoft AudioBook Converter                                           1"
 "VNC Viewer                                                             1"
 "Commander One                                                          0"
+"MacPass                                                                1"
 )
 
 INPUT_ARRAY="ACCESSIBILITYAPPS"[@]
