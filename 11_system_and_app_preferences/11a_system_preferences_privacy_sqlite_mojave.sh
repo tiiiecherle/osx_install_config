@@ -196,8 +196,8 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 # getting application identifier
 # /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/enterapplicaitonnamehere.app/Contents/Info.plist
 # example
-# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/Overflow.app/Contents/Info.plist
-# com.stuntsoftware.Overflow
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "/Applications/Overflow 3.app/Contents/Info.plist"
+# com.stuntsoftware.Overflow3
 # example2
 # /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "/Applications/System Preferences.app/Contents/Info.plist"
 # com.apple.systempreferences
@@ -260,7 +260,6 @@ video_720p_h265_aac_shrink
 gui_apps_backup
 decrypt_finder_input_gpg_progress
 unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress
-Overflow
 "Overflow 3"
 "Script Editor"
 "System Preferences"
@@ -301,15 +300,15 @@ tput bold; echo "accessibility..." ; tput sgr0
 # add application to accessibility
 #terminal
 #INSERT INTO access VALUES('kTCCServiceAccessibility','com.apple.Terminal',0,1,1,NULL,NULL,NULL,?,NULL,0,1533680610);
-#overflow
+#overflow 3
 #'IDENTIFIER',0,0,1     # added, but not enabled
 #'IDENTIFIER',0,1,1     # added and enabled
-#sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.stuntsoftware.Overflow',0,1,1,NULL,NULL,NULL,?,NULL,0,1533680686);" 
+#sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.stuntsoftware.Overflow3',0,1,1,NULL,NULL,NULL,?,NULL,0,1533680686);" 
 
 # remove application from accessibility
 # sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "delete from access where client='IDENTIFIER';"
 # example
-# sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "delete from access where client='com.stuntsoftware.Overflow';"
+# sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "delete from access where client='com.stuntsoftware.Overflow3';"
 
 # clearing complete access table
 # sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "DELETE FROM access"
@@ -333,7 +332,7 @@ ACCESSIBILITYAPPS=(
 "BL Banking Launcher                                                    1"
 "decrypt_finder_input_gpg_progress                                      1"
 "unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress        1"
-"Overflow                                                               1"
+"Overflow 3                                                             1"
 "Script Editor                                                          1"
 "System Preferences                                                     1"
 "witchdaemon                                                            1"

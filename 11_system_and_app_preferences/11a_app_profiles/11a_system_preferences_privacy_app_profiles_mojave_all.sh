@@ -47,7 +47,6 @@ video_720p_h265_aac_shrink
 gui_apps_backup
 decrypt_finder_input_gpg_progress
 unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress
-Overflow
 "Overflow 3"
 "Script Editor"
 "System Preferences"
@@ -70,6 +69,7 @@ virtualbox_backup
 "run_on_login_whatsapp														/Users/$USER/Library/Scripts/run_on_login_whatsapp.app"
 EagleFiler
 "iStat Menus"
+MacPass
 )
 
 ### creating profiles
