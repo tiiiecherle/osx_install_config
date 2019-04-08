@@ -216,7 +216,7 @@ then
 
     ### path to macos installer
     #INSTALLERPATH="/Applications/Install macOS High Sierra.app"
-    INSTALLERPATH="/Applications/Install macOS Mojave Beta.app"
+    INSTALLERPATH="/Applications/Install macOS Mojave.app"
     if [[ ! -e "$INSTALLERPATH" ]]
     then
     	echo ''
@@ -259,7 +259,7 @@ then
     #echo $DATASIZE_IN_GB_ROUNDED
     #echo $DATASIZE_IN_GB_ROUNDED_MINUS_ONE
     EFI_DISK_SPACE_IN_GB=0.3
-    INSTALLER_PARTITION_SIZE="$(echo "scale=2 ; $DISKSIZE_IN_GB-$DATASIZE_IN_GB_ROUNDED_MINUS_ONE -$EFI_DISK_SPACE_IN_GB" | bc)"
+    INSTALLER_PARTITION_SIZE="$(echo "scale=2 ; $DISKSIZE_IN_GB-$DATASIZE_IN_GB_ROUNDED_MINUS_ONE-$EFI_DISK_SPACE_IN_GB" | bc)"
     
     ### partition sizes
     echo ''
