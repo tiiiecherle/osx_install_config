@@ -168,6 +168,7 @@ then
 else
     # macos versions 10.14 and up
     sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --nointeraction
+    #sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --nointeraction --downloadassets
 fi
     
     
@@ -181,33 +182,27 @@ QUESTION_TO_ASK="do you want to delete the efi partition on the usb storage devi
 ask_for_variable
 DELETE_EFI="$VARIABLE_TO_CHECK"
 
+echo ''
+diskutil umountDisk $USB_DEVICE
+
 if [[ "$DELETE_EFI" =~ ^(yes|y)$ ]]
 then
 	echo ''
-	#:
+    EFI_PARTITION_NUMBER=$(diskutil list $USB_DEVICE | grep "EFI.*EFI" | awk '{print ($0+0)}')
+    if [[ $EFI_PARTITION_NUMBER =~ ^[0-9]+$ ]] && [[ $EFI_PARTITION_NUMBER -lt 9 ]]
+    then
+    	# echo "number smaller than 9"
+        sudo gpt remove -i $EFI_PARTITION_NUMBER $USB_DEVICE
+    else
+    	# echo "no number or bigger than 9"
+    	echo "no valid efi partition selected to delete, exiting..."
+    fi
 else
-	echo ''
-	echo "exiting script..."
-	echo ''
-	exit
+    :
 fi
+echo ''
 
-EFI_PARTITION_NUMBER=$(diskutil list $USB_DEVICE | grep "EFI.*EFI" | awk '{print ($0+0)}')
-if [[ $EFI_PARTITION_NUMBER =~ ^[0-9]+$ ]] && [[ $EFI_PARTITION_NUMBER -lt 9 ]]
-then
-	# echo "number smaller than 9"
-	:
-else
-	# echo "no number or bigger than 9"
-	echo "no valid efi partition selected to delete, exiting..."
-	exit
-fi
-diskutil umountDisk $USB_DEVICE
-echo ''
-sudo gpt remove -i $EFI_PARTITION_NUMBER $USB_DEVICE
-echo ''
 diskutil list $USB_DEVICE
-    
 
 echo ''
 echo 'done ;)'
