@@ -185,7 +185,7 @@ echo "clearing and setting finder sidebare items..."
 #mysides remove myDocuments.cannedSearch
 #mysides remove iCloud
 #mysides add domain-AirDrop nwnode://domain-AirDrop
-mysides remove domain-AirDrop
+mysides remove domain-AirDrop >/dev/null 2>&1
 mysides add Applications file:///Applications
 mysides add Desktop file:///Users/${USER}/Desktop
 mysides add Documents file:///Users/${USER}/Documents
@@ -194,37 +194,25 @@ mysides add Movies file:///Users/${USER}/Movies
 mysides add Music file:///Users/${USER}/Music
 mysides add Pictures file:///Users/${USER}/Pictures
 mysides add ${USER} file:///Users/${USER}
-if [[ $USER == tom ]]
+
+# user specific customization
+SCRIPT_NAME="finder_sidebar_$USER"
+SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
+if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
 then
-	mysides add files file:///Users/${USER}/Desktop/files
-	# or
-	#/usr/bin/sfltool add-item com.apple.LSSharedFileList.FavoriteItems file:///Users/$USER/Desktop/files && sleep 2
+    echo ''
+    echo "user specific sidebar customization script found..."
+    USER_ID=`id -u`
+    chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
 else
-	:
-fi	
-if [[ $USER == wolfgang ]]
-then
-	echo ''
-	VARIABLE_TO_CHECK="$NETWORK_CONNECTED"
-    QUESTION_TO_ASK='to add entries form a network volume you have to be connected to the volume as the user that uses the links later.\nplease connect to /Volumes/office/ as the respective user.\nare you connected to /Volumes/office/ as the user that uses the links later? (Y/n) '
-    ask_for_variable
-    NETWORK_CONNECTED="$VARIABLE_TO_CHECK"
-    
-    if [[ "$NETWORK_CONNECTED" =~ ^(yes|y)$ ]]
-	then
-		mysides add Aufträge file:///Volumes/office/documents/gep/material/VIII%20Auftra%CC%88ge/
-		mysides add Scans file:///Volumes/office/documents/_scan
-		mysides add Tabellen file:///Volumes/office/documents/mfs/allg/_tabellen
-		mysides add Solarplan file:///Volumes/office/documents/mfs/solarplan
-		mysides add Projektordner file:///Volumes/office/documents/mfs/projektordner
-		mysides add Überwacchung file:///Volumes/office/documents/mfs/projektordner/ueberwachung
-		echo ''
-	else
-		echo ''
-	fi
-else
-	:
-fi	
+    echo ''
+    echo "user specific sidebar customization script not found......"
+    :
+fi
+echo ''
 
 #touch ~/Library/Preferences/com.apple.sidebarlists.plist
 #if [[ -e ~/Library/Preferences/com.apple.sidebarlists.plist ]]
