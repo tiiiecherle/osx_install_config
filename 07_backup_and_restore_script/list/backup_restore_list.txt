@@ -760,8 +760,8 @@ u	 ~/Library/Widgets/Wetter.wdgt
 #u	~/Library/Application Support/Winston
 
 # Wireguard
-echo Wireguard
-u	/Library/Preferences/SystemConfiguration/preferences.plist
+#echo Wireguard
+#u	/Library/Preferences/SystemConfiguration/preferences.plist
 
 # Witch
 echo Witch
