@@ -63,8 +63,7 @@ reset_safari_download_location () {
     #echo "$loggedInUser" > /Users/"$loggedInUser"/Desktop/login_script.txt
         
 }
-
-reset_safari_download_location
+#reset_safari_download_location
 
 
 ###
