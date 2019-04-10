@@ -17,7 +17,7 @@ then
 	# or
 	# w | grep console | awk '{print $(NF-1)}'
 	
-	WAITING_TIME=60
+	WAITING_TIME=1
 	echo "waiting ""$WAITING_TIME"" seconds to give macos time to rebuild the calendar cache..."
 	NUM1=0
 	#echo ''
@@ -40,22 +40,23 @@ then
 	### variables
 	PATH_TO_CALENDARS=/Users/"$USER"/Library/Calendars
 	
-	function identify_terminal() {
+	identify_terminal() {
     
-    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
-    then
-    	export SOURCE_APP=com.apple.Terminal
-    	export SOURCE_APP_NAME="Terminal"
-    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
-    then
-        export SOURCE_APP=com.googlecode.iterm2
-        export SOURCE_APP_NAME="iTerm"
-	else
-		export SOURCE_APP=com.apple.Terminal
-		echo "terminal not identified, setting automating permissions to apple terminal..."
-	fi
-}
-identify_terminal
+	    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+	    then
+	    	export SOURCE_APP=com.apple.Terminal
+	    	export SOURCE_APP_NAME="Terminal"
+	    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
+	    then
+	        export SOURCE_APP=com.googlecode.iterm2
+	        export SOURCE_APP_NAME="iTerm"
+		else
+			export SOURCE_APP=com.apple.Terminal
+			echo "terminal not identified, setting automating permissions to apple terminal..."
+		fi
+		
+	}
+	identify_terminal
 	
 	
 	### opening app
@@ -132,101 +133,96 @@ EOF
 	### identify caldav directory
 	# holiday calendar
 	CALDAV_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/ | grep .*.caldav$)"
-	CALDAV_CALENDAR=""
-	for i in $CALDAV_DIRS
+	#echo "$CALDAV_DIRS"
+	for CALENDAR_TO_LOOK_FOR in gep_radicale fw_radicale wr_radicale
 	do
-		#echo $i
-		if [[ -e "$PATH_TO_CALENDARS"/"$i"/Info.plist ]]
-		then
-			CALENDAR_TO_LOOK_FOR="gep_radicale"
-			if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$i"/Info.plist) != "$CALENDAR_TO_LOOK_FOR" ]]
-			then
-				:
-			else
-				CALDAV_CALENDAR="$i"
-			fi
-		else
-			:
-		fi
-	done
-	if [[ "$CALDAV_CALENDAR" != "" ]]
-	then
-		echo "expected caldav is ""$CALDAV_CALENDAR"""
-	else
-		echo "expected caldav directory not found..."
-		echo "perhaps waiting time above was to short for rebuilding calendar cache, please try again..."
-		echo "exiting script..."
-		exit
-	fi
-	echo ''
-	
-	if [[ $(echo "$CALDAV_CALENDAR") != "" ]]
-	then
-		CALENDAR_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/ | grep .*.calendar$)"
-		for i in $CALENDAR_DIRS
+		CALDAV_CALENDAR=""
+		for i in $CALDAV_DIRS
 		do
 			#echo $i
-			#ls "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/
-			if [[ -e "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist ]]
+			if [[ -e "$PATH_TO_CALENDARS"/"$i"/Info.plist ]]
 			then
-				#echo $i
-				CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
-				#echo "$CALENDAR_TITLE"
-				
-				# calender notifications
-				if [[ "$CALENDAR_TITLE" == "$USER" ]] || [[ "$CALENDAR_TITLE" == "allgemein" ]]
+				if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$i"/Info.plist) != "$CALENDAR_TO_LOOK_FOR" ]]
 				then
-					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-				elif [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$USER" == "wolfgang" ]]
-				then
-					#echo "$USER"
-					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-				else
-					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-				fi
-				
-				sleep 0.1
-				
-				# enable all reminder notifications
-				IS_REMINDER=$(/usr/libexec/PlistBuddy -c 'Print TaskContainer' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
-				#echo $IS_REMINDER
-				if [[ "$IS_REMINDER" == "true" ]]
-				then
-					#echo "$CALENDAR_TITLE is a reminder..."
-					#ENTRY_TYPE="reminder"
-					ENTRY_TYPE="tasks"
-					/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-				else
-					#echo "$CALENDAR_TITLE is a calendar..."
-					ENTRY_TYPE="calendar"
 					:
-				fi
-				
-				sleep 0.1
-				
-				# results
-				ALARM_SET_TO_OFF=$(/usr/libexec/PlistBuddy -c "Print :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
-				if [[ $ALARM_SET_TO_OFF == "true" ]]
-				then
-					NOTIFICATION_STATUS="disabled"
 				else
-					NOTIFICATION_STATUS="enabled"
+					CALDAV_CALENDAR="$i"
 				fi
-				
-				printf "%-30s %-15s %-15s\n" "$CALENDAR_TITLE" "$ENTRY_TYPE" "$NOTIFICATION_STATUS"
-
-				#echo ''
 			else
 				:
 			fi
 		done
-	else
-		:
-	fi
+		
+		if [[ "$CALDAV_CALENDAR" != "" ]]
+		then
+			echo ''
+			echo "expected caldav is ""$CALDAV_CALENDAR"""
+			CALENDAR_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/ | grep .*.calendar$)"
+			for i in $CALENDAR_DIRS
+			do
+				#echo $i
+				#ls "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/
+				if [[ -e "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist ]]
+				then
+					#echo $i
+					CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
+					#echo "$CALENDAR_TITLE"
+					
+					# calender notifications
+					if [[ "$CALENDAR_TITLE" == "$USER" ]] || [[ "$CALENDAR_TITLE" == "allgemein" ]]
+					then
+						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+					elif [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$USER" == "wolfgang" ]]
+					then
+						#echo "$USER"
+						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+					else
+						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+					fi
+					
+					sleep 0.1
+					
+					# enable all reminder notifications
+					IS_REMINDER=$(/usr/libexec/PlistBuddy -c 'Print TaskContainer' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
+					#echo $IS_REMINDER
+					if [[ "$IS_REMINDER" == "true" ]]
+					then
+						#echo "$CALENDAR_TITLE is a reminder..."
+						#ENTRY_TYPE="reminder"
+						ENTRY_TYPE="tasks"
+						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
+					else
+						#echo "$CALENDAR_TITLE is a calendar..."
+						ENTRY_TYPE="calendar"
+						:
+					fi
+					
+					sleep 0.1
+					
+					# results
+					ALARM_SET_TO_OFF=$(/usr/libexec/PlistBuddy -c "Print :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
+					if [[ $ALARM_SET_TO_OFF == "true" ]]
+					then
+						NOTIFICATION_STATUS="disabled"
+					else
+						NOTIFICATION_STATUS="enabled"
+					fi
+					
+					printf "%-30s %-15s %-15s\n" "$CALENDAR_TITLE" "$ENTRY_TYPE" "$NOTIFICATION_STATUS"
+	
+					#echo ''
+				else
+					:
+				fi
+			done
+		else
+			:
+		fi
+	done
 	
 	echo ''
 	echo "cleaning calendar cache..."
@@ -243,28 +239,27 @@ EOF
 	# logout needed
 	echo ''
 	echo "the changes need a logout to take effect"
-	logout_command_line()
-	{
-	LOGOUT_TIMEOUT=30
-	NUM1=0
-	#echo ''
-	echo 'press '"ctrl + c"' within '"$LOGOUT_TIMEOUT"' to stop logout...'
-	echo ''
-	while [[ "$NUM1" -le "$LOGOUT_TIMEOUT" ]]
-	do 
-		NUM1=$((NUM1+1))
-		if [[ "$NUM1" -lt "$LOGOUT_TIMEOUT" ]]
-		then
-			#echo "$NUM1"
-			sleep 1
-			tput cuu 1 && tput el
-			echo "$(($LOGOUT_TIMEOUT-NUM1)) seconds left until logout..."
-		else
-			echo "logging out..."
-			osascript -e 'tell app "loginwindow" to «event aevtrlgo»'       # logout
-			exit
-		fi
-	done
+	logout_command_line() {
+		LOGOUT_TIMEOUT=30
+		NUM1=0
+		#echo ''
+		echo 'press '"ctrl + c"' within '"$LOGOUT_TIMEOUT"' to stop logout...'
+		echo ''
+		while [[ "$NUM1" -le "$LOGOUT_TIMEOUT" ]]
+		do 
+			NUM1=$((NUM1+1))
+			if [[ "$NUM1" -lt "$LOGOUT_TIMEOUT" ]]
+			then
+				#echo "$NUM1"
+				sleep 1
+				tput cuu 1 && tput el
+				echo "$(($LOGOUT_TIMEOUT-NUM1)) seconds left until logout..."
+			else
+				echo "logging out..."
+				osascript -e 'tell app "loginwindow" to «event aevtrlgo»'       # logout
+				exit
+			fi
+		done
 	}
 	#logout_command_line
 	
