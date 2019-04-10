@@ -4,7 +4,7 @@ RESTORE LICENSES
 
 MANUAL RESTORE
 
-microsoft office
+microsoft office (logout from account afterwards)
 adobe cs
 ondesoft audiobook converter
 extfs mac
