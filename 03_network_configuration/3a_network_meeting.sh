@@ -138,6 +138,10 @@ sleep 2
 sudo networksetup -setv6off "$ETHERNET_DEVICE"
 #sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
 sleep 2
+sudo networksetup -createnetworkservice "$WLAN_DEVICE" "$WLAN_DEVICE"
+sleep 2
+sudo networksetup -setv6off "$WLAN_DEVICE"
+sleep 2
 
 # echo script finished
 #echo ""
@@ -146,7 +150,11 @@ echo "all network locations created ;)"
 # changing to automatic location
 echo "changing to location office_lan" 
 sudo networksetup -switchtolocation "office_lan"
-echo ""
+sleep 2
+sudo networksetup -setairportpower Wi-Fi off
+sleep 2
+echo ''
+
 echo "done ;)" 
 
 
