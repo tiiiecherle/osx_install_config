@@ -217,46 +217,46 @@ configure_fritz_vpn() {
         		:
         	fi
         done
-    fi
-    
-    
-    ### configuring vpn connections
-    # script uses https://github.com/halo/macosvpn
-    #echo "configuring vpn connections..."
-    SCRIPT_NAME="vpn_connections_network_macos_wr"
-    SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
-    SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
-    if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".tar.gz.gpg ]]
-    then
-        echo ''
-		echo "unarchiving and decrypting vpn configuration script..."
-		
-		item="$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".tar.gz.gpg
-		OUTPUT_PATH="$SCRIPT_DIR_INPUT_KEEP"/
-		
-        # pure .gpg
-        #bash -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d -o '"$SCRIPT_DIR_INPUT_KEEP"/'"$SCRIPT_NAME"'.sh' && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
         
-        # .tar.gz.gpg
-        bash -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d - | unpigz -dc - | gtar --same-owner -C '"$OUTPUT_PATH"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
-        
-        #echo ''			
-		if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
-		then
-		    USER_ID=`id -u`
-		    chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-		    chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-		    . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-		    rm -f "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-		    show_vpn_in_menu_bar
-		else
-		    echo "script to configure vpn connections not found..."
+        ### configuring vpn connections
+        # script uses https://github.com/halo/macosvpn
+        #echo "configuring vpn connections..."
+        SCRIPT_NAME="vpn_connections_network_macos_wr"
+        SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+        SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
+        if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".tar.gz.gpg ]]
+        then
+            echo ''
+    		echo "unarchiving and decrypting vpn configuration script..."
+    		
+    		item="$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".tar.gz.gpg
+    		OUTPUT_PATH="$SCRIPT_DIR_INPUT_KEEP"/
+    		
+            # pure .gpg
+            #bash -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d -o '"$SCRIPT_DIR_INPUT_KEEP"/'"$SCRIPT_NAME"'.sh' && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
+            
+            # .tar.gz.gpg
+            bash -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d - | unpigz -dc - | gtar --same-owner -C '"$OUTPUT_PATH"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
+            
+            #echo ''			
+    		if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
+    		then
+    		    USER_ID=`id -u`
+    		    chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    		    chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    		    . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    		    rm -f "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    		    show_vpn_in_menu_bar
+    		else
+    		    echo "script to configure vpn connections not found..."
+            fi
+        else
+            echo ''
+            echo "encrypted script to configure vpn connections not found..."
         fi
-    else
         echo ''
-        echo "encrypted script to configure vpn connections not found..."
     fi
-    echo ''
+    
 }
 configure_fritz_vpn
 
