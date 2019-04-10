@@ -81,7 +81,6 @@ else
 fi
 
 # hardening
-FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox" -name "*.default")
 # very restrictive
 curl https://raw.githubusercontent.com/pyllyukko/user.js/master/user.js > "$FIREFOX_PROFILE_PATH"/user.js
 # less restrictive
@@ -127,6 +126,39 @@ then
 	echo 'user_pref("svg.disabled", false);' >> "$FIREFOX_PROFILE_PATH"/user.js
 else
 	sed -i '' 's|^user_pref.*svg.disabled.*|user_pref("svg.disabled", false);|' "$FIREFOX_PROFILE_PATH"/user.js
+fi
+
+if [[ "$USER" == wolfgang ]]
+then
+	if [[ $(cat "$FIREFOX_PROFILE_PATH"/user.js | grep "^user_pref.*browser.startup.page.*") == "" ]]
+	then
+		echo 'user_pref("browser.startup.page", 1);' >> "$FIREFOX_PROFILE_PATH"/user.js
+	else
+		sed -i '' 's|^user_pref.*browser.startup.page.*|user_pref("browser.startup.page", 1);|' "$FIREFOX_PROFILE_PATH"/user.js
+	fi
+	#
+	if [[ $(cat "$FIREFOX_PROFILE_PATH"/user.js | grep "^user_pref.*browser.privatebrowsing.autostart.*") == "" ]]
+	then
+		echo 'user_pref("browser.privatebrowsing.autostart", false);' >> "$FIREFOX_PROFILE_PATH"/user.js
+	else
+		sed -i '' 's|^user_pref.*browser.privatebrowsing.autostart.*|user_pref("browser.privatebrowsing.autostart", false);|' "$FIREFOX_PROFILE_PATH"/user.js
+	fi
+	#
+	if [[ $(cat "$FIREFOX_PROFILE_PATH"/user.js | grep "^user_pref.*signon.rememberSignons.*") == "" ]]
+	then
+		echo 'user_pref("signon.rememberSignons", true);' >> "$FIREFOX_PROFILE_PATH"/user.js
+	else
+		sed -i '' 's|^user_pref.*signon.rememberSignons.*|user_pref("signon.rememberSignons", true);|' "$FIREFOX_PROFILE_PATH"/user.js
+	fi
+	#
+	if [[ $(cat "$FIREFOX_PROFILE_PATH"/user.js | grep "^user_pref.*intl.accept_languages.*") == "" ]]
+	then
+		echo 'user_pref("intl.accept_languages", "de-DE, de");' >> "$FIREFOX_PROFILE_PATH"/user.js
+	else
+		sed -i '' 's|^user_pref.*intl.accept_languages.*|user_pref("intl.accept_languages", "de-DE, de");|' "$FIREFOX_PROFILE_PATH"/user.js
+	fi
+else
+	:
 fi
 
 echo ''
