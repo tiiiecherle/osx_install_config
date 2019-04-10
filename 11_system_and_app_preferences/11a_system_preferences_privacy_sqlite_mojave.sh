@@ -346,6 +346,7 @@ ACCESSIBILITYAPPS=(
 "VNC Viewer                                                             1"
 "Commander One                                                          0"
 "MacPass                                                                1"
+"pdf_200dpi_shrink                                                      1"
 )
 
 INPUT_ARRAY="ACCESSIBILITYAPPS"[@]
