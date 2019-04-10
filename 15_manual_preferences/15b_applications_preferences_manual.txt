@@ -4,9 +4,10 @@ all Browser
 	google.com
 	google.de
 	privacy settings
-	after activating the option "deny cookies in safari" add the privacy settings field from search and google homepage to adblocker
+	deactivate all possible settings and accept
 
 Adobe Reader
+	Lizenz zustimmen
 	nicht als Standard für pdfs verwenden
 
 Adobe Acrobat Pro
@@ -42,10 +43,11 @@ iMazing
 	open, attach iphone via usb and trust on both devices
 
 iStatMenues
-	install components at first start
+	install components at first start (for this user only)
 	alles aus, Time an
 	Sortierung vornehmen rechts von anderen menu bar items
 	hold command to drag menu bar items
+	deactivate system menu bar clock
 
 iTunes
 	account 	login
@@ -67,9 +69,10 @@ Kontakte
 Mail
 	Disable Spam Filter
 
-Microsoft Word 2016
+Microsoft Word/Excel 365
 	register licence
-	Einstellungen - abmelden	
+	Einstellungen - abmelden
+	Smarte Dienste alle ablehenn	
 
 Nachrichten
 	Account an- oder abmelden
@@ -87,4 +90,5 @@ Signal
 	set preferences
 
 The Unarchiver
+	Lizenz akzeptieren
 	Extrahieren - extrahierten Ordner öffnen
