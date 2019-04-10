@@ -1,0 +1,26 @@
+reset / restore keychain
+
+
+keychains are stored in
+/Users/$USER/Library/Keychains
+
+
+reset keychain
+backup old keychain as zip (login.keychain-db)
+open "/Applications/Utilities/Keychain Access.app"
+preferences
+reset keychain
+delete all files in /Users/$USER/Library/Keychains except login.keychain-db
+reboot
+
+
+restore keychain
+backup old keychain as zip (login.keychain-db)
+reset keychain as explained above
+unzip and keep a copy of the old keychain zip backup
+move the old keychain to /Users/$USER/Library/Keychains or a newly created subdirectory
+open "/Applications/Utilities/Keychain Access.app"
+drag and drop the old keychain in the upper left corner area where login/local objects/system/system roots is located
+copy all entries from the old to the new keychain or keep both
+
+important: when deleting a keychain from upper left corner area the keychain file itself gets deleted, too. This is due to the keychain being not copied, but referenced as a link. That`s why a copy as zip should be kept as long as the old keychain is needed.
