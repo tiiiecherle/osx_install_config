@@ -56,7 +56,7 @@ keka
 liteicon
 macdown
 macpass
-macs-fan-control
+#macs-fan-control
 #malwarebytes
 mucommander
 namechanger
