@@ -1,25 +1,25 @@
+462058435	Microsoft Excel
+462062816	Microsoft PowerPoint
+462054704	Microsoft Word
+409201541	Pages
+409203825	Numbers
+409183694	Keynote
+824183456	Affinity Photo
+824171161	Affinity Designer
 595374522	VirusScannerPlus
 1209754386	eDrawings
 477670270       2Do
-409183694	Keynote
 1295203466 	Microsoft Remote Desktop 10
 483820530	QR Journal
 1292198261	iMazing HEIC Converter
 509182449	Photo Transfer App
 456624497	Brightness Slider
-409201541	Pages
 507257563	Sip
 561712678       AudioSwitcher
-409203825	Numbers
 888806818	Password Factory
 509148961	SMARTReporter
 1436953057	GhosteryLite
 1121192229	Better
 1440147259	AdGuard for Safari
-824183456	Affinity Photo
-824171161	Affinity Designer
-462058435	Microsoft Excel
-462062816	Microsoft PowerPoint
-462054704	Microsoft Word
 1451685025	WireGuard
 1387766656	Overflow 3
