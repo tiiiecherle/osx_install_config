@@ -3391,6 +3391,7 @@ EOF
     echo "pages"
     
     defaults write com.apple.iWork.Pages TSWPAutomaticSpellingCorrection -bool false
+    #defaults write com.apple.iWork.Pages NSDocumentSuppressTempVersionStoreWarning -bool true
     
     
     
