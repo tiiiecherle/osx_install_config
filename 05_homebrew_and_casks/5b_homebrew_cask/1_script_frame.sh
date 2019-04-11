@@ -520,7 +520,7 @@ NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
 #echo $NUMBER_OF_MAX_JOBS
 #NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
 # due to connection issues with too many downloads at the same time limiting the maximum number of jobs for now
-NUMBER_OF_MAX_JOBS_ROUNDED=5
+NUMBER_OF_MAX_JOBS_ROUNDED=6
 #echo $NUMBER_OF_MAX_JOBS_ROUNDED
 
 
