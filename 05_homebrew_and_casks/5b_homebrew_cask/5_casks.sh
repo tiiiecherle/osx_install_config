@@ -142,7 +142,10 @@ then
     	osascript -e "tell app \"/Applications/TeamViewer.app\" to quit" >/dev/null 2>&1
     fi
     if [[ "$i" == "libreoffice-language-pack" ]]
-    then 
+    then
+        # waiting for libreoffice to be detectable by language pack
+        sleep 30
+        # installung language pack
         LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
         open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
     fi
