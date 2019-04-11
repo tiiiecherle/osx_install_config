@@ -289,7 +289,10 @@ then
     echo ''
 
 	echo "installing mas appstore apps..."
-    mas_apps=$(cat "$SCRIPT_DIR"/_lists/04_mas_apps.txt | sed '/^#/ d'  | sed '/^$/d' | sort -k 2 -t $'\t' --ignore-case)
+	# keep order of lines in file
+    mas_apps=$(cat "$SCRIPT_DIR"/_lists/04_mas_apps.txt | sed '/^#/ d'  | sed '/^$/d')
+    # sorting alpahabetically
+    #mas_apps=$(cat "$SCRIPT_DIR"/_lists/04_mas_apps.txt | sed '/^#/ d'  | sed '/^$/d' | sort -k 2 -t $'\t' --ignore-case)
     if [[ "$mas_apps" == "" ]]
     then
     	:
@@ -337,6 +340,10 @@ fi
 CHECK_IF_FORMULAE_INSTALLED="no"
 CHECK_IF_CASKS_INSTALLED="no"
 echo ''
+# waiting for apps to be registered correctly before checking success
+echo "waiting 20s for apps to be registered correctly before checking success"...
+echo ''
+sleep 20
 . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
 
 
