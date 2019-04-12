@@ -765,7 +765,7 @@ u	 ~/Library/Widgets/Wetter.wdgt
 
 # Witch
 echo Witch
-m	~/Library/PreferencePanes/Witch.prefPane
+#m	~/Library/PreferencePanes/Witch.prefPane
 m	~/Library/Application Support/Witch
 m	~/Library/Application Support/Many Tricks
 
