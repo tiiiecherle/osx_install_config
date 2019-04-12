@@ -1,94 +1,85 @@
 APPLICATIONS PREFERENCES
 
 all Browser
-	google.com
-	google.de
-	privacy settings
+	privacy settings (automatically opens)
 	deactivate all possible settings and accept
 
 Adobe Reader
-	Lizenz zustimmen
-	nicht als Standard für pdfs verwenden
+	accept licence
+	do not set as default pdf viewer
 
 Adobe Acrobat Pro
-	nicht als Standard für pdfs verwenden
+	do not set as default pdf editor
 
 Adobe InDesign
-	# Bearbeiten - Farbeinstellungen - color_sync_adobe_cs
+	# edit - color edit - color_sync_adobe_cs
 
 Adobe Photoshop
-	# Bearbeiten - Farbeinstellungen - color_sync_adobe_cs
+	# edit - color edit - color_sync_adobe_cs
 
 AppCleaner
-	Einstellungen - SmartDelete - ein
-	Einstellungen - Updates - ein
+	preferences - SmartDelete - activate
+	preferences - updates - activate
 
 Bitdefender Virus Scanner
-	activate system wide permissions
+	activate system wide permissions - activate 'more protection' - macintosh_hd
+	to make autostart work on boot:	preferences - start on boot - deactivate - yes - activate
+					preferences - start on boot - activate
 	enable permanent scan
 	preferences
-		enable Scanner
 		enable only scan changed and new files
 		enable to disable this setting for drag and drop and customized scans
-		excludes
+		excludes (ts)
 			~/virtualbox
 			~/Desktop/files/drop_without_scan
 			/usr/local
 
-Facetime
-	Account an- oder abmelden
+Facetime (ts & ws)
+	account log-in or log-out
 	only activate number for being reachable, deactivate email
 
-iMazing
+iMazing (ts)
 	open, attach iphone via usb and trust on both devices
 
 iStatMenues
-	install components at first start (for this user only)
-	alles aus, Time an
-	Sortierung vornehmen rechts von anderen menu bar items
-	hold command to drag menu bar items
+	install components at first start (disable for all users)
+	deactivate everything but 'Time'
+	sorting menu bar items: hold command to drag menu bar items - move it to the right (position it left to Notification Center)
 	deactivate system menu bar clock
 
 iTunes
-	account 	login
-	account		authorize this computer
-	connect Iphone
-	activate	only sync selected titles and videos
-	activate	sync this phone over wifi
-	activate	manage music and video manually
-	select sync stuff - sync
-	backup
+	share details - no
 
-Kalender
-	Kalender und Sync prüfen
-	if sync with self-signed certificate does not work, open link to ip / address in safari and accept certificate (see safari)
+Calender
+	check calender and sync
+	if sync with self-signed certificate does not work, open link to ip / address in safari and accept certificate (see safari script)
 
-Kontakte
-	Kontakte und Sync prüfen
+Contacts
+	check contacts and sync
 
 Mail
-	Disable Spam Filter
+	check if spam filter is disabled (preferences - spam)
 
 Microsoft Word/Excel 365
 	register licence
-	Einstellungen - abmelden
-	Smarte Dienste alle ablehenn	
+	preferences - log out
+	decline smart services
 
-Nachrichten
-	Account an- oder abmelden
-	Nachrichten empfangen für Telefonnr., nicht für Email Adresse
+iMessage (ts & ws)
+	account log-in or log-out
+	receive messages for telephone number, not for mail address
 	enable text message forwarding on iphone
 
 #Safari (done in script)
 	#open -a /Applications/Safari.app https://172.16.1.200
-		#Details einblenden
-		#öffne diese Website
-		#Passwort
+		#show details
+		#open this website
+		#key
 
-Signal
+Signal (ts)
 	reconnect to phone
 	set preferences
 
 The Unarchiver
-	Lizenz akzeptieren
-	Extrahieren - extrahierten Ordner öffnen
+	accept licence
+	extract - open extracted folder

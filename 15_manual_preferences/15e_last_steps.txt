@@ -1,0 +1,11 @@
+reboot
+
+open "mail" and keep open in background for indexing
+
+virus scanner
+	check if virus scan is autostarted (symbol "B" in menu bar, eventually in bartender)
+	virus scan (menu bar) - open main window - "user-defined scan" - complete disk (macintosh_hd)
+
+print filevault_key
+
+delete restore files on desktop and empty trash

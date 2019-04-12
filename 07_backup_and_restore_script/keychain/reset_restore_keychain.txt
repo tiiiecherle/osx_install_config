@@ -15,6 +15,7 @@ reboot
 
 
 restore keychain
+if you change to new hardware and restore your old keychain macos does not use the old keychain but sets up a new one due to a new hardware id
 backup old keychain as zip (login.keychain-db)
 reset keychain as explained above
 unzip and keep a copy of the old keychain zip backup
