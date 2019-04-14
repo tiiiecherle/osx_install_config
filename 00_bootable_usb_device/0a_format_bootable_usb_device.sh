@@ -252,14 +252,16 @@ then
     DATASIZE_IN_B="$(($DISKSIZE_IN_B-$INSTALLER_SIZE_IN_B))"
     DATASIZE_IN_GB="$(echo "scale=2 ; $DATASIZE_IN_B / $KILOBYTE_SIZE / $KILOBYTE_SIZE / $KILOBYTE_SIZE" | bc)"
     DATASIZE_IN_GB_ROUNDED=$(printf "%.0f" $DATASIZE_IN_GB)
-    DATASIZE_IN_GB_ROUNDED_MINUS_ONE="$(printf "%.2f" $(echo "scale=0 ; $DATASIZE_IN_GB_ROUNDED - 1" | bc))"
-    DATASIZE_IN_GB_ROUNDED_FORMAT="$(printf "%.0f" $(echo "scale=0 ; $DATASIZE_IN_GB_ROUNDED_MINUS_ONE" | bc))"
+    # buffer in GB for downloading additional stuff via createinstallmedia --volume "$VOLUMEPATH" --nointeraction --downloadassets
+    INSTALLER_VOLUME_BUFFER=2
+    DATASIZE_IN_GB_ROUNDED_MINUS_BUFFER="$(printf "%.2f" $(echo "scale=0 ; $DATASIZE_IN_GB_ROUNDED - $INSTALLER_VOLUME_BUFFER" | bc))"
+    DATASIZE_IN_GB_ROUNDED_FORMAT="$(printf "%.0f" $(echo "scale=0 ; $DATASIZE_IN_GB_ROUNDED_MINUS_BUFFER" | bc))"
     #echo $DATASIZE_IN_B
     #echo $DATASIZE_IN_GB
     #echo $DATASIZE_IN_GB_ROUNDED
-    #echo $DATASIZE_IN_GB_ROUNDED_MINUS_ONE
+    #echo $DATASIZE_IN_GB_ROUNDED_MINUS_BUFFER
     EFI_DISK_SPACE_IN_GB=0.3
-    INSTALLER_PARTITION_SIZE="$(echo "scale=2 ; $DISKSIZE_IN_GB-$DATASIZE_IN_GB_ROUNDED_MINUS_ONE-$EFI_DISK_SPACE_IN_GB" | bc)"
+    INSTALLER_PARTITION_SIZE="$(echo "scale=2 ; $DISKSIZE_IN_GB-$DATASIZE_IN_GB_ROUNDED_MINUS_BUFFER-$EFI_DISK_SPACE_IN_GB" | bc)"
     
     ### partition sizes
     echo ''
@@ -275,7 +277,7 @@ then
     #printf "%-35s %+15s\n" "installer size" "$INSTALLER_SIZE_IN_GB GB"
     printf "%-35s %+15s\n" "usb storage device size" "$DISKSIZE_IN_GB GB"
     printf "%-35s %+15s\n" "efi or free disk space" "$EFI_DISK_SPACE_IN_GB GB"
-    printf "%-35s %+15s\n" "data partition size ($WIN_PARTITION_FORMAT)" "$DATASIZE_IN_GB_ROUNDED_MINUS_ONE GB"
+    printf "%-35s %+15s\n" "data partition size ($WIN_PARTITION_FORMAT)" "$DATASIZE_IN_GB_ROUNDED_MINUS_BUFFER GB"
     printf "%-35s %+15s\n" "installer partition size ($MAC_PARTITION_FORMAT)" "$INSTALLER_PARTITION_SIZE GB"
     echo ''
     
