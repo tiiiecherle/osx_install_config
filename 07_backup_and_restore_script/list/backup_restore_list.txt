@@ -39,6 +39,7 @@ u	~/Library/Application Support/Affinity Publisher Beta/user/file_export_options
 u	~/Library/Preferences/com.seriflabs.affinitypublisher.beta.plist
 u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/user/file_export_options.dat
 u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Preferences/com.seriflabs.affinitydesigner.plist
+u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/user/file_export_options.dat
 u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Preferences/com.seriflabs.affinityphoto.plist
 
 # Alfred
