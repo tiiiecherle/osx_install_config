@@ -184,6 +184,13 @@ DELETE_EFI="$VARIABLE_TO_CHECK"
 
 echo ''
 diskutil umountDisk $USB_DEVICE
+sleep 2
+if [[ $(mount | awk '{print $1}' | grep "$USB_DEVICE") != "" ]]
+then
+    diskutil umountDisk force $USB_DEVICE
+else
+    :
+fi
 
 if [[ "$DELETE_EFI" =~ ^(yes|y)$ ]]
 then
@@ -193,6 +200,7 @@ then
     then
     	# echo "number smaller than 9"
         sudo gpt remove -i $EFI_PARTITION_NUMBER $USB_DEVICE
+        sleep 2
     else
     	# echo "no number or bigger than 9"
     	echo "no valid efi partition selected to delete, exiting..."
