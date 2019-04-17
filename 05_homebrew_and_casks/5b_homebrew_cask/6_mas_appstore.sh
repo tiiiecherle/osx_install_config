@@ -341,9 +341,11 @@ CHECK_IF_FORMULAE_INSTALLED="no"
 CHECK_IF_CASKS_INSTALLED="no"
 echo ''
 # waiting for apps to be registered correctly before checking success
-echo "waiting 20s for apps to be registered correctly before checking success"...
+echo "resetting mas and waiting 5s for apps to be registered correctly before checking success"...
 echo ''
-sleep 20
+sleep 1
+mas reset
+sleep 5
 . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
 
 
