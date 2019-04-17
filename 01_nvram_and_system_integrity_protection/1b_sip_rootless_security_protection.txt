@@ -5,7 +5,6 @@ Open Utilities.
 Open Terminal.
 csrutil status
 csrutil disable
-csrutil status
 Reboot
 
 To re-enable it, reboot to recovery and type `sudo csrutil enable`.

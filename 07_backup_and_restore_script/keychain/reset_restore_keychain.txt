@@ -5,6 +5,9 @@ keychains are stored in
 /Users/$USER/Library/Keychains
 
 
+if you change to NEW hardware and restore your old keychain macos does not use the old keychain but sets up a new one due to a new hardware id
+
+
 reset keychain
 backup old keychain as zip (login.keychain-db)
 open "/Applications/Utilities/Keychain Access.app"
@@ -14,8 +17,11 @@ delete all files in /Users/$USER/Library/Keychains except login.keychain-db
 reboot
 
 
+###
+
+
 restore keychain
-if you change to new hardware and restore your old keychain macos does not use the old keychain but sets up a new one due to a new hardware id
+# restores only the login keychain, not local-items
 backup old keychain as zip (login.keychain-db)
 reset keychain as explained above
 unzip and keep a copy of the old keychain zip backup
