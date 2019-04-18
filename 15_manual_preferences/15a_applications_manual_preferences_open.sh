@@ -196,6 +196,20 @@ EOF
 }
 open_system_prefs_monitor
 
+# testing ssh connection
+SCRIPT_NAME="ssh_connection_test"
+SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
+if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
+then
+    USER_ID=`id -u`
+    chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+else
+    echo "script to test ssh connections not found..."
+fi
+             
 ### removing security permissions
 remove_apps_security_permissions_stop
 
