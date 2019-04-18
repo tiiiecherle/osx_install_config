@@ -726,7 +726,10 @@ function backup_restore {
             fi            
             
             # virtualbox backup
-            if [[ "$SELECTEDUSER" == tom ]]
+            if [[ "$BACKUP_VBOX" == "no" ]]
+            then
+                :
+            elif [[ -e /Users/"$loggedInUser"/virtualbox ]] || [[ "$BACKUP_VBOX" == "yes" ]]
             then
                 VARIABLE_TO_CHECK="$BACKUP_VBOX"
                 QUESTION_TO_ASK="do you want to backup virtualbox images (y/N)? "
