@@ -231,6 +231,7 @@ fi
 #set -e
 
 # checking if online
+echo ''
 echo "checking internet connection..."
 ping -c 3 google.com > /dev/null 2>&1
 if [ $? -eq 0 ]
@@ -258,11 +259,13 @@ then
 	#wget https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -O "$XTRAFINDER_INSTALLER"
 	curl https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -o "$XTRAFINDER_INSTALLER" --progress-bar
 	#open "$XTRAFINDER_INSTALLER"
+	echo "mounting image..."
 	hdiutil attach "$XTRAFINDER_INSTALLER" -quiet
 	sleep 5
 	# uninstall
 	echo "uninstalling application..."
-	${USE_PASSWORD} | sudo /Volumes/XtraFinder/Extra/Uninstall.app/Contents/MacOS/Uninstall 1>/dev/null
+	#${USE_PASSWORD} | sudo /Volumes/XtraFinder/Extra/Uninstall.app/Contents/MacOS/Uninstall 1>/dev/null
+	${USE_PASSWORD} | sudo /Volumes/XtraFinder/Extra/Uninstall.app/Contents/MacOS/Uninstall 2>&1 | grep -v "Failed to connect (window) outlet"
 	sleep 10
 	echo "installing application..."
 	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinder.pkg -target / 1>/dev/null
@@ -270,7 +273,7 @@ then
 	sleep 1
 	#echo "waiting for installer to finish..."
 	#while ps aux | grep 'installer' | grep -v grep > /dev/null; do sleep 1; done
-	echo "unmounting and removing installer file..."
+	echo "unmounting and removing installer..."
 	hdiutil detach /Volumes/XtraFinder -quiet
 	if [ -e "$XTRAFINDER_INSTALLER" ]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
 	# automation permissions
@@ -290,7 +293,7 @@ then
 	if [ -e "/Applications/XtraFinder.app" ]
     then
     
-    	echo "xtrafinder"
+    	echo "setting xtrafinder preferences..."
     	
     	# automatically check for updates
     	defaults write com.apple.finder XFAutomaticChecksForUpdate -bool true
@@ -330,8 +333,12 @@ then
     	
 else
     echo "not online, skipping installation..."
-    echo ''
+    #echo ''
 fi
+
+echo ''
+echo "done ;)"
+echo ''
 
 ###
 ### unsetting password
