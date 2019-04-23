@@ -286,6 +286,40 @@ cleanup_casks() {
                             :
                         fi
                     done
+                    
+                    # special actions on some casks
+                    if [[ "$CASK" == "adoptopenjdk" ]] || [[ "$CASK" == "java" ]]
+                    then
+                        JAVA_CHECK_DIR="/Library/Java/JavaVirtualMachines"
+                        LATEST_INSTALLED_JAVA_VERSION=$(ls -1 "$JAVA_CHECK_DIR" | sort -V | tail -n 1)
+                        JAVA_VERSIONS_TO_UNINSTALL=$(ls -1 "$JAVA_CHECK_DIR" | grep -v "$LATEST_INSTALLED_JAVA_VERSION")
+                        NUMBER_OF_JAVA_VERSIONS_TO_UNINSTALL=$(echo $JAVA_VERSIONS_TO_UNINSTALL | wc -l | awk '{print $1}')
+                        #echo "$NUMBER_OF_JAVA_VERSIONS_TO_UNINSTALL"
+                        if [[ "$NUMBER_OF_JAVA_VERSIONS_TO_UNINSTALL" -ge "1" ]]
+                        then
+                            echo "cleaning old java versions..."
+                            IFS_OLD=$IFS
+                            IFS=$'\n'
+                            for OLD_JAVA_VERSION in ${JAVA_VERSIONS_TO_UNINSTALL}
+                            do
+                                IFS=$IFS_OLD
+                                if [[ -e "$JAVA_CHECK_DIR"/"$OLD_JAVA_VERSION" ]]
+                                then
+                                    #echo "$OLD_JAVA_VERSION"
+                                    sudo rm -rf "$JAVA_CHECK_DIR"/"$OLD_JAVA_VERSION"
+                                else
+                                    :
+                                fi
+                            done
+                            IFS=$IFS_OLD
+                        else
+                            :
+                            #echo "no entries..."
+                        fi
+                    else
+                        :
+                    fi
+
             	else
             	    :
             	fi
@@ -695,7 +729,8 @@ casks_install_updates() {
             CASK="$line"
             
             echo 'updating '"$CASK"'...'
-            # uninstall deletes autostart entries
+            
+            # uninstall deletes autostart entries and resets all preferences of the uninstalled app
             #sudo brew cask uninstall "$line" --force
             #${USE_PASSWORD} | brew cask uninstall "$line" --force 1> /dev/null
             #sudo brew cask install "$line" --force
