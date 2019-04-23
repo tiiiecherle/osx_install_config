@@ -1338,6 +1338,43 @@ EOF
     defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
     
     
+    ### input sources
+    update_keyboard_layout() {
+        for CONFIG_VALUE in $KEYBOARD_CONFIG_VALUES
+        do
+            ${PLBUDDY} -c "Delete :${CONFIG_VALUE}" "$KEYBOARD_CONFIG_FILE" >/dev/null
+            ${PLBUDDY} -c "Add :${CONFIG_VALUE} array" "$KEYBOARD_CONFIG_FILE"
+            ${PLBUDDY} -c "Add :${CONFIG_VALUE}:0 dict" "$KEYBOARD_CONFIG_FILE"
+            ${PLBUDDY} -c "Add :${CONFIG_VALUE}:0:InputSourceKind string 'Keyboard Layout'" "$KEYBOARD_CONFIG_FILE"
+            ${PLBUDDY} -c "Add :${CONFIG_VALUE}:0:'KeyboardLayout ID' integer ${KEYBOARD_LAYOUT}" "$KEYBOARD_CONFIG_FILE"
+            ${PLBUDDY} -c "Add :${CONFIG_VALUE}:0:'KeyboardLayout Name' string '${KEYBOARD_LOCALE}'" "$KEYBOARD_CONFIG_FILE"
+        done
+    }
+    
+    # variables
+    KEYBOARD_LOCALE="German"
+    # 3 = QUERTZ
+    KEYBOARD_LAYOUT="3"
+    
+    # system
+    PLBUDDY='sudo /usr/libexec/PlistBuddy'
+    KEYBOARD_CONFIG_FILE="/Library/Preferences/com.apple.HIToolbox.plist"
+    KEYBOARD_CONFIG_VALUES="AppleDefaultAsciiInputSource AppleEnabledInputSources"
+    update_keyboard_layout "$KEYBOARD_CONFIG_FILE" "${KEYBOARD_LOCALE}" "${KEYBOARD_LAYOUT}"
+    #sudo chmod 644 "$KEYBOARD_CONFIG_FILE"
+    #sudo chown root:wheel "$KEYBOARD_CONFIG_FILE"
+    
+    # user
+    PLBUDDY='/usr/libexec/PlistBuddy'
+    KEYBOARD_CONFIG_FILE="/USERS/$USER/Library/Preferences/com.apple.HIToolbox.plist"
+    KEYBOARD_CONFIG_VALUES="AppleEnabledInputSources AppleSelectedInputSources"
+    ${PLBUDDY} -c "Delete :AppleCurrentKeyboardLayoutInputSourceID" "$KEYBOARD_CONFIG_FILE" >/dev/null
+    ${PLBUDDY} -c "Add :AppleCurrentKeyboardLayoutInputSourceID string com.apple.keylayout.${KEYBOARD_LOCALE}" "$KEYBOARD_CONFIG_FILE"
+    update_keyboard_layout "$KEYBOARD_CONFIG_FILE" "${KEYBOARD_LOCALE}" "${KEYBOARD_LAYOUT}"
+    #chmod 644 "$KEYBOARD_CONFIG_FILE"
+    #chown $USER:staff "$KEYBOARD_CONFIG_FILE"
+
+    
     ### dictation
     defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs DictationIMMasterDictationEnabled -bool false
     # advanced dictation
