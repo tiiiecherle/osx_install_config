@@ -4,20 +4,35 @@ SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
 MACOS_VERSION=$(sw_vers -productVersion)
 #MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 
-BREW_CASKS_UPDATE_APP="brew_casks_update"
+APP_NAME="brew_casks_update"
 
-if [ -e /Applications/"$BREW_CASKS_UPDATE_APP".app ]
+if [[ -e /Applications/"$APP_NAME".app ]]
 then
-	rm -rf /Applications/"$BREW_CASKS_UPDATE_APP".app
+	rm -rf /Applications/"$APP_NAME".app
 else
 	:
 fi
-cp -a "$SCRIPT_DIR"/app/"$BREW_CASKS_UPDATE_APP".app /Applications/
-chown 501:admin /Applications/"$BREW_CASKS_UPDATE_APP".app
-chown -R 501:admin /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/
-chmod 755 /Applications/"$BREW_CASKS_UPDATE_APP".app
-chmod 770 /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/"$BREW_CASKS_UPDATE_APP".sh
-xattr -dr com.apple.quarantine /Applications/"$BREW_CASKS_UPDATE_APP".app
+
+# ownership and permissions
+cp -a "$SCRIPT_DIR"/app/"$APP_NAME".app /Applications/
+if [[ -e /Applications/"$APP_NAME".app/custom_files/"$APP_NAME".sh ]]
+then
+	SCRIPT_NAME="$APP_NAME"
+else
+	SCRIPT_NAME=$(find /Applications/"$APP_NAME".app/custom_files -maxdepth 1 -mindepth 1 -type f -name "*.sh")
+	if [[ $(echo "$SCRIPT_NAME" | wc -l | awk '{print $1}') != "1" ]]
+	then
+		echo "SCRIPT_NAME is not set correctly, exiting..."
+		exit
+	else
+		SCRIPT_NAME=$(basename "$SCRIPT_NAME" .sh)
+	fi
+fi
+chown 501:admin /Applications/"$APP_NAME".app
+chown -R 501:admin /Applications/"$APP_NAME".app/custom_files/
+chmod 755 /Applications/"$APP_NAME".app
+chmod 770 /Applications/"$APP_NAME".app/custom_files/"$SCRIPT_NAME".sh
+xattr -dr com.apple.quarantine /Applications/"$APP_NAME".app
 
 
 ### security permissions
@@ -45,5 +60,5 @@ else
 	#sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
 fi
 
-#open /Applications/"$BREW_CASKS_UPDATE_APP".app
+#open /Applications/"$APP_NAME".app
 
