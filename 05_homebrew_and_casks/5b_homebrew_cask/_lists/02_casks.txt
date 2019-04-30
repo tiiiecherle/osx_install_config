@@ -49,7 +49,6 @@ imazing
 #insomniax
 istat-menus
 iterm2
-#itweax
 keepassx
 keepingyouawake
 keka
@@ -90,4 +89,3 @@ x-lite
 #xact
 xnconvert
 #xtrafinder	    # no longer supported in brew cask, installed later in the script
-#zipeg

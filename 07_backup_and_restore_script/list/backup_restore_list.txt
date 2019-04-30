@@ -69,10 +69,6 @@ echo AppCleaner
 m	~/Library/Preferences/com.freemacsoft.AppCleaner-Helper.plist
 m	~/Library/Preferences/com.freemacsoft.AppCleaner.plist
 
-# Audio Splitter
-echo Audio Splitter
-m	/Applications/Audio Splitter.app
-
 # AudioBookBinder
 #echo AudioBookBinder
 #m	/Applications/AudioBookBinder.app
@@ -324,10 +320,6 @@ echo iTerm
 #m	/Applications/iTerm.app
 m	~/Library/Preferences/com.googlecode.iterm2.plist
 
-# iTweaX
-echo iTweaX
-m	/Applications/iTweaX.app
-
 # jameica
 echo jameica
 #m	/Applications/jameica.app
@@ -373,10 +365,6 @@ m	/Library/LaunchDaemons/com.hostsfile.install_update.plist
 echo LibreOffice
 #m	/Applications/LibreOffice.app
 u	~/Library/Application Support/LibreOffice/4/user/registrymodifications.xcu
-
-# LiquidCD
-echo LiquidCD
-m	/Applications/LiquidCD.app
 
 # LiteIcon
 echo LiteIcon
@@ -551,10 +539,6 @@ m	~/Library/Preferences/com.blacktree.Quicksilver.plist
 # Remote Desktop
 echo Remote Desktop
 u	~/Library/Containers/com.microsoft.rdc.macos/Data/Library/Preferences/com.microsoft.rdc.macos.plist
-
-# Rename
-echo Rename
-m	/Applications/Rename.app
 
 # rename_photos
 echo rename_photos
@@ -786,11 +770,6 @@ m	~/Library/Preferences/com.xnview.XnConvert.plist
 # XtraFinder
 #echo XtraFinder
 #m	~/Library/Preferences/com.trankynam.XtraFinder.plist
-
-# Zipeg
-echo Zipeg
-m	/Applications/Zipeg.app
-m	~/Library/Preferences/com.zipeg.Zipeg.plist
 
 
 
