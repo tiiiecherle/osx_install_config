@@ -561,6 +561,7 @@ u	~/Library/Group Containers/*.ghostery.lite
 u	~/Library/Group Containers/*.com.adguard.safari.AdGuard
 u	~/Library/Containers/com.adguard.safari.AdGuard/Data/Library/Application Support/AdGuardSafariApp/config.json
 u	~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions
+m	/Applications/Google Analytics Opt Out.app
 
 # Scripts
 echo Scripts

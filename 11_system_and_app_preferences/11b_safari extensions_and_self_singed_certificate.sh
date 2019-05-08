@@ -11,6 +11,7 @@ echo "opening safari apps that include extensions..."
 open "/Applications/Better.app"
 open "/Applications/GhosteryLite.app"
 open "/Applications/AdGuard for Safari.app"
+open "/Applications/Google Analytics Opt Out.app"
 
 
 ### accepting self signed sever certificate
