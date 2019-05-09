@@ -385,6 +385,7 @@ u	~/Library/Preferences/com.uranusjr.macdown.plist
 # MacPass
 echo MacPass
 #m	/Applications/MacPass.app
+u	~/Library/Application Support/MacPass
 m	~/Library/Preferences/com.hicknhacksoftware.MacPass.plist
 
 # Macs Fan Control
