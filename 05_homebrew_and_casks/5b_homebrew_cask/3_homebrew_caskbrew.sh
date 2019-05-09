@@ -71,7 +71,7 @@ echo 'export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"' > /Users/$(logna
 source /Users/$(logname)/.bash_profile
 
 # checking installation and updating homebrew
-brew analytics off
+brew analytics on
 #cd /usr/local/Library && git stash && git clean -d -f
 brew update
 brew upgrade
