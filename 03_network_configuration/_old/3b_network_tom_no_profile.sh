@@ -138,6 +138,10 @@ sleep 2
 sudo networksetup -setv6off "$ETHERNET_DEVICE"
 #sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
 sleep 2
+sudo networksetup -createnetworkservice "$WLAN_DEVICE" "$WLAN_DEVICE"
+sleep 2
+sudo networksetup -setv6off "$WLAN_DEVICE"
+sleep 2
 
 # creating new location wlan only dhcp
 echo adding location wlan
