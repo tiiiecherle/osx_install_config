@@ -110,6 +110,8 @@ network_select() {
     ### script
 	# names of devices
     # networksetup -listallhardwareports
+    # available devices
+    # networksetup -listallnetworkservices
     ETHERNET_DEVICE="USB 10/100/1000 LAN"
     WLAN_DEVICE="Wi-Fi"
     ETHERNET_LOCATION="office_lan"
