@@ -260,7 +260,7 @@ then
 	curl https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -o "$XTRAFINDER_INSTALLER" --progress-bar
 	#open "$XTRAFINDER_INSTALLER"
 	echo "mounting image..."
-	hdiutil attach "$XTRAFINDER_INSTALLER" -quiet
+	yes | hdiutil attach "$XTRAFINDER_INSTALLER" 1>/dev/null
 	sleep 5
 	# uninstall
 	echo "uninstalling application..."
