@@ -351,79 +351,51 @@ echo ''
 
 if [[ -e "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt ]]
 then
-    echo "network profile found..."
-    . "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt
-    #echo ''
-    while IFS='' read -r line || [[ -n "$line" ]]
-    do
-        if [[ $(echo "$line" | grep "^#") != "" ]]
-        then
-            :
-        else
-            PROFILE_VARIABLE=$(echo "$line" | cut -d= -f 1)
-            # | awk -F'=' '{print $1}'
-            VARIABLE_VALUE=$(eval echo "$line" | cut -d= -f 2 | tr -d '"')
-            printf "%-30s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
-        fi
-    done <"$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt
-    #cat "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt | grep -v "^#" && printf '\n'
-    echo ''
-    VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
-    QUESTION_TO_ASK="do you want to use these settings (Y/n)? "
-    ask_for_variable
-    RUN_WITH_PROFILE="$VARIABLE_TO_CHECK"
-    sleep 0.1
-    
-    if [[ "$RUN_WITH_PROFILE" =~ ^(yes|y)$ ]]
-    then
-        echo ''
-        . "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt
-    else
-        echo ''
-        echo "exiting..."
-        echo ''
-        exit
-    fi
+    echo "network profile found for $loggedInUser..."
+    NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt
 elif [[ -e "$SCRIPT_DIR"/profiles/network_profile_example.txt ]]
 then
-    echo "no network profile found for loggedInUser..."
-    . "$SCRIPT_DIR"/profiles/network_profile_example.txt
-    while IFS='' read -r line || [[ -n "$line" ]]
-    do
-        if [[ $(echo "$line" | grep "^#") != "" ]]
-        then
-            :
-        else
-            PROFILE_VARIABLE=$(echo "$line" | cut -d= -f 1)
-            # | awk -F'=' '{print $1}'
-            VARIABLE_VALUE=$(eval echo "$line" | cut -d= -f 2 | tr -d '"')
-            printf "%-25s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
-        fi
-    done <"$SCRIPT_DIR"/profiles/network_profile_example.txt
-    #cat "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt | grep -v "^#" && printf '\n'
-    echo ''
-    VARIABLE_TO_CHECK="$RUN_WITH_EXAMPLE_PROFILE"
-    QUESTION_TO_ASK="do you want do run the script with these example profile values (Y/n)? "
-    ask_for_variable
-    RUN_WITH_EXAMPLE_PROFILE="$VARIABLE_TO_CHECK"
-    sleep 0.1
-    
-    if [[ "$RUN_WITH_EXAMPLE_PROFILE" =~ ^(yes|y)$ ]]
-    then
-        echo ''
-        . "$SCRIPT_DIR"/profiles/network_profile_example.txt
-    else
-        echo ''
-        echo "exiting..."
-        echo ''
-        exit
-    fi
+    echo "no network profile found for $loggedInUser, but example profile found..."
+    NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_example.txt
 else
-    echo "no network profile found for loggedInUser and no example profile found, exiting..."
+    echo "no network profile found for $loggedInUser and no example profile found, exiting..."
+    echo ''
+    exit
+fi    
+    
+. "$NETWORK_PROFILE"
+#echo ''
+while IFS='' read -r line || [[ -n "$line" ]]
+do
+    if [[ $(echo "$line" | grep "^#") != "" ]]
+    then
+        :
+    else
+        PROFILE_VARIABLE=$(echo "$line" | cut -d= -f 1)
+        # | awk -F'=' '{print $1}'
+        VARIABLE_VALUE=$(eval echo "$line" | cut -d= -f 2 | tr -d '"')
+        printf "%-30s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
+    fi
+done <"$NETWORK_PROFILE"
+#cat "$NETWORK_PROFILE" | grep -v "^#" && printf '\n'
+
+echo ''
+VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
+QUESTION_TO_ASK="do you want to use these settings (Y/n)? "
+ask_for_variable
+RUN_WITH_PROFILE="$VARIABLE_TO_CHECK"
+sleep 0.1
+
+if [[ "$RUN_WITH_PROFILE" =~ ^(yes|y)$ ]]
+then
+    echo ''
+    . "$NETWORK_PROFILE"
+else
+    echo ''
+    echo "exiting..."
     echo ''
     exit
 fi
-
 
 
 ###
@@ -495,45 +467,50 @@ else
     :
 fi
 
-if [[ $(networksetup -listlocations | grep "office_lan") != "" ]]
-then
-    echo "changing to location office_lan" 
-    sudo networksetup -switchtolocation "office_lan"
-    sleep 2
-    if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
+set_location() {
+    if [[ "$LOCATION_ALREADY_SET" == "yes" ]]
     then
-        sudo networksetup -setairportpower "$WLAN_DEVICE_ID" off
-        sleep 2
-        echo ''
-    else
         :
+    else
+        if [[ $(networksetup -listlocations | grep "$LOCATION_TO_SET") != "" ]]
+        then    
+            echo "changing to location $LOCATION_TO_SET" 
+            sudo networksetup -switchtolocation "$LOCATION_TO_SET"
+            sleep 2
+            if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
+            then
+                sudo networksetup -setairportpower "$WLAN_DEVICE_ID" "$WLAN_ON_OR_OFF"
+                sleep 2
+                echo ''
+            else
+                :
+            fi
+            LOCATION_ALREADY_SET="yes"
+        else
+            :
+        fi
     fi
-elif [[ $(networksetup -listlocations | grep "wlan") != "" ]]
+    unset LOCATION_TO_SET
+    unset WLAN_ON_OR_OFF
+}
+
+unset LOCATION_ALREADY_SET
+
+LOCATION_TO_SET="office_lan"
+WLAN_ON_OR_OFF="off"
+set_location
+
+LOCATION_TO_SET="wlan"
+WLAN_ON_OR_OFF="on"
+set_location
+
+LOCATION_TO_SET="automatic"
+WLAN_ON_OR_OFF="on"
+set_location
+
+if [[ "$LOCATION_ALREADY_SET" == "yes" ]]
 then
-    echo "changing to location wlan" 
-    sudo networksetup -switchtolocation "wlan"
-    sleep 2
-    if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
-    then
-        sudo networksetup -setairportpower "$WLAN_DEVICE_ID" on
-        sleep 2
-        echo ''
-    else
-        :
-    fi
-elif [[ $(networksetup -listlocations | grep "automatic") != "" ]]
-then
-    echo "changing to location automatic" 
-    sudo networksetup -switchtolocation "automatic"
-    sleep 2
-    if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
-    then
-        sudo networksetup -setairportpower "$WLAN_DEVICE_ID" on
-        sleep 2
-        echo ''
-    else
-        :
-    fi
+    :
 else
     echo "no defined location found, not selecting one specifically..."
 fi
