@@ -95,6 +95,39 @@ sudo()
 
 
 ###
+### variables
+###
+
+SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+SCRIPT_DIR_FINAL=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+
+
+### getting logged in user
+#echo "LOGNAME is $(logname)..."
+#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
+#stat -f%Su /dev/console
+#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
+# recommended way
+loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+#echo "loggedInUser is $loggedInUser..."
+
+
+### network config
+# if the script shall be run standalone without profile all of these variables have to have valid entries and have to be activated
+#ETHERNET_DEVICE="Ethernet"
+#WLAN_DEVICE="Wi-Fi"
+#SUBNET="192.168.1"
+#IP="$SUBNET".2
+#DNS="$SUBNET".1
+#CREATE_LOCATION_AUTOMATIC="yes"
+#CREATE_LOCATION_OFFICE_LAN="yes"
+#CREATE_LOCATION_WLAN="yes"
+#SHOW_VPN_IN_MENU_BAR="no"
+#CONFIGURE_FRITZ_VPN="no"
+
+
+
+###
 ### functions
 ###
 
@@ -323,84 +356,72 @@ configure_fritz_vpn() {
     fi 
 }
 
-
-
-###
-### variables
-###
-
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-SCRIPT_DIR_FINAL=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
-
-# getting logged in user
-#echo "LOGNAME is $(logname)..."
-#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-#stat -f%Su /dev/console
-#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-# recommended way
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-#echo "loggedInUser is $loggedInUser..."
-
-echo ''
-
-
-
-###
-### profile based user specifc configuration
-###
-
-if [[ -e "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt ]]
-then
-    echo "network profile found for $loggedInUser..."
-    NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt
-elif [[ -e "$SCRIPT_DIR"/profiles/network_profile_example.txt ]]
-then
-    echo "no network profile found for $loggedInUser, but example profile found..."
-    NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_example.txt
-else
-    echo "no network profile found for $loggedInUser and no example profile found, exiting..."
-    echo ''
-    exit
-fi    
-    
-. "$NETWORK_PROFILE"
-#echo ''
-while IFS='' read -r line || [[ -n "$line" ]]
-do
-    if [[ $(echo "$line" | grep "^#") != "" ]]
+# profile based user specifc configuration
+profile_based_config() {
+    if [[ -e "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt ]]
     then
-        :
+        echo "network profile found for $loggedInUser..."
+        NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt
+    elif [[ -e "$SCRIPT_DIR"/profiles/network_profile_example.txt ]]
+    then
+        echo "no network profile found for $loggedInUser, but example profile found..."
+        NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_example.txt
     else
-        PROFILE_VARIABLE=$(echo "$line" | cut -d= -f 1)
-        # | awk -F'=' '{print $1}'
-        VARIABLE_VALUE=$(eval echo "$line" | cut -d= -f 2 | tr -d '"')
-        printf "%-30s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
-    fi
-done <"$NETWORK_PROFILE"
-#cat "$NETWORK_PROFILE" | grep -v "^#" && printf '\n'
-
-echo ''
-VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
-QUESTION_TO_ASK="do you want to use these settings (Y/n)? "
-ask_for_variable
-RUN_WITH_PROFILE="$VARIABLE_TO_CHECK"
-sleep 0.1
-
-if [[ "$RUN_WITH_PROFILE" =~ ^(yes|y)$ ]]
-then
-    echo ''
+        echo "no network profile found for $loggedInUser and no example profile found, exiting..."
+        echo ''
+        exit
+    fi    
+        
     . "$NETWORK_PROFILE"
-else
+    #echo ''
+    while IFS='' read -r line || [[ -n "$line" ]]
+    do
+        if [[ $(echo "$line" | grep "^#") != "" ]]
+        then
+            :
+        else
+            PROFILE_VARIABLE=$(echo "$line" | cut -d= -f 1)
+            # | awk -F'=' '{print $1}'
+            VARIABLE_VALUE=$(eval echo "$line" | cut -d= -f 2 | tr -d '"')
+            printf "%-30s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
+        fi
+    done <"$NETWORK_PROFILE"
+    #cat "$NETWORK_PROFILE" | grep -v "^#" && printf '\n'
+    
     echo ''
-    echo "exiting..."
-    echo ''
-    exit
-fi
+    VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
+    QUESTION_TO_ASK="do you want to use these settings (Y/n)? "
+    ask_for_variable
+    RUN_WITH_PROFILE="$VARIABLE_TO_CHECK"
+    sleep 0.1
+    
+    if [[ "$RUN_WITH_PROFILE" =~ ^(yes|y)$ ]]
+    then
+        echo ''
+        . "$NETWORK_PROFILE"
+    else
+        echo ''
+        echo "exiting..."
+        echo ''
+        exit
+    fi
+}
+
 
 
 ###
 ### configuring network
 ###
+
+echo ''
+
+if [[ -z "$ETHERNET_DEVICE" || -z "$WLAN_DEVICE" || -z "$SUBNET" || -z "$IP" || -z "$DNS" || -z "$CREATE_LOCATION_AUTOMATIC" || -z "$CREATE_LOCATION_OFFICE_LAN" || -z "$CREATE_LOCATION_WLAN" || -z "$SHOW_VPN_IN_MENU_BAR" || -z "$CONFIGURE_FRITZ_VPN" ]]
+then
+  # one or more variables are undefined, running profile based config
+  profile_based_config
+else
+  :
+fi
 
 echo "configuring network..."
 echo ''
