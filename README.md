@@ -36,7 +36,7 @@ Table of contents
 [7	Backup and restore script](#7backup-and-restore-script)  
 [8	Java 6](#8java-6)  
 [9	launchd](#9launchd)  
-[10 Dock apps](#10-dock-apps)  
+[10 Dock](#10-dock)  
 [11 System and app Preferences](#11-system-and-app-preferences)  
 [12 Licenses](#12-licenses)  
 [13 Apple Mail and Accounts](#13-apple-mail-and-accounts)  
@@ -228,7 +228,7 @@ They come with installer scripts and are highly configurable.
 As Adblocking is a big thing in the internet. I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the /etc/hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a launchd service that keeps it up to date on a given intervall.
 
 
-10 Dock apps
+10 Dock
 -----
 This script completely wipes the dock and adds new entries including apps and spacer to the dock.
 
