@@ -28,10 +28,10 @@ Table of contents
 [Usage](#usage)  
 [0 Bootable usb device](#0bootable-usb-device)  
 [1 NVRAM, system integrity protection and secure boot](#1nvram-system-integrity-protection-and-secure-boot)  
-[2	System Update and copy files](#2system-update-and-copy-files)  
-[3	Network Configuration](#3network-configuration)  
-[4	SSD Optimizations](#4ssd-optimizations)  
-[5	Homebrew, Mas and Casks](#5homebrew-mas-and-casks)  
+[2	System Update and copy files](#2system-update-and-copy-files)
+[3	Homebrew, Mas and Casks](#5homebrew-casks-and-mas)  
+[4	SSD Optimizations](#4ssd-optimizations)
+[5	Network Configuration](#3network-configuration)  
 [6	Manual app installation](#6manual-app-installation)  
 [7	Backup and restore script](#7backup-and-restore-script)  
 [8	Java 6](#8java-6)  
@@ -123,31 +123,7 @@ All Macs with T2 Chips, e.g. the MacBook Pro 2018 have an additional security fe
 File 2a updates macOS on the command line if the system should not be up to date. File 2b is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts.
 
 
-3	Network Configuration
------
-As there were a lot of problems in earlier macOS versions with network configurations, especially wifi, this script deletes all locations and adds them in a new clean configuration file.
-
-Adjust to your needs and run it.
-
-If you want to reset your complete network configuration run the following commands in the terminal before running the script.
-
-```ruby
-sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist
-sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.network.identification.plist
-sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.wifi.message-tracer.plist
-sudo rm -rf /Library/Preferences/SystemConfiguration/NetworkInterfaces.plist
-sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist
-sudo reboot
-```
-
-4	SSD Optimizations
------
-Adjust to your needs and run it.
- 
-Do not run it if your volume is not an ssd.
-
-
-5	Homebrew, Mas and Casks
+3	Homebrew, Casks and Mas
 -----
 Homebrew is a really nice project and a package manager for macOS. In addition with homebrew cask it allows you to install and update software packages, players, plugins and apps on macOS.
 
@@ -163,6 +139,30 @@ These scripts install macOS Command Line Tools, homebrew, mas and homebrew-cask.
 
 Adjust the scripts and install lists to your needs and run them.
 
+
+4	SSD Optimizations
+-----
+Adjust to your needs and run it.
+ 
+Do not run it if your volume is not an ssd.
+
+
+5	Network Configuration
+-----
+As there were a lot of problems in earlier macOS versions with network configurations, especially wifi, this script deletes all locations and adds them in a new clean configuration file.
+
+Adjust to your needs and run it.
+
+If you want to reset your complete network configuration run the following commands in the terminal before running the script.
+
+```ruby
+sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist
+sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.network.identification.plist
+sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.wifi.message-tracer.plist
+sudo rm -rf /Library/Preferences/SystemConfiguration/NetworkInterfaces.plist
+sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist
+sudo reboot
+```
 
 6	Manual app installation
 -----

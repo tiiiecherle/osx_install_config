@@ -346,7 +346,7 @@ echo ''
 sleep 1
 mas reset
 sleep 5
-. "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
+. "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 
 
 ###

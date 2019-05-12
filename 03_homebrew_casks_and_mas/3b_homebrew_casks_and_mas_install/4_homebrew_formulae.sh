@@ -159,7 +159,7 @@ else
     
     CHECK_IF_CASKS_INSTALLED="no"
     CHECK_IF_MASAPPS_INSTALLED="no"
-    . "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
+    . "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 fi
     
 

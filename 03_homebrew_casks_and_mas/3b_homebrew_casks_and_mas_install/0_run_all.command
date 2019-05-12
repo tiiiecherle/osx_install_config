@@ -135,7 +135,7 @@ echo ''
 
 
 ### homebrew, homebrew-cask and other taps
-. "$SCRIPT_DIR"/3_homebrew_caskbrew.sh
+. "$SCRIPT_DIR"/3_homebrew_cask.sh
 
 
 ### updating homebrew
@@ -259,7 +259,7 @@ cleanup_all_homebrew
 
 ### checking success of installations
 echo ''
-. "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
+. "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 
 }
 time run_all

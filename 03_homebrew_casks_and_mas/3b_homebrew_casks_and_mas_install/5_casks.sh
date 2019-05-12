@@ -674,7 +674,7 @@ fi
 CHECK_IF_FORMULAE_INSTALLED="no"
 CHECK_IF_MASAPPS_INSTALLED="no"
 #echo ''
-. "$SCRIPT_DIR"/7_formulae_and_casks_install_check.sh
+. "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 
 # installing user specific casks
 if [[ "$USER" == "wolfgang" ]]

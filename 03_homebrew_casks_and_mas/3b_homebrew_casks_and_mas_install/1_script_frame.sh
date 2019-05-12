@@ -570,9 +570,9 @@ function checking_parallel() {
 function checking_homebrew() {
     if [[ $(which brew) == "" ]]
     then        
-        if [[ -e "$SCRIPT_DIR"/3_homebrew_caskbrew.sh ]]
+        if [[ -e "$SCRIPT_DIR"/3_homebrew_cask.sh ]]
         then
-            . "$SCRIPT_DIR"/3_homebrew_caskbrew.sh
+            . "$SCRIPT_DIR"/3_homebrew_cask.sh
         else
             echo ''
             echo "homebrew and install script are missing, exiting..."
