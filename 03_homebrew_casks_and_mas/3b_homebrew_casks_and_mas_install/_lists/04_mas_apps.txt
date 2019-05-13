@@ -12,12 +12,12 @@
 1295203466 	Microsoft Remote Desktop 10
 483820530	QR Journal
 1292198261	iMazing HEIC Converter
-509182449	Photo Transfer App
-456624497	Brightness Slider
+#509182449	Photo Transfer App
+#456624497	Brightness Slider
 507257563	Sip
 561712678       AudioSwitcher
 888806818	Password Factory
-509148961	SMARTReporter
+#509148961	SMARTReporter
 1436953057	GhosteryLite
 1121192229	Better
 1440147259	AdGuard for Safari

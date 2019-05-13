@@ -1,33 +1,21 @@
 ### casks with long install times first
 xquartz
-#java
 adoptopenjdk
-#gpgtools
-#osxfuse
-#silverlight
 #virtualbox         # is installed as a dependency of virtualbox-extension-pack
 virtualbox-extension-pack
-#totalfinder
 #libreoffice        # is installed as a dependency of libreoffice-language-pack
 libreoffice-language-pack
-#openoffice
-#onlyoffice
 
-### alpabetical
+### alphabetical
 adobe-acrobat-reader
 alfred
 angry-ip-scanner
 appcleaner
-#apptivate
-#avast-security
-#avg-antivirus
 bartender
 bbedit
 brackets
 burn
-#chromium
 coconutbattery
-#cog
 commander-one
 coteditor
 cyberduck
@@ -35,35 +23,27 @@ disk-inventory-x
 eaglefiler
 easyfind
 flash-npapi
-#filezilla
 firefox
 google-earth-pro
 #google-earth-web-plugin
 handbrake
 hex-fiend
-#ibackup
 ibackup-viewer
 iina
 imageoptim
 imazing
-#insomniax
 istat-menus
 iterm2
-keepassx
 keepingyouawake
 keka
 liteicon
 macdown
 macpass
 #macs-fan-control
-#malwarebytes
-mucommander
 namechanger
 nextcloud
 ondesoft-audiobook-converter
 onyx
-#oversight
-#plex-media-server
 photosync
 prefs-editor
 progressive-downloader
@@ -74,11 +54,8 @@ teamviewer
 the-archive-browser
 the-unarchiver
 tnefs-enough
-trolcommander
-#tunnelblick
 unified-remote
 veracrypt
-#videomonkey
 vlc
 vlc-webplugin
 vnc-viewer
@@ -86,6 +63,4 @@ vox
 whatsapp
 witch
 x-lite
-#xact
 xnconvert
-#xtrafinder	    # no longer supported in brew cask, installed later in the script

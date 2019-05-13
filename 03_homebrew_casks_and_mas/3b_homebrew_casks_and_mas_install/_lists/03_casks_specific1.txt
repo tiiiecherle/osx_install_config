@@ -4,7 +4,5 @@ deluge
 github
 jameica
 #jdownloader
-#macupdate
-#remote-buddy
 spotify
 transmission
