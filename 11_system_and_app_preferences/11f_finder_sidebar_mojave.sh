@@ -143,6 +143,8 @@ trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM 
 # installs to /usr/local/bin/mysides
 # -rwxr-xr-x    1 root  wheel  47724 14 Apr 02:07 mysides
 # https://github.com/mosen/mysides
+# newer version here
+# https://github.com/Tatsh/mysides
 MYSIDESVERSION="1.0.1"
 
 VARIABLE_TO_CHECK="$INSTALL_UPDATE_MYSIDES"
@@ -154,7 +156,8 @@ if [[ "$INSTALL_UPDATE_MYSIDES" =~ ^(yes|y)$ ]]
 then
 	echo "downloading and installing mysides..."
 	MYSIDESINSTALLER="/Users/$USER/Desktop/mysides-"$MYSIDESVERSION".pkg"
-	wget https://github.com/mosen/mysides/releases/download/v"$MYSIDESVERSION"/mysides-"$MYSIDESVERSION".pkg -O "$MYSIDESINSTALLER"
+	#wget https://github.com/mosen/mysides/releases/download/v"$MYSIDESVERSION"/mysides-"$MYSIDESVERSION".pkg -O "$MYSIDESINSTALLER"
+	curl https://github.com/mosen/mysides/releases/download/v"$MYSIDESVERSION"/mysides-"$MYSIDESVERSION".pkg -o "$MYSIDESINSTALLER" --progress-bar
 	open "$MYSIDESINSTALLER"
 	echo "waiting for installer to finish..."
 	while ps aux | grep 'Installer.app.*Installer' | grep -v grep > /dev/null; do sleep 1; done
