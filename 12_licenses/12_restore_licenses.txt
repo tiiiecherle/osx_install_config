@@ -5,7 +5,6 @@ RESTORE LICENSES
 MANUAL RESTORE
 
 microsoft office (logout from account afterwards)
-adobe cs
 ondesoft audiobook converter
 extfs mac
 
@@ -17,9 +16,4 @@ monkey bilanz
 eagle filer						
 imazing
 istat menus
-overflow
-pdf shrink
-password wallet
 the archive browser
-totalfinder
-

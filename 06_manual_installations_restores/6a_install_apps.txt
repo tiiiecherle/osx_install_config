@@ -1,56 +1,7 @@
 INSTALL ADDITIONAL APPS
 
-# microsoft office 2016
-	Word
-	Excel
-	PowerPoint
-	AutoUpdate
-
-"/Library/Application Support/Microsoft/MAU2.0/Microsoft AutoUpdate.app/Contents/MacOS/Microsoft AutoUpdate"
-
-
-# adobe cs 5.5
-# needed for adobe cs5 installer
-pkill -9 SafariPlugInUpdateNotifier		
-pkill -9 SafariBookmarksSyncAgent
-pkill -9 SafariNotificationAgent		
-
-
-# if the installer refuses to start when double clicking, run it from terminal
-/Volumes/CS5_5\ Design\ Prm/Adobe\ CS5_5\ Design\ Premium/Install.app/Contents/MacOS/Install
-
-adobe creative suite 5.5 (select needed installers including all components)
-	flash
-	acrobat
-	dreamweaver
-	illustrator
-	indesign
-	photoshop
-
-	updates
-	1	open /Library/Application\ Support/Adobe/OOBE/PDApp/core/Adobe\ Application\ Manager.app
-		updates - all
-
-	2	open /Library/Application\ Support/Adobe/OOBE/PDApp/core/Adobe\ Application\ Manager.app
-
-	3	open /Applications/Adobe\ Creative\ Cloud/Uninstall\ Adobe\ Creative\ Cloud
-		# reinstall application manager
-		# rm -rf "/Applications/Utilities/Adobe Application Manager"
-		# install from ApplicationManager10.0_all.dmg
-
-	4	manually install updates
-		#10.14
-		Extension Manager
-		Indesign
-
-	5	open /Applications/Adobe\ InDesign\ CS5.5/Adobe\ InDesign\ CS5.5.app
-		help - updates - all
-		#pkill -9 InDesign		# or force quit via gui
-
-	6	open /Applications/Adobe\ Acrobat\ X\ Pro/Adobe\ Acrobat\ Pro.app
-		# if update server does not respond, download and install update manually
-		# get latest v10 update from here
-		# http://supportdownloads.adobe.com/product.jsp?product=1&platform=Macintosh
-
- 
-
+# if apps shall be installed that are not installable via
+# 	homebrew-cask
+# 	appstore
+# 	restore from backup
+# note them here and add instructions if needed
