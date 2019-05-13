@@ -228,6 +228,8 @@ create_location_office_lan() {
                 sleep 2
                 sudo networksetup -setv6off "$WLAN_DEVICE"
                 sleep 2
+                # make sure lan has a higher priority than wlan if both are enabled
+                networksetup -ordernetworkservices "$ETHERNET_DEVICE" "$WLAN_DEVICE"
             else
                 :
             fi
