@@ -107,7 +107,7 @@ network_select() {
     fi
     
     
-    ### script
+    ### variables
 	# names of devices
     # networksetup -listallhardwareports
     # available devices
@@ -117,6 +117,63 @@ network_select() {
     ETHERNET_LOCATION="office_lan"
     WLAN_LOCATION="wlan"
     
+    # decvice ids
+    # special characters in the device name need to be escaped or worked around
+    #ETHERNET_DEVICE_ESCAPED="$(echo $ETHERNET_DEVICE | sed 's/\//\\\//g')"
+    #echo "$ETHERNET_DEVICE_ESCAPED"
+    #ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk '/Hardware Port: '"$ETHERNET_DEVICE_ESCAPED"'/{getline; print $2}')
+    if [[ "$ETHERNET_DEVICE" != "" ]]
+    then
+        ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
+        #echo "$ETHERNET_DEVICE_ID"
+    else
+        :
+    fi
+    if [[ "$WLAN_DEVICE" != "" ]]
+    then
+        #WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk '/Hardware Port: '"$WLAN_DEVICE"'/{getline; print $2}')
+        WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
+        #echo "$WLAN_DEVICE_ID"
+    else
+        :
+    fi
+    
+    
+    ### functions
+    enable_wlan_device() {
+        # make sure wlan device is enabled when using wlan profile
+        if [[ "$WLAN_DEVICE_ID" != "" ]]
+        then
+            sleep 1
+            if [[ $(sudo networksetup -getairportpower "$WLAN_DEVICE_ID" | awk '{print $NF}') == "Off" ]]
+            then
+                sudo networksetup -setairportpower "$WLAN_DEVICE_ID" On
+            else
+                :
+            fi
+        else
+            :
+        fi
+    }
+    
+    disable_wlan_device() {
+        # make sure wlan device is enabled when using wlan profile
+        if [[ "$WLAN_DEVICE_ID" != "" ]]
+        then
+            sleep 1
+            if [[ $(sudo networksetup -getairportpower "$WLAN_DEVICE_ID" | awk '{print $NF}') == "On" ]]
+            then
+                sudo networksetup -setairportpower "$WLAN_DEVICE_ID" Off
+            else
+                :
+            fi
+        else
+            :
+        fi
+    }
+    
+    
+    ### script
     # checking if locations are valid
     if [[ $(networksetup -listlocations | grep "$ETHERNET_LOCATION") != "" ]] && [[ $(networksetup -listlocations | grep "$WLAN_LOCATION") != "" ]]
     then
@@ -132,17 +189,13 @@ network_select() {
         if [[ $(networksetup -getcurrentlocation | grep "$ETHERNET_LOCATION") != "" ]]
         then
             echo "location "$ETHERNET_LOCATION" already enabled..."
+            disable_wlan_device
         else
             echo "changing to location "$ETHERNET_LOCATION"..." 
             sudo networksetup -switchtolocation "$ETHERNET_LOCATION"
+            disable_wlan_device
             printf '\n\n'
             sleep 10
-            # special characters in the device name need to be escaped or worked around
-            #ETHERNET_DEVICE_ESCAPED="$(echo $ETHERNET_DEVICE | sed 's/\//\\\//g')"
-            #echo "$ETHERNET_DEVICE_ESCAPED"
-            #ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk '/Hardware Port: '"$ETHERNET_DEVICE_ESCAPED"'/{getline; print $2}')
-            ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
-            #echo "$ETHERNET_DEVICE_ID"
             if [[ $(sudo -u $loggedInUser command -v VBoxManage) != "" ]]
             then
                 if [[ "$ETHERNET_DEVICE_ID" =~ ^en[0-9]$ ]]
@@ -167,18 +220,17 @@ network_select() {
     
     # changing to wlan profile if lan is not connected
     if [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE") == "" ]]
-    then
+    then    
         if [[ $(networksetup -getcurrentlocation | grep "$WLAN_LOCATION") != "" ]]
         then
             echo "location "$WLAN_LOCATION" already enabled..."
+            enable_wlan_device
         else
-            echo "changing to location "$WLAN_LOCATION"..." 
+            echo "changing to location "$WLAN_LOCATION"..."
             sudo networksetup -switchtolocation "$WLAN_LOCATION"
+            enable_wlan_device
             printf '\n\n'
             sleep 10
-            #WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk '/Hardware Port: '"$WLAN_DEVICE"'/{getline; print $2}')
-            WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
-            #echo "$WLAN_DEVICE_ID"
             if [[ $(sudo -u $loggedInUser command -v VBoxManage) != "" ]]
             then
                 if [[ "$WLAN_DEVICE_ID" =~ ^en[0-9]$ ]]
