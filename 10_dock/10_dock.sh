@@ -72,10 +72,10 @@ add_entry_recent() {
     # 2		any number, but only takes effect if viewas is set to grid
     #
     # VIEWAS   
-    # 1	    Automatic
-    # 2	    Stack
-    # 3		Grid
-    # 4	    List
+    # 0	     	Automatic
+    # 1	     	Stack
+    # 2		Grid
+    # 3	       	List
 }
 
 # using profiles
