@@ -69,7 +69,7 @@ echo "installing homebrew packages..."
 echo ''
 
 # installing formulae
-homebrewpackages=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_packages.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+homebrewpackages=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_formulae.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
 if [[ "$homebrewpackages" == "" ]]
 then
 	:
