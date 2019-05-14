@@ -113,9 +113,27 @@ loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStor
 
 
 ### network config
+echo ''
 # if the script shall be run standalone without profile all of these variables have to have valid entries and have to be activated
-#ETHERNET_DEVICE="Ethernet"
+WLAN_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: AirPort" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
 #WLAN_DEVICE="Wi-Fi"
+if [[ "$WLAN_DEVICE" != "" ]]
+then
+    echo "wlan device $WLAN_DEVICE found..."
+    WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
+else
+    echo "no wlan device found..."
+fi
+ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
+#ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018
+#ETHERNET_DEVICE="Ethernet"                 # imacs
+if [[ "$ETHERNET_DEVICE" != "" ]]
+then
+    echo "ethernet device $ETHERNET_DEVICE found..."
+    ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
+else
+    echo "no ethernet device found..."
+fi
 #SUBNET="192.168.1"
 #IP="$SUBNET".2
 #DNS="$SUBNET".1
@@ -150,7 +168,7 @@ create_location_automatic() {
     sleep 2
     sudo networksetup -switchtolocation "Automatisch"
     sleep 2
-    if [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
+    if [[ "$ETHERNET_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
     then
         sudo networksetup -setv6off "$ETHERNET_DEVICE"
         #sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
@@ -158,7 +176,7 @@ create_location_automatic() {
         :
     fi
     sleep 2
-    if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
+    if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
     then
         sudo networksetup -setv6off "$WLAN_DEVICE"
         #sudo networksetup -setv6automatic "$WLAN_DEVICE"
@@ -173,7 +191,7 @@ create_location_office_lan() {
     # creating new location office_lan
     echo "adding location office_lan..."
     
-    if [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
+    if [[ "$ETHERNET_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
     then
         # checking SUBNET & IP
     	if echo "$SUBNET"."$IP" | egrep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' > /dev/null 2>&1
@@ -230,6 +248,9 @@ create_location_office_lan() {
                 sleep 2
                 # make sure lan has a higher priority than wlan if both are enabled
                 networksetup -ordernetworkservices "$ETHERNET_DEVICE" "$WLAN_DEVICE"
+                # all available network devices have be be used in this order or an arror will occur
+                #networksetup -listnetworkserviceorder
+                #networksetup -listnetworkserviceorder | awk -F'\\) ' '/\(1\)/ {print $2}'
             else
                 :
             fi
@@ -237,13 +258,13 @@ create_location_office_lan() {
             :
         fi
     else
-        echo "ethernet device not found in hardewareports, skipping location office_lan..."
+        echo "ethernet device not present or not found in hardewareports, skipping..."
         #echo ''
     fi
 }
 
 create_location_wlan() {
-    if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
+    if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
     then
         # creating new location wlan only dhcp
         echo "adding location wlan..."
@@ -258,7 +279,7 @@ create_location_wlan() {
         #sudo networksetup -setv6automatic "$WLAN_DEVICE"
         sleep 2
     else
-        echo "wifi device not found in hardewareports, skipping location wlan..."
+        echo "wifi device not present or not found in hardewareports, skipping..."
         echo ''
     fi
 }
@@ -483,13 +504,6 @@ echo ''
 
 
 ### changing to location
-if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
-then
-    WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
-else
-    :
-fi
-
 set_location() {
     if [[ "$LOCATION_ALREADY_SET" == "yes" ]]
     then

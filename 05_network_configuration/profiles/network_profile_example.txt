@@ -1,5 +1,7 @@
-ETHERNET_DEVICE="Ethernet"
-WLAN_DEVICE="Wi-Fi"
+# added as variable in script
+#ETHERNET_DEVICE="Ethernet"
+#WLAN_DEVICE="Wi-Fi"
+
 SUBNET="192.168.1"
 IP="$SUBNET".2
 DNS="$SUBNET".1
