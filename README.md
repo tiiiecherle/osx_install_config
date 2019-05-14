@@ -149,9 +149,9 @@ Do not run it if your volume is not an ssd.
 
 5	Network Configuration
 -----
-As there were a lot of problems in earlier macOS versions with network configurations, especially wifi, this script deletes all locations and adds them in a new clean configuration file.
+As there were a lot of problems in earlier macOS versions with network configurations, especially wifi, this script deletes all locations and adds them as a new clean configuration file.
 
-Adjust to your needs and run it.
+The script can be run with profiles - to be usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `network_profile_USER.txt`. Change USER to your logged in macOS username.
 
 If you want to reset your complete network configuration run the following commands in the terminal before running the script.
 
@@ -180,6 +180,8 @@ When running the script by double clilcking the `run_backup_script.command` you 
 The lines in the `.../list/backup_restore_list.txt` specify the files and folders to be backed up or restored.
 
 All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check of the file at the beginning. Commented lines are ignored and the echo lines will be displayed in the Terminal while running.
+
+Over time the script gathered more and more backup options for different purposes. To make usage for multiple users easier and faster it can be run with profiles. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `backup_profile_USER.txt`. Change USER to your logged in macOS username.
 
 Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings. That's why I splitted it up to a master and user restore. Everything that is marked as master will be restored from a selected master backup, all entries marked as user will be restored from the selected user backup. Master and user backups can be selected when running `run_restore_script.command`.
 
@@ -230,9 +232,9 @@ As Adblocking is a big thing in the internet. I had a closer look and found a go
 
 10 Dock
 -----
-This script completely wipes the dock and adds new entries including apps and spacer to the dock.
+This script completely wipes the dock and adds new entries including apps, spacer, folders or recent applications/documents to the dock. For folders and recent entries it includes options for the icon size (grid only) and the type to be used (automatic, stack, grid or list).
 
-Adjust to your needs and run it.
+The script can be run with profiles - to be usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `dock_profile_USER.txt`. Change USER to your logged in macOS username.
 
 
 11 System and app Preferences
@@ -286,6 +288,8 @@ and puts the needed entries in it. All other entries in the file will be deleted
 15 Manual Preferences
 -----
 Despite all the automation, not everything can be done by the scripts yet. Those files (for apple apps and system preferences) just give me a checklist of all preferences to be set manually. Every help to make this list shorter and add the settings to a script is welcome.
+
+At the end of every clean installation there are a few steps that take some cpu power and time before the mac is completely ready to be used, e.g. indexing emails after restore. All steps needed on my systems are documented in a separate file in this section, too.
 
 
 16 Seed update configuration
