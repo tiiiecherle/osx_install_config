@@ -87,13 +87,86 @@ fi
 sudo echo "" >> "$LOGFILE"
 sudo echo $EXECTIME >> "$LOGFILE"
 
+### functions
+getting_network_device_ids(){
+    # sourcing profile variables
+    NETWORK_DEVICES_CONFIG_FILE=/Users/"$loggedInUser"/Library/Preferences/network_devices.conf
+    if [[ -e "$NETWORK_DEVICES_CONFIG_FILE" ]]
+    then
+        . "$NETWORK_DEVICES_CONFIG_FILE"
+    else
+        echo "$NETWORK_DEVICES_CONFIG_FILE not found, exiting..."
+        echo ''
+        exit
+    fi
+    # wlan device id
+    if [[ "$WLAN_DEVICE" != "" ]]
+    then
+        if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
+        then
+            WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
+            echo "wlan device $WLAN_DEVICE present as $WLAN_DEVICE_ID..."
+        else
+            echo "wlan device $WLAN_DEVICE not present..."
+        fi
+    else
+        echo "no wlan device in devices profile..."
+    fi
+    # ethernet device id
+    if [[ "$ETHERNET_DEVICE" != "" ]]
+    then
+        if [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
+        then
+            ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
+            echo "ethernet device $ETHERNET_DEVICE present as $ETHERNET_DEVICE_ID..."
+        else
+            echo "ethernet device $ETHERNET_DEVICE not present..."
+        fi
+    else
+        echo "no ethernet device in devices profile..."
+    fi
+    echo ''
+}
 
-### function
+enable_wlan_device() {
+    # make sure wlan device is enabled when using wlan profile
+    if [[ "$WLAN_DEVICE_ID" != "" ]]
+    then
+        sleep 1
+        if [[ $(sudo networksetup -getairportpower "$WLAN_DEVICE_ID" | awk '{print $NF}') == "Off" ]]
+        then
+            sudo networksetup -setairportpower "$WLAN_DEVICE_ID" On
+        else
+            :
+        fi
+    else
+        :
+    fi
+}
+
+disable_wlan_device() {
+    # make sure wlan device is enabled when using wlan profile
+    if [[ "$WLAN_DEVICE_ID" != "" ]]
+    then
+        sleep 1
+        if [[ $(sudo networksetup -getairportpower "$WLAN_DEVICE_ID" | awk '{print $NF}') == "On" ]]
+        then
+            sudo networksetup -setairportpower "$WLAN_DEVICE_ID" Off
+        else
+            :
+        fi
+    else
+        :
+    fi
+}
+
+
+### network select
 network_select() {
     
     ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
-    
+    echo''
     
     ### sourcing .bash_profile or setting PATH
     # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
@@ -112,65 +185,16 @@ network_select() {
     # networksetup -listallhardwareports
     # available devices
     # networksetup -listallnetworkservices
-    echo ''
-    WLAN_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: AirPort" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
-    #WLAN_DEVICE="Wi-Fi"
-    if [[ "$WLAN_DEVICE" != "" ]]
-    then
-        echo "wlan device $WLAN_DEVICE found..."
-        WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
-    else
-        echo "no wlan device found..."
-    fi
-    ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
-    #ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018
-    #ETHERNET_DEVICE="Ethernet"                 # imacs
-    if [[ "$ETHERNET_DEVICE" != "" ]]
-    then
-        echo "ethernet device $ETHERNET_DEVICE found..."
-        ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
-    else
-        echo "no ethernet device found..."
-    fi
-    echo ''
+    
+    # system_profiler SPNetworkDataType only detects devices that are part of the active location
+    # therefore switch to location automatic for detection
+    
+    # network devices and ids
+    getting_network_device_ids
+    
     # locations
     ETHERNET_LOCATION="office_lan"
     WLAN_LOCATION="wlan"
-    
-    
-    ### functions
-    enable_wlan_device() {
-        # make sure wlan device is enabled when using wlan profile
-        if [[ "$WLAN_DEVICE_ID" != "" ]]
-        then
-            sleep 1
-            if [[ $(sudo networksetup -getairportpower "$WLAN_DEVICE_ID" | awk '{print $NF}') == "Off" ]]
-            then
-                sudo networksetup -setairportpower "$WLAN_DEVICE_ID" On
-            else
-                :
-            fi
-        else
-            :
-        fi
-    }
-    
-    disable_wlan_device() {
-        # make sure wlan device is enabled when using wlan profile
-        if [[ "$WLAN_DEVICE_ID" != "" ]]
-        then
-            sleep 1
-            if [[ $(sudo networksetup -getairportpower "$WLAN_DEVICE_ID" | awk '{print $NF}') == "On" ]]
-            then
-                sudo networksetup -setairportpower "$WLAN_DEVICE_ID" Off
-            else
-                :
-            fi
-        else
-            :
-        fi
-    }
-    
     
     ### script
     # changing to lan profile if lan is connected
@@ -210,7 +234,7 @@ network_select() {
             :
         fi
     else
-        echo "ethernet location invalid, skipping..."
+        echo "ethernet location not found, skipping..."
     fi
     
     # changing to wlan profile if lan is not connected
@@ -250,7 +274,7 @@ network_select() {
             :
         fi
     else
-        echo "wlan location invalid, exiting..."
+        echo "wlan location not found, exiting..."
         echo ''
         exit
     fi

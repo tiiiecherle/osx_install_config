@@ -113,27 +113,9 @@ loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStor
 
 
 ### network config
-echo ''
 # if the script shall be run standalone without profile all of these variables have to have valid entries and have to be activated
-WLAN_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: AirPort" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
 #WLAN_DEVICE="Wi-Fi"
-if [[ "$WLAN_DEVICE" != "" ]]
-then
-    echo "wlan device $WLAN_DEVICE found..."
-    WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
-else
-    echo "no wlan device found..."
-fi
-ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
-#ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018
-#ETHERNET_DEVICE="Ethernet"                 # imacs
-if [[ "$ETHERNET_DEVICE" != "" ]]
-then
-    echo "ethernet device $ETHERNET_DEVICE found..."
-    ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
-else
-    echo "no ethernet device found..."
-fi
+#ETHERNET_DEVICE="USB 10/100/1000 LAN"
 #SUBNET="192.168.1"
 #IP="$SUBNET".2
 #DNS="$SUBNET".1
@@ -142,8 +124,6 @@ fi
 #CREATE_LOCATION_WLAN="yes"
 #SHOW_VPN_IN_MENU_BAR="no"
 #CONFIGURE_FRITZ_VPN="no"
-
-
 
 ###
 ### functions
@@ -159,6 +139,103 @@ ask_for_variable() {
 		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
 	done
 	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+}
+
+create_network_devices_profile(){
+    # starting withe a clean config file
+    NETWORK_DEVICES_CONFIG_FILE=/Users/"$loggedInUser"/Library/Preferences/network_devices.conf
+    if [[ -e "$NETWORK_DEVICES_CONFIG_FILE" ]]
+    then
+        rm -f "$NETWORK_DEVICES_CONFIG_FILE"
+    else
+        :
+    fi
+    touch "$NETWORK_DEVICES_CONFIG_FILE"
+    chown "$loggedInUser":staff "$NETWORK_DEVICES_CONFIG_FILE"
+    chmod 700 "$NETWORK_DEVICES_CONFIG_FILE"
+            
+    # system_profiler SPNetworkDataType only detects devices that are part of the active location
+    # therefore create and switch to location that contains all present devices for detection
+    echo ''
+    LOCATION_ALL=$(networksetup -listlocations | grep "^all$")
+    if [[ "$LOCATION_ALL" == "" ]]
+    then
+        echo "adding location all on order to detect names of network devices..."
+        sudo networksetup -createlocation "all" populate >/dev/null 2>&1
+        sleep 2
+    else
+        echo "location all found, activating..."
+    fi
+    sudo networksetup -switchtolocation "all"
+    sleep 2
+    echo ''
+    
+    # get device names
+    WLAN_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: AirPort" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
+    #WLAN_DEVICE="Wi-Fi"
+    ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep -v "Bluetooth" | grep -v "Bridge")
+    #ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018
+    #ETHERNET_DEVICE="Ethernet"                 # imacs
+    BLUETOOTH_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep "Bluetooth")
+    THUNDERBOLT_BRIDGE_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep "Bridge")
+
+    # write device names to profile as variable to be usable in this and other script
+    echo 'WLAN_DEVICE="'$WLAN_DEVICE'"' >> "$NETWORK_DEVICES_CONFIG_FILE"
+    echo 'ETHERNET_DEVICE="'$ETHERNET_DEVICE'"' >> "$NETWORK_DEVICES_CONFIG_FILE"
+    echo 'BLUETOOTH_DEVICE="'$BLUETOOTH_DEVICE'"' >> "$NETWORK_DEVICES_CONFIG_FILE"
+    echo 'THUNDERBOLT_BRIDGE_DEVICE="'$THUNDERBOLT_BRIDGE_DEVICE'"' >> "$NETWORK_DEVICES_CONFIG_FILE"
+    
+    echo ''
+    echo "the following devices were found and added to the config file..."
+    printf "%-30s %-30s\n" "wlan" "$WLAN_DEVICE"
+    printf "%-30s %-30s\n" "ethernet" "$ETHERNET_DEVICE"
+    printf "%-30s %-30s\n" "bluetooth" "$BLUETOOTH_DEVICE"
+    printf "%-30s %-30s\n" "thunderbolt bridge" "$THUNDERBOLT_BRIDGE_DEVICE"
+    echo ''
+    
+    # changing to another location to delete location all
+    sudo networksetup -switchtolocation "$(networksetup -listlocations | grep -v 'all' | sort -n | head -n 1)" 1>/dev/null
+    sudo networksetup -deletelocation "all" 1>/dev/null
+}
+
+getting_network_device_ids(){
+    # sourcing profile variables
+    NETWORK_DEVICES_CONFIG_FILE=/Users/"$loggedInUser"/Library/Preferences/network_devices.conf
+    if [[ -e "$NETWORK_DEVICES_CONFIG_FILE" ]]
+    then
+        . "$NETWORK_DEVICES_CONFIG_FILE"
+    else
+        echo "$NETWORK_DEVICES_CONFIG_FILE not found, exiting..."
+        echo ''
+        exit
+    fi
+    # wlan device id
+    if [[ "$WLAN_DEVICE" != "" ]]
+    then
+        if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
+        then
+            WLAN_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$WLAN_DEVICE" '$0 ~ x{getline; print $2}')
+            echo "wlan device $WLAN_DEVICE present as $WLAN_DEVICE_ID..."
+        else
+            echo "wlan device $WLAN_DEVICE not present..."
+        fi
+    else
+        echo "no wlan device in devices profile..."
+    fi
+    # ethernet device id
+    if [[ "$ETHERNET_DEVICE" != "" ]]
+    then
+        if [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
+        then
+            ETHERNET_DEVICE_ID=$(networksetup -listallhardwareports | awk -v x="$ETHERNET_DEVICE" '$0 ~ x{getline; print $2}')
+            echo "ethernet device $ETHERNET_DEVICE present as $ETHERNET_DEVICE_ID..."
+        else
+            echo "ethernet device $ETHERNET_DEVICE not present..."
+        fi
+    else
+        echo "no ethernet device in devices profile..."
+    fi
+    echo ''
 }
 
 create_location_automatic() {
@@ -258,7 +335,7 @@ create_location_office_lan() {
             :
         fi
     else
-        echo "ethernet device not present or not found in hardewareports, skipping..."
+        echo "ethernet device not present or not defined, skipping..."
         #echo ''
     fi
 }
@@ -279,7 +356,7 @@ create_location_wlan() {
         #sudo networksetup -setv6automatic "$WLAN_DEVICE"
         sleep 2
     else
-        echo "wifi device not present or not found in hardewareports, skipping..."
+        echo "wlan device not present or not defined, skipping..."
         echo ''
     fi
 }
@@ -436,7 +513,9 @@ profile_based_config() {
 ### configuring network
 ###
 
-echo ''
+create_network_devices_profile
+
+getting_network_device_ids
 
 if [[ -z "$ETHERNET_DEVICE" || -z "$WLAN_DEVICE" || -z "$SUBNET" || -z "$IP" || -z "$DNS" || -z "$CREATE_LOCATION_AUTOMATIC" || -z "$CREATE_LOCATION_OFFICE_LAN" || -z "$CREATE_LOCATION_WLAN" || -z "$SHOW_VPN_IN_MENU_BAR" || -z "$CONFIGURE_FRITZ_VPN" ]]
 then
@@ -541,7 +620,7 @@ LOCATION_TO_SET="wlan"
 WLAN_ON_OR_OFF="on"
 set_location
 
-LOCATION_TO_SET="automatic"
+LOCATION_TO_SET=$(networksetup -listlocations | grep --ignore-case "^auto")
 WLAN_ON_OR_OFF="on"
 set_location
 
