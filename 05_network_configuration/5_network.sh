@@ -514,7 +514,7 @@ set_location() {
             echo "changing to location $LOCATION_TO_SET" 
             sudo networksetup -switchtolocation "$LOCATION_TO_SET"
             sleep 2
-            if [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
+            if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
             then
                 sudo networksetup -setairportpower "$WLAN_DEVICE_ID" "$WLAN_ON_OR_OFF"
                 sleep 2

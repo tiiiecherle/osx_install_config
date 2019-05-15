@@ -176,7 +176,7 @@ network_select() {
     # changing to lan profile if lan is connected
     if [[ $(networksetup -listlocations | grep "$ETHERNET_LOCATION") != "" ]]
     then
-        if [[ "$ETHERNET_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE") != "" ]]
+        if [[ "$ETHERNET_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
         then
             if [[ $(networksetup -getcurrentlocation | grep "$ETHERNET_LOCATION") != "" ]]
             then
@@ -216,7 +216,7 @@ network_select() {
     # changing to wlan profile if lan is not connected
     if [[ $(networksetup -listlocations | grep "$WLAN_LOCATION") != "" ]]
     then
-        if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE") == "" ]]
+        if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") == "" ]]
         then    
             if [[ $(networksetup -getcurrentlocation | grep "$WLAN_LOCATION") != "" ]]
             then
