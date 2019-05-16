@@ -218,16 +218,32 @@ In my case this script is deprecated and no longer used.
 9	launchd
 -----
 
-##### run on network change, boot, login or logout
+launchd is a unified operating system service management framework which starts, stops and manages daemons, applications, processes, and scripts in macOS.
 
-These Scripts give the possibility to run commands or scripts on certian specified occasions.
-
-They come with installer scripts and are highly configurable.
+As it is sometimes very helpful to run scripts on boot (as root or user), at login or on logout these scripts show how to do that. They come with installer scripts and are highly configurable.
 
 
-##### AdBlocking by extensions and /etc/hosts
+##### AdBlocking by extensions and /etc/hosts (as root, on boot)
 
-As Adblocking is a big thing in the internet. I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the /etc/hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a launchd service that keeps it up to date on a given intervall.
+As Adblocking is a big thing in the internet I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the /etc/hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a launchd service that keeps it up to date on a given intervall. It uses [this project](https://github.com/StevenBlack/hosts) to update the hosts file.
+
+
+##### Local certificate check and installation (as root, on boot)
+
+Even on a local network it is recommended to use SSL certificates to encrypt connections to other computers on the network. Ssl certificates can not be issued for auto-acception for local lan connections and therefore they have to be accepted explicitly. If a certificate is issued by [letsencrypt](https://letsencrypt.org) it gets renewed on a regular basis. This script checks if the certificate was renewed and auto-adds it to the keychain to allow local lan usage.
+
+
+##### Auto network selection (as root, on boot)
+The [network configuration script](#5network-configuration) gives the possibility to add different locations to the network preferences.
+If, for example, a macBook is used via static ip ethernet in the office and via dhcp wi-fi in other locations the network settings need to be changed manually on every boot. This script checks if an ethernet cable is connected or not and selects the matching locations automatically on every boot.
+
+##### Screen resolution (as user, on boot)
+
+I use an external monitor in the office and (due to a bug) it gets reset to its default resolution on every reconnect of my macBook Pro. This script only needs user privileges and uses [display manager] (https://github.com/univ-of-utah-marriott-library-apple/display_manager) to check the wanted resolution and applies it if needed.
+
+##### Run commands on login or logout (as root)
+
+macOS provides a possibilty to add a script that is run on login or logout. This section contains the scripts to install them. Just adjust them to your needs. Currenty the logout script cleans some caches on a regular basis.
 
 
 10 Dock
