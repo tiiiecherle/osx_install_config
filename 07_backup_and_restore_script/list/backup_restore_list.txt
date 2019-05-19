@@ -246,7 +246,7 @@ m	~/Library/Fonts
 
 # GeburtstagsChecker
 echo GeburtstagsChecker
-m	/Applications/GeburtstagsChecker.app
+#m	/Applications/GeburtstagsChecker.app
 m	~/Library/Preferences/earthlingsoft.GeburtstagsChecker.plist
 
 # geierlein
