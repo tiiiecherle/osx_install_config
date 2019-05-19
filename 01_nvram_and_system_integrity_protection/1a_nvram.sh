@@ -84,9 +84,6 @@ echo "nvram"
 # disable the sound effects on boot
 #sudo nvram SystemAudioVolume=" "
 
-# disable rootless (introduced in 10.11) - lo longer working, use csrutil in recovery mode instead
-#sudo nvram boot-args="rootless=0"
-
 # enable verbose booting
 #sudo nvram boot-args="-v"
 
