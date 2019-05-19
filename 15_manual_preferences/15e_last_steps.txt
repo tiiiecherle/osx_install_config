@@ -1,3 +1,11 @@
+reboot in recovery
+
+set SIP in recovery
+
+set secure boot in recovery (only on macs with a t2 processor)
+
+
+
 reboot
 
 open "mail" and keep open in background for indexing
