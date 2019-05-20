@@ -1,3 +1,5 @@
+### macOS
+
 reboot in recovery
 
 set SIP in recovery
@@ -8,6 +10,8 @@ set secure boot in recovery (only on macs with a t2 processor)
 
 reboot
 
+enter icloud password in system preferences (if not already done)
+
 open "mail" and keep open in background for indexing
 
 virus scanner
@@ -17,3 +21,18 @@ virus scanner
 print filevault_key
 
 delete restore files on desktop and empty trash
+
+
+
+### iOS (ws & ts)
+
+iphone manual preferences
+
+phone
+	calls on other devices
+		activate needed devices
+
+messages
+	text message forwarding
+		activate needed devices
+
