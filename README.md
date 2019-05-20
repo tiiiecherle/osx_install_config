@@ -151,7 +151,7 @@ Do not run it if your volume is not an ssd.
 -----
 As there were a lot of problems in earlier macOS versions with network configurations, especially wifi, this script deletes all locations and adds them as a new clean configuration file.
 
-The script can be run with profiles - to be usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `network_profile_USER.txt`. Change USER to your logged in macOS username.
+The script can be run with profiles - to be usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `network_profile_USER.conf`. Change USER to your logged in macOS username.
 
 If you want to reset your complete network configuration run the following commands in the terminal before running the script.
 
@@ -181,7 +181,7 @@ The lines in the `.../list/backup_restore_list.txt` specify the files and folder
 
 All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check of the file at the beginning. Commented lines are ignored and the echo lines will be displayed in the Terminal while running.
 
-Over time the script gathered more and more backup options for different purposes. To make usage for multiple users easier and faster it can be run with profiles. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `backup_profile_USER.txt`. Change USER to your logged in macOS username.
+Over time the script gathered more and more backup options for different purposes. To make usage for multiple users easier and faster it can be run with profiles. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `backup_profile_USER.conf`. Change USER to your logged in macOS username.
 
 Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings. That's why I splitted it up to a master and user restore. Everything that is marked as master will be restored from a selected master backup, all entries marked as user will be restored from the selected user backup. Master and user backups can be selected when running `run_restore_script.command`.
 
@@ -250,7 +250,7 @@ macOS provides a possibilty to add a script that is run on login or logout. This
 -----
 This script completely wipes the dock and adds new entries including apps, spacer, folders or recent applications/documents to the dock. For folders and recent entries it includes options for the icon size (grid only) and the type to be used (automatic, stack, grid or list).
 
-The script can be run with profiles - to be usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `dock_profile_USER.txt`. Change USER to your logged in macOS username.
+The script can be run with profiles - to be usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `dock_profile_USER.conf`. Change USER to your logged in macOS username.
 
 
 11 System and app Preferences
