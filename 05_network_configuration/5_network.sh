@@ -458,14 +458,14 @@ configure_fritz_vpn() {
 
 # profile based user specifc configuration
 profile_based_config() {
-    if [[ -e "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt ]]
+    if [[ -e "$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".conf ]]
     then
         echo "network profile found for $loggedInUser..."
-        NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".txt
-    elif [[ -e "$SCRIPT_DIR"/profiles/network_profile_example.txt ]]
+        NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_"$loggedInUser".conf
+    elif [[ -e "$SCRIPT_DIR"/profiles/network_profile_example.conf ]]
     then
         echo "no network profile found for $loggedInUser, but example profile found..."
-        NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_example.txt
+        NETWORK_PROFILE="$SCRIPT_DIR"/profiles/network_profile_example.conf
     else
         echo "no network profile found for $loggedInUser and no example profile found, exiting..."
         echo ''

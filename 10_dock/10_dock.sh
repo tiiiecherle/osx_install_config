@@ -151,15 +151,15 @@ ask_for_variable() {
 
 # profile based user specifc configuration
 use_user_costomized_profiles() {
-    if [[ -e "$SCRIPT_DIR"/profiles/dock_profile_"$loggedInUser".txt ]]
+    if [[ -e "$SCRIPT_DIR"/profiles/dock_profile_"$loggedInUser".conf ]]
     then
         echo "dock profile found for $loggedInUser..."
-        DOCK_PROFILE="$SCRIPT_DIR"/profiles/dock_profile_"$loggedInUser".txt
-    elif [[ -e "$SCRIPT_DIR"/profiles/dock_profile_example.txt ]]
+        DOCK_PROFILE="$SCRIPT_DIR"/profiles/dock_profile_"$loggedInUser".conf
+    elif [[ -e "$SCRIPT_DIR"/profiles/dock_profile_example.conf ]]
     then
         echo "no dock profile found for $loggedInUser, but example profile found..."
         echo "running script with example profile..."
-        DOCK_PROFILE="$SCRIPT_DIR"/profiles/dock_profile_example.txt
+        DOCK_PROFILE="$SCRIPT_DIR"/profiles/dock_profile_example.conf
     else
         echo "no dock profile found for $loggedInUser and no example profile found, exiting..."
         echo ''

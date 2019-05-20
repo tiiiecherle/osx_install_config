@@ -1612,8 +1612,8 @@ EOF
     fi
     
     sudo scutil --set ComputerName "$MY_HOSTNAME"
-    sudo scutil --set HostName "$MY_HOSTNAME"
     sudo scutil --set LocalHostName "$MY_HOSTNAME"
+    sudo scutil --set HostName "$MY_HOSTNAME"
     #sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "$MY_HOSTNAME"
     dscacheutil -flushcache
     unset MY_HOSTNAME

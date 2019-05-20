@@ -690,7 +690,7 @@ function backup_restore {
             sleep 0.1
             
             ### asking for backups
-            if [[ -e "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".txt ]]
+            if [[ -e "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".conf ]]
             then
                 echo "backup profile found..."
                 #echo ''
@@ -705,8 +705,8 @@ function backup_restore {
                         VARIABLE_VALUE=$(echo "$line" | cut -d= -f 2 | tr -d '"')
                         printf "%-25s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
                     fi
-                done <"$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".txt
-                #cat "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".txt | grep -v "^#" && printf '\n'
+                done <"$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".conf
+                #cat "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".conf | grep -v "^#" && printf '\n'
                 echo ''
                 VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
                 QUESTION_TO_ASK="do you want to use these settings (Y/n)? "
@@ -717,7 +717,7 @@ function backup_restore {
                 if [[ "$RUN_WITH_PROFILE" =~ ^(yes|y)$ ]]
                 then
                     echo ''
-                    . "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".txt
+                    . "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".conf
                 else
                     echo ''
                 fi
