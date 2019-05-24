@@ -3,23 +3,25 @@ macOS Scripting for Configuration, Backup and Restore
 
 Hey to every macOS user ;)
 
-I am not a developer but an apple user and admin for more than 10 years. It's known that generally a clean install on every major macOS update is the best way to avoid many bugs and get rid of old, no longer needed files in the system. But unfortunately a clean install takes a lot of time and I have more than one mac to admin... That`s why I started this project: to make clean installations and macOS configurations as easy, individual and fast as possible.
+I am not a developer but an apple user and admin for more than 10 years. A clean install is generally a good way on every operating system to track down and avoid bugs. Additionally, old, no longer needed files in the system get deleted. Unfortunately, a clean install usually is time-consuming, especially when taking care of several devices.
 
-Of course you can customize and run the commands and scripts on existing systems that did not lately get a clean install, too.
+Therefore I initiated this project: to make clean installations (including restoring some already configured files from previous installations) and macOS configurations as simple, customizable and fast as possible by providing a walkthrough of a clean macOS install including manuals, scripts, comments and a lot of macOS intel.
 
-It`s kind of a walkthrough of a clean macOS install with manuals, scripts, comments and a lot of macOS know how that I gathered.
+Furthermore I worked on some additional macOS scripts, e.g. [homebrew and cask updates](https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3c_homebrew_formulae_and_casks_update), security and ad-blocking by [updating the hosts file] (https://github.com/tiiiecherle/osx_install_config/tree/master/09_launchd/9b_run_on_boot/root/1_hosts_file) or [auto-selecting the network location] (https://github.com/tiiiecherle/osx_install_config/tree/master/09_launchd/9b_run_on_boot/root/3_network_select) based on ethernet connectivity to mention just a few. These are not designed for a one-time configuration but for (automatic) regular usage after installation.
 
-One of the projects intentions is to make the complete macOS System Preferences highly customizable by script. There were already a lot of existing scripts and some of them were integrated or had an impact on this version. That's why a lot of [credit](#credits) goes to their authors. I tried to make the scripts more complete with a lot of my own additions and even tried making them better and clearer by giving them a structure according to the macOS System Preferences and the apple apps that ship with the OS (Safari, Calendar, Contacts, ...).
+Of course, you can as well customize and run the commands and scripts on existing systems that did not lately get a clean install. All scripts and manuals are only optimized and updated for the latest available macOS and may or may not work on older versions.
 
-Additionally I wrote a [backup and restore script](#7-backup-and-restore-script) for all my third party apps and their preferences files.
+One main goal (which started it all) is to make the complete macOS System Preferences highly customizable by script. Partially, existing scripts and code snippets were embedded. For these the [credit](#credits) goes to their authors. I ordered the content of [this script] (https://github.com/tiiiecherle/osx_install_config/blob/master/11_system_and_app_preferences/11c_macos_preferences_mojave.sh) according to the macOS System Preferences and added configuration options for some default apple apps (Safari, Calendar, Contacts, ...).
 
-At first it was intented for my personal use only. But then I decided to publish everything here because it took me so many hours and I would have loved to find anything like this when I started. So I hope it helps anyone ;)
+Additionally I wrote a [backup and restore script](#7-backup-and-restore-script) for third party apps and their preferences files.
 
-This said, any help, feedback and comment for making this better and even more complete is very welcome. There is a list of [stuff](#11a-unsolved-preferences) I couldn`t figure out, so it would be nice to have help for solving them and testing all the functions and commands. 
+Initially this was intended for my personal use only. However I decided to publish everything here as it took me so many hours and I would have appreciated to find anything like this when I started. So, I hope it helps anyone ;)
+
+Any help, feedback and comment for improvements and enhancements is welcome. There is a list of [preferences](#11-system-and-app-preferences) I couldn`t figure out to set by script until now, so I would appreciate help for solving them and also for testing the functionality of the scripts and commands. 
 
 Read this ReadMe including the [disclaimer](#disclaimer) carefully before you start using anything and feel free to adjust every script and manual to your needs.
 
-Happy installing and customizing ;)
+Happy installing, customizing and enjoying macOS ;)
 
 
 Table of contents
@@ -35,11 +37,11 @@ Table of contents
 [6	Manual app installation](#6manual-app-installation)  
 [7	Backup and restore script](#7backup-and-restore-script)  
 [8	Java 6](#8java-6)  
-[9	launchd](#9launchd)  
+[9	Launchd](#9launchd)  
 [10 Dock](#10-dock)  
 [11 System and app Preferences](#11-system-and-app-preferences)  
 [12 Licenses](#12-licenses)  
-[13 Apple Mail and Accounts](#13-apple-mail-and-accounts)  
+[13 Apple Mail and accounts](#13-apple-mail-and-accounts)  
 [14 Samba](#14-samba)  
 [15 Manual Preferences](#15-manual-preferences)  
 [16 Seed update configuration](#16-seed-update-configuration)  
@@ -49,85 +51,111 @@ Table of contents
 
 Usage
 -----
-Just download all files, adjust everything to your needs and follow the instructions and manuals. All `.sh` script files contain additional information as comments and are ment to be run by opening a terminal and typing
+Download the complete github repository or single scripts, adjust everything to your needs and follow the instructions and manuals wherever needed. Some scripts depend on other scripts, so it is recommended to keep the directory structure and naming of files and folders. 
 
-```ruby
+All `.sh` scripts, which have to be executable, contain additional information as comments and are meant to be run by opening a terminal and typing (or by drag & drop).
+
+```
 /path/to/name-of-script.sh
 ```
 
-All `.txt` files contain information, manuals and comments.
+All `.txt` files contain information, manuals and comments. `.command` files are opened in a terminal by just double-clicking on them.
 
-The files are numbered and ment to be used in this order because some scripts or manuals depend on other ones ment to be run before.
+The steps to be taken are consecutively numbered and meant to be done in the given order to make them work correctly as some scripts or manuals depend on completed previous ones.
 
-And yes, it is intentional that all the content of the files is written in small letters for easier maintenance.
+For easier maintenance most of the comments inside the scripts and manuals are not case sensitive and just written in small letters on purpose.
 
-Before you delete everything on your drive and start a clean macOS install be sure you have at least one working backup of all relevant files.
+Before deleting everything on your drive and starting a clean macOS install make sure you have at least one working backup of all relevant files. I recommend doing one backup with [the backup script](#7-backup-and-restore-script) and another one on a second external device or partition using time machine.
 
-I do so with [my backup script ](#7-backup-and-restore-script) and additionally I do a time machine backup just in case.
+As mentioned above some scripts (e.g. homebrew-update, hosts, network-select, etc.) come with installer scripts that copy the needed files to the respective locations in the system and adjust their ownership and permissions. They can be used on a regular basis (some of them automatically) after installation.
 
 
 0	Bootable usb device
 -----
-Before starting with a clean install of macOS a bootable usb device is needed. This is how you create it.
+
+##### Preparation
+
+Before starting with the clean install of macOS a bootable usb device is needed. This is how to create it.
 
 0. Format usb drive with guid partition table in disc utility.
 0. Create a new partition (at least 10 GB) and format the partition on the drive with macOS Extended (Journaled), name it "Untitled" and leave it mounted.
-0. Download the macOS installer to /Applications/.
-0. Adjust the installer name and path in the script and run the script afterwards.
+0. Download the macOS installer from the Mac App Store (usually downloads to /Applications/).
+0. Adjust the installer name and path in the [script] (https://github.com/tiiiecherle/osx_install_config/blob/master/00_bootable_usb_device/0b_create_bootable_usb_device.sh) and run it.
 
-You will end up with a bootable usb device.
+Steps 1 and 2 can be replaced by using [0a\_format\_bootable\_usb\_device.sh](https://github.com/tiiiecherle/osx_install_config/blob/master/00_bootable_usb_device/0a_format_bootable_usb_device.sh). It formats the complete usb device into two partitions (installer and data) and gives you the option to delete the efi partition afterwards. This makes the data partition on the usb device usable on a win10 pc.
 
-For the next step boot your mac from this created usb device by restarting and holding the `alt` key. 
+##### Installation
 
-Select the usb device as device to install from.
+To perform the actual clean installation, boot the mac from the created usb device by restarting and holding the `alt` key until the logo is displayed. 
 
-When formatting your drive be sure to select macOS Extended (Journaled) for best compatibility. I always rename my drives for easier use of the terminal with a name without spaces. So all scripts from me are using `macintosh_hd` as name for the main partition of the installed macOS.
+Select the usb device installer as startup volume.
+
+Inside the installer use disk utility to delete and format your drive with the file system of your choice. During this process I rename my drives to a label without whitespaces for easier terminal usage. That's why in all scripts of this project `macintosh_hd` is used as name for the main system partition of the newly installed macOS.
 
 
 1	NVRAM, system integrity protection and secure boot
 -----
-Script 1a adjusts NVRAM parameters. Adjust to your needs and run it.
 
-With macOS 11.10 El Capitan Apple introduces a new security feature named system integrity protection which prevents you from getting root and making changes to the system.
+##### NVRAM
 
-As I want and need to do some changes to the system with the following scripts I switch it off. Before you do that make sure you know what you are doing.
+Script 1a adjusts NVRAM parameters and therefore allows to manipulate firmware variables.
 
-As of now the system integrity protection has to be deactivated manually in the recovery.
 
-##### Disable System Integrity Protection in Recovery Mode Terminal
+##### System Integrity Protection (SIP)
 
-0. Reboot your mac to recovery mode (reboot with command + R pressed)
+With macOS 11.10 El Capitan Apple introduced a new security feature named system integrity protection which prevents the user from getting root and thereby from making changes to specific system files and directories.
+
+If you want to disable SIP (partially or completely) follow these steps. Before you do that make sure you know what you are doing.
+
+##### Disable System Integrity Protection (partially or completely) in Recovery
+
+0. Reboot your mac to recovery mode (hold down `command + R` during reboot)
 0. Open Utilities
 0. Open Terminal
 0. `csrutil status`
-0. `csrutil disable`
+0. `csrutil enable --without debug`
 0. `csrutil status`
 0. Reboot
 
-To re-enable it, reboot to recovery and type `csrutil enable`.
+If SIP is enabled `csrutil status` shows the status of every SIP component. It is possible to disable one single component while keeping SIP partially enabled, e.g.:
+
+```
+csrutil enable --no-internal  
+csrutil enable --without kext  
+csrutil enable --without fs  
+csrutil enable --without debug  
+csrutil enable --without dtrace  
+csrutil enable --without nvram
+```
+or multiple components can be disabled, e.g.:  
+`csrutil enable --without kext --without debug`
+
+To disable SIP completely, use `csrutil disable`.  
+To enable all components, use `csrutil enable`.  
+To reset SIP to factory defaults use `csrutil clear`.
 
 ##### Disable Secure Boot in Recovery Mode
 
 All Macs with T2 Chips, e.g. the MacBook Pro 2018 have an additional security feature which disables booting from external devices by default. To enable booting from external usb devices, follow these steps:
 
-0. Reboot your mac to recovery mode (reboot with command + R pressed)
+0. Reboot your mac to recovery mode (hold down `command + R` during reboot)
 0. Open Utilities
 0. Open Start-Up-Security-Utility
 0. Set Secure Boot to whatever protection you like
 0. Set External Boot to allow booting from external usb devices
 0. Reboot
 
+This can be reset for security reasons after finishing the installation.
 
 2	System Update and copy files
 -----
-File 2a updates macOS on the command line if the system should not be up to date. File 2b is a manual and checklist file which contains a few steps that have to be done to go on with the later scripts.
-
+Script 2a updates macOS on the command line if the system should not be up to date. Script 2b is a short manual and checklist which contains a few steps that have to be done before continuing with the next steps.
 
 3	Homebrew, Casks and Mas
 -----
-Homebrew is a really nice project and a package manager for macOS. In addition with homebrew cask it allows you to install and update software packages, players, plugins and apps on macOS.
+Homebrew is a really nice project and a package manager for macOS. In combination with homebrew cask it allows you to install and update command line software, players, plugins and apps on macOS on the command line.
 
-Mas makes it possible to install and update apps from the macOS appstore on the command line.
+Mas makes it possible to install and update apps from the macOS appstore using the command line.
 
 You will find more information here:
 
@@ -135,27 +163,23 @@ You will find more information here:
 * [homebrew-cask](http://caskroom.io)
 * [mas-cli](https://github.com/mas-cli/mas)
 
-These scripts install macOS Command Line Tools, homebrew, mas and homebrew-cask. Additionally it takes care of installing homebrew formulas,, apps from the app store, macOS-plugins and macOS-apps from a given list directly to the /Applications folder without linking them. It is like downloading and installing them to this directory manually but a lot more comfortable. To make it very easy for keeping everything up-to-date an updater script with with a macOS-app Wrapper is also included.
-
-Adjust the scripts and install lists to your needs and run them.
+[These scripts] (https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install) install macOS Command Line Tools, homebrew, homebrew-cask and mas. Additionally, they take the entries from separate list files and install homebrew formulas, apps from the App Store, macOS-plugins and macOS-apps in parallel mode. It is like downloading and installing them manually but a lot faster and more comfortable. To easily keep all packages and apps up-to-date a [macOS-app Wrapper update script] (https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3c_homebrew_formulae_and_casks_update) is also included and can be installed to /Applications using the dmg installer.
 
 
 4	SSD Optimizations
 -----
-Adjust to your needs and run it.
- 
-Do not run it if your volume is not an ssd.
+Do not run this script if your volume is not an ssd.
 
 
 5	Network Configuration
 -----
-As there were a lot of problems in earlier macOS versions with network configurations, especially wifi, this script deletes all locations and adds them as a new clean configuration file.
+To avoid network issues this script deletes `/Library/Preferences/SystemConfiguration/preferences.plist` and adds new locations, devices and preferences.
 
-The script can be run with profiles - to be usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `network_profile_USER.conf`. Change USER to your logged in macOS username.
+It can be run with profiles - to be easily usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile, duplicate the example profile and name it `network_profile_USER.conf`. Change USER to your logged in macOS username.
 
-If you want to reset your complete network configuration run the following commands in the terminal before running the script.
+To reset all network configurations and settings run the following commands in the terminal before running the script.
 
-```ruby
+```
 sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist
 sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.network.identification.plist
 sudo rm -rf /Library/Preferences/SystemConfiguration/com.apple.wifi.message-tracer.plist
@@ -166,159 +190,163 @@ sudo reboot
 
 6	Manual app installation
 -----
-This is just a checklist of apps I have to install manually (besides the restore and the cask install).
+This is just a checklist of apps to install manually if their installation is not possible by restoring or via homebrew cask.
 
 
 7	Backup and restore script
 -----
-When I was looking for a highly configurable backup / restore tool I could not find one that was fitting my needs and was working reliable. That`s why I wrote this script which is working very well for over four years (with multiple backups and restores and different macs) now.
+This backup/restore tool is highly customizable, configurable and based on well-known command line tools. It is working well for years with multiple backups and restores on different macs.
 
-At a first glance it seems a bit complicated but it really isn`t ;)
+At first glance it seems a bit complicated but it really isn`t ;)
 
-When running the script by double clilcking the `run_backup_script.command` you will be asked for a user if you have multiple users on your mac. Afterwards you will be prompted by an applescript to choose a directory where to save the backup. The backup will temporarily be done in `~/Desktop/backup_$USER_DATE` and is supposed to preserve all file permissions. In the next step the script creates a .tar.gz file of the backup folder (also on the Desktop) and checks the file integrity. When the check is passed successfully the file will be moved to the specified location and the temporary files on the Desktop will be deleted.
+When running the script by double clicking the `run_backup_script.command` you will be asked to select a user if you have multiple users on your mac. Afterwards you will be prompted by an applescript to choose a directory where to save the backup. The backup files and folders will temporarily be saved to `~/Desktop/backup_$USER_DATE` and is supposed to preserve all file permissions. In the next step the script creates a .tar.gz.gpg file of the backup folder (also on the Desktop) and checks the file integrity. After the test has passed successfully the file will be moved to the specified location and the temporary files on the Desktop get deleted.  It uses your macOS password to encrypt the backup.
 
 The lines in the `.../list/backup_restore_list.txt` specify the files and folders to be backed up or restored.
 
-All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check of the file at the beginning. Commented lines are ignored and the echo lines will be displayed in the Terminal while running.
+All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check of the backup_restore_list.txt file at the beginning. Lines that are commented out are ignored and the echo lines will be displayed in the Terminal while running.
 
-Over time the script gathered more and more backup options for different purposes. To make usage for multiple users easier and faster it can be run with profiles. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `backup_profile_USER.conf`. Change USER to your logged in macOS username.
+Over time the script gathered more and more backup options for different purposes, e.g. an applescript for backing up calendars, contacts and reminders using the GUI. 
 
-Here is why there is a master and a user folder. As I admin more than one mac that are not kept up to date every time with all apps and settings. That's why I splitted it up to a master and user restore. Everything that is marked as master will be restored from a selected master backup, all entries marked as user will be restored from the selected user backup. Master and user backups can be selected when running `run_restore_script.command`.
+To make usage for multiple users easier and faster it can be run with profiles. More information can be found in the comments inside the script and in the example profile. To run the script with a profile, duplicate the example profile and name it `backup_profile_USER.conf`. Change USER to your logged in macOS username.
+
+If there are multiple macs that are not kept up to date every time with all apps and settings the script has a user/master mode. Everything that is marked as master will be restored from a selected master backup, all entries marked as user will be restored from the selected user backup. Master and user backups can be selected when running `run_restore_script.command`.
 
 ##### restore
 
-Please only restore files and folders this way that were backed up with this script so they have the correct structure. 
+Make sure you only restore files and folders this way that were backed up with this script, so they have the correct structure inside the backup/restore directory. 
 
-If you do not use a master / user structure and only backup / restore one and the same mac just select the same folder for master und user when the script prompts for the missing folder.
+If you do not use a master/user structure and only backup/restore one mac just select the same folder for master und user when the script prompts for the respective input.
 
-Then use `run_restore_script.command` to restore.
+Use `run_restore_script.command` to restore.
 
 ##### general
 
-This gives you a highly configurable way to backup and restore only the files and folders you want.
+At the end of the restore process the script also resets the permissions in the `/Applications` and `/Users/$USER` folder. If files or folders are added to the backup/restore list that are not in the User folder, make sure to add the permissions in the `.../permissions/ownerships_and_permissions_restore.sh` script for restore.
 
-It also resets and takes care of the permissions in the `/Applications` and `/Users/$USER` folder. If you add files or folders to your backup / restore list that are not in the User folder make sure to add the permissions in the `.../permissions/ownerships_and_permissions_restore.sh` script for restore.
-
-Sounds more complicated than it is, if there are any questions feel free to ask.
-
-And of course any help to make this better and easier is appreciated here, too.
+If there are any questions, feel free to ask. And, of course, any help to make this better and easier is always appreciated.
 
 
 8	Java 6
 -----
 Not a lot of applications still use java 6 on macOS.
 
-To make them work without installing apple java activate the options and run this script.
+To make them work without installing apple java uncomment the options inside and run this script.
 
-Before running the script download and install the latest version of java jre from [java.com](http://www.java.com) or through homebrew-cask.
-
-In my case this script is deprecated and no longer used.
+Before running the script download and install the latest version of java (jre) from [java.com](http://www.java.com) or [adoptopenjdk] (https://adoptopenjdk.net). Alternatively install one of them through homebrew-cask.
 
 
 9	launchd
 -----
 
-launchd is a unified operating system service management framework which starts, stops and manages daemons, applications, processes, and scripts in macOS.
+launchd is a unified operating system service management framework which starts, stops and manages daemons, applications, processes and scripts on macOS.
 
-As it is sometimes very helpful to run scripts on boot (as root or user), at login or on logout these scripts show how to do that. They come with installer scripts and are highly configurable.
+As it is sometimes very helpful to run scripts on boot (as root or user), at login or at logout, these scripts show how to do that. They come with installer scripts and are highly configurable.
 
 
 ##### AdBlocking by extensions and /etc/hosts (as root, on boot)
 
-As Adblocking is a big thing in the internet I had a closer look and found a good combination of speed and adblocking by combining adblockers and entries in the /etc/hosts file. It contains a manual for configuration and a script to install the /etc/hosts entries and a launchd service that keeps it up to date on a given intervall. It uses [this project](https://github.com/StevenBlack/hosts) to update the hosts file.
+As Adblocking is important on the internet, this script combines adblockers and entries in the /etc/hosts file for best possible speed and adblocking results. It contains a manual for configuration and a script to install the /etc/hosts entries, as well as a launchd service that keeps it up to date on a given intervall. The script uses [this project](https://github.com/StevenBlack/hosts) to update the hosts file.
 
 
 ##### Local certificate check and installation (as root, on boot)
 
-Even on a local network it is recommended to use SSL certificates to encrypt connections to other computers on the network. Ssl certificates can not be issued for auto-acception for local lan connections and therefore they have to be accepted explicitly. If a certificate is issued by [letsencrypt](https://letsencrypt.org) it gets renewed on a regular basis. This script checks if the certificate was renewed and auto-adds it to the keychain to allow local lan usage.
+Even on a local network it is recommended to use SSL certificates to encrypt connections to other computers on the network. SSL certificates can’t be issued for auto-acceptance for local LAN connections and therefore they have to be accepted explicitly. If a certificate is issued by [letsencrypt](https://letsencrypt.org) it gets renewed on a regular basis. This script checks if the certificate was renewed and auto-adds it to the keychain to allow local LAN usage without re-accepting the certificate every time it is renewed.
 
 
 ##### Auto network selection (as root, on boot)
-The [network configuration script](#5network-configuration) gives the possibility to add different locations to the network preferences.
-If, for example, a macBook is used via static ip ethernet in the office and via dhcp wi-fi in other locations the network settings need to be changed manually on every boot. This script checks if an ethernet cable is connected or not and selects the matching locations automatically on every boot.
+The [network configuration script](#5network-configuration) offers the possibility to add different locations, devices and settings to the network preferences.
+If, for example, a MacBook is used via ethernet in combination with a static IP in the office and via wi-fi using dhcp in other locations, the network settings (location & wifi on/off) would have to be changed manually on every boot. This script checks if an ethernet cable is connected and selects the matching locations automatically.
 
 ##### Screen resolution (as user, on boot)
 
-I use an external monitor in the office and (due to a bug) it gets reset to its default resolution on every reconnect of my macBook Pro. This script only needs user privileges and uses [display manager] (https://github.com/univ-of-utah-marriott-library-apple/display_manager) to check the wanted resolution and applies it if needed.
+I use an external monitor in the office and (due to a bug) it gets reset to its default resolution on every reconnect of my MacBook Pro. This script only needs user privileges and uses [display manager] (https://github.com/univ-of-utah-marriott-library-apple/display_manager) to check the desired resolution and applies it, if necessary.
 
-##### Run commands on login or logout (as root)
+##### Run commands at login or logout (as root)
 
-macOS provides a possibilty to add a script that is run on login or logout. This section contains the scripts to install them. Just adjust them to your needs. Currenty the logout script cleans some caches on a regular basis.
+macOS provides a possibility to add a script that is run at login or logout. This section contains the scripts to install them. Feel free to adjust them to your needs. In this version the logout script cleans some caches on a regular basis.
 
 
 10 Dock
 -----
-This script completely wipes the dock and adds new entries including apps, spacer, folders or recent applications/documents to the dock. For folders and recent entries it includes options for the icon size (grid only) and the type to be used (automatic, stack, grid or list).
+This script completely cleans the dock and adds new entries including apps, spacer, folders or recent applications/documents to the dock. For folders and recent entries, it includes options for the icon size (grid only) and the type to be used (automatic, stack, grid or list).
 
-The script can be run with profiles - to be usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile copy the example profile and name it `dock_profile_USER.conf`. Change USER to your logged in macOS username.
+It can be run with profiles - to be easily usable on multiple macs - or standalone. More information can be found in the comments inside the script and in the example profile. To run the script with a profile, duplicate the example profile and name it `dock_profile_USER.conf`. Change USER to your logged in macOS username.
 
 
-11 System and app Preferences
+11a System and app Preferences
 -----
-These are the main scripts described in the beginning of the readme that makes it possible to adjust almost all of the macOS System Preferences and macos Applications that ship with the OS.
+These are the main scripts described in the first section of this readme. They make it possible to adjust almost all of the macOS System Preferences and Apple Applications that are installed with the OS by default.
 
-Adjust to your needs and run them. Start with 11a or some parts of the rest will not work as it sets certain permissions for apps that are needed afterwards.
+It’s important to start with 11a. Otherwise, some scripts of this section will not work, as it sets certain permissions for apps that are needed afterwards.
 
 
-11b Unsolved Preferences
------------
+##### Unsolved Preferences
 
-The following preferences are not yet configurable with the script and any help to add the functionality is appreciated.
+The following preferences are not yet configurable with the script. Any help to add the functionality is appreciated.
 
 * preferences - control center - sorting order
-* preferences - monitor - change resolutions
 * preferences - mac app store - download all bought apps on other macs automatically
 
 12 Licenses
 -----
-All bought third party apps have to get their licenses enabled. A few can be done by restoring the correct files with the [restore script](#7-backup-and-restore-script), but unfortunately that is not working for all apps.
+All bought third party apps have to get their licenses enabled after a clean install. A few can be done by restoring the correct files with the [restore script](#7-backup-and-restore-script), but unfortunately this is not working for all apps.
 
-This is a checklist of licenses that I have to activate again so I don`t forget one ;)
+This is a checklist of licenses to be restored manually.
 
 
 13 Apple Mail and Accounts
 -----
-In 10.11 apple moves all remaining internet accounts from
+In 10.11 apple moved all remaining internet accounts from
 
-```ruby
+```
 ~/Library/Mail/V2/MailData/Accounts.plist 
 to
 ~/Library/Accounts/Accounts3.sqlite
 ```
 
-Please read the manual files in the folder for further instructions and run the script after the required steps.
-
-The script additionally resets delets the index files to force mail to reindex all mailboxes.
+According to the version of macOS and Mail the script resets/deletes the index files to force Mail to reindex all mailboxes on its next run.
 
 
 14 Samba
 -----
-SMB3 is way faster than SMB2. If you use apples default configuration the mac always searches for the best connection what is way slower than forcing SMB3 connections. And this is exactly what this script does. It creates a file (if it does not already exist)
+macOS gives the user the possibility to set some options and preferences for its implemented samba client.
 
-```ruby
-~/Library/Preferences/nsmb.conf
-```
-and puts the needed entries in it. All other entries in the file will be deleted. So do a backup of your file or adjust the script before you run it.
+These options are documented in
+`man nsmb.conf`
+
+To make use of these options the script creates the configuration file
+`~/Library/Preferences/nsmb.conf` and adds the entries referring to the macOS version (as the syntax of the file has changed).
+
+For the fastest and most reliable connection in the current version it
+
+* forces SMB3 connections  
+* disables the requirement for signing
+* deletes all other entries from nsmb.conf file.
 
 
 15 Manual Preferences
 -----
-Despite all the automation, not everything can be done by the scripts yet. Those files (for apple apps and system preferences) just give me a checklist of all preferences to be set manually. Every help to make this list shorter and add the settings to a script is welcome.
+Despite all the automation, not everything in the process can be done by scripts yet. These files (for Apple apps and System Preferences) just give me a checklist of all preferences to be set manually. Every help to make this list shorter and add the settings to a script is welcome.
 
-At the end of every clean installation there are a few steps that take some cpu power and time before the mac is completely ready to be used, e.g. indexing emails after restore. All steps needed on my systems are documented in a separate file in this section, too.
+Additionally, there are two more scripts:
+
+* disable Siri analytics
+* hardening Firefox
+
+At the end of every clean installation there are a few steps that take some cpu power and time before the mac is completely ready and usable at full speed, e.g. indexing emails after restore, full system virus scan, etc. These steps are documented in a checklist.
 
 
 16 Seed update configuration
 -----
 There are a lot of beta and developer seed users of macOS out there. As I am a public beta user, too, I use macOS beta on a second partition for testing.
 
-This manual tells you how to set the correct update catalog for the appstore and tells you how to download update files for saving them for later use.
+This manual tells you how to set/switch the update catalog.
 
 
 Disclaimer
 -----------
 
-I am not responsible for any problems, damages, data loss or data corruption that may occure because of using any of this. Most of the commands are tested, but some are not. Maybe some things changed after my last use. So use everything here completely at your own risk.
+I am not responsible for any problems, damages, data loss or data corruption that may occur due to using any of this. Most of the commands are tested, but some might not be. There is always the chance that some things changed after the last usage/testing. So, use everything here completely at your own risk.
 
 Do some research if you have any concerns about commands or procedures that are included in any of the files BEFORE using them. 
 
@@ -331,5 +359,8 @@ Credits
 
 [will-riley](https://github.com/will-riley/osx_prefs-10.8/blob/master/osx_set_dockapps.sh)
 
-Thanks to everyone I got information from and I forgot to credit. I did so much research and do not remember all websites. If someone feels left out just write me and I´ll add the credit.
+Thanks to everyone I got information from and that I forgot to credit. If someone feels left out just write me and I´ll add the credit.
 
+Thanks to all developers and users that share their knowledge and provide so much (free) high quality software that is used in many of these scripts. This would not be possible without all of their efforts.
+
+Last but not least thanks to Apple for developing an extraordinary operating system in macOS.
