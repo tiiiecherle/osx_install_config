@@ -8,6 +8,8 @@
 # duti -x html
 # write
 # duti -s com.apple.Safari html all
+# UTI hierarchy
+# https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html#//apple_ref/doc/uid/TP40009259-SW1
 #
 # defaults read com.apple.LaunchServices/com.apple.launchservices.secure
 #
