@@ -7,11 +7,11 @@ I am not a developer but an apple user and admin for more than 10 years. A clean
 
 Therefore I initiated this project: to make clean installations (including restoring some already configured files from previous installations) and macOS configurations as simple, customizable and fast as possible by providing a walkthrough of a clean macOS install including manuals, scripts, comments and a lot of macOS intel.
 
-Furthermore I worked on some additional macOS scripts, e.g. [homebrew and cask updates](https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3c_homebrew_formulae_and_casks_update), security and ad-blocking by [updating the hosts file] (https://github.com/tiiiecherle/osx_install_config/tree/master/09_launchd/9b_run_on_boot/root/1_hosts_file) or [auto-selecting the network location] (https://github.com/tiiiecherle/osx_install_config/tree/master/09_launchd/9b_run_on_boot/root/3_network_select) based on ethernet connectivity to mention just a few. These are not designed for a one-time configuration but for (automatic) regular usage after installation.
+Furthermore I worked on some additional macOS scripts, e.g. [homebrew and cask updates](https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3c_homebrew_formulae_and_casks_update), security and ad-blocking by [updating the hosts file](https://github.com/tiiiecherle/osx_install_config/tree/master/09_launchd/9b_run_on_boot/root/1_hosts_file) or [auto-selecting the network location](https://github.com/tiiiecherle/osx_install_config/tree/master/09_launchd/9b_run_on_boot/root/3_network_select) based on ethernet connectivity to mention just a few. These are not designed for a one-time configuration but for (automatic) regular usage after installation.
 
 Of course, you can as well customize and run the commands and scripts on existing systems that did not lately get a clean install. All scripts and manuals are only optimized and updated for the latest available macOS and may or may not work on older versions.
 
-One main goal (which started it all) is to make the complete macOS System Preferences highly customizable by script. Partially, existing scripts and code snippets were embedded. For these the [credit](#credits) goes to their authors. I ordered the content of [this script] (https://github.com/tiiiecherle/osx_install_config/blob/master/11_system_and_app_preferences/11c_macos_preferences_mojave.sh) according to the macOS System Preferences and added configuration options for some default apple apps (Safari, Calendar, Contacts, ...).
+One main goal (which started it all) is to make the complete macOS System Preferences highly customizable by script. Partially, existing scripts and code snippets were embedded. For these the [credit](#credits) goes to their authors. I ordered the content of [this script](https://github.com/tiiiecherle/osx_install_config/blob/master/11_system_and_app_preferences/11c_macos_preferences_mojave.sh) according to the macOS System Preferences and added configuration options for some default apple apps (Safari, Calendar, Contacts, ...).
 
 Additionally I wrote a [backup and restore script](#7-backup-and-restore-script) for third party apps and their preferences files.
 
@@ -80,7 +80,7 @@ Before starting with the clean install of macOS a bootable usb device is needed.
 0. Format usb drive with guid partition table in disc utility.
 0. Create a new partition (at least 10 GB) and format the partition on the drive with macOS Extended (Journaled), name it "Untitled" and leave it mounted.
 0. Download the macOS installer from the Mac App Store (usually downloads to /Applications/).
-0. Adjust the installer name and path in the [script] (https://github.com/tiiiecherle/osx_install_config/blob/master/00_bootable_usb_device/0b_create_bootable_usb_device.sh) and run it.
+0. Adjust the installer name and path in the [script](https://github.com/tiiiecherle/osx_install_config/blob/master/00_bootable_usb_device/0b_create_bootable_usb_device.sh) and run it.
 
 Steps 1 and 2 can be replaced by using [0a\_format\_bootable\_usb\_device.sh](https://github.com/tiiiecherle/osx_install_config/blob/master/00_bootable_usb_device/0a_format_bootable_usb_device.sh). It formats the complete usb device into two partitions (installer and data) and gives you the option to delete the efi partition afterwards. This makes the data partition on the usb device usable on a win10 pc.
 
@@ -163,7 +163,7 @@ You will find more information here:
 * [homebrew-cask](http://caskroom.io)
 * [mas-cli](https://github.com/mas-cli/mas)
 
-[These scripts] (https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install) install macOS Command Line Tools, homebrew, homebrew-cask and mas. Additionally, they take the entries from separate list files and install homebrew formulas, apps from the App Store, macOS-plugins and macOS-apps in parallel mode. It is like downloading and installing them manually but a lot faster and more comfortable. To easily keep all packages and apps up-to-date a [macOS-app Wrapper update script] (https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3c_homebrew_formulae_and_casks_update) is also included and can be installed to /Applications using the dmg installer.
+[These scripts](https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install) install macOS Command Line Tools, homebrew, homebrew-cask and mas. Additionally, they take the entries from separate list files and install homebrew formulas, apps from the App Store, macOS-plugins and macOS-apps in parallel mode. It is like downloading and installing them manually but a lot faster and more comfortable. To easily keep all packages and apps up-to-date a [macOS-app Wrapper update script](https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3c_homebrew_formulae_and_casks_update) is also included and can be installed to /Applications using the dmg installer.
 
 
 4	SSD Optimizations
@@ -232,7 +232,7 @@ Not a lot of applications still use java 6 on macOS.
 
 To make them work without installing apple java uncomment the options inside and run this script.
 
-Before running the script download and install the latest version of java (jre) from [java.com](http://www.java.com) or [adoptopenjdk] (https://adoptopenjdk.net). Alternatively install one of them through homebrew-cask.
+Before running the script download and install the latest version of java (jre) from [java.com](http://www.java.com) or [adoptopenjdk](https://adoptopenjdk.net). Alternatively install one of them through homebrew-cask.
 
 
 9	launchd
@@ -259,7 +259,7 @@ If, for example, a MacBook is used via ethernet in combination with a static IP 
 
 ##### Screen resolution (as user, on boot)
 
-I use an external monitor in the office and (due to a bug) it gets reset to its default resolution on every reconnect of my MacBook Pro. This script only needs user privileges and uses [display manager] (https://github.com/univ-of-utah-marriott-library-apple/display_manager) to check the desired resolution and applies it, if necessary.
+I use an external monitor in the office and (due to a bug) it gets reset to its default resolution on every reconnect of my MacBook Pro. This script only needs user privileges and uses [display manager](https://github.com/univ-of-utah-marriott-library-apple/display_manager) to check the desired resolution and applies it, if necessary.
 
 ##### Run commands at login or logout (as root)
 
