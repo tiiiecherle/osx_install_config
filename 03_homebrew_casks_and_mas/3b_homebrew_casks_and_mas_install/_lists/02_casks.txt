@@ -49,6 +49,7 @@ photosync
 prefs-editor
 progressive-downloader
 quicksilver
+sejda-pdf
 signal
 skype
 teamviewer
