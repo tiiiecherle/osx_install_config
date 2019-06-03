@@ -207,6 +207,8 @@ then
     
     echo ''
     echo "office"
+    
+    # https://github.com/erikberglund/ProfileManifests/blob/master/Resources/ManifestsGenerated/Microsoft/Archive/Office%202016%20for%20Mac%20Preference%20Keys%20-%20Prefs-2018-09-19.csv
 
     # user name and initials
     defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist" Name "`finger $USER | awk -F: '{ print $3 }' | head -n1 | sed 's/^ //'`"
@@ -214,8 +216,9 @@ then
     #defaults read "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist"
     
     # set default save location to local
-    defaults write ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave -bool true
-    #defaults delete ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave
+    #defaults write ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave -bool true
+    defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.officeprefs.plist" DefaultsToLocalOpenSave -bool true
+    chown $USER:staff "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.officeprefs.plist"
     # set theme
     # 1 = light
     # 2 = dark
@@ -227,6 +230,8 @@ then
     defaults write ~/Library/Preferences/com.microsoft.autoupdate2.plist SendCrashReportsEvenWithTelemetryDisabled -bool false
     defaults write ~/Library/Preferences/com.microsoft.autoupdate.fba.plist SendAllTelemetryEnabled -bool false
     defaults write ~/Library/Preferences/com.microsoft.autoupdate.fba.plist SendCrashReportsEvenWithTelemetryDisabled -bool false
+    defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365V2.plist" SendAllTelemetryEnabled -bool false
+    #defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365V2.plist" SendCrashReportsEvenWithTelemetryDisabled -bool false
     
     # app specific settings
     for OFFICE_APP in Word Excel onenote.mac Outlook Powerpoint
