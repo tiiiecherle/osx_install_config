@@ -397,6 +397,10 @@ u	~/Library/Preferences/com.crystalidea.macsfancontrol.plist
 #echo MacUpdate Desktop
 #m	/Applications/MacUpdate Desktop.app
 
+# Microsoft Office 365
+echo Microsoft Office 365
+u	~/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg
+
 # MonKey Office
 echo MonKey Office 2019
 u	/Applications/MonKey Office 2019.app
