@@ -1669,6 +1669,7 @@ function backup_restore {
             # signal
             if [[ -e "/Users/$USER/Library/Application Support/Signal/" ]]
             then
+                rm -rf "/Users/$USER/Library/Application Support/Signal/__update__"
                 rm -rf "/Users/$USER/Library/Application Support/Signal/attachments.noindex"
                 rm -rf "/Users/$USER/Library/Application Support/Signal/Cache/"
                 #rm -rf "/Users/$USER/Library/Application Support/Signal/databases/"
