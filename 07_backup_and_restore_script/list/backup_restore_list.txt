@@ -74,8 +74,8 @@ m	~/Library/Preferences/com.freemacsoft.AppCleaner.plist
 #m	/Applications/AudioBookBinder.app
 
 # AudioSwitcher
-echo AudioSwitcher
-m	/Applications/AudioSwitcher.app
+#echo AudioSwitcher
+#m	/Applications/AudioSwitcher.app
 
 # Avast
 #echo Avast
@@ -250,8 +250,8 @@ echo GeburtstagsChecker
 m	~/Library/Preferences/earthlingsoft.GeburtstagsChecker.plist
 
 # geierlein
-echo geierlein
-u	/Applications/geierlein
+#echo geierlein
+#u	/Applications/geierlein
 
 # GitHub Desktop
 echo GitHub Desktop
@@ -299,7 +299,7 @@ m	~/Library/Preferences/net.pornel.ImageOptim.plist
 # iMazing
 echo iMazing
 #u	/Applications/iMazing.app
-u	~/Library/Application Support/iMazing
+u	~/Library/Application Support/iMazing/
 u	~/Library/Preferences/com.DigiDNA.iMazing2Mac.plist
 u	~/Library/Preferences/com.DigiDNA.SharedPreferences.plist
 
@@ -440,10 +440,10 @@ m	~/Library/Preferences/com.titanium.OnyX.plist
 #m	~/Library/Application Support/OpenOffice
 
 # Overflow
-echo Overflow
-m	/Applications/Overflow.app
-u	~/Library/Application Support/Overflow
-u	~/Library/Preferences/com.stuntsoftware.Overflow.plist
+#echo Overflow
+#m	/Applications/Overflow.app
+#u	~/Library/Application Support/Overflow
+#u	~/Library/Preferences/com.stuntsoftware.Overflow.plist
 
 # Overflow 3
 echo Overflow 3
