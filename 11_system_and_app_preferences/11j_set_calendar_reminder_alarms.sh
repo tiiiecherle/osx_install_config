@@ -134,7 +134,7 @@ EOF
 	# holiday calendar
 	CALDAV_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/ | grep .*.caldav$)"
 	#echo "$CALDAV_DIRS"
-	for CALENDAR_TO_LOOK_FOR in gep_radicale fw_radicale wr_radicale office_radicale
+	for CALENDAR_TO_LOOK_FOR in gep_radicale fw_radicale wr_radicale office_radicale ts_radicale
 	do
 		CALDAV_CALENDAR=""
 		for i in $CALDAV_DIRS
