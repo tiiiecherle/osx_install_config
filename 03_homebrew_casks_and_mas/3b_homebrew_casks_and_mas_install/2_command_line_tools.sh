@@ -92,6 +92,9 @@ function command_line_tools_update() {
 }
 command_line_tools_update
 
+# check active command line tools version
+# pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep "^version"
+
 # installing sdk headers on mojave
 if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
 then
