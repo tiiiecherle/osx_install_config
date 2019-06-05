@@ -588,8 +588,9 @@ then
     	XTRAFINDER_INSTALLER="/Users/$USER/Desktop/XtraFinder.dmg"
     	#wget https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -O "$XTRAFINDER_INSTALLER"
     	curl https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -o "$XTRAFINDER_INSTALLER" --progress-bar
-    	#open "$XTRAFINDER_INSTALLER"
-    	hdiutil attach "$XTRAFINDER_INSTALLER" -quiet
+	    #open "$XTRAFINDER_INSTALLER"
+	    echo "mounting image..."
+	    yes | hdiutil attach "$XTRAFINDER_INSTALLER" 1>/dev/null
     	sleep 5
     	echo "installing application..."
     	${USE_PASSWORD} | sudo installer -pkg /Volumes/XtraFinder/XtraFinder.pkg -target / 1>/dev/null
