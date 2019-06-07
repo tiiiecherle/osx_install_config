@@ -30,7 +30,7 @@ Table of contents
 [Usage](#usage)  
 [0 Bootable usb device](#0bootable-usb-device)  
 [1 NVRAM, system integrity protection and secure boot](#1nvram-system-integrity-protection-and-secure-boot)  
-[2	System Update and copy files](#2system-update-and-copy-files)  
+[2	Preparations](#2preparations)  
 [3	Homebrew, Mas and Casks](#3homebrew-casks-and-mas)  
 [4	SSD Optimizations](#4ssd-optimizations)  
 [5	Network Configuration](#5network-configuration)  
@@ -147,7 +147,7 @@ All Macs with T2 Chips, e.g. the MacBook Pro 2018 have an additional security fe
 
 This can be reset for security reasons after finishing the installation.
 
-2	System Update and copy files
+2	Preparations
 -----
 Script 2a updates macOS on the command line if the system should not be up to date. Script 2b is a short manual and checklist which contains a few steps that have to be done before continuing with the next steps.
 
