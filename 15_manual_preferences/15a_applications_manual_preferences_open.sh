@@ -140,6 +140,7 @@ applications_to_open=(
 #"/Applications/Signal.app"
 #"/Applications/Keka.app"
 "/Applications/Overflow 3.app"
+"/Applications/BresinkSoftwareUpdater.app"
 )
 
 for i in "${applications_to_open[@]}"
