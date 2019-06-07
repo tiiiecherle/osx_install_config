@@ -121,6 +121,10 @@ echo Brackets
 u	~/Library/Application Support/Brackets/brackets.json
 u	~/Library/Application Support/Brackets/state.json
 
+# Bresink Software Updater
+echo Bresink Software Updater
+m	/Applications/BresinkSoftwareUpdater.app
+
 # Brew Casks Update
 echo Brew Casks Update
 m	/Applications/brew_casks_update.app
@@ -501,9 +505,9 @@ m	~/Library/Preferences/PDFUnlock.plist
 #u	~/Library/Application Support/Plex Media Server
 #u	~/Library/Preferences/com.plexapp.plexmediaserver.plist
 
-# Prefs Editor
-#echo Prefs Editor
-#m	/Applications/Prefs Editor.app
+# PrefsEdit
+echo PrefEdit
+m	/Applications/PrefEdit.app
 
 # Print Window
 echo Print Window
