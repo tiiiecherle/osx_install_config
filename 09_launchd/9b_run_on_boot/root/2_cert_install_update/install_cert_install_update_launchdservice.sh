@@ -172,7 +172,7 @@ echo "running installed script..."
 # sudo privileges inside the called script will not timeout
 # script will run as root later anyway
 #echo ''
-sudo bash -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
+sudo "$SHELL" -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
 # wait < <(jobs -p) works, but is bash only, not posix compatible
 # wait $(jobs -p)
 for job in $(jobs -p)

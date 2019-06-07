@@ -157,7 +157,7 @@ echo "continuing script..."
     fi
     
     # closing EOL has to stay unindented
-    sudo bash -c "cat >/Library/LaunchDaemons/com.noatime.plist" <<'EOL'
+    sudo "$SHELL" -c "cat >/Library/LaunchDaemons/com.noatime.plist" <<'EOL'
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" 
     "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

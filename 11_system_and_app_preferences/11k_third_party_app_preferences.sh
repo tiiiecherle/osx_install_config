@@ -302,22 +302,22 @@ then
     AVAST_DAEMON_CONFIG='/Library/Application Support/Avast/config/com.avast.daemon.conf'
     if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^STATISTICS*") == "" ]]
     then
-        sudo bash -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
-        sudo bash -c "echo 'STATISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
+        sudo "$SHELL" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
+        sudo "$SHELL" -c "echo 'STATISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
     else
         :
     fi
     if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^HEURISTICS*") == "" ]]
     then
-        #sudo bash -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
-        sudo bash -c "echo 'HEURISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
+        #sudo "$SHELL" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
+        sudo "$SHELL" -c "echo 'HEURISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
     else
         :
     fi
     
     # files
     AVAST_FILESHIELD_CONFIG='/Library/Application Support/Avast/config/com.avast.fileshield.conf'
-    sudo bash -c "cat > '$AVAST_FILESHIELD_CONFIG' << 'EOF'
+    sudo "$SHELL" -c "cat > '$AVAST_FILESHIELD_CONFIG' << 'EOF'
 {
     \"fileshield\" : 
     {
@@ -332,7 +332,7 @@ EOF
 
     # mail and web
     AVAST_PROXY_CONFIG='/Library/Application Support/Avast/config/com.avast.proxy.conf'
-    sudo bash -c "cat > '$AVAST_PROXY_CONFIG' << 'EOF'
+    sudo "$SHELL" -c "cat > '$AVAST_PROXY_CONFIG' << 'EOF'
 {
     \"general\" : 
     {

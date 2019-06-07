@@ -50,7 +50,7 @@ echo "running installed script..."
 # be sure to have the correct path to the user logfiles specified for the logfile
 # /var/log is only writable as root
 #echo ''
-bash -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
+"$SHELL" -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
 # wait < <(jobs -p) works, but is bash only, not posix compatible
 # wait $(jobs -p)
 for job in $(jobs -p)

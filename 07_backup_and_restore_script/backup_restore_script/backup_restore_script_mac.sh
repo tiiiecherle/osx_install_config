@@ -1101,7 +1101,7 @@ function backup_restore {
             
             #export DESKTOPBACKUPFOLDER
             #export TARGZSAVEDIR
-            #sudo -E bash -c ''"$SCRIPT_DIR"'/backup_restore_script/compress_and_move_backup.sh'
+            #sudo -E "$SHELL" -c ''"$SCRIPT_DIR"'/backup_restore_script/compress_and_move_backup.sh'
             
             . "$SCRIPT_DIR"/backup_restore_script/compress_and_move_backup.sh
             wait
@@ -1703,10 +1703,10 @@ function backup_restore {
                 # this has to run in a new shell due to variables, functions, etc.
                 # so do not source this script
                 # tee does not capture the output format, so e.g. you can not see the download progress of casks, use scripts command to keep output formats
-                #bash -c """$SCRIPT_DIR_FINAL""/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh"
+                #"$SHELL" -c """$SCRIPT_DIR_FINAL""/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh"
                 #bash "$SCRIPT_DIR_FINAL"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh
                 # parentheses put script in subshell - this works with subprocess killing functions
-                # exec, bash and bash -c output terminations of sleep 60 from start sudo at the end
+                # exec, bash and "$SHELL" -c output terminations of sleep 60 from start sudo at the end
                 ( "$SCRIPT_DIR_FINAL"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh )
                 wait
             else
@@ -1731,7 +1731,7 @@ function backup_restore {
             #export MASTERUSER
             #export RESTOREMASTERDIR
             #export HOMEFOLDER
-            #bash -c "export SELECTEDUSER=\"$SELECTEDUSER\"; export MASTERUSER=\"$MASTERUSER\"; export RESTOREMASTERDIR=\"$RESTOREMASTERDIR\"; export HOMEFOLDER=\"$HOMEFOLDER\"; "$SCRIPT_DIR"/safari_extensions/safari_extensions_settings_restore.sh"
+            #"$SHELL" -c "export SELECTEDUSER=\"$SELECTEDUSER\"; export MASTERUSER=\"$MASTERUSER\"; export RESTOREMASTERDIR=\"$RESTOREMASTERDIR\"; export HOMEFOLDER=\"$HOMEFOLDER\"; "$SCRIPT_DIR"/safari_extensions/safari_extensions_settings_restore.sh"
             #bash "$SCRIPT_DIR"/safari_extensions/safari_extensions_settings_restore.sh
             #wait
             
@@ -1754,7 +1754,7 @@ function backup_restore {
 }
 
 #FUNC=$(declare -f backup_restore)
-#time bash -c "OPTION=\"$OPTION\"; SCRIPT_DIR=\"$SCRIPT_DIR\"; APPLESCRIPTDIR=\"$APPLESCRIPTDIR\"; $FUNC; backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt"
+#time "$SHELL" -c "OPTION=\"$OPTION\"; SCRIPT_DIR=\"$SCRIPT_DIR\"; APPLESCRIPTDIR=\"$APPLESCRIPTDIR\"; $FUNC; backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt"
 
 if [[ "$OPTION" == "BACKUP" ]]
 then

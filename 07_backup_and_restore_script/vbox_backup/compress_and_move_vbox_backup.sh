@@ -162,7 +162,7 @@ NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
 NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
 #echo $NUMBER_OF_MAX_JOBS_ROUNDED
 #
-parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k -q bash -c '
+parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k -q "$SHELL" -c '
     if [[ -f "{}" ]];
     then
         printf "%-45s" """$(basename "{}")""... " && unpigz -c "{}" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"

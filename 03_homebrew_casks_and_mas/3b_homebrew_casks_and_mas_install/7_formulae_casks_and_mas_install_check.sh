@@ -94,7 +94,7 @@ then
 else
 	#export USE_PARALLELS="no"
 	echo checking mas appstore apps installation...
-	printf '%s\n' "${mas_apps[@]}" | tr "\n" "\0" | xargs -0 -n1 -L1 -P4 -I{} bash -c ' 
+	printf '%s\n' "${mas_apps[@]}" | tr "\n" "\0" | xargs -0 -n1 -L1 -P4 -I{} "$SHELL" -c ' 
 	i="{}"
 	check_mas_apps
 	'
@@ -126,7 +126,7 @@ then
 else
 	echo ''
 	echo checking homebrew package installation...
-	printf '%s\n' "${homebrewpackages[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	printf '%s\n' "${homebrewpackages[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} "$SHELL" -c ' 
 	item="{}"
 	#if [[ $(brew info "$item" | grep "Not installed") == "" ]];
 	if [[ $(brew list | grep "^$item$") != "" ]]; 
@@ -153,7 +153,7 @@ else
 	echo checking casks installation...
 	# casks_pre
 	#if [[ $(brew cask info "$item" | grep "Not installed") == "" ]];
-	printf '%s\n' "${casks_pre[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	printf '%s\n' "${casks_pre[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} "$SHELL" -c ' 
 	item="{}"
 	if [[ $(brew cask list | grep "^$item$") != "" ]]; 
 	then 
@@ -164,7 +164,7 @@ else
 	'
 	# casks
 	#if [[ $(brew cask info "$item" | grep "Not installed") == "" ]];
-	printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	printf '%s\n' "${casks[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} "$SHELL" -c ' 
 	item="{}"
 	if [[ $(brew cask list | grep "^$item$") != "" ]]; 
 	then 
@@ -180,7 +180,7 @@ else
 	then
 	    echo ''
 	    echo checking casks specific1 installation...
-	    printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	    printf '%s\n' "${casks_specific1[@]}" | xargs -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} "$SHELL" -c ' 
 		item="{}"
 		if [[ $(brew cask list | grep "^$item$") != "" ]]; 
 		then 

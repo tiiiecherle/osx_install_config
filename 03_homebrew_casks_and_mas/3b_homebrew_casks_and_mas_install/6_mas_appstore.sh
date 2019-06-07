@@ -299,7 +299,7 @@ then
     else
 	    if [[ "$INSTALLATION_METHOD" == "parallel" ]]
 	    then
-	        printf '%s\n' "${mas_apps[@]}" | tr "\n" "\0" | xargs -0 -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} bash -c ' 
+	        printf '%s\n' "${mas_apps[@]}" | tr "\n" "\0" | xargs -0 -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} "$SHELL" -c ' 
 	        i="{}"
 	        install_mas_apps
 	        '

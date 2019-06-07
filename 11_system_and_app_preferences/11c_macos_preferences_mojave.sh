@@ -1080,10 +1080,10 @@ EOF
     sudo /usr/libexec/PlistBuddy -c "Set :shared false" /tmp/system.preferences.plist
     sleep 0.5
     #defaults read /tmp/system.preferences.plist
-    # exec or bash -c bash -c work around
+    # exec or "$SHELL" -c work around
     # Error Domain=NSCocoaErrorDomain Code=3840 "Cannot parse a NULL or zero-length data" UserInfo={NSDebugDescription=Cannot parse a NULL or zero-length data}
     # that occurs due to the changed sudo command
-    ${USE_PASSWORD} | exec sudo -p '' -S bash -c "security authorizationdb write system.preferences < /tmp/system.preferences.plist"    
+    ${USE_PASSWORD} | exec sudo -p '' -S "$SHELL" -c "security authorizationdb write system.preferences < /tmp/system.preferences.plist"    
     #sudo security authorizationdb read system.preferences"
     sleep 0.5
 

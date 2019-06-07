@@ -131,7 +131,7 @@ echo "running installed script..."
 # sudo privileges inside the called script will not timeout
 # script will run as root later anyway
 #echo ''
-sudo bash -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
+sudo "$SHELL" -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
 # wait < <(jobs -p) works, but is bash only, not posix compatible
 # wait $(jobs -p)
 for job in $(jobs -p)
@@ -148,7 +148,7 @@ SCRIPTS_DEFAULTS_WRITE_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd ..
 if [[ -e /Applications/hosts_file_generator/whitelist ]] && [[ -e "$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_"$USER" ]]
 then
 	echo "user whitelist file found, installing and re-running script..."
-    sudo bash -c 'cat '"$SCRIPTS_DEFAULTS_WRITE_DIR"'/_scripts_input_keep/hosts/whitelist_'"$USER"' > /Applications/hosts_file_generator/whitelist'
+    sudo "$SHELL" -c 'cat '"$SCRIPTS_DEFAULTS_WRITE_DIR"'/_scripts_input_keep/hosts/whitelist_'"$USER"' > /Applications/hosts_file_generator/whitelist'
     # script will run a second time when activating service to respect whitelist while updating
     sudo touch -mt 201512010000 /etc/hosts
 else

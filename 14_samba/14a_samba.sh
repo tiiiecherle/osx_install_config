@@ -33,7 +33,7 @@ fi
 if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "12" ]]
 then
     # macos versions until and including 10.12
-    bash -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
+    "$SHELL" -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
 [default]
 smb_neg=smb3_only
 signing_required=no
@@ -41,7 +41,7 @@ EOL
 
 else
     # macos versions 10.13 and up
-	bash -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
+	"$SHELL" -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
 [default]
 protocol_vers_map=4
 signing_required=no
