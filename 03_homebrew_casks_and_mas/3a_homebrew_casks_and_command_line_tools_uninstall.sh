@@ -221,7 +221,12 @@ then
     sudo rm -rf /usr/local/Homebrew/
     sudo chmod 0755 /usr/local
     sudo chown root:wheel /usr/local
-    sed -i '' '\|/usr/local/sbin:$PATH|d' ~/.bash_profile
+    for CONFIG_FILE in ~/.bash_profile ~/.bashrc ~/.zshrc
+    do
+        sed -i '' '\|/usr/local/sbin:$PATH|d' "$CONFIG_FILE"
+        sed -i '' '\|# setting PATH|d' "$CONFIG_FILE"
+        sed -i '' '${/^$/d;}' "$CONFIG_FILE"
+    done
 else
     :
 fi
