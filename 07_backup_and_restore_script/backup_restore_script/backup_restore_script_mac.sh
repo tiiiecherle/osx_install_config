@@ -785,7 +785,7 @@ function backup_restore {
               
             # running calendars backup applescript
             VARIABLE_TO_CHECK="$CALENDARS_BACKUP"
-            QUESTION_TO_ASK="do you want to run a contacts backup (y/N)? "
+            QUESTION_TO_ASK="do you want to run a calendar backup (y/N)? "
             ask_for_variable
             CALENDARS_BACKUP="$VARIABLE_TO_CHECK"
             sleep 0.1
