@@ -173,7 +173,12 @@ echo "running installed script..."
 # script will run as root later anyway
 #echo ''
 sudo bash -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
-wait < <(jobs -p)
+# wait < <(jobs -p) works, but is bash only, not posix compatible
+# wait $(jobs -p)
+for job in $(jobs -p)
+do
+	wait ${job} ||  echo "at least one job did not exit cleanly => $?"
+done
 
 
 ### launchd service

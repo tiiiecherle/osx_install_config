@@ -113,7 +113,15 @@ homebrew_update() {
     echo ''
     echo "updating homebrew..."
     # brew prune deprecated as of 2019-01, using brew cleanup at the end of the script instead
-    brew update-reset 1>/dev/null 2> >(grep -v "Reset branch" 1>&2) && brew analytics on 1>/dev/null && brew update 1>/dev/null && brew doctor 1>/dev/null && brew cleanup 1>/dev/null 2> >(grep -v "Skipping" 1>&2)
+    # brew update-reset 1>/dev/null 2> >(grep -v "Reset branch" 1>&2) only works in bash, not posx compliant
+    # functions to grep from stderr posix compliant 
+    brew_update_reset() {
+        brew update-reset 1>/dev/null
+    }
+    brew_cleanup() {
+        brew cleanup 1>/dev/null
+    }
+    { brew_update_reset 2>&1 1>&3 | grep -v "Reset branch" 1>&2; } 3>&1 && brew analytics on 1>/dev/null && brew update 1>/dev/null && brew doctor 1>/dev/null && { brew_cleanup 2>&1 1>&3 | grep -v "Skipping" 1>&2; } 3>&1
     
     # working around a --json=v1 bug until it`s fixed
     # https://github.com/Homebrew/homebrew-cask/issues/52427
