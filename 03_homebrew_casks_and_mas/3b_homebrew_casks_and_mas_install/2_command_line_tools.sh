@@ -7,6 +7,9 @@
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 MACOS_VERSION=$(sw_vers -productVersion)
 #MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+# or sw_vers | awk 'BEGIN { FS = ":[ \t]*" } /ProductVersion/ { print $2 }' | cut -f1,2 -d'.'
+# or sw_vers -productVersion | cut -f1,2 -d'.'
+MACOS_VERSION_NUMBER=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.' | cut -f2 -d'.')
 
 ###
 ### script frame
@@ -48,6 +51,8 @@ fi
 # does not work without power source connection in 10.13
 #command_line_tools_install
 
+echo ''
+
 # installing command line tools (command line)
 #if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ "$(ls -A "$(xcode-select -print-path)")" ]]
 if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ -nz "$(ls -A "$(xcode-select -print-path)")" ]]
@@ -59,8 +64,17 @@ else
     touch "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
     sleep 3
     softwareupdate --list >/dev/null 2>&1
-    COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.'))
-    softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLVERSION" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
+    if [[ "$MACOS_VERSION_NUMBER" -le "14" ]]
+    then
+        COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
+    elif [[ "$MACOS_VERSION_NUMBER" == "15" ]]
+    then
+        COMMANDLINETOOLVERSION=$(softwareupdate --list | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
+    else
+        :
+    fi     
+	echo "installing "$COMMANDLINETOOLVERSION"..."
+    softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLVERSION")"
 fi
 
 # removing tmp file that forces command line tools to show up
@@ -78,17 +92,23 @@ function command_line_tools_update() {
     # updating command line tools and system
     #echo ''
     echo "checking for command line tools update..."
-    COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.'))
-    # or sw_vers | awk 'BEGIN { FS = ":[ \t]*" } /ProductVersion/ { print $2 }' | cut -f1,2 -d'.'
-    # or sw_vers -productVersion | cut -f1,2 -d'.'
+    if [[ "$MACOS_VERSION_NUMBER" -le "14" ]]
+    then
+        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
+    elif [[ "$MACOS_VERSION_NUMBER" == "15" ]]
+    then
+        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
+    else
+        :
+    fi   
+
     if [ "$COMMANDLINETOOLUPDATE" == "" ]
     then
     	echo "no update for command line tools available..."
     else
     	echo "update for command line tools available, updating..."
-    	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE" | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//')"
+    	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE")"
     fi
-    #softwareupdate -i --verbose "$(softwareupdate --list | grep "* Command Line" | sed 's/*//' | sed -e 's/^[ \t]*//')"
 }
 command_line_tools_update
 
@@ -96,7 +116,7 @@ command_line_tools_update
 # pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep "^version"
 
 # installing sdk headers on mojave
-if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+if [[ "$MACOS_VERSION_NUMBER" -le "13" ]]
 then
     # macos versions until and including 10.13 
     :
@@ -104,10 +124,18 @@ else
     # macos versions 10.14 and up
     if [[ $(xcrun --show-sdk-path) == "" ]]
     then
-        echo ''
-        echo "installing sdk headers..."
-        #sudo install -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
-        sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+        if [[ "$MACOS_VERSION_NUMBER" == "14" ]]
+        then
+            echo ''
+            echo "installing sdk headers..."
+            #sudo install -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
+            sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+        elif [[ "$MACOS_VERSION_NUMBER" == "15" ]]
+        then
+            :
+        else
+            :
+        fi  
     else
         echo ''
         echo "sdk headers already installed..."

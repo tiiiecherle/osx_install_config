@@ -100,6 +100,8 @@ sudo()
 
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 SCRIPT_DIR_FINAL=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
+MACOS_VERSION=$(sw_vers -productVersion)
+MACOS_VERSION_NUMBER=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.' | cut -f2 -d'.')
 
 
 ### getting logged in user
@@ -574,6 +576,22 @@ then
 else
     :
 fi
+
+### auto join hotspots
+if [[ "$MACOS_VERSION_NUMBER" -le "14" ]]
+then
+    :
+elif [[ "$MACOS_VERSION_NUMBER" -ge "15" ]]
+then
+    # Automatic
+    # AskToJoin
+    # Never
+    echo ''
+    echo "setting wlan auto hotspot mode..."
+    sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist AutoHotspotMode -string "Never"
+else
+    :
+fi  
 
 
 ### locations created

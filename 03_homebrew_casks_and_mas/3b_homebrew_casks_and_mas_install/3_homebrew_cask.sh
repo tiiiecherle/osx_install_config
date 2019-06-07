@@ -67,8 +67,48 @@ fi
 #fi
 
 # including homebrew commands in PATH
-echo 'export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"' > /Users/$(logname)/.bash_profile
-source /Users/$(logname)/.bash_profile
+add_path_to_shell() {
+    echo "# setting PATH" >> "$SHELL_CONFIG"
+    echo 'export PATH="/usr/local/bin:/usr/local/sbin:$PATH"' >> "$SHELL_CONFIG"
+}
+
+set_path_for_shell() {
+	if [[ $(command -v "$SHELL_TO_CHECK") == "" ]]
+	then
+	    #echo ''
+	    echo "$SHELL_TO_CHECK is not installed, skipping to set path..."
+	else
+	    echo "setting path for $SHELL_TO_CHECK..."
+        if [[ ! -e "$SHELL_CONFIG" ]]
+        then
+            touch "$SHELL_CONFIG"
+            chown 501:staff "$SHELL_CONFIG"
+            chmod 600 "$SHELL_CONFIG"
+            add_path_to_shell
+        elif [[ $(cat "$SHELL_CONFIG" | grep "^export PATH=") != "" ]]
+        then
+            sed -i '' 's|^export PATH=.*|export PATH="/usr/local/bin:/usr/local/sbin:$PATH"|' "$SHELL_CONFIG"
+        else
+            echo '' >> "$SHELL_CONFIG"
+            add_path_to_shell
+        fi
+        # sourcing changes for currently used shell
+        if [[ $(echo "$SHELL") == "$SHELL_TO_CHECK" ]]
+        then
+	        "$SHELL" -c "source "$SHELL_CONFIG""
+        else
+            :
+        fi
+	fi
+}
+
+SHELL_TO_CHECK="/bin/bash"
+SHELL_CONFIG="/Users/$(logname)/.bashrc"
+set_path_for_shell
+
+SHELL_TO_CHECK="/bin/zsh"
+SHELL_CONFIG="/Users/$(logname)/.zshrc"
+set_path_for_shell
 
 # checking installation and updating homebrew
 brew analytics on

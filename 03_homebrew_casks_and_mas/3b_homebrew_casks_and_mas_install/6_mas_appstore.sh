@@ -7,7 +7,7 @@
 SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 MACOS_VERSION=$(sw_vers -productVersion)
 #MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
-
+MACOS_VERSION_NUMBER=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.' | cut -f2 -d'.')
 
 ###
 ### script frame
@@ -123,8 +123,8 @@ ask_for_variable() {
 
 function mas_login_applescript() {
     
-    # macos 10.14 only
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.') != "10.14" ]]
+    # macos 10.14 and newer
+    if [[ $(echo "$MACOS_VERSION" | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
     then
         #echo ''
         echo "this part of the script to login to the appstore automatically via applescript is only compatible with macos 10.14 mojave..."
@@ -193,7 +193,12 @@ function mas_login_applescript() {
     			    delay 3
     		    end try
     		    ### login
-        		click menu item 15 of menu "Store" of menu bar item "Store" of menu bar 1
+    		    if "$MACOS_VERSION_NUMBER" is equal to "14" then
+        		    click menu item 15 of menu "Store" of menu bar item "Store" of menu bar 1
+                end if
+                if "$MACOS_VERSION_NUMBER" is equal to "15" then
+        		    click menu item 16 of menu "Store" of menu bar item "Store" of menu bar 1
+                end if
         		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
         		delay 2
         		tell application "System Events" to keystroke "$MAS_APPLE_ID"
