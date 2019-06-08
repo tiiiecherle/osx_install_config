@@ -6,7 +6,7 @@ Open Terminal.
 csrutil status
 csrutil disable
 # if using xtrafinder or totalfinder at least debug has to be disabled
-csrutil enable --without debug
+csrutil enable --without fs --without debug
 Reboot
 
 To re-enable it, reboot to recovery and type `sudo csrutil enable`.
