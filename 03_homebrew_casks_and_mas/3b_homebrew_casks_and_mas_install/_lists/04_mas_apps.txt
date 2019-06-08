@@ -23,3 +23,5 @@
 1440147259	AdGuard for Safari
 1451685025	WireGuard
 1387766656	Overflow 3
+1197662954	HashBox
+#1055555711	fHash

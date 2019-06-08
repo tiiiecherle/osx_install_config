@@ -44,10 +44,10 @@ u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Preferences/com.
 
 # Alfred
 echo Alfred
-#m	/Applications/Alfred 3.app
-m	~/Library/Application Support/Alfred 3
-m	~/Library/Preferences/com.runningwithcrayons.Alfred-3.plist
-m	~/Library/Preferences/com.runningwithcrayons.Alfred-Preferences-3.plist
+#m	/Applications/Alfred 4.app
+m	~/Library/Application Support/Alfred
+m	~/Library/Preferences/com.runningwithcrayons.Alfred.plist
+m	~/Library/Preferences/com.runningwithcrayons.Alfred-Preferences.plist
 
 # Angry IP Scanner
 #echo Angry IP Scanner
@@ -139,8 +139,8 @@ u	~/Library/Application Support/iCal
 u	~/Library/Calendars
 
 # Checksum
-echo Checksum
-m	/Applications/Checksum.app
+#echo Checksum
+#m	/Applications/Checksum.app
 
 # Chromium
 echo Chromium
