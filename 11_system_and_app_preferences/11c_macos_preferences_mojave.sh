@@ -1885,7 +1885,7 @@ EOF
     # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Overflow 3", path:"/Applications/Overflow 3.app", hidden:true}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"KeepingYouAwake", path:"/Applications/KeepingYouAwake.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 3", path:"/Applications/Alfred 3.app", hidden:false}'
+    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 4", path:"/Applications/Alfred 4.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"/Applications/GeburtstagsChecker.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"AppCleaner Helper", path:"/Applications/AppCleaner Helper.app", hidden:false}'
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"SMARTReporter", path:"/Applications/SMARTReporter.app", hidden:false}'
