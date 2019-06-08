@@ -66,12 +66,13 @@ done
 trap 'unset SUDOPASSWORD' EXIT
 
 # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-}
+# can not be used in untar pipe "| sudo gtar", use start sudo with ${USE_PASSWORD} instead
+#sudo()
+#{
+#    ${USE_PASSWORD} | builtin command sudo -p '' -S "$@"
+#    ${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
+#    ${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
+#}
 
 # getting logged in user
 #echo "LOGNAME is $(logname)..."
@@ -199,9 +200,10 @@ function kill_main_process()
 }
 
 function start_sudo() {
-    #${USE_PASSWORD} | builtin command sudo -p '' -S -v
-    sudo -v
-    ( while true; do sudo -v; sleep 60; done; ) &
+    ${USE_PASSWORD} | builtin command sudo -p '' -S -v
+    #sudo -v
+    #( while true; do ${USE_PASSWORD} | builtin command sudo -p '' -S -v; sleep 60; done; ) &
+    ( while true; do ${USE_PASSWORD} | builtin command sudo -p '' -S -v; sleep 60; done; ) &
     SUDO_PID="$!"
 }
 
@@ -250,20 +252,29 @@ NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS
 decrypt_and_unarchive_parallel () {
     start_sudo
     
+    do_it_parallel() {
+    	if [[ "$USE_PARALLELS" == "yes" ]]
+    	then
+    		# if parallels is used i needs to redefined
+    		item="$1"
+    	else
+    		:
+    	fi        
+    	echo ''
+    	echo "decrypting and unarchiving..."
+    	echo "$item"
+    	echo to "$SCRIPT_DIR"/
+    	cat "$item" | gpg --batch --passphrase="$GPG_PASSWORD" --quiet -d - | unpigz -dc - | sudo gtar --same-owner -C "$SCRIPT_DIR" -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"
+    }
+    export -f do_it_parallel
+    
     echo "decrypting and unarchiving is set to parallel mode, no progress will be shown..."
     echo ''
-    
-    parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" -q "$SHELL" -c '
-    
-        item="{}"
-        echo ""
-    	echo "decrypting and unarchiving..."
-    	echo ''
-    	echo "$item"
-    	echo to '"$SCRIPT_DIR"'/"$(basename $item | rev | cut -d"." -f4- | rev )"
-    	cat "$item" | pv -s $(gdu -scb "$item" | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$GPG_PASSWORD"' --quiet -d - | unpigz -dc - | sudo gtar --same-owner -C '"$SCRIPT_DIR"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"
-    ' ::: "$(find "$SCRIPT_DIR" -mindepth 1 -name '*.tar.gz.gpg')"
-    
+    export USE_PARALLELS="yes"
+    export SCRIPT_DIR
+    export GPG_PASSWORD
+    find "$SCRIPT_DIR" -mindepth 1 -name '*.tar.gz.gpg' | parallel --will-cite -j4 do_it_parallel
+
     stop_sudo
 }
 
@@ -273,14 +284,15 @@ decrypt_and_unarchive_sequential () {
     echo "decrypting and unarchiving is set to sequential mode..."
     echo ''
     
-    for item in $(find "$SCRIPT_DIR" -mindepth 1 -name '*.tar.gz.gpg')
+    find "$SCRIPT_DIR" -mindepth 1 -name '*.tar.gz.gpg' -print0 | 
+    while IFS= read -r -d '' line
     do
-        echo ""
+        item="$line"
+        echo ''
     	echo "decrypting and unarchiving..."
-    	echo ''
     	echo "$item"
-    	echo to "$SCRIPT_DIR"/"$(basename $item | rev | cut -d"." -f4- | rev )"
-    	"$SHELL" -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$GPG_PASSWORD"' --quiet -d - | unpigz -dc - | sudo gtar --same-owner -C '"$SCRIPT_DIR"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
+    	echo to "$SCRIPT_DIR"/
+    	cat "$item" | pv -s $(gdu -scb "$item" | tail -1 | awk '{print $1}' | grep -o "[0-9]\+") | gpg --batch --passphrase="$GPG_PASSWORD" --quiet -d - | unpigz -dc - | sudo gtar --same-owner -C "$SCRIPT_DIR" -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"
     done
         
     stop_sudo
