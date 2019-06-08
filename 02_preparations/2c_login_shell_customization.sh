@@ -45,13 +45,15 @@ echo ''
 
 # https://github.com/robbyrussell/oh-my-zsh
 # starting with a clean install
-if [[ -e /Users/$USER/.oh-my-zsh ]]
-then
-	rm -rf /Users/$USER/.oh-my-zsh
-	rm -f /Users/$USER/.zshrc.pre-oh-my-zsh-*
-else
-	:
-fi
+for FILE_TO_CHECK in ".oh-my-zsh" ".zshrc" ".zshrc.pre-oh-my-zsh-*"
+do
+	if [[ -e /Users/"$USER"/"$FILE_TO_CHECK" ]]
+	then
+		rm -rf /Users/"$USER"/"$FILE_TO_CHECK"
+	else
+		:
+	fi
+done
 
 # installing
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" &
