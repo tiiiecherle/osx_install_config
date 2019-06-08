@@ -10,7 +10,7 @@ decrypt and unarchive gpg apps
 
 2	set icon
 	a	open terminal
-		PATH_TO/icon_set.py PATH_TO/gpgtools.icns PATH_TO/APPNAME.app
+		PATH_TO/icon_set_python3.py PATH_TO/gpgtools.icns PATH_TO/APPNAME.app
 	b	right click on APPNAME.app
 		show package content - Contents - Resources
 		copy icon.icns to .../Resources/icon.icns
