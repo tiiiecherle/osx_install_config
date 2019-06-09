@@ -378,7 +378,7 @@ m	~/Library/Preferences/net.freemacsoft.LiteIcon.plist
 # lock_screen
 echo lock_screen
 m	/Applications/lock_screen.app
-m	/Applications/lock_screen_and_sleep.app
+m	/Applications/lock_screen_and_sleep_mac.app
 
 # MacDown
 echo MacDown
