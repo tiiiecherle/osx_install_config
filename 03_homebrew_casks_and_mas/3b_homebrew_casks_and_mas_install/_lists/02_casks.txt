@@ -61,7 +61,7 @@ veracrypt
 vlc
 vlc-webplugin
 vnc-viewer
-vox
+vox			# alternative: tiny-player
 whatsapp
 witch
 x-lite
