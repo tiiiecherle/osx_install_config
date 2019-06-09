@@ -7,7 +7,9 @@
 	<key>AMStayOpen</key>
 	<false/>
 	<key>BuildMachineOSBuild</key>
-	<string>16C5</string>
+	<string>17A405001</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDocumentTypes</key>
@@ -15,12 +17,10 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>gpg</string>
+				<string>*</string>
 			</array>
-			<key>CFBundleTypeIconFile</key>
-			<string>document.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>gpg document</string>
+			<string>Automator workflow file</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>****</string>
@@ -32,7 +32,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Application Stub</string>
 	<key>CFBundleIconFile</key>
-	<string>gpg.icns</string>
+	<string>AutomatorApplet</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.apple.automator.decrypt_finder_input_gpg_progress</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -42,7 +42,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2</string>
+	<string>1.3</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleSupportedPlatforms</key>
@@ -52,38 +52,55 @@
 	<key>CFBundleURLTypes</key>
 	<array/>
 	<key>CFBundleVersion</key>
-	<string>428</string>
+	<string>444.42</string>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>
-	<string>8R174l</string>
+	<string>10P70r</string>
+	<key>DTPlatformName</key>
+	<string>macosx</string>
 	<key>DTPlatformVersion</key>
-	<string>GM</string>
+	<string>10.14</string>
 	<key>DTSDKBuild</key>
-	<string>16C5</string>
+	<string>18F82</string>
 	<key>DTSDKName</key>
-	<string>macosx10.12internal</string>
+	<string>macosx10.14internal</string>
 	<key>DTXcode</key>
-	<string>0800</string>
+	<string>1020</string>
 	<key>DTXcodeBuild</key>
-	<string>8R174l</string>
+	<string>10P70r</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.5</string>
-	<key>LSMinimumSystemVersionByArchitecture</key>
-	<dict>
-		<key>x86_64</key>
-		<string>10.6</string>
-	</dict>
+	<string>10.6</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>This workflow needs to control other applications to run.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>This workflow needs access to your music to run.</string>
 	<key>NSAppleScriptEnabled</key>
 	<string>YES</string>
-	<key>NSMainNibFile</key>
-	<string>ApplicationStub</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>This workflow needs access to your calendars to run.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This workflow needs access to your camera to run.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>This workflow needs access to your contacts to run.</string>
+	<key>NSHomeKitUsageDescription</key>
+	<string>This workflow needs access to your HomeKit Home to run.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This workflow needs access to your microphone to run.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This workflow needs access to your photos to run.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>This workflow needs access to your reminders to run.</string>
 	<key>NSServices</key>
 	<array/>
+	<key>NSSiriUsageDescription</key>
+	<string>This workflow needs access to Siri to run.</string>
+	<key>NSSystemAdministrationUsageDescription</key>
+	<string>This workflow needs access to administer this system in order to run.</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array/>
 	<key>UTImportedTypeDeclarations</key>
