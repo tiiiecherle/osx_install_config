@@ -273,7 +273,7 @@ decrypt_and_unarchive_parallel () {
     export USE_PARALLELS="yes"
     export SCRIPT_DIR
     export GPG_PASSWORD
-    find "$SCRIPT_DIR" -mindepth 1 -name '*.tar.gz.gpg' | parallel --will-cite -j4 do_it_parallel
+    find "$SCRIPT_DIR" -mindepth 1 -name '*.tar.gz.gpg' | parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" do_it_parallel
 
     stop_sudo
 }
