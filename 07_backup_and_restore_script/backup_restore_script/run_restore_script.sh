@@ -5,7 +5,7 @@ function get_running_subprocesses()
     SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
     SCRIPT_COMMAND=$(ps -o comm= $$)
 	PARENT_SCRIPT_COMMAND=$(ps -o comm= $PPID)
-	if [[ $PARENT_SCRIPT_COMMAND == "bash" ]] || [[ $PARENT_SCRIPT_COMMAND == "-bash" ]] || [[ $PARENT_SCRIPT_COMMAND == "" ]]
+	if [[ $PARENT_SCRIPT_COMMAND == "$(basename $SHELL)" ]] || [[ $PARENT_SCRIPT_COMMAND == "-$(basename $SHELL)" ]] || [[ $PARENT_SCRIPT_COMMAND == "" ]]
 	then
         RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | awk '{print $1}')
     else
