@@ -30,11 +30,11 @@ do
 	echo "ICON_NAME is "$ICON_NAME"..."
 	
 	# script name
-	if [[ -e "$SCRIPT_DIR"/bash/"$APP_NAME".sh ]]
+	if [[ -e "$SCRIPT_DIR"/shell_script/"$APP_NAME".sh ]]
 	then
 		SCRIPT_NAME="$APP_NAME"
 	else
-		SCRIPT_NAME=$(find "$SCRIPT_DIR"/bash -maxdepth 1 -mindepth 1 -type f -name "*.sh")
+		SCRIPT_NAME=$(find "$SCRIPT_DIR"/shell_script -maxdepth 1 -mindepth 1 -type f -name "*.sh")
 		if [[ $(echo "$SCRIPT_NAME" | wc -l | awk '{print $1}') != "1" ]]
 		then
 			echo "SCRIPT_NAME is not set correctly, exiting..."
@@ -56,7 +56,7 @@ do
 	echo copying content to app and setting permissions...
 	# .app final configuration
 	mkdir -p "$SCRIPT_DIR"/app/"$APP_NAME".app/custom_files
-	cp -a "$SCRIPT_DIR"/bash/"$SCRIPT_NAME".sh "$SCRIPT_DIR"/app/"$APP_NAME".app/custom_files/
+	cp -a "$SCRIPT_DIR"/shell_script/"$SCRIPT_NAME".sh "$SCRIPT_DIR"/app/"$APP_NAME".app/custom_files/
 	cp -a "$SCRIPT_DIR"/icons/"$ICON_NAME".icns "$SCRIPT_DIR"/app/"$APP_NAME".app/custom_files/
 	chown 501:admin "$SCRIPT_DIR"/app/"$APP_NAME".app
 	chown -R 501:admin "$SCRIPT_DIR"/app/"$APP_NAME".app/custom_files/
