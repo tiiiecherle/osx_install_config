@@ -5,7 +5,7 @@ Open Utilities.
 Open Terminal.
 csrutil status
 csrutil disable
-# if using xtrafinder or totalfinder at least debug has to be disabled
+# for these scripts to work (and for using xtrafinder or totalfinder)
 csrutil enable --without fs --without debug
 Reboot
 
