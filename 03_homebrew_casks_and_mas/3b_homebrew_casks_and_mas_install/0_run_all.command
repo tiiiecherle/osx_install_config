@@ -127,7 +127,7 @@ then
 else
     :
 fi
-echo ''
+#echo ''
 
 
 ### command line tools

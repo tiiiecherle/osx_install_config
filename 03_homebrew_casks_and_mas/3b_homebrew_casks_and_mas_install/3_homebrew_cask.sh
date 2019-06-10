@@ -66,6 +66,8 @@ fi
 #	:
 #fi
 
+echo ''
+
 # including homebrew commands in PATH
 add_path_to_shell() {
     echo "# setting PATH" >> "$SHELL_CONFIG"
@@ -109,6 +111,8 @@ set_path_for_shell
 SHELL_TO_CHECK="/bin/zsh"
 SHELL_CONFIG="/Users/$(logname)/.zshrc"
 set_path_for_shell
+
+echo ''
 
 # checking installation and updating homebrew
 brew analytics on
