@@ -3,7 +3,7 @@
 # To make it available in a script add this after the shebang. It works with #!/bin/zsh and #!/bin/bash.
 # Do not put these lines in a function or some things may not work as expected.
 #
-# if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by using...\n\n\033[1;34msh -c "$(https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+# if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by using...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
 # SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH")
 # env_get_script_path
 # eval "$CHECK_IF_SOURCED"

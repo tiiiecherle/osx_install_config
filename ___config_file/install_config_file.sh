@@ -23,7 +23,7 @@ then
     cp "$SCRIPT_DIR"/"$SHELL_SCRIPTS_CONFIG_FILE".sh "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
     if [[ $? -eq 0 ]]; then SUCCESSFULLY_INSTALLED="yes"; else SUCCESSFULLY_INSTALLED="no"; fi
 else
-    echo "installing config file from local directory..."
+    echo "installing config file from github..."
     curl https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/"$SHELL_SCRIPTS_CONFIG_FILE".sh -o "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
     if [[ $? -eq 0 ]]; then SUCCESSFULLY_INSTALLED="yes"; else SUCCESSFULLY_INSTALLED="no"; fi
 fi
