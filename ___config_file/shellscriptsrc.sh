@@ -129,7 +129,7 @@ env_ask_for_variable() {
 #QUESTION_TO_ASK="do you want to install php testfiles? (y/N) "
 # multi line
 #QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')"
-#ask_for_variable
+#env_ask_for_variable
 #PHP_TESTFILES="$VARIABLE_TO_CHECK"
 
 #if [[ "$PHP_TESTFILES" =~ ^(yes|y)$ ]]
