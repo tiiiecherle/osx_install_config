@@ -63,14 +63,14 @@ SCRIPT_INTERPRETER=$(ps h -p $$ -o args='' | cut -f1 -d' ')
 #echo $SCRIPT_INTERPRETER
 # be careful when using $SHELL instead
 # if a script with #!/bin/bash shebang interpreter will be started in zsh shell, $SHELL will be /bin/zsh, not /bin/bash
-# when a script is sourced the shebang interpreter will be taken from the master script and the shebang from the sourced script will be ignored
+# when a script is sourced the shebang interpreter will be taken from the parent script and the shebang from the sourced script will be ignored
 # the above variable reflects that correctly
 
 
 ### script path, name and directory
 env_get_script_path() {
     # script path
-    #echo $SCRIPT_PATH+
+    #echo $SCRIPT_PATH
     # script name
     SCRIPT_NAME="$(basename -- "$SCRIPT_PATH")"
     #echo $SCRIPT_NAME
