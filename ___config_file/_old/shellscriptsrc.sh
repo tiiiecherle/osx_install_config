@@ -3,77 +3,56 @@
 # To make it available in a script add this after the shebang. It works with #!/bin/zsh and #!/bin/bash.
 # Do not put these lines in a function or some things may not work as expected.
 #
-#if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
-#eval_function() { function_to_eval="$@"; eval "$(typeset -f $function_to_eval)" && "$function_to_eval" ; }
-#eval_function env_get_shell_specific_info
-#env_get_script_path
+# if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+# SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH")
+# env_get_script_path
+# eval "$CHECK_IF_SOURCED"
 
 
 ### shell specific
-env_get_shell_specific_info() {
-    if [[ -n "$BASH_SOURCE" ]]
-    then
-        #echo "script is run with bash interpreter..."
-        
-        # sourcing env_parallel to use variables and functions in parallels
-        #source $(which env_parallel.bash)
-        if [[ $(command -v parallel) == "" ]]; then :; else . $(which env_parallel.bash); fi
-        #source `which env_parallel.bash`
-        
-        # path to script
-        SCRIPT_PATH="$BASH_SOURCE"
-        # eval alternative
-        # use SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH") in other script to call it
-        #GET_SCRIPT_PATH='printf "%s\n" $BASH_SOURCE'
-        #SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH")
-        
-        # command to read from command line
-        COMMAND_TO_READ_FROM_COMMAND_LINE='read -r -p'
-        env_read_from_command_line() { $COMMAND_TO_READ_FROM_COMMAND_LINE "$QUESTION_TO_ASK" VARIABLE_TO_CHECK ; }
-        
-        # use password for sudo input
-        env_use_password() { ${USE_PASSWORD}; }
-        
-        # check if script is sourced
-        [[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"
-        # eval alternative (does not work inside function because of subshell)
-        # use eval "$CHECK_IF_SOURCED" in other script to call it
-        #CHECK_IF_SOURCED='(return 0 2>/dev/null) && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"'
-        #(return 0 2>/dev/null) && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"
-        #eval "$CHECK_IF_SOURCED"
-    elif [[ -n "$ZSH_VERSION" ]]
-    then
-        #echo "script is run with zsh interpreter..."
-        
-        # sourcing env_parallel to use variables and functions in parallels
-        #source =env_parallel.zsh
-        if [[ $(command -v parallel) == "" ]]; then :; else . $(which env_parallel.zsh); fi
-        #. $(which env_parallel.zsh)
-        #. `which env_parallel.zsh`
-        
-        # path to script
-        SCRIPT_PATH="${(%):-%x}"
-        # eval alternative
-        # use SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH") in other script to call it
-        #GET_SCRIPT_PATH='printf "%s\n" ${(%):-%x}'
-        #SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH")
-        
-        # command to read from command line   
-        COMMAND_TO_READ_FROM_COMMAND_LINE='vared -p'
-        env_read_from_command_line() { ${=COMMAND_TO_READ_FROM_COMMAND_LINE} "$QUESTION_TO_ASK" VARIABLE_TO_CHECK ; }
-        
-        # use password for sudo input    
-        env_use_password() { ${=USE_PASSWORD}; }
-        
-        # check if script is sourced
-        [[ $ZSH_EVAL_CONTEXT =~ ^toplevel:file ]] && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"
-        # eval alternative
-        # use eval "$CHECK_IF_SOURCED" in other script to call it
-        #CHECK_IF_SOURCED='[[ $ZSH_EVAL_CONTEXT =~ ':file$' ]] && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"'
-        #eval "$CHECK_IF_SOURCED"
-    fi
-}
-env_get_shell_specific_info
+if [[ -n "$BASH_SOURCE" ]]
+then
+    #echo "script is run with bash interpreter..."
+    # sourcing env_parallel to use variables and functions in parallels
+    #source $(which env_parallel.bash)
+    if [[ $(command -v parallel) == "" ]]; then :; else . $(which env_parallel.bash); fi
+    #source `which env_parallel.bash`
+    # path to script
+    #SCRIPT_PATH="$BASH_SOURCE"
+    GET_SCRIPT_PATH='printf "%s\n" $BASH_SOURCE'
+    SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH")
+    # command to read from command line
+    COMMAND_TO_READ_FROM_COMMAND_LINE='read -r -p'
+    env_read_from_command_line() { $COMMAND_TO_READ_FROM_COMMAND_LINE "$QUESTION_TO_ASK" VARIABLE_TO_CHECK ; }
+    # use password for sudo input
+    env_use_password() { ${USE_PASSWORD}; }
+    # check if script is sourced
+    CHECK_IF_SOURCED='(return 0 2>/dev/null) && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"'
+    #(return 0 2>/dev/null) && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"
+    eval "$CHECK_IF_SOURCED"
+elif [[ -n "$ZSH_VERSION" ]]
+then
+    #echo "script is run with zsh interpreter..."
+    # sourcing env_parallel to use variables and functions in parallels
+    #source =env_parallel.zsh
+    if [[ $(command -v parallel) == "" ]]; then :; else . $(which env_parallel.zsh); fi
+    #. $(which env_parallel.zsh)
+    #. `which env_parallel.zsh`
+    # path to script
+    #SCRIPT_PATH="${(%):-%x}"
+    GET_SCRIPT_PATH='printf "%s\n" ${(%):-%x}'
+    SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH")
+    # command to read from command line   
+    COMMAND_TO_READ_FROM_COMMAND_LINE='vared -p'
+    env_read_from_command_line() { ${=COMMAND_TO_READ_FROM_COMMAND_LINE} "$QUESTION_TO_ASK" VARIABLE_TO_CHECK ; }
+    # use password for sudo input    
+    env_use_password() { ${=USE_PASSWORD}; }
+    # check if script is sourced
+    #CHECK_IF_SOURCED='if [[ $(printf "%s\n" $ZSH_EVAL_CONTEXT | grep "':file$'") != "" ]]; then echo 1; else echo 0; fi'
+    CHECK_IF_SOURCED='[[ $ZSH_EVAL_CONTEXT =~ ':file$' ]] && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"'
+    #if [[ $ZSH_EVAL_CONTEXT =~ ':file$' ]]; then SCRIPT_IS_SOURCED="yes"; else SCRIPT_IS_SOURCED="no"; fi
+    eval "$CHECK_IF_SOURCED"
+fi
 
 
 ### shebang interpreter

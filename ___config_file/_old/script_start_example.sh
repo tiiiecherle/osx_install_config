@@ -1,13 +1,14 @@
-#!/bin/zsh
+#!/bin/bash
 
 ###
 ### sourcing config file
 ###
 
 if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
-eval_function() { function_to_eval="$@"; eval "$(typeset -f $function_to_eval)" && "$function_to_eval" ; }
-eval_function env_get_shell_specific_info
+SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH")
 env_get_script_path
+eval "$CHECK_IF_SOURCED"
+
 
 
 ###
@@ -17,10 +18,12 @@ env_get_script_path
 ### testing sourcing and variables
 echo ''
 TEST_SOURCING_AND_VARIABLES=yes
+#export TEST_SOURCING_AND_VARIABLES=yes
 if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
-eval_function() { function_to_eval="$@"; eval "$(typeset -f $function_to_eval)" && "$function_to_eval" ; }
-eval_function env_get_shell_specific_info
+SCRIPT_PATH=$(eval "$GET_SCRIPT_PATH")
 env_get_script_path
+eval "$CHECK_IF_SOURCED"
+
 
 echo ''
 echo "parent shell script..."
