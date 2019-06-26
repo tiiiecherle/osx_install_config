@@ -214,7 +214,7 @@ env_config_file_self_update() {
         SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH=~/."$SHELL_SCRIPTS_CONFIG_FILE"
         
         env_check_if_online_silent
-        if [[ "$ONLINE_STATUS" == "online" ]]
+        if [[ "$ONLINE_STATUS" == "online" ]] && [[ -e "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH" ]]
         then
             # online
     
@@ -266,7 +266,7 @@ env_config_file_self_update() {
                 :
             fi
         else
-            # not online
+            # not online or file does not exist
             :
         fi
     fi
