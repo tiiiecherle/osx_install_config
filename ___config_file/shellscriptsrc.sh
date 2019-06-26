@@ -205,62 +205,69 @@ env_ask_for_variable() {
 
 ### updating config file
 env_config_file_self_update() {
-    SHELL_SCRIPTS_CONFIG_FILE="shellscriptsrc"
-    SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH=~/."$SHELL_SCRIPTS_CONFIG_FILE"
-    
-    env_check_if_online_silent
-    if [[ "$ONLINE_STATUS" == "online" ]]
-    then
-        # online
 
-        # checking if up-to-date
-        if [[ "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)" != "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH" ]]
+    if [[ "$UPDATE_CONFIG_FILE_ON_NEXT_RUN" == "no" ]]
+    then
+        :
+    else
+        SHELL_SCRIPTS_CONFIG_FILE="shellscriptsrc"
+        SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH=~/."$SHELL_SCRIPTS_CONFIG_FILE"
+        
+        env_check_if_online_silent
+        if [[ "$ONLINE_STATUS" == "online" ]]
         then
-            echo ''
-            VARIABLE_TO_CHECK="$UPDATE_CONFIG_FILE"
-            QUESTION_TO_ASK="script config file is outdated, update to the latest version (Y/n)? "
-            printf "%s" "${bold_text}${blue_text}"
-            env_ask_for_variable
-            printf "%s" "${default_text}"
-            UPDATE_CONFIG_FILE="$VARIABLE_TO_CHECK"
-            sleep 0.1
-            
-            if [[ "$UPDATE_CONFIG_FILE" =~ ^(yes|y)$ ]]
+            # online
+    
+            # checking if up-to-date
+            if [[ "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)" != "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH" ]]
             then
-                # updating
-                echo "installing config file from github..."
                 echo ''
-                curl https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/"$SHELL_SCRIPTS_CONFIG_FILE".sh -o "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
-                if [[ $? -eq 0 ]]; then SUCCESSFULLY_INSTALLED="yes"; else SUCCESSFULLY_INSTALLED="no"; fi
-            
-                # ownership and permissions
-                chown 501:staff "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
-                chmod 600 "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+                VARIABLE_TO_CHECK="$UPDATE_CONFIG_FILE"
+                QUESTION_TO_ASK="script config file is outdated, update to the latest version (Y/n)? "
+                printf "%s" "${bold_text}${blue_text}"
+                env_ask_for_variable
+                printf "%s" "${default_text}"
+                UPDATE_CONFIG_FILE="$VARIABLE_TO_CHECK"
+                sleep 0.1
                 
-                # checking if installation was successful
-                echo ''
-                if [[ -f "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH" ]] && [[ "$SUCCESSFULLY_INSTALLED" == "yes" ]]
+                if [[ "$UPDATE_CONFIG_FILE" =~ ^(yes|y)$ ]]
                 then
-                    echo -e "config file was \033[1;32msuccessfully\033[0m installed to $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH..."
+                    # updating
+                    echo "installing config file from github..."
                     echo ''
-                    echo "###"
-                else
-                    echo -e "\033[1;31merror installing config file to $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH, please update it manually...\033[0m"
-                fi
-                echo ''
+                    curl https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/"$SHELL_SCRIPTS_CONFIG_FILE".sh -o "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+                    if [[ $? -eq 0 ]]; then SUCCESSFULLY_INSTALLED="yes"; else SUCCESSFULLY_INSTALLED="no"; fi
                 
-                # sourcing new file
-                . "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+                    # ownership and permissions
+                    chown 501:staff "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+                    chmod 600 "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+                    
+                    # checking if installation was successful
+                    echo ''
+                    if [[ -f "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH" ]] && [[ "$SUCCESSFULLY_INSTALLED" == "yes" ]]
+                    then
+                        echo -e "config file was \033[1;32msuccessfully\033[0m installed to $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH..."
+                        echo ''
+                        echo "###"
+                    else
+                        echo -e "\033[1;31merror installing config file to $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH, please update it manually...\033[0m"
+                    fi
+                    echo ''
+                    
+                    # sourcing new file
+                    UPDATE_CONFIG_FILE_ON_NEXT_RUN="no" . "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+                else
+                    :
+                fi
+                unset UPDATE_CONFIG_FILE
             else
+                # config file up-to-date
                 :
             fi
         else
-            # config file up-to-date
+            # not online
             :
         fi
-    else
-        # not online
-        :
     fi
 }
 env_config_file_self_update
