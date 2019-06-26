@@ -112,7 +112,7 @@ default_text=$(tput sgr0)
 
 
 ### checking if online
-env_check_if_online() {
+env_check_if_online_old() {
     echo ''
     echo "checking internet connection..."
     ping -c 3 google.com > /dev/null 2>&1
@@ -133,24 +133,47 @@ env_check_if_online() {
     fi
 }
 
+env_check_if_online() {
+    PINGTARGET1=google.com
+    PINGTARGET2=duckduckgo.com
+    # check 1
+    # ping -c 3 "$PINGTARGET1" > /dev/null 2>&1'
+    # check 2
+    # resolving dns (dig +short xxx 80 or resolveip -s xxx) even work when connection (e.g. dhcp) is established but security confirmation is required to go online, e.g. public wifis
+    # during testing dig +short xxx 80 seemed more reliable to work within timeout
+    # timeout 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1'
+    #
+    echo ''
+    echo "checking internet connection..."
+    if [[ $(timeout 2 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    then
+        ONLINE_STATUS="online"
+        echo "we are online..."
+    else
+        ONLINE_STATUS="offline"
+        echo "not online..."
+    fi
+}
+
 env_check_if_online_silent() {
+    PINGTARGET1=google.com
+    PINGTARGET2=duckduckgo.com
+    # check 1
+    # ping -c 3 "$PINGTARGET1" > /dev/null 2>&1'
+    # check 2
+    # resolving dns (dig +short xxx 80 or resolveip -s xxx) even work when connection (e.g. dhcp) is established but security confirmation is required to go online, e.g. public wifis
+    # during testing dig +short xxx 80 seemed more reliable to work within timeout
+    # timeout 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1'
+    #
     #echo ''
     #echo "checking internet connection..."
-    ping -c 3 google.com > /dev/null 2>&1
-    if [[ $? -eq 0 ]]
+    if [[ $(timeout 2 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
         #echo "we are online..."
     else
-        ping -c 3 duckduckgo.com > /dev/null 2>&1
-        if [[ $? -eq 0 ]]
-        then
-            ONLINE_STATUS="online"
-            #echo "we are online..."
-        else
-            ONLINE_STATUS="offline"
-            #echo "not online..."
-        fi
+        ONLINE_STATUS="offline"
+        #echo "not online..."
     fi
 }
 
