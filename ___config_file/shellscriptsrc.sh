@@ -384,8 +384,9 @@ env_kill_subprocesses_v1() {
 }
 
 env_kill_subprocesses() {
-    trap - SIGTERM && kill -- -$$
-    #kill $(jobs -pr)
+    #trap - SIGTERM && kill -- -$$
+    kill $(jobs -pr)
+    #kill $(jobs -pr); wait $(jobs -pr) 2>/dev/null
 }
 
 env_kill_subprocesses_and_parent_shell() {
