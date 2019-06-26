@@ -219,7 +219,7 @@ env_config_file_self_update() {
             # online
     
             # checking if up-to-date
-            if [[ "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)" != "$(cat $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH)" ]]
+            if [[ "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/shellscriptsrc.sh)" != "$(cat $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH)" ]]
             then
                 echo ''
                 VARIABLE_TO_CHECK="$UPDATE_CONFIG_FILE"
