@@ -400,7 +400,8 @@ env_kill_subprocesses_and_parent_shell() {
 env_kill_main_process() {
     # kills processes itself
     #kill $$
-    kill -13 $$
+    #kill -13 $$
+    ((kill -13 $$) & ) >/dev/null 2>&1
 }
 
 
@@ -438,7 +439,8 @@ env_set_apps_security_permissions() {
     
     #for APP_ENTRY in "${APPS_SECURITY_ARRAY[@]}"
     while IFS= read -r line || [[ -n "$line" ]]
-    do
+	do
+	    if [[ "$line" == "" ]]; then break; fi
         APP_ENTRY="$line"
         #echo "$APP_ENTRY"
         
