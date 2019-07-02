@@ -3,7 +3,7 @@
 # To make it available in a script add this after the shebang. It works with #!/bin/zsh and #!/bin/bash.
 # Do not put these lines in a function or some things may not work as expected.
 #
-#if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+#if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
 #eval_function() { function_to_eval="$@"; eval "$(typeset -f $function_to_eval)" && "$function_to_eval" ; }
 #eval_function env_get_shell_specific_variables
 
@@ -145,6 +145,7 @@ env_check_if_online() {
     #
     echo ''
     echo "checking internet connection..."
+    timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
     if [[ $(timeout 2 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
@@ -167,6 +168,7 @@ env_check_if_online_silent() {
     #
     #echo ''
     #echo "checking internet connection..."
+    timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
     if [[ $(timeout 2 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
@@ -242,7 +244,7 @@ env_config_file_self_update() {
             # online
     
             # checking if up-to-date
-            if [[ "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/"$SHELL_SCRIPTS_CONFIG_FILE".sh)" != "$(cat $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH)" ]]
+            if [[ "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/"$SHELL_SCRIPTS_CONFIG_FILE".sh)" != "$(cat $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH)" ]]
             then
                 echo ''
                 VARIABLE_TO_CHECK="$UPDATE_CONFIG_FILE"
@@ -258,7 +260,7 @@ env_config_file_self_update() {
                     # updating
                     echo "installing config file from github..."
                     echo ''
-                    curl https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/___config_file/"$SHELL_SCRIPTS_CONFIG_FILE".sh -o "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+                    curl https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/"$SHELL_SCRIPTS_CONFIG_FILE".sh -o "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
                     if [[ $? -eq 0 ]]; then SUCCESSFULLY_INSTALLED="yes"; else SUCCESSFULLY_INSTALLED="no"; fi
                 
                     # ownership and permissions
@@ -384,13 +386,17 @@ env_kill_subprocesses_v1() {
 }
 
 env_kill_subprocesses() {
-    #trap - SIGTERM && kill -- -$$
+    # left running processes in tests
     #kill $(jobs -pr)
-    kill $(jobs -pr); wait $(jobs -pr) 2>/dev/null
-}
-
-env_kill_subprocesses_and_parent_shell() {
-    trap - SIGTERM && kill 0
+    #kill $(jobs -pr); wait $(jobs -pr) 2>/dev/null
+    #
+    # kills process and subprocesses without parent shell
+    #kill -- -$$
+    trap - SIGTERM && kill -- -$$
+    #
+    # kills complete process tree including parent shell
+    #kill 0
+    #trap - SIGTERM && kill 0
 }
 
 #trap "trap - SIGTERM && ( (kill -- -$$ &> /dev/null) & )" EXIT
@@ -525,6 +531,128 @@ env_set_apps_security_permissions() {
     #done
     done <<< "$(printf "%s\n" "${APPS_SECURITY_ARRAY[@]}")"
 }
+
+
+### apps automation permissions
+env_set_apps_automation_permissions() {
+
+    # setting databases
+    env_databases_apps_security_permissions
+
+    #for APP_ENTRY in "${AUTOMATION_APPS[@]}"
+    while IFS= read -r line || [[ -n "$line" ]]
+    do
+        if [[ "$line" == "" ]]; then break; fi
+        APP_ENTRY="$line"
+        
+        ### source app
+        #echo "$APP_ENTRY"
+        # source app name
+        SOURCE_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+        #echo "$SOURCE_APP_NAME"
+        
+        # source app id
+        SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"")
+        #SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+        #echo "$SOURCE_APP_ID"
+        if [[ "$SOURCE_APP_ID" == "" ]]
+        then
+            echo "SOURCE_APP_ID is empty, skipping entry..."
+            continue
+        else
+            :
+        fi
+        
+        # source app csreq
+        if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
+        then
+            SOURCE_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+            #echo "$SOURCE_APP_CSREQ"
+        else
+            SOURCE_APP_CSREQ='?'
+        fi
+        
+        
+        ### automated app
+        # automated app name
+        AUTOMATED_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+        #echo "$AUTOMATED_APP_NAME"
+        
+        # automated app id
+        AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"")
+        #AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+        #echo "$AUTOMATED_APP_ID"
+        if [[ "$AUTOMATED_APP_ID" == "" ]]
+        then
+            echo "AUTOMATED_APP_ID is empty, skipping entry..."
+            continue
+        else
+            :
+        fi
+        #echo "$AUTOMATED_APP_ID"
+        
+        # automated app csreq
+        if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
+        then
+            AUTOMATED_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+            #echo "$SOURCE_APP_CSREQ"
+        else
+            AUTOMATED_APP_CSREQ='?'
+        fi
+        #echo "$AUTOMATED_APP_CSREQ"
+        
+        
+        ### permissions allowed
+        # 0 = no
+        # 1 = yes
+        PERMISSION_GRANTED=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
+        #echo "$PERMISSION_GRANTED"
+        
+        
+        ### setting permissions
+        # working, but does not show in gui of system preferences, use csreq for the entry to make it work and show
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP_ID"',0,$PERMISSION_GRANTED,1,?,NULL,0,'"$AUTOMATED_APP_ID"',?,NULL,?);"
+        # not working, but shows correct entry in gui of system preferences, use csreq to make it work and show
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP_ID"',0,$PERMISSION_GRANTED,1,'UNUSED',NULL,0,'"$AUTOMATED_APP_ID"','UNUSED',NULL,?);"
+        # working and showing in gui of system preferences with csreq
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP_ID"',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'"$AUTOMATED_APP_ID"',$AUTOMATED_APP_CSREQ,NULL,?);"
+        
+        # delete entry before resetting
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
+        # working and showing in gui of system preferences if csreq is not '?'
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP_ID"',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'"$AUTOMATED_APP_ID"',$AUTOMATED_APP_CSREQ,NULL,?);"
+        
+        
+        ### print line
+        SOURCE_APP_NAME_PRINT=$(echo "$SOURCE_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        AUTOMATED_APP_NAME_PRINT=$(echo "$AUTOMATED_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        if [[ "$PRINT_AUTOMATING_PERMISSIONS_ENTRYS" == "yes" ]]
+        then
+            printf "%-33s %-33s %-5s\n" "$SOURCE_APP_NAME_PRINT" "$AUTOMATED_APP_NAME_PRINT" "$PERMISSION_GRANTED"
+        else
+            :
+        fi
+        
+        # unset variables for next entry
+        unset SOURCE_APP_NAME
+        unset SOURCE_APP_NAME_PRINT
+        unset SOURCE_APP_ID
+        unset SOURCE_APP_CSREQ   
+        unset AUTOMATED_APP_NAME
+        unset AUTOMATED_APP_NAME_PRINT
+        unset AUTOMATED_APP_ID
+        unset AUTOMATED_APP_CSREQ
+        unset PERMISSION_GRANTED
+    
+    #done
+    done <<< "$(printf "%s\n" "${AUTOMATION_APPS[@]}")"
+
+}
+
+env_remove_apps_security_permissions_stop() {
+    :
+}
+
 
 
 ### sudo password upfront
@@ -683,27 +811,32 @@ env_command_line_tools_install_shell() {
 }
 
 env_homebrew_update() {
-    echo ''
-    echo "updating homebrew..."
-    # brew prune deprecated as of 2019-01, using brew cleanup at the end of the script instead
-    # brew update-reset 1>/dev/null 2> >(grep -v "Reset branch" 1>&2) only works in bash, not posx compliant
-    # functions to grep from stderr posix compliant 
-    brew_update_reset() {
-        brew update-reset 1>/dev/null
-    }
-    brew_cleanup() {
-        brew cleanup 1>/dev/null
-    }
-    { brew_update_reset 2>&1 1>&3 | grep -v "Reset branch" 1>&2; } 3>&1 && brew analytics on 1>/dev/null && brew update 1>/dev/null && brew doctor 1>/dev/null && { brew_cleanup 2>&1 1>&3 | grep -v "Skipping" 1>&2; } 3>&1
+    if [[ "$UPDATE_HOMEBREW" == "no" ]]
+    then
+        :
+    else
+        echo ''
+        echo "updating homebrew..."
+        # brew prune deprecated as of 2019-01, using brew cleanup at the end of the script instead
+        # brew update-reset 1>/dev/null 2> >(grep -v "Reset branch" 1>&2) only works in bash, not posx compliant
+        # functions to grep from stderr posix compliant 
+        brew_update_reset() {
+            brew update-reset 1>/dev/null
+        }
+        brew_cleanup() {
+            brew cleanup 1>/dev/null
+        }
+        { brew_update_reset 2>&1 1>&3 | grep -v "Reset branch" 1>&2; } 3>&1 && brew analytics on 1>/dev/null && brew update 1>/dev/null && brew doctor 1>/dev/null && { brew_cleanup 2>&1 1>&3 | grep -v "Skipping" 1>&2; } 3>&1
+        
+        # working around a --json=v1 bug until it`s fixed
+        # https://github.com/Homebrew/homebrew-cask/issues/52427
+        #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$(brew --repository)"/Library/Homebrew/cask/cask.rb
+        #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$BREW_PATH"/Library/Homebrew/cask/cask.rb
+        # fixed 2019-01-28
+        # https://github.com/Homebrew/brew/pull/5597
     
-    # working around a --json=v1 bug until it`s fixed
-    # https://github.com/Homebrew/homebrew-cask/issues/52427
-    #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$(brew --repository)"/Library/Homebrew/cask/cask.rb
-    #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$BREW_PATH"/Library/Homebrew/cask/cask.rb
-    # fixed 2019-01-28
-    # https://github.com/Homebrew/brew/pull/5597
-
-    echo 'updating homebrew finished ;)'
+        echo 'updating homebrew finished ;)'
+    fi
 }
 
 env_cleanup_all_homebrew() {
@@ -744,6 +877,56 @@ env_cleanup_all_homebrew() {
     #sudo gem uninstall -ax rubocop rubocop-cask 1> /dev/null
     #brew cask style 1> /dev/null
 }
+
+### check if parallel is installed
+env_check_if_parallel_is_installed() {
+    if [[ $(command -v brew) == "" ]]
+    then
+        # parallel is not installed
+        export INSTALLATION_METHOD="sequential"
+    else
+        # parallel is installed
+        export INSTALLATION_METHOD="parallel"
+    fi
+    #echo ''
+    echo "INSTALLATION_METHOD is "$INSTALLATION_METHOD""...
+    echo ''
+}
+
+
+### traps
+# http://zsh.sourceforge.net/Doc/Release/Functions.html
+# in zsh a trap on EXIT set inside a function is executed after the function completes in the environment of the caller
+# that`s why the trap has to be in a variable, NOT in a function
+# use with
+# trap_function_exit_middle() { COMMAND1; COMMAND2; }
+#"${TRAP_SIGHUP[@]}"
+#"${TRAP_EXIT[@]}"
+
+TRAP_SIGHUP=(trap "exit \$exit_code" SIGHUP SIGINT SIGTERM)
+TRAP_EXIT=(trap "exit_code=\$?; sleep 0.1 && trap_function_exit; " EXIT)
+
+trap_function_exit() {
+	if typeset -f trap_function_exit_start > /dev/null
+	then
+  		trap_function_exit_start
+	fi
+	if typeset -f trap_function_exit_middle > /dev/null
+	then
+  		trap_function_exit_middle
+	fi
+	if typeset -f trap_function_exit_end > /dev/null
+	then
+  		trap_function_exit_end
+	fi
+}
+
+trap_function_exit_end() {
+    printf "\n"
+    ((eval_function env_kill_subprocesses) & ) >/dev/null 2>&1
+    #eval_function env_kill_main_process
+}
+
 
 
 ### testing
