@@ -296,7 +296,7 @@ env_config_file_self_update() {
         fi
     fi
 }
-#env_config_file_self_update
+env_config_file_self_update
 
 
 ### shebang interpreter
