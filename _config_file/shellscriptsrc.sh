@@ -296,7 +296,7 @@ env_config_file_self_update() {
         fi
     fi
 }
-env_config_file_self_update
+#env_config_file_self_update
 
 
 ### shebang interpreter
@@ -448,25 +448,26 @@ env_set_apps_security_permissions() {
     while IFS= read -r line || [[ -n "$line" ]]
 	do
 	    if [[ "$line" == "" ]]; then break; fi
-        APP_ENTRY="$line"
+        local APP_ENTRY="$line"
         #echo "$APP_ENTRY"
         
         # app name
-        #APP_NAME=$(echo "$app_entry" | awk '{gsub("\t","  ",$0); print;}' | sed 's/   */:/g' | cut -d':' -f1)
-        #APP_NAME=$(echo "$app_entry" | awk '{gsub("\t","  ",$0); print;}' | sed 's/ \{2,\}/:/g' | cut -d':' -f2)
-       	#APP_NAME=$(echo "$app_entry" | awk '{gsub("\t","  ",$0); print;}' | awk -F '  +' '{print $1}')
-       	#APP_NAME=$(echo "$app_entry" | sed $'s/\t/|/g' | sed 's/   */:/g' | cut -d':' -f1)
-       	APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
-       	#APP_NAME_NO_SPACES=$(echo "$APP_NAME" | sed 's/ /_/g' | sed 's/^ //g' | sed 's/ $//g')
-       	#echo "$APP_NAME"
+        #local APP_NAME=$(echo "$app_entry" | awk '{gsub("\t","  ",$0); print;}' | sed 's/   */:/g' | cut -d':' -f1)
+        #local APP_NAME=$(echo "$app_entry" | awk '{gsub("\t","  ",$0); print;}' | sed 's/ \{2,\}/:/g' | cut -d':' -f2)
+       	#local APP_NAME=$(echo "$app_entry" | awk '{gsub("\t","  ",$0); print;}' | awk -F '  +' '{print $1}')
+       	#local APP_NAME=$(echo "$app_entry" | sed $'s/\t/|/g' | sed 's/   */:/g' | cut -d':' -f1)
+       	local APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+       	#local APP_NAME_NO_SPACES=$(echo "$APP_NAME" | sed 's/ /_/g' | sed 's/^ //g' | sed 's/ $//g')
+       	#echo "APP_NAME is "$APP_NAME""
        	
        	# app id
-        #APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-        #APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
-        APP_ID=$(osascript -e "id of app \"$APP_NAME\"")
-        #PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | head -1)
-        #APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist")
-        #APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | head -n1)")
+        #local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+        #local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+        #local APP_ID=$(osascript -e "id of app \"$APP_NAME\"")
+        local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | head -1)
+        #echo "PATH_TO_APP is "$PATH_TO_APP""
+        local APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist")
+        #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | head -n1)")
         #echo "$APP_ID"
         if [[ "$APP_ID" == "" ]]
         then
@@ -477,17 +478,17 @@ env_set_apps_security_permissions() {
         fi
         
         # app csreq
-        #APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')    
+        #local APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')    
         #echo "$APP_CSREQ"
         
         # input service
-        INPUT_SERVICE=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+        local INPUT_SERVICE=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
         #echo "$INPUT_SERVICE"
         
         # permissions allowed
         # 0 = no
         # 1 = yes
-        PERMISSION_GRANTED=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
+        local PERMISSION_GRANTED=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
         #echo "$PERMISSION_GRANTED"
         
         # setting permissions
@@ -509,7 +510,7 @@ env_set_apps_security_permissions() {
         fi
         
         # app name print
-        APP_NAME_PRINT=$(echo "$APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        local APP_NAME_PRINT=$(echo "$APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         
         # print line
         if [[ "$PRINT_SECURITY_PERMISSIONS_ENTRYS" == "yes" ]]
@@ -520,6 +521,7 @@ env_set_apps_security_permissions() {
         fi
         
         # unset variables for next entry
+        unset APP_ENTRY
         unset APP_NAME
         unset APP_NAME_PRINT
         unset PATH_TO_APP
@@ -543,17 +545,20 @@ env_set_apps_automation_permissions() {
     while IFS= read -r line || [[ -n "$line" ]]
     do
         if [[ "$line" == "" ]]; then break; fi
-        APP_ENTRY="$line"
+        local APP_ENTRY="$line"
+        #echo "APP_ENTRY is "$APP_ENTRY""
         
         ### source app
-        #echo "$APP_ENTRY"
         # source app name
-        SOURCE_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
-        #echo "$SOURCE_APP_NAME"
+        local SOURCE_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+        #echo "SOURCE_APP_NAME is "$SOURCE_APP_NAME""
         
         # source app id
-        SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"")
-        #SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+        #local SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"")
+        #local SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+        local PATH_TO_SOURCE_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$SOURCE_APP_NAME.app$" | head -1)
+        #echo "PATH_TO_SOURCE_APP is "$PATH_TO_SOURCE_APP""
+        local SOURCE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_SOURCE_APP/Contents/Info.plist")
         #echo "$SOURCE_APP_ID"
         if [[ "$SOURCE_APP_ID" == "" ]]
         then
@@ -566,21 +571,23 @@ env_set_apps_automation_permissions() {
         # source app csreq
         if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
         then
-            SOURCE_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+            local SOURCE_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
             #echo "$SOURCE_APP_CSREQ"
         else
-            SOURCE_APP_CSREQ='?'
+            local SOURCE_APP_CSREQ='?'
         fi
         
         
         ### automated app
         # automated app name
-        AUTOMATED_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+        local AUTOMATED_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
         #echo "$AUTOMATED_APP_NAME"
         
         # automated app id
-        AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"")
-        #AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+        #local AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"")
+        #local AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+        local PATH_TO_AUTOMATED_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$AUTOMATED_APP_NAME.app$" | head -1)
+        local AUTOMATED_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_AUTOMATED_APP/Contents/Info.plist")
         #echo "$AUTOMATED_APP_ID"
         if [[ "$AUTOMATED_APP_ID" == "" ]]
         then
@@ -594,10 +601,10 @@ env_set_apps_automation_permissions() {
         # automated app csreq
         if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
         then
-            AUTOMATED_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+            local AUTOMATED_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
             #echo "$SOURCE_APP_CSREQ"
         else
-            AUTOMATED_APP_CSREQ='?'
+            local AUTOMATED_APP_CSREQ='?'
         fi
         #echo "$AUTOMATED_APP_CSREQ"
         
@@ -605,27 +612,27 @@ env_set_apps_automation_permissions() {
         ### permissions allowed
         # 0 = no
         # 1 = yes
-        PERMISSION_GRANTED=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
+        local PERMISSION_GRANTED=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
         #echo "$PERMISSION_GRANTED"
         
         
         ### setting permissions
         # working, but does not show in gui of system preferences, use csreq for the entry to make it work and show
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP_ID"',0,$PERMISSION_GRANTED,1,?,NULL,0,'"$AUTOMATED_APP_ID"',?,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,0,'$AUTOMATED_APP_ID',?,NULL,?);"
         # not working, but shows correct entry in gui of system preferences, use csreq to make it work and show
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP_ID"',0,$PERMISSION_GRANTED,1,'UNUSED',NULL,0,'"$AUTOMATED_APP_ID"','UNUSED',NULL,?);"
-        # working and showing in gui of system preferences with csreq
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP_ID"',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'"$AUTOMATED_APP_ID"',$AUTOMATED_APP_CSREQ,NULL,?);"
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,'UNUSED',NULL,0,'$AUTOMATED_APP_ID','UNUSED',NULL,?);"
+        # working and showing in gui of system preferences when using correct values in CSREQ variables
+        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
         
         # delete entry before resetting
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
+        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='$SOURCE_APP_ID' and indirect_object_identifier='$AUTOMATED_APP_ID');"
         # working and showing in gui of system preferences if csreq is not '?'
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP_ID"',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'"$AUTOMATED_APP_ID"',$AUTOMATED_APP_CSREQ,NULL,?);"
+        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
         
         
         ### print line
-        SOURCE_APP_NAME_PRINT=$(echo "$SOURCE_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
-        AUTOMATED_APP_NAME_PRINT=$(echo "$AUTOMATED_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        local SOURCE_APP_NAME_PRINT=$(echo "$SOURCE_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        local AUTOMATED_APP_NAME_PRINT=$(echo "$AUTOMATED_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         if [[ "$PRINT_AUTOMATING_PERMISSIONS_ENTRYS" == "yes" ]]
         then
             printf "%-33s %-33s %-5s\n" "$SOURCE_APP_NAME_PRINT" "$AUTOMATED_APP_NAME_PRINT" "$PERMISSION_GRANTED"
@@ -636,10 +643,12 @@ env_set_apps_automation_permissions() {
         # unset variables for next entry
         unset SOURCE_APP_NAME
         unset SOURCE_APP_NAME_PRINT
+        unset PATH_TO_SOURCE_APP
         unset SOURCE_APP_ID
         unset SOURCE_APP_CSREQ   
         unset AUTOMATED_APP_NAME
         unset AUTOMATED_APP_NAME_PRINT
+        unset PATH_TO_AUTOMATED_APP
         unset AUTOMATED_APP_ID
         unset AUTOMATED_APP_CSREQ
         unset PERMISSION_GRANTED
