@@ -718,7 +718,8 @@ env_enter_sudo_password() {
     done
     
     # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-    trap 'unset SUDOPASSWORD' EXIT
+    #trap 'unset SUDOPASSWORD; unset USE_PASSWORD' EXIT
+    "${TRAP_SUDOPASSWORD_EXIT[@]}"
     
     # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
     sudo() {
@@ -927,7 +928,9 @@ trap_function_exit_end() {
     #eval_function env_kill_main_process
 }
 
-
+# trap sudo password exit
+TRAP_SUDOPASSWORD_EXIT=(trap 'unset SUDOPASSWORD; unset USE_PASSWORD' EXIT)
+#"${TRAP_SUDOPASSWORD_EXIT[@]}"
 
 ### testing
 if [[ "$TEST_SOURCING_AND_VARIABLES" == "yes" ]]
