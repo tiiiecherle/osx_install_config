@@ -18,7 +18,7 @@ env_get_shell_specific_variables() {
         
         # sourcing env_parallel to use variables and functions in parallels
         #source $(which env_parallel.bash)
-        if [[ $(command -v parallel) == "" ]]; then :; else . $(which env_parallel.bash); fi
+        if command -v parallel &> /dev/null; then . $(which env_parallel.bash); else :; fi
         #source `which env_parallel.bash`
         # by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
         # it is not neccessary to export variables or functions when using env_parallel
@@ -33,7 +33,7 @@ env_get_shell_specific_variables() {
         
         # command to read from command line
         COMMAND_TO_READ_FROM_COMMAND_LINE='read -r -p'
-        env_read_from_command_line() { $COMMAND_TO_READ_FROM_COMMAND_LINE "$QUESTION_TO_ASK" VARIABLE_TO_CHECK ; }
+        env_read_from_command_line() { $COMMAND_TO_READ_FROM_COMMAND_LINE "$QUESTION_TO_ASK" VARIABLE_TO_CHECK; }
         
         # use password for sudo input
         env_use_password() { ${USE_PASSWORD}; }
@@ -45,13 +45,19 @@ env_get_shell_specific_variables() {
         #CHECK_IF_SOURCED='(return 0 2>/dev/null) && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"'
         #(return 0 2>/dev/null) && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"
         #eval "$CHECK_IF_SOURCED"
+        
+        # traps
+        # for more detailed explanation about traps see topic traps below        
+        ENV_SET_TRAP_SIG=(trap "exit \$exit_code" SIGHUP SIGINT SIGTERM)
+        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; sleep 0.1 && printf '\n' && env_trap_function_exit; " EXIT)
+        
     elif [[ -n "$ZSH_VERSION" ]]
     then
         #echo "script is run with zsh interpreter..."
         
         # sourcing env_parallel to use variables and functions in parallels
         #source =env_parallel.zsh
-        if [[ $(command -v parallel) == "" ]]; then :; else . $(which env_parallel.zsh); fi
+        if command -v parallel &> /dev/null; then . $(which env_parallel.zsh); else :; fi
         #. $(which env_parallel.zsh)
         #. `which env_parallel.zsh`
         # by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
@@ -67,7 +73,7 @@ env_get_shell_specific_variables() {
         
         # command to read from command line   
         COMMAND_TO_READ_FROM_COMMAND_LINE='vared -p'
-        env_read_from_command_line() { ${=COMMAND_TO_READ_FROM_COMMAND_LINE} "$QUESTION_TO_ASK" VARIABLE_TO_CHECK ; }
+        env_read_from_command_line() { ${=COMMAND_TO_READ_FROM_COMMAND_LINE} "$QUESTION_TO_ASK" VARIABLE_TO_CHECK; }
         
         # use password for sudo input    
         env_use_password() { ${=USE_PASSWORD}; }
@@ -78,6 +84,43 @@ env_get_shell_specific_variables() {
         # use eval "$CHECK_IF_SOURCED" in other script to call it
         #CHECK_IF_SOURCED='[[ $ZSH_EVAL_CONTEXT =~ ':file$' ]] && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"'
         #eval "$CHECK_IF_SOURCED"
+        
+        # traps
+        # for more detailed explanation about traps see topic traps below 
+        #trapSIG runs when the specific SIG is triggered
+        TRAPINT() {
+          #echo "Caught SIGINT, aborting."
+          sleep 0.1 && printf '\n' && env_trap_function_exit
+          return $(( 128 + $1 ))
+        }
+        
+        TRAPHUP() {
+          #echo "Caught SIGHUP, aborting."
+          sleep 0.1 && printf '\n' && env_trap_function_exit
+          return $(( 128 + $1 ))
+        }
+        
+        TRAPTERM() {
+          #echo "Caught SIGTERM, aborting."
+          sleep 0.1 && printf '\n' && env_trap_function_exit
+          return $(( 128 + $1 ))
+        }
+        
+        env_set_trap_sig() {
+            :;
+        }
+        
+        # zshexit runs on each zsh shell exit
+        # be careful, runs after each env_parallel process
+        zshexit() { :; }
+        
+        # TRAPEXIT runs on each EXIT signal
+        # a trap on EXIT set inside a function is executed after the function completes
+        TRAPEXIT() { :; }
+        
+        # bash like traps
+        ENV_SET_TRAP_SIG=":"
+        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1 && printf '\n' && env_trap_function_exit" EXIT)
     fi
     
     ### script path, name and directory
@@ -146,7 +189,7 @@ env_check_if_online() {
     echo ''
     echo "checking internet connection..."
     timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
-    if [[ $(timeout 2 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    if [[ $(timeout 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
         echo "we are online..."
@@ -169,7 +212,7 @@ env_check_if_online_silent() {
     #echo ''
     #echo "checking internet connection..."
     timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
-    if [[ $(timeout 2 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    if [[ $(timeout 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
         #echo "we are online..."
@@ -335,20 +378,12 @@ UNIQUE_USER_ID=$(id -u "$loggedInUser")
 # or with kill -13
 
 env_get_running_subprocesses() {
-    SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
-    SCRIPT_COMMAND=$(ps -o comm= $$)
-	PARENT_SCRIPT_COMMAND=$(ps -o comm= $PPID)
-	if [[ $PARENT_SCRIPT_COMMAND == "$(basename $SCRIPT_INTERPRETER)" ]] || [[ $PARENT_SCRIPT_COMMAND == "-$(basename $SCRIPT_INTERPRETER)" ]] || [[ $PARENT_SCRIPT_COMMAND == "" ]]
-	then
-        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | awk '{print $1}')
-    else
-        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | grep -v "^$PARENT_SCRIPT_COMMAND$" | awk '{print $1}')
-    fi
-    #echo $RUNNING_SUBPROCESSES
+    RUNNING_SUBPROCESSES=$(pgrep -P $(ps -o pgid= $$))
+    #echo "RUNNING_SUBPROCESSES are $RUNNING_SUBPROCESSES"
 }
 
-env_kill_subprocesses_v1() {
-    # kills only subprocesses of the current process
+env_kill_subprocesses_sequentially() {
+    # kills only subprocesses of the current process (without grandchildren)
     #pkill -15 -P $$
     #kill -15 $(pgrep -P $$)
     #echo "killing processes..."
@@ -358,9 +393,15 @@ env_kill_subprocesses_v1() {
     env_get_running_subprocesses    
     if [[ $RUNNING_SUBPROCESSES != "" ]]
     then
-        kill -15 $RUNNING_SUBPROCESSES
-        # do not wait here if a process can not terminate cleanly
-        #wait $RUNNING_SUBPROCESSES 2>/dev/null
+        while IFS= read -r line || [[ -n "$line" ]]
+    	do
+    	    if [[ "$line" == "" ]]; then break; fi
+    	    i="$line"
+            #echo "subprocess for TERM is "$i""
+            kill -15 $i
+            # do not wait here if a process can not terminate cleanly
+            #wait $RUNNING_SUBPROCESSES 2>/dev/null
+        done <<< "$(printf "%s\n" "${RUNNING_SUBPROCESSES[@]}")"
     else
         :
     fi
@@ -376,8 +417,14 @@ env_kill_subprocesses_v1() {
     env_get_running_subprocesses    
     if [[ $RUNNING_SUBPROCESSES != "" ]]
     then
-        kill -9 $RUNNING_SUBPROCESSES
-        wait $RUNNING_SUBPROCESSES 2>/dev/null
+        while IFS= read -r line || [[ -n "$line" ]]
+    	do
+    	    if [[ "$line" == "" ]]; then break; fi
+    	    i="$line"
+    	    #echo "subprocess for KILL is "$i""
+            kill -9 $i
+            #wait $i 2>/dev/null
+        done <<< "$(printf "%s\n" "${RUNNING_SUBPROCESSES[@]}")"
     else
         :
     fi
@@ -390,19 +437,45 @@ env_kill_subprocesses() {
     #kill $(jobs -pr)
     #kill $(jobs -pr); wait $(jobs -pr) 2>/dev/null
     #
-    # kills process and subprocesses without parent shell
-    #kill -- -$$
-    trap - SIGTERM && kill -- -$$
+    # kills process and subprocesses without parent shell of process leader/session master by killing -$pgid
+    # but only works if the shell is the process group leader
+    # do not use wihtout "trap - SIGTERM &&" due to trap recursion
+    # kill -- -$$
+    # also do not use in subshell parantheses due to trap recursion
+    # ( (kill -- -$$ &> /dev/null) & )
+    # only use like this
+    # TERM signal (-15)
+    # trap - SIGTERM && kill -- -$$
+    # KILL signal (-9)
+    # trap - SIGTERM && kill -9 -$$
+    #
+    # kills subprocesses but does not kill grandchildren
+    # trap - SIGTERM && pkill -P $$
+    #
+    # kills subprocesses without parent shell of own process
+    # this even works for a script that is run from another script
+    # env_kill_subprocesses_sequentially
     #
     # kills complete process tree including parent shell
-    #kill 0
+    # do not use wihtout "trap - SIGTERM &&" due to trap recursion
+    # kill 0
+    # also do not use in subshell parantheses due to trap recursion
+    # ( (kill 0 &> /dev/null) & )
+    # only use like this
     #trap - SIGTERM && kill 0
+    
+    # checking if $$ is a process group id
+    if [[ $(ps -e -o pgid,pid,command | awk -v p=$$ '$1 == p {print $2}') != "" ]]
+    then
+    	#echo "$$ is a pgid..."
+        trap - SIGTERM && kill -- -$$                                                                                                                                         
+    else
+    	#echo "$$ is NOT a pgid..."
+    	#if [[ $(jobs -pr) != "" ]]; then kill $(jobs -pr); fi
+    	env_kill_subprocesses_sequentially
+    fi
 }
 
-#trap "trap - SIGTERM && ( (kill -- -$$ &> /dev/null) & )" EXIT
-#trap 'trap - SIGTERM && ( (kill 0 &> /dev/null) & )' EXIT
-#trap 'kill $(jobs -pr)' EXIT
-#trap "((eval_function env_kill_subprocesses) & )" EXIT
 
 env_kill_main_process() {
     # kills processes itself
@@ -671,11 +744,7 @@ env_enter_sudo_password() {
     
     # function for reading secret string (POSIX compliant)
     enter_password_secret() {
-        # read -s is not POSIX compliant
-        #read -s -p "Password: " SUDOPASSWORD
-        #echo ''
-        
-        # this is POSIX compliant
+        # POSIX compliant
         # disabling echo, this will prevent showing output
         stty -echo
         # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
@@ -727,9 +796,9 @@ env_enter_sudo_password() {
     done
     
     # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-    #trap 'unset SUDOPASSWORD; unset USE_PASSWORD' EXIT
-    "${TRAP_SUDOPASSWORD_EXIT[@]}"
-    
+    #trap 'unset SUDOPASSWORD' EXIT
+    # set the trap after usage of the function in the respective script
+ 
     # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
     sudo() {
         env_use_password | builtin command sudo -p '' -k -S "$@"
@@ -797,10 +866,10 @@ env_command_line_tools_install_shell() {
         if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]    
         then
             #COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo "$MACOS_VERSION_MAJOR" | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
-            COMMANDLINETOOLVERSION=$(softwareupdate --list | grep -B 1 -E 'Command Line (Developer|Tools)' | awk -F'*' '/^ +\\*/ {print $2}' | grep "$MACOS_VERSION_MAJOR" | sed 's/^ *//' | tail -n1)  
+            COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | awk -F'*' '/^ +\\*/ {print $2}' | grep "$MACOS_VERSION_MAJOR" | sed 's/^ *//' | tail -n1)  
         elif [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
         then
-            COMMANDLINETOOLVERSION=$(softwareupdate --list | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
+            COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
         else
             :
         fi     
@@ -890,13 +959,13 @@ env_cleanup_all_homebrew() {
 
 ### check if parallel is installed
 env_check_if_parallel_is_installed() {
-    if [[ $(command -v brew) == "" ]]
+    if command -v parallel &> /dev/null
     then
-        # parallel is not installed
-        export INSTALLATION_METHOD="sequential"
+        # installed
+        INSTALLATION_METHOD="parallel"
     else
-        # parallel is installed
-        export INSTALLATION_METHOD="parallel"
+        # not installed
+        INSTALLATION_METHOD="sequential"
     fi
     #echo ''
     echo "INSTALLATION_METHOD is "$INSTALLATION_METHOD""...
@@ -909,22 +978,23 @@ env_check_if_parallel_is_installed() {
 # in zsh a trap on EXIT set inside a function is executed after the function completes in the environment of the caller
 # that`s why the trap has to be in a variable, NOT in a function
 # use with
-# trap_function_exit_middle() { COMMAND1; COMMAND2; }
-#"${TRAP_SIGHUP[@]}"
-#"${TRAP_EXIT[@]}"
+#trap_function_exit_middle() { COMMAND1; COMMAND2; }
+#"${ENV_SET_TRAP_SIG[@]}"
+#"${ENV_SET_TRAP_EXIT[@]}"
 
-TRAP_SIGHUP=(trap "exit \$exit_code" SIGHUP SIGINT SIGTERM)
-TRAP_EXIT=(trap "exit_code=\$?; sleep 0.1 && trap_function_exit; " EXIT)
-
-trap_function_exit() {
+env_trap_function_exit() {
+    #echo "exit trap part 1..."
 	if typeset -f trap_function_exit_start > /dev/null
 	then
   		trap_function_exit_start
 	fi
+	#echo "exit trap part 2..."
 	if typeset -f trap_function_exit_middle > /dev/null
 	then
   		trap_function_exit_middle
 	fi
+	#echo "exit trap part 3..."
+	#echo ''
 	if typeset -f trap_function_exit_end > /dev/null
 	then
   		trap_function_exit_end
@@ -932,14 +1002,14 @@ trap_function_exit() {
 }
 
 trap_function_exit_end() {
-    printf "\n"
-    ((eval_function env_kill_subprocesses) & ) >/dev/null 2>&1
+    env_kill_subprocesses & disown
+    #nohup env_kill_subprocesses 2>&1 >/dev/null
+    #eval_function env_kill_subprocesses
+    #env_kill_subprocesses
     #eval_function env_kill_main_process
+    #printf '\n'
 }
 
-# trap sudo password exit
-TRAP_SUDOPASSWORD_EXIT=(trap 'unset SUDOPASSWORD; unset USE_PASSWORD' EXIT)
-#"${TRAP_SUDOPASSWORD_EXIT[@]}"
 
 ### testing
 if [[ "$TEST_SOURCING_AND_VARIABLES" == "yes" ]]
