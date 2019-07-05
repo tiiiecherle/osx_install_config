@@ -533,11 +533,30 @@ env_set_apps_security_permissions() {
        	#local APP_NAME_NO_SPACES=$(echo "$APP_NAME" | sed 's/ /_/g' | sed 's/^ //g' | sed 's/ $//g')
        	#echo "APP_NAME is "$APP_NAME""
        	
-       	# app id
+       	# app path
+        local NUM1=0
+        local FIND_APP_PATH_TIMEOUT=2
+        local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | head -1)
+        while [[ "$PATH_TO_APP" == "" ]]
+        do
+        	#printf "%.2f\\n" "$NUM1"
+        	local NUM1=$(bc<<<$NUM1+0.5)
+        	if (( $(echo "$NUM1 < $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+        	then
+        		#printf "%.2f\\n" "$NUM1"
+        		sleep 0.5
+                local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | head -1)
+        	else
+                echo "PATH_TO_APP is empty, skipping entry..."
+        		break
+        	fi
+        done
+        if [[ "$PATH_TO_APP" == "" ]]; then continue; fi
+
+        # app id
         #local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
         #local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
         #local APP_ID=$(osascript -e "id of app \"$APP_NAME\"")
-        local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | head -1)
         #echo "PATH_TO_APP is "$PATH_TO_APP""
         local APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist")
         #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | head -n1)")
