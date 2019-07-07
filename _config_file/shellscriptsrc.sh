@@ -407,7 +407,7 @@ env_kill_subprocesses_sequentially() {
     fi
     # waiting for clean subprocess termination
     TIME_OUT=0
-    while [[ $RUNNING_SUBPROCESSES != "" ]] && [[ $TIME_OUT -lt 3 ]]
+    while [[ $RUNNING_SUBPROCESSES != "" ]] && [[ $TIME_OUT -le 3 ]]
     do
         env_get_running_subprocesses        
         sleep 1
@@ -539,14 +539,19 @@ env_set_apps_security_permissions() {
         local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | head -1)
         while [[ "$PATH_TO_APP" == "" ]]
         do
-        	#printf "%.2f\\n" "$NUM1"
+            # bash builtin printf can not print floating numbers
+        	#perl -e 'printf "%.2f\n",'$NUM1''
+		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
         	local NUM1=$(bc<<<$NUM1+0.5)
-        	if (( $(echo "$NUM1 < $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+        	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
         	then
-        		#printf "%.2f\\n" "$NUM1"
+        	    # bash builtin printf can not print floating numbers
+        		#perl -e 'printf "%.2f\n",'$NUM1''
+		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
         		sleep 0.5
                 local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | head -1)
         	else
+        	    #printf '\n'
                 echo "PATH_TO_APP is empty, skipping entry..."
         		break
         	fi
@@ -621,6 +626,8 @@ env_set_apps_security_permissions() {
         unset APP_CSREQ
         unset INPUT_SERVICE
         unset PERMISSION_GRANTED
+        unset NUM1
+        unset FIND_APP_PATH_TIMEOUT        
     
     #done
     done <<< "$(printf "%s\n" "${APPS_SECURITY_ARRAY[@]}")"
@@ -630,124 +637,180 @@ env_set_apps_security_permissions() {
 ### apps automation permissions
 env_set_apps_automation_permissions() {
 
-    # setting databases
-    env_databases_apps_security_permissions
-
-    #for APP_ENTRY in "${AUTOMATION_APPS[@]}"
-    while IFS= read -r line || [[ -n "$line" ]]
-    do
-        if [[ "$line" == "" ]]; then break; fi
-        local APP_ENTRY="$line"
-        #echo "APP_ENTRY is "$APP_ENTRY""
-        
-        ### source app
-        # source app name
-        local SOURCE_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
-        #echo "SOURCE_APP_NAME is "$SOURCE_APP_NAME""
-        
-        # source app id
-        #local SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"")
-        #local SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-        local PATH_TO_SOURCE_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$SOURCE_APP_NAME.app$" | head -1)
-        #echo "PATH_TO_SOURCE_APP is "$PATH_TO_SOURCE_APP""
-        local SOURCE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_SOURCE_APP/Contents/Info.plist")
-        #echo "$SOURCE_APP_ID"
-        if [[ "$SOURCE_APP_ID" == "" ]]
-        then
-            echo "SOURCE_APP_ID is empty, skipping entry..."
-            continue
-        else
-            :
-        fi
-        
-        # source app csreq
-        if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
-        then
-            local SOURCE_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
-            #echo "$SOURCE_APP_CSREQ"
-        else
-            local SOURCE_APP_CSREQ='?'
-        fi
-        
-        
-        ### automated app
-        # automated app name
-        local AUTOMATED_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
-        #echo "$AUTOMATED_APP_NAME"
-        
-        # automated app id
-        #local AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"")
-        #local AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-        local PATH_TO_AUTOMATED_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$AUTOMATED_APP_NAME.app$" | head -1)
-        local AUTOMATED_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_AUTOMATED_APP/Contents/Info.plist")
-        #echo "$AUTOMATED_APP_ID"
-        if [[ "$AUTOMATED_APP_ID" == "" ]]
-        then
-            echo "AUTOMATED_APP_ID is empty, skipping entry..."
-            continue
-        else
-            :
-        fi
-        #echo "$AUTOMATED_APP_ID"
-        
-        # automated app csreq
-        if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
-        then
-            local AUTOMATED_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
-            #echo "$SOURCE_APP_CSREQ"
-        else
-            local AUTOMATED_APP_CSREQ='?'
-        fi
-        #echo "$AUTOMATED_APP_CSREQ"
-        
-        
-        ### permissions allowed
-        # 0 = no
-        # 1 = yes
-        local PERMISSION_GRANTED=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
-        #echo "$PERMISSION_GRANTED"
-        
-        
-        ### setting permissions
-        # working, but does not show in gui of system preferences, use csreq for the entry to make it work and show
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,0,'$AUTOMATED_APP_ID',?,NULL,?);"
-        # not working, but shows correct entry in gui of system preferences, use csreq to make it work and show
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,'UNUSED',NULL,0,'$AUTOMATED_APP_ID','UNUSED',NULL,?);"
-        # working and showing in gui of system preferences when using correct values in CSREQ variables
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
-        
-        # delete entry before resetting
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='$SOURCE_APP_ID' and indirect_object_identifier='$AUTOMATED_APP_ID');"
-        # working and showing in gui of system preferences if csreq is not '?'
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
-        
-        
-        ### print line
-        local SOURCE_APP_NAME_PRINT=$(echo "$SOURCE_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
-        local AUTOMATED_APP_NAME_PRINT=$(echo "$AUTOMATED_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
-        if [[ "$PRINT_AUTOMATING_PERMISSIONS_ENTRYS" == "yes" ]]
-        then
-            printf "%-33s %-33s %-5s\n" "$SOURCE_APP_NAME_PRINT" "$AUTOMATED_APP_NAME_PRINT" "$PERMISSION_GRANTED"
-        else
-            :
-        fi
-        
-        # unset variables for next entry
-        unset SOURCE_APP_NAME
-        unset SOURCE_APP_NAME_PRINT
-        unset PATH_TO_SOURCE_APP
-        unset SOURCE_APP_ID
-        unset SOURCE_APP_CSREQ   
-        unset AUTOMATED_APP_NAME
-        unset AUTOMATED_APP_NAME_PRINT
-        unset PATH_TO_AUTOMATED_APP
-        unset AUTOMATED_APP_ID
-        unset AUTOMATED_APP_CSREQ
-        unset PERMISSION_GRANTED
+    VERSION_TO_CHECK_AGAINST=10.13
+    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+    then
+        # macos versions until and including 10.13
+    	echo "setting automation permissions is not compatible with this version of macos, skipping..."
+    else
+        # setting databases
+        env_databases_apps_security_permissions
     
-    #done
-    done <<< "$(printf "%s\n" "${AUTOMATION_APPS[@]}")"
-
+        #for APP_ENTRY in "${AUTOMATION_APPS[@]}"
+        while IFS= read -r line || [[ -n "$line" ]]
+        do
+            if [[ "$line" == "" ]]; then break; fi
+            local APP_ENTRY="$line"
+            #echo "APP_ENTRY is "$APP_ENTRY""
+            
+            ### source app
+            # source app name
+            local SOURCE_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+            #echo "SOURCE_APP_NAME is "$SOURCE_APP_NAME""
+            
+            # source app path
+            local NUM1=0
+            local FIND_APP_PATH_TIMEOUT=2
+            local PATH_TO_SOURCE_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$SOURCE_APP_NAME.app$" | head -1)
+            while [[ "$PATH_TO_SOURCE_APP" == "" ]]
+            do
+                # bash builtin printf can not print floating numbers
+            	#perl -e 'printf "%.2f\n",'$NUM1''
+    		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+            	local NUM1=$(bc<<<$NUM1+0.5)
+            	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+            	then
+            	    # bash builtin printf can not print floating numbers
+            		#perl -e 'printf "%.2f\n",'$NUM1''
+    		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+            		sleep 0.5
+                    local PATH_TO_SOURCE_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$SOURCE_APP_NAME.app$" | head -1)
+            	else
+            	    #printf '\n'
+                    echo "PATH_TO_SOURCE_APP is empty, skipping entry..."
+            		break
+            	fi
+            done
+            if [[ "$PATH_TO_SOURCE_APP" == "" ]]; then continue; fi
+            
+            # source app id
+            #local SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"")
+            #local SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+            #echo "PATH_TO_SOURCE_APP is "$PATH_TO_SOURCE_APP""
+            local SOURCE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_SOURCE_APP/Contents/Info.plist")
+            #echo "$SOURCE_APP_ID"
+            if [[ "$SOURCE_APP_ID" == "" ]]
+            then
+                echo "SOURCE_APP_ID is empty, skipping entry..."
+                continue
+            else
+                :
+            fi
+            
+            # source app csreq
+            if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
+            then
+                local SOURCE_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+                #echo "$SOURCE_APP_CSREQ"
+            else
+                local SOURCE_APP_CSREQ='?'
+            fi
+            
+            
+            ### automated app
+            # automated app name
+            local AUTOMATED_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+            #echo "$AUTOMATED_APP_NAME"
+            
+            # automated app path
+            local NUM1=0
+            local FIND_APP_PATH_TIMEOUT=2
+            local PATH_TO_AUTOMATED_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$AUTOMATED_APP_NAME.app$" | head -1)
+            while [[ "$PATH_TO_AUTOMATED_APP" == "" ]]
+            do
+                # bash builtin printf can not print floating numbers
+            	#perl -e 'printf "%.2f\n",'$NUM1''
+    		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+            	local NUM1=$(bc<<<$NUM1+0.5)
+            	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+            	then
+            	    # bash builtin printf can not print floating numbers
+            		#perl -e 'printf "%.2f\n",'$NUM1''
+    		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+            		sleep 0.5
+                    local PATH_TO_AUTOMATED_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$AUTOMATED_APP_NAME.app$" | head -1)
+            	else
+            	    #printf '\n'
+                    echo "PATH_TO_AUTOMATED_APP is empty, skipping entry..."
+            		break
+            	fi
+            done
+            if [[ "$PATH_TO_AUTOMATED_APP" == "" ]]; then continue; fi
+            
+            # automated app id
+            #local AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"")
+            #local AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+            local AUTOMATED_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_AUTOMATED_APP/Contents/Info.plist")
+            #echo "$AUTOMATED_APP_ID"
+            if [[ "$AUTOMATED_APP_ID" == "" ]]
+            then
+                echo "AUTOMATED_APP_ID is empty, skipping entry..."
+                continue
+            else
+                :
+            fi
+            #echo "$AUTOMATED_APP_ID"
+            
+            # automated app csreq
+            if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
+            then
+                local AUTOMATED_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+                #echo "$SOURCE_APP_CSREQ"
+            else
+                local AUTOMATED_APP_CSREQ='?'
+            fi
+            #echo "$AUTOMATED_APP_CSREQ"
+            
+            
+            ### permissions allowed
+            # 0 = no
+            # 1 = yes
+            local PERMISSION_GRANTED=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
+            #echo "$PERMISSION_GRANTED"
+            
+            
+            ### setting permissions
+            # working, but does not show in gui of system preferences, use csreq for the entry to make it work and show
+            #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,0,'$AUTOMATED_APP_ID',?,NULL,?);"
+            # not working, but shows correct entry in gui of system preferences, use csreq to make it work and show
+            #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,'UNUSED',NULL,0,'$AUTOMATED_APP_ID','UNUSED',NULL,?);"
+            # working and showing in gui of system preferences when using correct values in CSREQ variables
+            #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
+            
+            # delete entry before resetting
+            sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='$SOURCE_APP_ID' and indirect_object_identifier='$AUTOMATED_APP_ID');"
+            # working and showing in gui of system preferences if csreq is not '?'
+            sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
+            
+            
+            ### print line
+            local SOURCE_APP_NAME_PRINT=$(echo "$SOURCE_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+            local AUTOMATED_APP_NAME_PRINT=$(echo "$AUTOMATED_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+            if [[ "$PRINT_AUTOMATING_PERMISSIONS_ENTRYS" == "yes" ]]
+            then
+                printf "%-33s %-33s %-5s\n" "$SOURCE_APP_NAME_PRINT" "$AUTOMATED_APP_NAME_PRINT" "$PERMISSION_GRANTED"
+            else
+                :
+            fi
+            
+            # unset variables for next entry
+            unset SOURCE_APP_NAME
+            unset SOURCE_APP_NAME_PRINT
+            unset PATH_TO_SOURCE_APP
+            unset SOURCE_APP_ID
+            unset SOURCE_APP_CSREQ   
+            unset AUTOMATED_APP_NAME
+            unset AUTOMATED_APP_NAME_PRINT
+            unset PATH_TO_AUTOMATED_APP
+            unset AUTOMATED_APP_ID
+            unset AUTOMATED_APP_CSREQ
+            unset PERMISSION_GRANTED
+            unset NUM1
+            unset FIND_APP_PATH_TIMEOUT  
+        
+        #done
+        done <<< "$(printf "%s\n" "${AUTOMATION_APPS[@]}")"
+    fi
 }
 
 env_remove_apps_security_permissions_stop() {
@@ -1027,6 +1090,127 @@ trap_function_exit_end() {
     #env_kill_subprocesses
     #eval_function env_kill_main_process
     #printf '\n'
+}
+
+
+### renaming
+env_rename_files_and_directories() {
+
+    # documentation
+    # do not use xargs, every run has to be done file by file and directory by directory or it will not work as expected
+    
+    # checking dependencies
+    for i in brew rename
+    do
+    	if command -v "$i" &> /dev/null
+    	then
+    		# installed
+    		:
+    	else
+    		echo ''
+    		echo ""$i" is not installed, exiting..."
+    		echo ''
+    		exit
+    	fi
+    done
+
+    # stop on error (e.g. if script_dir is renamed)
+    set -e
+    set -o pipefail
+    
+    if [[ "$RENAME_DIRECTORIES" == "" ]]
+    then
+        echo ''
+        echo "RENAME_DIRECTORIES is empty, skipping..."
+        echo ''
+    else
+    
+        for RENAME_DIR in "${RENAME_DIRECTORIES[@]}"; do
+        
+            echo ''
+            echo "renaming in ""$RENAME_DIR..."
+            echo ''
+        
+            if [[ -d "$RENAME_DIR" ]]
+            then
+        
+                RENAMINGS=(
+                # ä, Ä, ö, Ö, ü, Ü, ß first
+                # https://www.utf8-zeichentabelle.de/unicode-utf8-table.pl?start=64&number=1024&names=-&utf8=string-literal
+                "export SUBSTITUTIONCHARACTERS='ä'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --force 's/ä/ae/g;s/ö/oe/g;s/ü/ue/g;s/Ä/Ae/g;s/Ö/Oe/g;s/Ü/Ue/g;s/ß/ss/g;s/\x61\xcc\x88/ae/g;s/\x6f\xcc\x88/oe/g;s/\x75\xcc\x88/ue/g;s/\x41\xcc\x88/AE/g;s/\x4f\xcc\x88/OE/g;s/\x55\xcc\x88/UE/g;'"
+                # sanitizing (problematic if whitespace in path to file or folder)
+                #"export SUBSTITUTIONCHARACTERS='sanitize'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --sanitize --keep-extension"
+                # all ocurrences of é
+                "export SUBSTITUTIONCHARACTERS='é'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all 'é' 'e'"
+                # all ocurrences of commas
+                "export SUBSTITUTIONCHARACTERS=','; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ',' '_'"
+                # all ocurrences of \
+                "export SUBSTITUTIONCHARACTERS='\'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '\' '_'"
+                # all ocurrences of »
+                "export SUBSTITUTIONCHARACTERS='»'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '»' '_'"
+                # all ocurrences of «
+                "export SUBSTITUTIONCHARACTERS='«'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '«' '_'"
+                # all ocurrences of [
+                "export SUBSTITUTIONCHARACTERS='['; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '[' '_'"
+                # all ocurrences of ]
+                "export SUBSTITUTIONCHARACTERS=']'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ']' '_'"
+                # all ocurrences of +
+                "export SUBSTITUTIONCHARACTERS='+'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '+' '_'"
+                # all ocurrences of %
+                "export SUBSTITUTIONCHARACTERS='%'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '%' '_'"
+                # all ocurrences of @
+                "export SUBSTITUTIONCHARACTERS='@'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '@' '_'"
+                # all ocurrences of #
+                "export SUBSTITUTIONCHARACTERS='#'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '#' '_'"
+                # all ocurrences of ®
+                "export SUBSTITUTIONCHARACTERS='®'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '®' '_'"
+                # all ocurrences of ø
+                "export SUBSTITUTIONCHARACTERS='ø'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all 'ø' '_'"
+                # all ocurrences of ~
+                "export SUBSTITUTIONCHARACTERS='~'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '~' '_'"
+                # all ocurrences of ·
+                "export SUBSTITUTIONCHARACTERS='·'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '·' '_'"
+                # all ocurrences of •
+                "export SUBSTITUTIONCHARACTERS='•'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '•' '_'"
+                # all ocurrences of |
+                "export SUBSTITUTIONCHARACTERS='|'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '|' '_'"
+                # all ocurrences of ï
+                "export SUBSTITUTIONCHARACTERS='ï'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all 'ï' '_'"
+                # all ocurrences of ›
+                "export SUBSTITUTIONCHARACTERS='›'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '›' '_'"
+                # all ocurrences of …
+                "export SUBSTITUTIONCHARACTERS='…'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '…' '_'"
+                # all ocurrences of –
+                "export SUBSTITUTIONCHARACTERS='–'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '–' '_'"
+                # all ocurrences of — # is not the same - than before
+                "export SUBSTITUTIONCHARACTERS='—'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '—' '_'"
+                # all ocurrences of ’
+                "export SUBSTITUTIONCHARACTERS='’'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '’' '_'"
+                # all ocurrences of ‘
+                "export SUBSTITUTIONCHARACTERS='‘'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '‘' '_'"
+                # all ocurrences of ?
+                "export SUBSTITUTIONCHARACTERS='?'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '?' '_'"
+                # all ocurrences of two or more __ substituted to a single _
+                "export SUBSTITUTIONCHARACTERS='__'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '__' '_'"
+                )
+        
+                for i in "${RENAMINGS[@]}"; do
+                    NUM1=0
+                    NUM1=$((NUM1+1))
+                    while [[ $(eval $i 2>&1 | tee) != "" ]]
+                    do
+                        NUM1=$((NUM1+1))
+                        eval $i 2>&1 | tee
+                    done
+                    eval $i
+                    echo "finished renaming $SUBSTITUTIONCHARACTERS with $NUM1 run(s) ;)"
+                done
+        
+            else
+                echo "RENAME_DIR "$RENAME_DIR" does not exist, skipping..."
+            fi
+        done
+    fi
 }
 
 
