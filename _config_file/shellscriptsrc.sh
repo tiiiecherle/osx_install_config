@@ -4,8 +4,7 @@
 # Do not put these lines in a function or some things may not work as expected.
 #
 #if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
-#eval_function() { function_to_eval="$@"; eval "$(typeset -f $function_to_eval)" && "$function_to_eval" ; }
-#eval_function env_get_shell_specific_variables
+#eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
 ### shell specific varibales
@@ -48,8 +47,8 @@ env_get_shell_specific_variables() {
         
         # traps
         # for more detailed explanation about traps see topic traps below        
-        ENV_SET_TRAP_SIG=(trap "exit \$exit_code" SIGHUP SIGINT SIGTERM)
-        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; sleep 0.1 && printf '\n' && env_trap_function_exit; " EXIT)
+        ENV_SET_TRAP_SIG=(trap "printf '\n' && exit \$exit_code" SIGHUP SIGINT SIGTERM)
+        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; sleep 0.1 && env_trap_function_exit; " EXIT)
         
     elif [[ -n "$ZSH_VERSION" ]]
     then
@@ -120,7 +119,7 @@ env_get_shell_specific_variables() {
         
         # bash like traps
         ENV_SET_TRAP_SIG=":"
-        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1 && printf '\n' && env_trap_function_exit" EXIT)
+        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1 && env_trap_function_exit" EXIT)
     fi
     
     ### script path, name and directory
@@ -140,6 +139,12 @@ env_get_shell_specific_variables() {
     #echo $SCRIPT_DIR_TWO_BACK
     # script dir three back
     SCRIPT_DIR_THREE_BACK="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && cd .. && cd .. && cd .. && pwd)"
+    #echo $SCRIPT_DIR_THREE_BACK
+    # script dir four back
+    SCRIPT_DIR_FOUR_BACK="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && cd .. && cd .. && cd .. && cd .. && pwd)"
+    #echo $SCRIPT_DIR_THREE_BACK
+    # script dir five back
+    SCRIPT_DIR_FIVE_BACK="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && cd .. && cd .. && cd .. && cd .. && cd .. && pwd)"
     #echo $SCRIPT_DIR_THREE_BACK
     
 }
@@ -378,8 +383,13 @@ UNIQUE_USER_ID=$(id -u "$loggedInUser")
 # or with kill -13
 
 env_get_running_subprocesses() {
-    RUNNING_SUBPROCESSES=$(pgrep -P $(ps -o pgid= $$))
-    #echo "RUNNING_SUBPROCESSES are $RUNNING_SUBPROCESSES"
+    if ps -o pgid= $$ &> /dev/null
+    then
+        RUNNING_SUBPROCESSES=$(pgrep -P $(ps -o pgid= $$))
+        #echo "RUNNING_SUBPROCESSES are $RUNNING_SUBPROCESSES"
+    else
+        :
+    fi
 }
 
 env_kill_subprocesses_sequentially() {
@@ -908,20 +918,27 @@ env_sudo_homebrew() {
 }
 
 env_start_sudo() {
-    env_use_password | builtin command sudo -p '' -S -v
-    ( while true; do env_use_password | builtin command sudo -p '' -S -v; sleep 60; done; ) &
-    SUDO_PID="$!"
-}
-
-env_stop_sudo() {
-    if [[ $(echo $SUDO_PID) == "" ]]
+    if [[ "$USE_PASSWORD" != "" ]]
     then
         :
     else
-        if ps -p $SUDO_PID > /dev/null
+        env_enter_sudo_password
+    fi
+    env_use_password | builtin command sudo -p '' -S -v
+    ( while true; do env_use_password | builtin command sudo -p '' -S -v; sleep 60; done; ) &
+    SUDO_PID="$!"
+    #echo "SUDO PID is $SUDO_PID..." 
+}
+
+env_stop_sudo() {
+    if [[ "$SUDO_PID" == "" ]]
+    then
+        :
+    else
+        if ps -p "$SUDO_PID" > /dev/null
         then
-            sudo kill -9 $SUDO_PID &> /dev/null
-            wait $SUDO_PID 2>/dev/null
+            sudo kill -9 "$SUDO_PID" &> /dev/null
+            wait "$SUDO_PID" 2>/dev/null
         else
             :
         fi
@@ -932,6 +949,22 @@ env_stop_sudo() {
 
 
 ### homebrew
+env_get_current_command_line_tools_version() {
+    CURRENT_COMMANDLINETOOLVERSION=""
+    VERSION_TO_CHECK_AGAINST=10.14
+    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]    
+    then
+        #COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo "$MACOS_VERSION_MAJOR" | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
+        CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | awk -F'*' '/^ +\\*/ {print $2}' | grep "$MACOS_VERSION_MAJOR" | sed 's/^ *//' | tail -n1)  
+    elif [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
+    then
+        CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
+    else
+        :
+    fi   
+}
+
+
 env_command_line_tools_install_shell() {
     # installing command line tools (command line)
     #if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ "$(ls -A "$(xcode-select -print-path)")" ]]
@@ -944,24 +977,14 @@ env_command_line_tools_install_shell() {
         touch "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
         sleep 3
         softwareupdate --list >/dev/null 2>&1
-        VERSION_TO_CHECK_AGAINST=10.14
-        if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]    
-        then
-            #COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo "$MACOS_VERSION_MAJOR" | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
-            COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | awk -F'*' '/^ +\\*/ {print $2}' | grep "$MACOS_VERSION_MAJOR" | sed 's/^ *//' | tail -n1)  
-        elif [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
-        then
-            COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
-        else
-            :
-        fi     
-    	echo "installing "$COMMANDLINETOOLVERSION"..."
-        softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLVERSION")"
+        env_get_current_command_line_tools_version  
+    	echo "installing "$CURRENT_COMMANDLINETOOLVERSION"..."
+        softwareupdate -i --verbose "$(echo "$CURRENT_COMMANDLINETOOLVERSION")"
         
         # removing tmp file that forces command line tools to show up
         if [[ -e "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress" ]]
         then
-            rm -f "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+            sudo rm -f "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
         else
             :
         fi
