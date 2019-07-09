@@ -194,36 +194,19 @@ env_check_if_online() {
     echo ''
     echo "checking internet connection..."
     timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
-    if [[ $(timeout 2>/dev/null 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    if [[ $(timeout 2 2>/dev/null dig +short -4 "$PINGTARGET1" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
         echo "we are online..."
     else
-        ONLINE_STATUS="offline"
-        echo "not online..."
-    fi
-}
-
-env_check_if_online_silent() {
-    PINGTARGET1=google.com
-    PINGTARGET2=duckduckgo.com
-    # check 1
-    # ping -c 3 "$PINGTARGET1" > /dev/null 2>&1'
-    # check 2
-    # resolving dns (dig +short xxx 80 or resolveip -s xxx) even work when connection (e.g. dhcp) is established but security confirmation is required to go online, e.g. public wifis
-    # during testing dig +short xxx 80 seemed more reliable to work within timeout
-    # timeout 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1'
-    #
-    #echo ''
-    #echo "checking internet connection..."
-    timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
-    if [[ $(timeout 2>/dev/null 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
-    then
-        ONLINE_STATUS="online"
-        #echo "we are online..."
-    else
-        ONLINE_STATUS="offline"
-        #echo "not online..."
+        if [[ $(timeout 2 2>/dev/null dig +short -4 "$PINGTARGET2" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+        then
+            ONLINE_STATUS="online"
+            echo "we are online..."
+        else
+            ONLINE_STATUS="offline"
+            echo "not online..."
+        fi
     fi
 }
 
