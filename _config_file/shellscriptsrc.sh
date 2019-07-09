@@ -193,8 +193,8 @@ env_check_if_online() {
     #
     echo ''
     echo "checking internet connection..."
-    timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
-    if [[ $(timeout 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
+    if [[ $(timeout 2>/dev/null 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
         echo "we are online..."
@@ -216,8 +216,8 @@ env_check_if_online_silent() {
     #
     #echo ''
     #echo "checking internet connection..."
-    timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
-    if [[ $(timeout 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
+    if [[ $(timeout 2>/dev/null 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
         #echo "we are online..."
