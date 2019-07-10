@@ -347,7 +347,7 @@ SCRIPT_INTERPRETER=$(ps h -p $$ -o args='' | cut -f1 -d' ')
 # if used for traps subprocesses will not be killed on return, only on exit
 # a script sourced by the session master also returns session master = yes
 # a script that is run from another script without sourcing returns session master = no
-[[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
+[[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_IS_SESSION_MASTER="no" || SCRIPT_IS_SESSION_MASTER="yes"
 
 
 ### macos version
@@ -1236,7 +1236,7 @@ if [[ "$TEST_SOURCING_AND_VARIABLES" == "yes" ]]
 then
     echo "config file..."
     echo "script is sourced: $SCRIPT_IS_SOURCED"
-    echo "script is session master: $SCRIPT_SESSION_MASTER"
+    echo "script is session master: $SCRIPT_IS_SESSION_MASTER"
     echo "script name is $SCRIPT_NAME"
     echo "script directory is $SCRIPT_DIR"
     echo "script directory one back is $SCRIPT_DIR_ONE_BACK"

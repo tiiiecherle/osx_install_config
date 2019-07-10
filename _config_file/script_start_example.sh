@@ -17,7 +17,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 echo ''
 echo "master shell script..."
 echo "script is sourced: $SCRIPT_IS_SOURCED"
-echo "script is session master: $SCRIPT_SESSION_MASTER"
+echo "script is session master: $SCRIPT_IS_SESSION_MASTER"
 echo "script name is $SCRIPT_NAME"
 echo "script directory is $SCRIPT_DIR"
 echo "script directory one back is $SCRIPT_DIR_ONE_BACK"
@@ -35,7 +35,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 echo ''
 echo "master shell script..."
 echo "script is sourced: $SCRIPT_IS_SOURCED"
-echo "script is session master: $SCRIPT_SESSION_MASTER"
+echo "script is session master: $SCRIPT_IS_SESSION_MASTER"
 echo "script name is $SCRIPT_NAME"
 echo "script directory is $SCRIPT_DIR"
 echo "script directory one back is $SCRIPT_DIR_ONE_BACK"
