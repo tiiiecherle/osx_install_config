@@ -269,7 +269,7 @@ env_config_file_self_update() {
         SHELL_SCRIPTS_CONFIG_FILE="shellscriptsrc"
         SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH=~/."$SHELL_SCRIPTS_CONFIG_FILE"
         
-        env_check_if_online_silent
+        env_check_if_online &> /dev/null
         if [[ "$ONLINE_STATUS" == "online" ]] && [[ -e "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH" ]]
         then
             # online
@@ -340,6 +340,14 @@ SCRIPT_INTERPRETER=$(ps h -p $$ -o args='' | cut -f1 -d' ')
 # if a script with #!/bin/bash shebang interpreter will be started in zsh shell, $SHELL will be /bin/zsh, not /bin/bash
 # when a script is sourced the shebang interpreter will be taken from the parent script and the shebang from the sourced script will be ignored
 # the above variable reflects that correctly
+
+
+### session master
+# a sourced script does not exit, it ends with return
+# if used for traps subprocesses will not be killed on return, only on exit
+# a script sourced by the session master also returns session master = yes
+# a script that is run from another script without sourcing returns session master = no
+[[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
 
 
 ### macos version
@@ -1228,6 +1236,7 @@ if [[ "$TEST_SOURCING_AND_VARIABLES" == "yes" ]]
 then
     echo "config file..."
     echo "script is sourced: $SCRIPT_IS_SOURCED"
+    echo "script is session master: $SCRIPT_SESSION_MASTER"
     echo "script name is $SCRIPT_NAME"
     echo "script directory is $SCRIPT_DIR"
     echo "script directory one back is $SCRIPT_DIR_ONE_BACK"
