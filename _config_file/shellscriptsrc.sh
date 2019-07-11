@@ -396,7 +396,7 @@ env_kill_subprocesses_sequentially() {
     then
         while IFS= read -r line || [[ -n "$line" ]]
     	do
-    	    if [[ "$line" == "" ]]; then break; fi
+    	    if [[ "$line" == "" ]]; then continue; fi
     	    i="$line"
             #echo "subprocess for TERM is "$i""
             kill -15 $i
@@ -420,7 +420,7 @@ env_kill_subprocesses_sequentially() {
     then
         while IFS= read -r line || [[ -n "$line" ]]
     	do
-    	    if [[ "$line" == "" ]]; then break; fi
+    	    if [[ "$line" == "" ]]; then continue; fi
     	    i="$line"
     	    #echo "subprocess for KILL is "$i""
             kill -9 $i
@@ -521,7 +521,7 @@ env_set_apps_security_permissions() {
     #for APP_ENTRY in "${APPS_SECURITY_ARRAY[@]}"
     while IFS= read -r line || [[ -n "$line" ]]
 	do
-	    if [[ "$line" == "" ]]; then break; fi
+	    if [[ "$line" == "" ]]; then continue; fi
         local APP_ENTRY="$line"
         #echo "$APP_ENTRY"
         
@@ -533,48 +533,48 @@ env_set_apps_security_permissions() {
        	local APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
        	#local APP_NAME_NO_SPACES=$(echo "$APP_NAME" | sed 's/ /_/g' | sed 's/^ //g' | sed 's/ $//g')
        	#echo "APP_NAME is "$APP_NAME""
-       	
-       	# app path
-        local NUM1=0
-        local FIND_APP_PATH_TIMEOUT=2
-        local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | sort -n | head -1)
-        while [[ "$PATH_TO_APP" == "" ]]
-        do
-            # bash builtin printf can not print floating numbers
-        	#perl -e 'printf "%.2f\n",'$NUM1''
-		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
-        	local NUM1=$(bc<<<$NUM1+0.5)
-        	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
-        	then
-        	    # bash builtin printf can not print floating numbers
-        		#perl -e 'printf "%.2f\n",'$NUM1''
-		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
-        		sleep 0.5
-                local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | sort -n | head -1)
-        	else
-        	    #printf '\n'
-                echo "PATH_TO_APP is empty, skipping entry..."
-        		break
-        	fi
-        done
-        if [[ "$PATH_TO_APP" == "" ]]; then continue; fi
-        #echo "PATH_TO_APP is "$PATH_TO_APP"..."
 
         # app id
-        #local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-        #local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
-        #local APP_ID=$(osascript -e "id of app \"$APP_NAME\"")
-        #echo "PATH_TO_APP is "$PATH_TO_APP""
-        local APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist")
-        #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | sort -n | head -n1)")
-        #echo "$APP_ID"
-        if [[ "$APP_ID" == "" ]]
+        if [[ -e "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt ]]
         then
-            echo "APP_ID is empty, skipping entry..."
-            continue
+            #local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+            local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
         else
-            :
+            # app path
+            local NUM1=0
+            local FIND_APP_PATH_TIMEOUT=2
+            local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+            while [[ "$PATH_TO_APP" == "" ]]
+            do
+                # bash builtin printf can not print floating numbers
+            	#perl -e 'printf "%.2f\n",'$NUM1''
+    		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+            	local NUM1=$(bc<<<$NUM1+0.5)
+            	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+            	then
+            	    # bash builtin printf can not print floating numbers
+            		#perl -e 'printf "%.2f\n",'$NUM1''
+    		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+            		sleep 0.5
+                    local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+            	else
+            	    #printf '\n'
+            		break
+            	fi
+            done
+            if [[ "$PATH_TO_APP" == "" ]]
+            then
+                # trying another way to get the app id without knowing the path to the .app
+                local APP_ID=$(osascript -e "id of app \"$APP_NAME\"") &> /dev/null
+                if [[ "$APP_ID" == "" ]];then echo "PATH_TO_APP of "$APP_NAME" is empty, skipping entry..." && continue; fi
+            else         
+                local APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist")
+                #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | sort -n | head -n1)")
+            fi
+            #echo "PATH_TO_APP is "$PATH_TO_APP"..."
         fi
+        #echo "$APP_ID"
+        if [[ "$APP_ID" == "" ]];then echo "APP_ID of "$APP_NAME" is empty, skipping entry..." && continue; fi
         
         # app csreq
         #local APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')    
@@ -651,7 +651,7 @@ env_set_apps_automation_permissions() {
         #for APP_ENTRY in "${AUTOMATION_APPS[@]}"
         while IFS= read -r line || [[ -n "$line" ]]
         do
-            if [[ "$line" == "" ]]; then break; fi
+            if [[ "$line" == "" ]]; then continue; fi
             local APP_ENTRY="$line"
             #echo "APP_ENTRY is "$APP_ENTRY""
             
@@ -660,45 +660,47 @@ env_set_apps_automation_permissions() {
             local SOURCE_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
             #echo "SOURCE_APP_NAME is "$SOURCE_APP_NAME""
             
-            # source app path
-            local NUM1=0
-            local FIND_APP_PATH_TIMEOUT=2
-            local PATH_TO_SOURCE_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$SOURCE_APP_NAME.app$" | sort -n | head -1)
-            while [[ "$PATH_TO_SOURCE_APP" == "" ]]
-            do
-                # bash builtin printf can not print floating numbers
-            	#perl -e 'printf "%.2f\n",'$NUM1''
-    		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
-            	local NUM1=$(bc<<<$NUM1+0.5)
-            	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
-            	then
-            	    # bash builtin printf can not print floating numbers
-            		#perl -e 'printf "%.2f\n",'$NUM1''
-    		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
-            		sleep 0.5
-                    local PATH_TO_SOURCE_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$SOURCE_APP_NAME.app$" | sort -n | head -1)
-            	else
-            	    #printf '\n'
-                    echo "PATH_TO_SOURCE_APP is empty, skipping entry..."
-            		break
-            	fi
-            done
-            if [[ "$PATH_TO_SOURCE_APP" == "" ]]; then continue; fi
-            #echo "PATH_TO_SOURCE_APP is "$PATH_TO_SOURCE_APP"..."
-            
             # source app id
-            #local SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"")
-            #local SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-            #echo "PATH_TO_SOURCE_APP is "$PATH_TO_SOURCE_APP""
-            local SOURCE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_SOURCE_APP/Contents/Info.plist")
-            #echo "$SOURCE_APP_ID"
-            if [[ "$SOURCE_APP_ID" == "" ]]
+            if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
             then
-                echo "SOURCE_APP_ID is empty, skipping entry..."
-                continue
+                local SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
             else
-                :
+                # source app path
+                local NUM1=0
+                local FIND_APP_PATH_TIMEOUT=2
+                local PATH_TO_SOURCE_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$SOURCE_APP_NAME.app$" | sort -n | head -1)
+                while [[ "$PATH_TO_SOURCE_APP" == "" ]]
+                do
+                    # bash builtin printf can not print floating numbers
+                	#perl -e 'printf "%.2f\n",'$NUM1''
+        		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+                	local NUM1=$(bc<<<$NUM1+0.5)
+                	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+                	then
+                	    # bash builtin printf can not print floating numbers
+                		#perl -e 'printf "%.2f\n",'$NUM1''
+        		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+                		sleep 0.5
+                        local PATH_TO_SOURCE_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$SOURCE_APP_NAME.app$" | sort -n | head -1)
+                	else
+                	    #printf '\n'
+                		break
+                	fi
+                done
+                if [[ "$PATH_TO_SOURCE_APP" == "" ]]
+                then
+                    # trying another way to get the app id without knowing the path to the .app
+                    local SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"") &> /dev/null
+                    if [[ "$SOURCE_APP_ID" == "" ]]; then echo "PATH_TO_SOURCE_APP of "$SOURCE_APP_NAME" is empty, skipping entry..." && continue; fi
+                else
+                    #local SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"")
+                    #echo "PATH_TO_SOURCE_APP is "$PATH_TO_SOURCE_APP""
+                    local SOURCE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_SOURCE_APP/Contents/Info.plist")
+                fi
+                #echo "PATH_TO_APP is "$PATH_TO_APP"..."
             fi
+            #echo "$SOURCE_APP_ID"
+            if [[ "$SOURCE_APP_ID" == "" ]]; then echo "SOURCE_APP_ID of "$SOURCE_APP_NAME" is empty, skipping entry..." && continue; fi
             
             # source app csreq
             if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
@@ -715,45 +717,46 @@ env_set_apps_automation_permissions() {
             local AUTOMATED_APP_NAME=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
             #echo "$AUTOMATED_APP_NAME"
             
-            # automated app path
-            local NUM1=0
-            local FIND_APP_PATH_TIMEOUT=2
-            local PATH_TO_AUTOMATED_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$AUTOMATED_APP_NAME.app$" | sort -n | head -1)
-            while [[ "$PATH_TO_AUTOMATED_APP" == "" ]]
-            do
-                # bash builtin printf can not print floating numbers
-            	#perl -e 'printf "%.2f\n",'$NUM1''
-    		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
-            	local NUM1=$(bc<<<$NUM1+0.5)
-            	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
-            	then
-            	    # bash builtin printf can not print floating numbers
-            		#perl -e 'printf "%.2f\n",'$NUM1''
-    		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
-            		sleep 0.5
-                    local PATH_TO_AUTOMATED_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$AUTOMATED_APP_NAME.app$" | sort -n | head -1)
-            	else
-            	    #printf '\n'
-                    echo "PATH_TO_AUTOMATED_APP is empty, skipping entry..."
-            		break
-            	fi
-            done
-            if [[ "$PATH_TO_AUTOMATED_APP" == "" ]]; then continue; fi
-            #echo "PATH_TO_AUTOMATED_APP is "$PATH_TO_AUTOMATED_APP"..."
-            
             # automated app id
-            #local AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"")
-            #local AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-            local AUTOMATED_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_AUTOMATED_APP/Contents/Info.plist")
-            #echo "$AUTOMATED_APP_ID"
-            if [[ "$AUTOMATED_APP_ID" == "" ]]
+            if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
             then
-                echo "AUTOMATED_APP_ID is empty, skipping entry..."
-                continue
+                local AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
             else
-                :
+                # automated app path
+                local NUM1=0
+                local FIND_APP_PATH_TIMEOUT=2
+                local PATH_TO_AUTOMATED_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$AUTOMATED_APP_NAME.app$" | sort -n | head -1)
+                while [[ "$PATH_TO_AUTOMATED_APP" == "" ]]
+                do
+                    # bash builtin printf can not print floating numbers
+                	#perl -e 'printf "%.2f\n",'$NUM1''
+        		    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+                	local NUM1=$(bc<<<$NUM1+0.5)
+                	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+                	then
+                	    # bash builtin printf can not print floating numbers
+                		#perl -e 'printf "%.2f\n",'$NUM1''
+        		        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+                		sleep 0.5
+                        local PATH_TO_AUTOMATED_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$AUTOMATED_APP_NAME.app$" | sort -n | head -1)
+                	else
+                	    #printf '\n'
+                		break
+                	fi
+                done
+                if [[ "$PATH_TO_AUTOMATED_APP" == "" ]]
+                then
+                    # trying another way to get the app id without knowing the path to the .app
+                    local AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"") &> /dev/null
+                    if [[ "$AUTOMATED_APP_ID" == "" ]]; then echo "PATH_TO_AUTOMATED_APP of "$AUTOMATED_APP_NAME" is empty, skipping entry..." && continue; fi
+                else
+                    #local AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"")
+                    local AUTOMATED_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_AUTOMATED_APP/Contents/Info.plist")
+                fi
+                #echo "PATH_TO_APP is "$PATH_TO_APP"..."
             fi
             #echo "$AUTOMATED_APP_ID"
+            if [[ "$AUTOMATED_APP_ID" == "" ]]; then echo "AUTOMATED_APP_ID of "$AUTOMATED_APP_NAME" is empty, skipping entry..." && continue; fi
             
             # automated app csreq
             if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
