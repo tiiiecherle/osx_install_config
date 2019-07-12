@@ -537,8 +537,7 @@ env_set_apps_security_permissions() {
         # app id
         if [[ -e "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt ]]
         then
-            #local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-            local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+            local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
         else
             # app path
             local NUM1=0
@@ -570,6 +569,8 @@ env_set_apps_security_permissions() {
             else         
                 local APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist")
                 #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | sort -n | head -n1)")
+                # specifying app id in array
+                #local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
             fi
             #echo "PATH_TO_APP is "$PATH_TO_APP"..."
         fi
@@ -693,8 +694,6 @@ env_set_apps_automation_permissions() {
                     local SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"") &> /dev/null
                     if [[ "$SOURCE_APP_ID" == "" ]]; then echo "PATH_TO_SOURCE_APP of "$SOURCE_APP_NAME" is empty, skipping entry..." && continue; fi
                 else
-                    #local SOURCE_APP_ID=$(osascript -e "id of app \"$SOURCE_APP_NAME\"")
-                    #echo "PATH_TO_SOURCE_APP is "$PATH_TO_SOURCE_APP""
                     local SOURCE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_SOURCE_APP/Contents/Info.plist")
                 fi
                 #echo "PATH_TO_APP is "$PATH_TO_APP"..."
@@ -750,7 +749,6 @@ env_set_apps_automation_permissions() {
                     local AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"") &> /dev/null
                     if [[ "$AUTOMATED_APP_ID" == "" ]]; then echo "PATH_TO_AUTOMATED_APP of "$AUTOMATED_APP_NAME" is empty, skipping entry..." && continue; fi
                 else
-                    #local AUTOMATED_APP_ID=$(osascript -e "id of app \"$AUTOMATED_APP_NAME\"")
                     local AUTOMATED_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_AUTOMATED_APP/Contents/Info.plist")
                 fi
                 #echo "PATH_TO_APP is "$PATH_TO_APP"..."
