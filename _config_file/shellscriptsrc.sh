@@ -89,19 +89,25 @@ env_get_shell_specific_variables() {
         #trapSIG runs when the specific SIG is triggered
         TRAPINT() {
           #echo "Caught SIGINT, aborting."
-          sleep 0.1 && printf '\n' && env_trap_function_exit
+          exit_code=$1
+          printf '\n'
+          #echo "exit_code is "$exit_code""
           return $(( 128 + $1 ))
         }
         
         TRAPHUP() {
           #echo "Caught SIGHUP, aborting."
-          sleep 0.1 && printf '\n' && env_trap_function_exit
+          exit_code=$1
+          printf '\n'
+          #echo "exit_code is "$exit_code""
           return $(( 128 + $1 ))
         }
         
         TRAPTERM() {
           #echo "Caught SIGTERM, aborting."
-          sleep 0.1 && printf '\n' && env_trap_function_exit
+          exit_code=$1
+          printf '\n'
+          #echo "exit_code is "$exit_code""
           return $(( 128 + $1 ))
         }
         
@@ -119,7 +125,19 @@ env_get_shell_specific_variables() {
         
         # bash like traps
         ENV_SET_TRAP_SIG=":"
-        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1 && env_trap_function_exit" EXIT)
+        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1; sleep 0.1 && env_trap_function_exit" EXIT)
+        
+        # output of time command
+        # http://zsh.sourceforge.net/Doc/Release/Parameters.html#index-TIMEFMT
+        # posix
+        # in hours, minutes, seconds, only printed if not zero
+        #TIMEFMT=$'\nreal\t%*E\nuser\t%*U\nsys\t%*S'
+        # in seconds
+        #TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S'
+        # default
+        #TIMEFMT=$'%J %U user %S system %P cpu %*E total'
+        # default without printing job name, e.g. if run for a function in a subshell 
+        TIMEFMT=$'%U user %S system %P cpu %*E total'
     fi
     
     ### script path, name and directory
@@ -146,6 +164,27 @@ env_get_shell_specific_variables() {
     # script dir five back
     SCRIPT_DIR_FIVE_BACK="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && cd .. && cd .. && cd .. && cd .. && cd .. && pwd)"
     #echo $SCRIPT_DIR_THREE_BACK
+    
+    
+    ### session master
+    # a sourced script does not exit, it ends with return
+    # if used for traps subprocesses will not be killed on return, only on exit
+    # a script sourced by the session master also returns session master = yes
+    # a script that is run from another script without sourcing returns session master = no
+    [[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_IS_SESSION_MASTER="no" || SCRIPT_IS_SESSION_MASTER="yes"
+
+    if [[ "$SCRIPT_IS_SESSION_MASTER" == "yes" ]] && [[ "$SCRIPT_IS_SOURCED" == "no" ]]
+    then
+        if [[ "$SCRIPT_NAME" =~ .*.command$ ]]
+        then
+            #echo "session master $SCRIPT_NAME is a command file..."
+            SESSION_MASTER_IS_COMMAND_FILE="yes"
+        else
+            :
+        fi
+    else
+        :
+    fi
     
 }
 env_get_shell_specific_variables
@@ -342,14 +381,6 @@ SCRIPT_INTERPRETER=$(ps h -p $$ -o args='' | cut -f1 -d' ')
 # the above variable reflects that correctly
 
 
-### session master
-# a sourced script does not exit, it ends with return
-# if used for traps subprocesses will not be killed on return, only on exit
-# a script sourced by the session master also returns session master = yes
-# a script that is run from another script without sourcing returns session master = no
-[[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_IS_SESSION_MASTER="no" || SCRIPT_IS_SESSION_MASTER="yes"
-
-
 ### macos version
 MACOS_VERSION=$(sw_vers -productVersion)
 MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
@@ -463,20 +494,37 @@ env_kill_subprocesses() {
     # also do not use in subshell parantheses due to trap recursion
     # ( (kill 0 &> /dev/null) & )
     # only use like this
-    #trap - SIGTERM && kill 0
-    
+    # trap - SIGTERM && kill 0
     # checking if $$ is a process group id
+    #kill -15 $(ps -p $PPID -o ppid=)
     if [[ $(ps -e -o pgid,pid,command | awk -v p=$$ '$1 == p {print $2}') != "" ]]
     then
     	#echo "$$ is a pgid..."
-        trap - SIGTERM && kill -- -$$                                                                                                                                         
+    	#trap - SIGTERM && kill -- -$$
+    	# zsh had problems to exit correctly without killing the shell on sigterm
+        trap "env_kill_shell_if_command_file" SIGTERM && kill -- -$$
+        #env_kill_subprocesses_sequentially
+        #env_kill_shell_if_command_file
     else
     	#echo "$$ is NOT a pgid..."
     	#if [[ $(jobs -pr) != "" ]]; then kill $(jobs -pr); fi
     	env_kill_subprocesses_sequentially
+    	env_kill_shell_if_command_file
     fi
 }
 
+env_kill_shell_if_command_file() {
+    if [[ "$SESSION_MASTER_IS_COMMAND_FILE" == "yes" ]]
+    then
+        #echo "session master $SCRIPT_NAME is a command file..."
+        # the printf is needed for exiting cleanly for .command files
+        tput cuu1
+        printf '\n' && kill $(ps -p $PPID -o ppid=)
+    else
+        #echo "session master $SCRIPT_NAME is NOT a command file..."
+        :
+    fi
+}
 
 env_kill_main_process() {
     # kills processes itself
@@ -835,14 +883,16 @@ env_enter_sudo_password() {
         # disabling echo, this will prevent showing output
         stty -echo
         # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-        trap 'stty echo' EXIT
+        #trap 'stty echo' EXIT
+        trap_function_exit_middle() { stty echo; }
         # asking for password
         printf "Password: "
         # reading secret
         read -r "$@" SUDOPASSWORD
         # reanabling echo
         stty echo
-        trap - EXIT
+        #trap - EXIT
+        trap_function_exit_middle() { :; }
         # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
         printf "\n"
         # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
@@ -907,7 +957,7 @@ env_sudo() {
 
 # redefining sudo so it is possible to run homebrew install without entering the password again
 env_sudo_homebrew() {
-    sudo () {
+    sudo() {
         env_use_password | builtin command sudo -p '' -S "$@"
     }
 }
@@ -940,6 +990,9 @@ env_stop_sudo() {
     fi
     unset SUDO_PID
     sudo -k
+    unset SUDOPASSWORD
+    unset USE_PASSWORD
+    unset -f sudo
 }
 
 
@@ -1050,11 +1103,7 @@ env_cleanup_all_homebrew() {
     # without the file brew thinks brew cleanup was not run and complains about it
     # https://github.com/Homebrew/brew/issues/5644
     brew cleanup 1> /dev/null
-    
-    # fixing red dots before confirming commit to cask-repair that prevent the commit from being made
-    # https://github.com/vitorgalvao/tiny-scripts/issues/88
-    #sudo gem uninstall -ax rubocop rubocop-cask 1> /dev/null
-    #brew cask style 1> /dev/null
+
 }
 
 ### check if parallel is installed
@@ -1102,14 +1151,19 @@ env_trap_function_exit() {
 }
 
 trap_function_exit_end() {
-    env_kill_subprocesses & disown
-    #nohup env_kill_subprocesses 2>&1 >/dev/null
+    # nohup doesn`t work
+    # when nohup is used subprocesses do not get killed
+    
+    # testing
+    #sleep 40 & sleep 50 & sleep 60 & sleep 70 &
+
+    # disown works and helps suppress the output
+    #env_kill_subprocesses & disown
     #eval_function env_kill_subprocesses
-    #env_kill_subprocesses
+    env_kill_subprocesses
     #eval_function env_kill_main_process
     #printf '\n'
 }
-
 
 ### renaming
 env_rename_files_and_directories() {
