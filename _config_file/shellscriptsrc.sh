@@ -78,7 +78,9 @@ env_get_shell_specific_variables() {
         env_use_password() { ${=USE_PASSWORD}; }
         
         # check if script is sourced
-        [[ $ZSH_EVAL_CONTEXT =~ ^toplevel:file ]] && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"
+        # ^toplevel:file if script is sourced from outside a function
+        # ^toplevel:shfunc:file if script is sourced from inside a function
+        [[ $ZSH_EVAL_CONTEXT =~ ^toplevel:file ]] || [[ $ZSH_EVAL_CONTEXT =~ ^toplevel:shfunc:file ]] && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"
         # eval alternative
         # use eval "$CHECK_IF_SOURCED" in other script to call it
         #CHECK_IF_SOURCED='[[ $ZSH_EVAL_CONTEXT =~ ':file$' ]] && SCRIPT_IS_SOURCED="yes" || SCRIPT_IS_SOURCED="no"'
@@ -92,6 +94,8 @@ env_get_shell_specific_variables() {
           exit_code=$1
           printf '\n'
           #echo "exit_code is "$exit_code""
+          sleep 0.1
+          env_trap_function_exit
           return $(( 128 + $1 ))
         }
         
@@ -100,6 +104,8 @@ env_get_shell_specific_variables() {
           exit_code=$1
           printf '\n'
           #echo "exit_code is "$exit_code""
+          sleep 0.1
+          env_trap_function_exit
           return $(( 128 + $1 ))
         }
         
@@ -108,6 +114,8 @@ env_get_shell_specific_variables() {
           exit_code=$1
           printf '\n'
           #echo "exit_code is "$exit_code""
+          sleep 0.1
+          env_trap_function_exit
           return $(( 128 + $1 ))
         }
         
@@ -125,7 +133,7 @@ env_get_shell_specific_variables() {
         
         # bash like traps
         ENV_SET_TRAP_SIG=":"
-        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1; sleep 0.1 && env_trap_function_exit" EXIT)
+        ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1; env_trap_function_exit" EXIT)
     fi
     
     ### script path, name and directory
@@ -163,6 +171,7 @@ env_get_shell_specific_variables() {
 
     if [[ "$SCRIPT_IS_SESSION_MASTER" == "yes" ]] && [[ "$SCRIPT_IS_SOURCED" == "no" ]]
     then
+        SCRIPT_IS_SESSION_MASTER_AND_NOT_SOURCED="yes"
         if [[ "$SCRIPT_NAME" =~ .*.command$ ]]
         then
             #echo "session master $SCRIPT_NAME is a command file..."
@@ -171,8 +180,9 @@ env_get_shell_specific_variables() {
             :
         fi
     else
-        :
+        SCRIPT_IS_SESSION_MASTER_AND_NOT_SOURCED="no"
     fi
+    #echo "SCRIPT_IS_SESSION_MASTER_AND_NOT_SOURCED is $SCRIPT_IS_SESSION_MASTER_AND_NOT_SOURCED..."
     
 }
 env_get_shell_specific_variables
@@ -456,7 +466,7 @@ env_kill_subprocesses() {
     # left running processes in tests
     #kill $(jobs -pr)
     #kill $(jobs -pr); wait $(jobs -pr) 2>/dev/null
-    #
+    
     # kills process and subprocesses without parent shell of process leader/session master by killing -$pgid
     # but only works if the shell is the process group leader
     # do not use wihtout "trap - SIGTERM &&" due to trap recursion
@@ -468,14 +478,14 @@ env_kill_subprocesses() {
     # trap - SIGTERM && kill -- -$$
     # KILL signal (-9)
     # trap - SIGTERM && kill -9 -$$
-    #
+    
     # kills subprocesses but does not kill grandchildren
     # trap - SIGTERM && pkill -P $$
-    #
+    
     # kills subprocesses without parent shell of own process
     # this even works for a script that is run from another script
     # env_kill_subprocesses_sequentially
-    #
+    
     # kills complete process tree including parent shell
     # do not use wihtout "trap - SIGTERM &&" due to trap recursion
     # kill 0
@@ -483,14 +493,17 @@ env_kill_subprocesses() {
     # ( (kill 0 &> /dev/null) & )
     # only use like this
     # trap - SIGTERM && kill 0
+    
     # checking if $$ is a process group id
     #kill -15 $(ps -p $PPID -o ppid=)
     if [[ $(ps -e -o pgid,pid,command | awk -v p=$$ '$1 == p {print $2}') != "" ]]
     then
     	#echo "$$ is a pgid..."
     	#trap - SIGTERM && kill -- -$$
-    	# zsh had problems to exit correctly without killing the shell on sigterm
+    	# for command files in zsh there is an issue which makes the script not exit correctly without using env_kill_shell_if_command_file to kill the shell
+    	# sending it to env_kill_shell_if_command_file also solved the output problem for "terminated" messages
         trap "env_kill_shell_if_command_file" SIGTERM && kill -- -$$
+        # alternatively (should also work, but a bit slower)
         #env_kill_subprocesses_sequentially
         #env_kill_shell_if_command_file
     else
@@ -508,9 +521,13 @@ env_kill_shell_if_command_file() {
         # the printf is needed for exiting cleanly for .command files
         tput cuu1
         printf '\n' && kill $(ps -p $PPID -o ppid=)
+        #printf '\n' && kill -15 $(ps -p $PPID -o ppid=)
+        #printf '\n' && kill -9 $(ps -p $PPID -o ppid=)
     else
         #echo "session master $SCRIPT_NAME is NOT a command file..."
-        :
+        #((kill -13 $$) & ) >/dev/null 2>&1
+        #printf '\n' && kill -13 $$
+        kill -13 $$
     fi
 }
 
@@ -881,6 +898,7 @@ env_enter_sudo_password() {
         stty echo
         #trap - EXIT
         trap_function_exit_middle() { :; }
+        #unset -f trap_function_exit_middle
         # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
         printf "\n"
         # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
@@ -978,9 +996,14 @@ env_stop_sudo() {
     fi
     unset SUDO_PID
     sudo -k
-    unset SUDOPASSWORD
-    unset USE_PASSWORD
-    unset -f sudo
+    if [[ "$SCRIPT_IS_SESSION_MASTER_AND_NOT_SOURCED" == "yes" ]]
+    then
+        unset SUDOPASSWORD
+        unset USE_PASSWORD
+        unset -f sudo
+    else
+        :
+    fi
 }
 
 
