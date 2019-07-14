@@ -126,18 +126,6 @@ env_get_shell_specific_variables() {
         # bash like traps
         ENV_SET_TRAP_SIG=":"
         ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1; sleep 0.1 && env_trap_function_exit" EXIT)
-        
-        # output of time command
-        # http://zsh.sourceforge.net/Doc/Release/Parameters.html#index-TIMEFMT
-        # posix
-        # in hours, minutes, seconds, only printed if not zero
-        #TIMEFMT=$'\nreal\t%*E\nuser\t%*U\nsys\t%*S'
-        # in seconds
-        #TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S'
-        # default
-        #TIMEFMT=$'%J %U user %S system %P cpu %*E total'
-        # default without printing job name, e.g. if run for a function in a subshell 
-        TIMEFMT=$'%U user %S system %P cpu %*E total'
     fi
     
     ### script path, name and directory
