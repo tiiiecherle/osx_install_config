@@ -196,6 +196,10 @@ blue_text=$(tput setaf 4)
 default_text=$(tput sgr0)
 
 
+### timeout
+env_timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
+
+
 ### checking if online
 env_check_if_online_old() {
     echo ''
@@ -230,13 +234,12 @@ env_check_if_online() {
     #
     echo ''
     echo "checking internet connection..."
-    timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
-    if [[ $(timeout 2 2>/dev/null dig +short -4 "$PINGTARGET1" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    if [[ $(env_timeout 2 2>/dev/null dig +short -4 "$PINGTARGET1" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
         echo "we are online..."
     else
-        if [[ $(timeout 2 2>/dev/null dig +short -4 "$PINGTARGET2" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+        if [[ $(env_timeout 2 2>/dev/null dig +short -4 "$PINGTARGET2" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
         then
             ONLINE_STATUS="online"
             echo "we are online..."
