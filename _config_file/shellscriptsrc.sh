@@ -204,13 +204,13 @@ env_timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
 env_check_if_online_old() {
     echo ''
     echo "checking internet connection..."
-    ping -c 3 google.com > /dev/null 2>&1
+    ping -c 3 google.com >/dev/null 2>&1
     if [[ $? -eq 0 ]]
     then
         ONLINE_STATUS="online"
         echo "we are online..."
     else
-        ping -c 3 duckduckgo.com > /dev/null 2>&1
+        ping -c 3 duckduckgo.com >/dev/null 2>&1
         if [[ $? -eq 0 ]]
         then
             ONLINE_STATUS="online"
@@ -226,7 +226,7 @@ env_check_if_online() {
     PINGTARGET1=google.com
     PINGTARGET2=duckduckgo.com
     # check 1
-    # ping -c 3 "$PINGTARGET1" > /dev/null 2>&1'
+    # ping -c 3 "$PINGTARGET1" >/dev/null 2>&1'
     # check 2
     # resolving dns (dig +short xxx 80 or resolveip -s xxx) even work when connection (e.g. dhcp) is established but security confirmation is required to go online, e.g. public wifis
     # during testing dig +short xxx 80 seemed more reliable to work within timeout
@@ -1276,6 +1276,12 @@ env_rename_files_and_directories() {
                 "export SUBSTITUTIONCHARACTERS='‘'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '‘' '_'"
                 # all ocurrences of ?
                 "export SUBSTITUTIONCHARACTERS='?'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '?' '_'"
+                # all ocurrences of “
+                "export SUBSTITUTIONCHARACTERS='“'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '“' '_'"
+                # all ocurrences of ”
+                "export SUBSTITUTIONCHARACTERS='”'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '”' '_'"
+                # all ocurrences of '
+                "export SUBSTITUTIONCHARACTERS=''\'''; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ''\''' '_'"
                 # all ocurrences of two or more __ substituted to a single _
                 "export SUBSTITUTIONCHARACTERS='__'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '__' '_'"
                 )
