@@ -652,17 +652,41 @@ env_set_apps_security_permissions() {
         then
             # delete entry before resetting
             sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='$APP_ID';"
-            # working, but no csreq
-            sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,?,NULL,0,?);"
-            # working with csreq
-            #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,$APP_CSREQ,NULL,0,?);"
+            if [[ "$MACOS_VERSION_MAJOR" == "10.13" ]]
+            then
+                # macos 10.13
+                sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL);"
+            elif VERSION_TO_CHECK_AGAINST=10.14; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos 10.14 and higher
+                # working, but no csreq
+                sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,?,NULL,0,?);"
+                # working with csreq
+                #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,$APP_CSREQ,NULL,0,?);"
+            else
+                echo ''
+                echo "setting security permissions for this version of macos is not supported, skipping..."
+                echo ''
+            fi
         else
             # delete entry before resetting
             sqlite3 "$DATABASE_USER" "delete from access where (service='$INPUT_SERVICE' and client='$APP_ID');"
-            # working, but no csreq
-            sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,NULL,?,NULL,NULL,?);"
-            # working with csreq
-            #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,$APP_CSREQ,NULL,NULL,?,NULL,NULL,?);"
+            if [[ "$MACOS_VERSION_MAJOR" == "10.13" ]]
+            then
+                # macos 10.13
+                sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL);"
+            elif VERSION_TO_CHECK_AGAINST=10.14; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos 10.14 and higher
+                # working, but no csreq
+                sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,NULL,?,NULL,NULL,?);"
+                # working with csreq
+                #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,$APP_CSREQ,NULL,NULL,?,NULL,NULL,?);"
+            else
+                echo ''
+                echo "setting security permissions for this version of macos is not supported, skipping..."
+                echo ''
+            fi
         fi
         
         # app name print
