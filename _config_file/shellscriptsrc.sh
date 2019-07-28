@@ -134,6 +134,7 @@ env_get_shell_specific_variables() {
         # bash like traps
         ENV_SET_TRAP_SIG=":"
         ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - EXIT; sleep 0.1; env_trap_function_exit" EXIT)
+        #ENV_SET_TRAP_EXIT=(trap "exit_code=\$?; trap - 1 2 3 15; sleep 0.1; env_trap_function_exit" EXIT)
     fi
     
     ### script path, name and directory
@@ -250,7 +251,7 @@ env_check_if_online() {
     fi
 }
 
-#check_if_online
+#env_check_if_online
 #if [[ "$ONLINE_STATUS" == "online" ]]
 #then
 #    # online
@@ -385,7 +386,24 @@ SCRIPT_INTERPRETER=$(ps h -p $$ -o args='' | cut -f1 -d' ')
 ### macos version
 MACOS_VERSION=$(sw_vers -productVersion)
 MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
+#MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | sed 's|\.|_|g')
+MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | tr '.' '_')
+
 env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
+
+
+### paths to applications
+VERSION_TO_CHECK_AGAINST=10.14
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos versions until and including 10.14
+    PATH_TO_SYSTEM_APPS="/Applications"
+    PATH_TO_APPS="/Applications"
+else
+    # macos versions 10.15 and up
+    PATH_TO_SYSTEM_APPS="/System/Applications"
+    PATH_TO_APPS="/System/Volumes/Data/Applications"
+fi
 
 
 ### logged in user and unique user id
@@ -490,7 +508,7 @@ env_kill_subprocesses() {
     # env_kill_subprocesses_sequentially
     
     # kills complete process tree including parent shell
-    # do not use wihtout "trap - SIGTERM &&" due to trap recursion
+    # do not use without "trap - SIGTERM &&" due to trap recursion
     # kill 0
     # also do not use in subshell parantheses due to trap recursion
     # ( (kill 0 &> /dev/null) & )
@@ -528,9 +546,8 @@ env_kill_shell_if_command_file() {
         #printf '\n' && kill -9 $(ps -p $PPID -o ppid=)
     else
         #echo "session master $SCRIPT_NAME is NOT a command file..."
-        #((kill -13 $$) & ) >/dev/null 2>&1
-        #printf '\n' && kill -13 $$
         kill -13 $$
+        #:
     fi
 }
 
@@ -648,7 +665,7 @@ env_set_apps_security_permissions() {
         #echo "$PERMISSION_GRANTED"
         
         # setting permissions
-        if [[ "$INPUT_SERVICE" == "kTCCServiceAccessibility" ]]
+        if [[ "$INPUT_SERVICE" == "kTCCServiceAccessibility" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceScreenCapture" ]]
         then
             # delete entry before resetting
             sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='$APP_ID';"
@@ -1009,6 +1026,7 @@ env_start_sudo() {
 }
 
 env_stop_sudo() {
+    #echo "stopping sudo..."
     if [[ "$SUDO_PID" == "" ]]
     then
         :
@@ -1199,7 +1217,7 @@ trap_function_exit_end() {
     #env_kill_subprocesses & disown
     #eval_function env_kill_subprocesses
     env_kill_subprocesses
-    #eval_function env_kill_main_process
+    #eval "$(typeset -f env_kill_subprocesses)" && env_kill_subprocesses
     #printf '\n'
 }
 
