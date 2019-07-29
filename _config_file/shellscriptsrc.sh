@@ -546,8 +546,8 @@ env_kill_shell_if_command_file() {
         #printf '\n' && kill -9 $(ps -p $PPID -o ppid=)
     else
         #echo "session master $SCRIPT_NAME is NOT a command file..."
-        kill -13 $$
-        #:
+        #kill -13 $$
+        :
     fi
 }
 
