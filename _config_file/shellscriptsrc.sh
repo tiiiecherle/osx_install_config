@@ -1045,7 +1045,10 @@ env_stop_sudo() {
     then
         unset SUDOPASSWORD
         unset USE_PASSWORD
-        unset -f sudo
+        if typeset -f sudo > /dev/null
+    	then
+      		unset -f sudo
+    	fi
     else
         :
     fi
