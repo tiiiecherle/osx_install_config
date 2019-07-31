@@ -608,10 +608,15 @@ env_set_apps_security_permissions() {
        	#echo "APP_NAME is "$APP_NAME""
 
         # app id
-        if [[ -e "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt ]]
+        #if [[ -e "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt ]]
+        #then
+        #    local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+        #else
+        #    :
+        #fi
+        
+        if [[ "$APP_ID" == "" ]]
         then
-            local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-        else
             # app path
             local NUM1=0
             local FIND_APP_PATH_TIMEOUT=2
@@ -759,10 +764,15 @@ env_set_apps_automation_permissions() {
             #echo "SOURCE_APP_NAME is "$SOURCE_APP_NAME""
             
             # source app id
-            if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
+            #if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
+            #then
+            #    local SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+            #else
+            #    :
+            #fi
+            
+            if [[ "$AUTOMATED_APP_ID" == "" ]]
             then
-                local SOURCE_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-            else
                 # source app path
                 local NUM1=0
                 local FIND_APP_PATH_TIMEOUT=2
@@ -799,14 +809,36 @@ env_set_apps_automation_permissions() {
             if [[ "$SOURCE_APP_ID" == "" ]]; then echo "SOURCE_APP_ID of "$SOURCE_APP_NAME" is empty, skipping entry..." && continue; fi
             
             # source app csreq
-            if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
-            then
-                local SOURCE_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
-                #echo "$SOURCE_APP_CSREQ"
-            else
-                local SOURCE_APP_CSREQ='?'
-            fi
+            #if [[ -e "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt ]]
+            #then
+            #    local SOURCE_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$SOURCE_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+            #    #echo "$SOURCE_APP_CSREQ"
+            #else
+            #    local SOURCE_APP_CSREQ='?'
+            #fi
             
+            # get the requirement string from codesign
+            local SOURCE_APP_CSREQ_STRING=$(codesign -d -r- "$PATH_TO_SOURCE_APP"/ 2>&1 | awk -F ' => ' '/designated/{print $2}')
+            #if [[ "$SOURCE_APP_CSREQ_STRING" == "" ]]
+            #then
+            #    codesign --detached "$PATH_TO_SOURCE_APP".sig -s - "$PATH_TO_SOURCE_APP"
+            #    local SOURCE_APP_CSREQ_STRING=$(codesign -d -r- --detached "$PATH_TO_SOURCE_APP".sig "$PATH_TO_SOURCE_APP")
+            #else
+            #    :
+            #fi
+            if [[ "$SOURCE_APP_CSREQ_STRING" == "" ]]
+            then
+                #echo "csreq of "$AUTOMATED_APP_ID" not found..."
+                local SOURCE_APP_CSREQ='?'
+            else
+                # convert the requirements string into it's binary representation (sadly it seems csreq requires the output to be a file; so we just throw it in /tmp)
+                echo "$SOURCE_APP_CSREQ_STRING" | csreq -r- -b /tmp/csreq.bin
+                # convert the binary form to hex, and print it nicely for use in sqlite
+                local SOURCE_APP_CSREQ_HEX=$(xxd -p /tmp/csreq.bin  | tr -d '\n')
+                local SOURCE_APP_CSREQ=$(echo "X'$SOURCE_APP_CSREQ_HEX'")
+                #echo "SOURCE_APP_CSREQ is "$SOURCE_APP_CSREQ""
+                if [[ -e /tmp/csreq.bin ]]; then rm -f /tmp/csreq.bin; else :; fi
+            fi
             
             ### automated app
             # automated app name
@@ -814,10 +846,15 @@ env_set_apps_automation_permissions() {
             #echo "$AUTOMATED_APP_NAME"
             
             # automated app id
-            if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
+            #if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
+            #then
+            #    local AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+            #else
+            #    :
+            #fi
+            
+            if [[ "$AUTOMATED_APP_ID" == "" ]]
             then
-                local AUTOMATED_APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-            else
                 # automated app path
                 local NUM1=0
                 local FIND_APP_PATH_TIMEOUT=2
@@ -854,15 +891,30 @@ env_set_apps_automation_permissions() {
             if [[ "$AUTOMATED_APP_ID" == "" ]]; then echo "AUTOMATED_APP_ID of "$AUTOMATED_APP_NAME" is empty, skipping entry..." && continue; fi
             
             # automated app csreq
-            if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
-            then
-                local AUTOMATED_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+            #if [[ -e "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt ]]
+            #then
+            #    local AUTOMATED_APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$AUTOMATED_APP_NAME".txt | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
                 #echo "$SOURCE_APP_CSREQ"
-            else
-                local AUTOMATED_APP_CSREQ='?'
-            fi
+            #else
+            #    local AUTOMATED_APP_CSREQ='?'
+            #fi
             #echo "$AUTOMATED_APP_CSREQ"
             
+            # get the requirement string from codesign
+            local AUTOMATED_APP_CSREQ_STRING=$(codesign -d -r- "$PATH_TO_AUTOMATED_APP"/ 2>&1 | awk -F ' => ' '/designated/{print $2}')
+            if [[ "$AUTOMATED_APP_CSREQ_STRING" == "" ]]
+            then
+                #echo "csreq of "$AUTOMATED_APP_ID" not found..."
+                local AUTOMATED_APP_CSREQ='?'
+            else
+                # convert the requirements string into it's binary representation (sadly it seems csreq requires the output to be a file; so we just throw it in /tmp)
+                echo "$AUTOMATED_APP_CSREQ_STRING" | csreq -r- -b /tmp/csreq.bin
+                # convert the binary form to hex, and print it nicely for use in sqlite
+                local AUTOMATED_APP_CSREQ_HEX=$(xxd -p /tmp/csreq.bin  | tr -d '\n')
+                local AUTOMATED_APP_CSREQ=$(echo "X'$AUTOMATED_APP_CSREQ_HEX'")
+                #echo "AUTOMATED_APP_CSREQ is "$AUTOMATED_APP_CSREQ""
+                if [[ -e /tmp/csreq.bin ]]; then rm -f /tmp/csreq.bin; else :; fi
+            fi
             
             ### permissions allowed
             # 0 = no
@@ -900,11 +952,15 @@ env_set_apps_automation_permissions() {
             unset SOURCE_APP_NAME_PRINT
             unset PATH_TO_SOURCE_APP
             unset SOURCE_APP_ID
-            unset SOURCE_APP_CSREQ   
+            unset SOURCE_APP_CSREQ_STRING
+            unset SOURCE_APP_CSREQ_HEX
+            unset SOURCE_APP_CSREQ
             unset AUTOMATED_APP_NAME
             unset AUTOMATED_APP_NAME_PRINT
             unset PATH_TO_AUTOMATED_APP
             unset AUTOMATED_APP_ID
+            unset AUTOMATED_APP_CSREQ_STRING
+            unset AUTOMATED_APP_CSREQ_HEX
             unset AUTOMATED_APP_CSREQ
             unset PERMISSION_GRANTED
             unset NUM1
