@@ -674,6 +674,7 @@ env_set_apps_security_permissions() {
         then
             # delete entry before resetting
             sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where (service='$INPUT_SERVICE' and client='$APP_ID');" 2>&1 | grep -v '^$'
+            sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where (service='kTCCServicePostEvent' and client='$APP_ID');" 2>&1 | grep -v '^$'
             if [[ "$MACOS_VERSION_MAJOR" == "10.13" ]]
             then
                 # macos 10.13
