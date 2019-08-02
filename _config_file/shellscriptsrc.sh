@@ -329,6 +329,7 @@ env_config_file_self_update() {
                 if [[ "$UPDATE_CONFIG_FILE" =~ ^(yes|y)$ ]]
                 then
                     # updating
+                    echo ''
                     echo "installing config file from github..."
                     echo ''
                     curl https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/"$SHELL_SCRIPTS_CONFIG_FILE".sh -o "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
