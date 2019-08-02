@@ -320,8 +320,7 @@ env_config_file_self_update() {
             then
                 echo ''
                 VARIABLE_TO_CHECK="$UPDATE_CONFIG_FILE"
-                QUESTION_TO_ASK="script config file is outdated, update to the latest version (Y/n)? "
-                printf "%s" "${bold_text}${blue_text}"
+                QUESTION_TO_ASK="${bold_text}${blue_text}script config file is outdated, update to the latest version (Y/n)? "
                 env_ask_for_variable
                 printf "%s" "${default_text}"
                 UPDATE_CONFIG_FILE="$VARIABLE_TO_CHECK"
