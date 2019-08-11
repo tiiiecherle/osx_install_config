@@ -1,6 +1,19 @@
-#!/bin/bash
+#!/bin/zsh
 
-if [ $(id -u) -ne 0 ]
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### checking installation
+###
+
+if [[ $(id -u) -ne 0 ]]
 then 
     echo "script is not run as root, exiting..."
     exit
@@ -12,16 +25,11 @@ fi
 ### variables
 SERVICE_NAME=com.network.select
 SERVICE_INSTALL_PATH=/Library/LaunchDaemons
-SCRIPT_NAME=network_select
+SCRIPT_INSTALL_NAME=network_select
 SCRIPT_INSTALL_PATH=/Library/Scripts/custom
 
 LOGDIR=/var/log
-LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
-
-# UniqueID of loggedInUser
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-#UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
-UNIQUE_USER_ID=$(id -u "$loggedInUser")
+LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 # logfiles
 logfiles_to_open=(

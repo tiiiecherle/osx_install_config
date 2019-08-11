@@ -1,4 +1,4 @@
-by TERMINAL
+SIP Configuration
 
 Reboot your mac to recovery mode (reboot with command + R pressed).
 Open Utilities.
@@ -6,16 +6,7 @@ Open Terminal.
 csrutil status
 csrutil disable
 # for these scripts to work (and for using xtrafinder or totalfinder)
-csrutil enable --without fs --without debug
+csrutil enable --without debug --without fs
 Reboot
 
 To re-enable it, reboot to recovery and type `sudo csrutil enable`.
-
-
-by GUI
-
-Reboot your mac to recovery mode (reboot with command + R pressed).
-Open Utilities.
-Open security configuration.
-Disable enforce system integrity protection
-Reboot

@@ -1,6 +1,11 @@
-#!/bin/bash
+#!/bin/zsh
 
-if [ $(id -u) -ne 0 ]
+### config file
+# this script will not source the config file as it runs as root and does not ask for a password after installation
+
+
+### checking root
+if [[ $(id -u) -ne 0 ]]
 then 
     echo "script is not run as root, exiting..."
     exit
@@ -10,17 +15,12 @@ fi
 
 ### variables
 SERVICE_NAME=com.hostsfile.install_update
-SCRIPT_NAME=hosts_file_generator
+SCRIPT_INSTALL_NAME=hosts_file_generator
 
 echo ''
 
 
 ### waiting for logged in user
-#echo "LOGNAME is $(logname)..."
-#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-#stat -f%Su /dev/console
-#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-# recommended way
 loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 NUM=0
 MAX_NUM=15
@@ -29,7 +29,7 @@ SLEEP_TIME=3
 while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
 do
     sleep "$SLEEP_TIME"
-    NUM=$(($NUM+1))
+    NUM=$((NUM+1))
     loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 done
 #echo ''
@@ -37,7 +37,7 @@ done
 #echo "loggedInUser is $loggedInUser..."
 if [[ "$loggedInUser" == "" ]]
 then
-    WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
+    WAIT_TIME=$((MAX_NUM*SLEEP_TIME))
     echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
     exit
 else
@@ -48,7 +48,7 @@ fi
 ### logfile
 EXECTIME=$(date '+%Y-%m-%d %T')
 LOGDIR=/var/log
-LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 if [[ -f "$LOGFILE" ]]
 then
@@ -74,31 +74,77 @@ else
 fi
 
 sudo echo "" >> "$LOGFILE"
-sudo echo $EXECTIME >> "$LOGFILE"
+sudo echo "$EXECTIME" >> "$LOGFILE"
 
 
-### function
+### functions
+timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
+
+check_if_online() {
+    PINGTARGET1=google.com
+    PINGTARGET2=duckduckgo.com
+    # check 1
+    # ping -c 3 "$PINGTARGET1" >/dev/null 2>&1'
+    # check 2
+    # resolving dns (dig +short xxx 80 or resolveip -s xxx) even work when connection (e.g. dhcp) is established but security confirmation is required to go online, e.g. public wifis
+    # during testing dig +short xxx 80 seemed more reliable to work within timeout
+    # timeout 3 dig +short -4 "$PINGTARGET1" 80 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1'
+    #
+    echo ''
+    echo "checking internet connection..."
+    if [[ $(timeout 2 2>/dev/null dig +short -4 "$PINGTARGET1" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    then
+        ONLINE_STATUS="online"
+        echo "we are online..."
+    else
+        if [[ $(timeout 2 2>/dev/null dig +short -4 "$PINGTARGET2" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+        then
+            ONLINE_STATUS="online"
+            echo "we are online..."
+        else
+            ONLINE_STATUS="offline"
+            echo "not online..."
+        fi
+    fi
+}
+
+setting_config() {
+    ### sourcing .$SHELLrc or setting PATH
+    # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
+    # needed if binary is installed in a special directory
+    if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'PATH=.*/usr/local/bin:') != "" ]]
+    then
+        echo "sourcing .bashrc..."
+        . /Users/"$loggedInUser"/.bashrc
+    elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'PATH=.*/usr/local/bin:') != "" ]]
+    then
+        echo "sourcing .zshrc..."
+        ZSH_DISABLE_COMPFIX="true"
+        . /Users/"$loggedInUser"/.zshrc
+    else
+        echo "setting path for script..."
+        export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+    fi
+}
+# run before main function, e.g. for time format
+setting_config &> /dev/null
+
+
+### hosts update
 hosts_file_install_update() {
     
     ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
     
-    ### sourcing .bash_profile or setting PATH
-    # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
-    # needed if binary is installed in a special directory
-    if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
-    then
-        . /Users/$loggedInUser/.bash_profile
-    else
-        #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-        PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-    fi
     
-    
+    ### sourcing .$SHELLrc or setting PATH
+    #setting_config
+
+
     ### script
 	# checking modification date of /etc/hosts
     UPDATEEACHDAYS=4
-    if [ "$(find /etc/* -name 'hosts' -maxdepth 0 -type f -mtime +"$UPDATEEACHDAYS"d | grep -x '/etc/hosts')" == "" ]
+    if [[ "$(find /etc/* -name 'hosts' -maxdepth 0 -type f -mtime +"$UPDATEEACHDAYS"d | grep -x '/etc/hosts')" == "" ]]
     then
         echo "/etc/hosts was already updated in the last "$UPDATEEACHDAYS" days, no need to update..."
         echo "exiting script..."
@@ -108,32 +154,36 @@ hosts_file_install_update() {
     fi
     
     # giving the online check some time if run on laptop to switch to correct network profile on boot
-    ping -c5 google.com >/dev/null 2>&1
-    if [[ "$?" = 0 ]]
+    check_if_online
+    if [[ "$ONLINE_STATUS" == "online" ]]
     then
+        # online
         :
     else
-        echo "not online, waiting 120s for next try..."
+        # offline
+        #echo "not online, waiting 120s for next try..."
+        echo "waiting 120s for next try..."
         sleep 120
     fi
  
     # checking if online
-    ping -c5 google.com >/dev/null 2>&1
-    if [[ "$?" = 0 ]]
+    check_if_online
+    if [[ "$ONLINE_STATUS" == "online" ]]
     then
-        echo "we are online, updating hosts file..."
+        # online
+        #echo "we are online, updating hosts file..."
     
         # creating installation directory
-        mkdir -p /Applications/hosts_file_generator/
+        mkdir -p "/Applications/hosts_file_generator/"
     
         # downloading / updating hosts file creator from git repository
-        if [[ -d /Applications/hosts_file_generator/.git ]]
+        if [[ -d "/Applications/hosts_file_generator/.git" ]]
         then
             # updating
             echo "updating hosts file generator..."
-            if [[ -d /Applications/hosts_file_generator/ ]]
+            if [[ -d "/Applications/hosts_file_generator/" ]]
             then
-                cd /Applications/hosts_file_generator/
+                cd "/Applications/hosts_file_generator/"
                 sudo git fetch --all
                 sudo git reset --hard origin/master
                 sudo git pull origin master
@@ -144,11 +194,11 @@ hosts_file_install_update() {
         else
             # installing
             echo "downloading hosts file generator..."
-            if [[ -d /Applications/hosts_file_generator/ ]]
+            if [[ -d "/Applications/hosts_file_generator/" ]]
             then
-                sudo rm -rf /Applications/hosts_file_generator/
-                mkdir -p /Applications/hosts_file_generator/
-                git clone --depth 5 https://github.com/StevenBlack/hosts.git /Applications/hosts_file_generator/
+                sudo rm -rf "/Applications/hosts_file_generator/"
+                mkdir -p "/Applications/hosts_file_generator/"
+                git clone --depth 5 https://github.com/StevenBlack/hosts.git "/Applications/hosts_file_generator/"
             else
                 :
             fi
@@ -156,57 +206,38 @@ hosts_file_install_update() {
             
                    
         ### python version
-        if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
+        if sudo -H -u "$loggedInUser" command -v brew &> /dev/null
         then
-            echo ''
-            echo "homebrew is not installed..."
-            if [[ $(command -v pip) == "" ]]
-            then
-                echo "pip is not installed, installing..."
-                sudo python -m ensurepip
-                sudo easy_install pip
-            else
-                echo "pip is installed..."
-                #:
-            fi
-        else
+    	    # installed
             echo ''
             echo "homebrew is installed..."
             # do not autoupdate homebrew
             export HOMEBREW_NO_AUTO_UPDATE=1
             # checking installed python versions
-            if [[ $(sudo -u $loggedInUser brew list | grep "^python@2$") == '' ]]
+            if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python@2$") == '' ]]
             then
                 echo "python2 is not installed via homebrew..."
                 PYTHON2_INSTALLED="no"
             else
                 echo "python2 is installed via homebrew..."
                 PYTHON2_INSTALLED="yes"
-                #sudo -u $loggedInUser brew uninstall --ignore-dependencies python@2
+                #sudo -H -u "$loggedInUser" brew uninstall --ignore-dependencies python@2
             fi
-            if [[ $(sudo -u $loggedInUser brew list | grep "^python$") == '' ]]
+            if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python$") == '' ]]
             then
                 # the project drops python2 support, so make sure python3 is installed
-                echo "python3 is not installed via homebrew, installing..."
+                echo "python3 is not installed via homebrew..."
                 PYTHON3_INSTALLED="no"
-                sudo -u $loggedInUser brew install python
+                #sudo -H -u "$loggedInUser" brew install python
             else
                 echo "python3 is installed via homebrew..."
                 PYTHON3_INSTALLED="yes"
-                #sudo -u $loggedInUser brew uninstall --ignore-dependencies python@3
+                #sudo -H -u "$loggedInUser" brew uninstall --ignore-dependencies python@3
             fi
-            # making sure pip3 is installed
-            if [[ $PYTHON_VERSION == "python3" ]]
-            then
-                if [[ $(command -v pip3) == "" ]]
-                then
-                    sudo -u $loggedInUser brew reinstall python
-                else
-                    :
-                fi
-            else
-                :
-            fi
+        else
+            # not installed
+            echo ''
+            echo "homebrew is not installed..."
         fi
         
         # listing installed python versions
@@ -230,14 +261,39 @@ hosts_file_install_update() {
         fi
         
         # the project is python3 only (from 2018-09), so make sure python3 is used
-        if [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) != "3" ]] && [[ $(compgen -c python | grep "^python3$") == "" ]]
+        echo ''
+        if sudo -H -u "$loggedInUser" command -v python3 &> /dev/null && sudo -H -u "$loggedInUser" command -v pip3 &> /dev/null
         then
-            echo "python3 is not installed, exiting..."
-            echo ''
-            exit
-        else
+            # installed
+            echo "python3 is installed..."
             PYTHON_VERSION='python3'
             PIP_VERSION='pip3'
+        else
+            # not installed
+            echo "python3 is not installed, trying apple python..."
+            
+            # checking if pip is installed
+            if sudo -H -u "$loggedInUser" command -v pip &> /dev/null
+            then
+                # installed
+                echo "pip is installed..."
+            else
+                # not installed
+                echo "pip is not installed, installing..."
+                sudo -H python -m ensurepip
+                sudo -H easy_install pip
+            fi
+            
+            # checking version of default apple python
+            if sudo -H -u "$loggedInUser" command -v python &> /dev/null && sudo -H -u "$loggedInUser" command -v pip &> /dev/null && [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) == "3" ]] && [[ $(pip --version 2>&1 | grep "python 3") != "" ]]
+            then
+                PYTHON_VERSION='python'
+                PIP_VERSION='pip'
+            else
+                echo "python3 or pip3 are not installed, exiting..."
+                echo ''
+                exit
+            fi
         fi
         
         echo ''
@@ -246,49 +302,48 @@ hosts_file_install_update() {
 
 
         ### updating
-        # updating pip itself
-        if [[ $(command -v pip) != "" ]]
-        then
-            sudo pip install --upgrade pip
-        else
-            :
-        fi
-        if [[ $PIP_VERSION != 'pip' ]]
-        then
-            sudo -u $loggedInUser ${PIP_VERSION} install --upgrade pip
-        else
-            :
-        fi
+        echo "updating pip and script dependencies..."
         
-        # updating all pip modules
-        if [[ $PYTHON_VERSION == 'python' ]]
+        # version of dependencies
+        change_dependencies_versions() {
+            if [[ $(cat /Applications/hosts_file_generator/requirements.txt | grep "beautifulsoup4==4.6.1") != "" ]]
+            then
+                sed -i '' "s|beautifulsoup4.*|beautifulsoup4>=4.6.1|" /Applications/hosts_file_generator/requirements.txt
+            else
+                :
+            fi
+        }
+        change_dependencies_versions
+        
+        # updating
+        if [[ "$PYTHON_VERSION" == 'python' ]] && [[ "$PIP_VERSION" == 'pip' ]]
         then
+            # updating pip itself
+            sudo -H pip install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+            
+            # updating all pip modules
             # do not update internal apple site-packages to ensure compatibility
             :
-        else
-            ${PIP_VERSION} freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -u $loggedInUser ${PIP_VERSION} install -U
-        fi
-        
-        # installing dependencies
-        if [[ $PYTHON_VERSION == 'python3' ]]
-        then
-            #if [[ $(cat /Applications/hosts_file_generator/requirements.txt | grep "lxml==4.1.1") != "" ]]
-            #then
-            #    sed -i '' "s|lxml.*|lxml>=4.2.4|" /Applications/hosts_file_generator/requirements.txt
-            #else
-            #    :
-            #fi
-            sudo -u $loggedInUser ${PIP_VERSION} install -r /Applications/hosts_file_generator/requirements.txt
-        else
+            
+            # installing dependencies
             #sudo pip install -r /Applications/hosts_file_generator/requirements.txt
-            sudo pip install --user -r /Applications/hosts_file_generator/requirements.txt
+            sudo -H pip install --user -r /Applications/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+        else
+            # updating pip itself
+            sudo -H -u "$loggedInUser" "${PIP_VERSION}" install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+            
+            # updating all pip modules
+            "${PIP_VERSION}" freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -U 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+            
+            # installing dependencies
+            sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -r /Applications/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
         fi
         
         # backing up original hosts file
-        if [ ! -f /etc/hosts.orig ];
+        if [ ! -f "/etc/hosts.orig" ];
         then
             echo "backing up original hosts file..."
-            sudo cp -a /etc/hosts /etc/hosts.orig
+            sudo cp -a "/etc/hosts" "/etc/hosts.orig"
         else
             :
         fi
@@ -296,14 +351,14 @@ hosts_file_install_update() {
         # updating / creating hostsfile
         echo ''
         echo "updating hosts file..."
-        cd /Applications/hosts_file_generator/
+        cd "/Applications/hosts_file_generator/"
 
         # as the script is run as root from a launchd some env variables are not set, e.g. all locales
         # setting LC_ALL for root solves
         # UnicodeDecodeError: 'ascii' codec can't decode byte 0xe2 in position 13: ordinal not in range(128)
-        LANG_SCRIPT=de_DE.UTF-8
+        LANG_SCRIPT="de_DE.UTF-8"
         
-        sudo LC_ALL=$LANG_SCRIPT ${PYTHON_VERSION} updateHostsFile.py -a -r -o alternates/gambling-porn -e gambling porn
+        sudo LC_ALL=$LANG_SCRIPT "${PYTHON_VERSION}" updateHostsFile.py -a -r -o alternates/gambling-porn -e gambling porn
         if [[ $? -eq 0 ]]
         then
             echo ''
@@ -368,10 +423,11 @@ hosts_file_install_update() {
         echo ''
         
     else
+        # offline
         echo "we are not not online, skipping update of hosts file, exiting script..."
     fi
 	
 }
 
-(time hosts_file_install_update) 2>&1 | tee -a "$LOGFILE"
+(time ( hosts_file_install_update )) 2>&1 | tee -a "$LOGFILE"
 echo '' >> "$LOGFILE"

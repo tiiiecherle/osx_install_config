@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/zsh
 
-#FILESTARGZSAVEDIR=~/Desktop/"test test"
-#FILESAPPLESCRIPTDIR=~/Desktop/07_backup_and_restore_script
+#FILESTARGZSAVEDIR=/Users/"$USER"/Desktop/backup_test
+#FILESAPPLESCRIPTDIR=/Users/$USER/Desktop/backup_macos/defaults_write/_scripts_final/07_backup_and_restore_script
 #SELECTEDUSER="tom"
 
     # compressing backup files
@@ -14,9 +14,9 @@
 
 	# compressing backup files in new terminal tab
 	# EOF part is not allowed to be indented       
-	function compress_and_move_files() {
-osascript 2>/dev/null <<EOF
-#osascript <<EOF
+	compress_and_move_files() {
+#osascript 2>/dev/null <<EOF
+osascript <<EOF
 tell application "Terminal"
 	if it is running then
 		#if not (exists window 1) then
@@ -42,7 +42,7 @@ tell application "Terminal"
 	end if
 	#delay 2
 	#
-	do script "export SELECTEDUSER=\"$SELECTEDUSER\"; export FILESTARGZSAVEDIR=\"$FILESTARGZSAVEDIR\"; export FILESAPPLESCRIPTDIR=\"$FILESAPPLESCRIPTDIR\"; time bash \"$FILESAPPLESCRIPTDIR/files/backup_files.sh\" && echo ''" in runWindow
+	do script "export SELECTEDUSER=\"$SELECTEDUSER\"; export FILESTARGZSAVEDIR=\"$FILESTARGZSAVEDIR\"; export FILESAPPLESCRIPTDIR=\"$FILESAPPLESCRIPTDIR\"; time \"$FILESAPPLESCRIPTDIR/files/backup_files.sh\"; echo ''" in runWindow
 	#
 	delay 10
 	set frontmost of Window1 to true

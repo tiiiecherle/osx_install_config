@@ -1,27 +1,40 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### checking installation
+###
 
 ### variables
 SERVICE_NAME=com.screen_resolution.set
 SERVICE_INSTALL_PATH=/Users/$USER/Library/LaunchAgents
-SCRIPT_NAME=screen_resolution
+SCRIPT_INSTALL_NAME=screen_resolution
 SCRIPT_INSTALL_PATH=/Users/$USER/Library/Scripts
 
 LOGDIR=/Users/"$USER"/Library/Logs
-LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
-
-# UniqueID of loggedInUser
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-#UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
-UNIQUE_USER_ID=$(id -u "$loggedInUser")
+LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 # logfiles
 logfiles_to_open=(
 "$LOGFILE"
 )
 
+# launchd services
+launchd_services=(
+"$SERVICE_NAME"
+)
+
 
 ### checking status of services
-for i in "$SERVICE_NAME"
+for i in "${launchd_services[@]}"
 do
     #echo ''
     echo "checking "$i"..."

@@ -1,200 +1,59 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
 
 ###
 ### asking password upfront
 ###
 
-# function for reading secret string (POSIX compliant)
-enter_password_secret()
-{
-    # read -s is not POSIX compliant
-    #read -s -p "Password: " SUDOPASSWORD
-    #echo ''
-    
-    # this is POSIX compliant
-    # disabling echo, this will prevent showing output
-    stty -echo
-    # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-    trap 'stty echo' EXIT
-    # asking for password
-    printf "Password: "
-    # reading secret
-    read -r "$@" SUDOPASSWORD
-    # reanabling echo
-    stty echo
-    trap - EXIT
-    # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-    printf "\n"
-    # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-    # has to be part of the function or it wouldn`t be updated during the maximum three tries
-    #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-}
-
-# unset the password if the variable was already set
-unset SUDOPASSWORD
-
-# making sure no variables are exported
-set +a
-
-# asking for the SUDOPASSWORD upfront
-# typing and reading SUDOPASSWORD from command line without displaying it and
-# checking if entered password is the sudo password with a set maximum of tries
-NUMBER_OF_TRIES=0
-MAX_TRIES=3
-while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-do
-    NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-    #echo "$NUMBER_OF_TRIES"
-    if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    then
-        enter_password_secret
-        ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-        if [ $? -eq 0 ]
-        then 
-            break
-        else
-            echo "Sorry, try again."
-        fi
-    else
-        echo ""$MAX_TRIES" incorrect password attempts"
-        exit
-    fi
-done
-
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
-# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-}
+env_enter_sudo_password
 
 
 
 ###
-### variables
+### security permissions
 ###
 
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+echo ''    
+env_databases_apps_security_permissions
+env_identify_terminal
 
 
+echo "setting security and automation permissions..."
+### automation
+# macos versions 10.14 and up
+AUTOMATION_APPS=(
+# source app name							automated app name										    allowed (1=yes, 0=no)
+"$SOURCE_APP_NAME                           System Preferences                                               1"
+)
+PRINT_AUTOMATING_PERMISSIONS_ENTRYS="yes" env_set_apps_automation_permissions
+#echo ''
 
-###
-### functions
-###
-
-function databases_apps_security_permissions() {
-    DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
-    #echo "$DATABASE_SYSTEM"
-	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
-    #echo "$DATABASE_USER"
-}
-    
-function identify_terminal() {
-    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
-    then
-    	export SOURCE_APP=com.apple.Terminal
-    	export SOURCE_APP_NAME="Terminal"
-    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
-    then
-        export SOURCE_APP=com.googlecode.iterm2
-        export SOURCE_APP_NAME="iTerm"
-	else
-		export SOURCE_APP=com.apple.Terminal
-		echo "terminal not identified, setting automating permissions to apple terminal..."
-	fi
-}
-
-function give_apps_security_permissions() {
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-    then
-        # macos versions until and including 10.13 
-		:
-    else
-        # macos versions 10.14 and up
-        # working, but does not show in gui of system preferences, use csreq for the entry to show
-	    sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','"$SOURCE_APP"',0,1,1,?,NULL,0,'"$AUTOMATED_APP"',?,NULL,?);"
-    fi
-    sleep 1
-}
-
-function remove_apps_security_permissions_start() {
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-    then
-        # macos versions until and including 10.13 
-		:
-    else
-        # macos versions 10.14 and up
-        AUTOMATED_APP=com.apple.systempreferences
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
-    fi
-    sleep 1
-}
-
-function remove_apps_security_permissions_stop() {
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-    then
-        # macos versions until and including 10.13 
-		:
-    else
-        # macos versions 10.14 and up
-        AUTOMATED_APP=com.apple.systempreferences
-        # macos versions 10.14 and up
-        if [[ $SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1 == "yes" ]]
-        then
-            # source app was already allowed to control app before running this script, so don`t delete the permission
-            :
-        else
-            sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"');"
-        fi
-    fi
-}
-
-
-###
-
-
-databases_apps_security_permissions
-identify_terminal
-
-if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-then
-    # macos versions until and including 10.13 
-	:
-else
-    echo ''
-    echo "setting security permissions..."
-    AUTOMATED_APP=com.apple.systempreferences
-    if [[ $(sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='"$SOURCE_APP"' and indirect_object_identifier='"$AUTOMATED_APP"' and allowed='1');") != "" ]]
-	then
-	    SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1="yes"
-	    #echo "$SOURCE_APP is already allowed to control $AUTOMATED_APP..."
-	else
-		SOURCE_APP_IS_ALLOWED_TO_CONTROL_APP1="no"
-		#echo "$SOURCE_APP is not allowed to control $AUTOMATED_APP..."
-		give_apps_security_permissions
-	fi
-    echo ''
-fi
-
-# trap
-trap 'printf "\n"; remove_apps_security_permissions_stop' SIGHUP SIGINT SIGTERM EXIT
 
 
 ###
 ### preferences spotlight
 ###
 
+echo ''
 echo "preferences spotlight"
 
-function open_system_prefs_spotlight() {
+env_start_sudo
+
+trap_function_exit_middle() { env_stop_sudo; unset SUDOPASSWORD; unset USE_PASSWORD; }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
+
+open_system_prefs_spotlight() {
     
-if [ -e ~/Library/Preferences/com.apple.Spotlight.plist ]
+if [[ -e ~/Library/Preferences/com.apple.Spotlight.plist ]]
 then
 	rm ~/Library/Preferences/com.apple.Spotlight.plist
 else
@@ -316,40 +175,50 @@ echo ''
 # to turn indexing back on delete ".metadata_never_index" on the volume run mdutil -i followed by mdutil -E for that volume
 #sudo touch /Volumes/VOLUMENAME/.metadata_never_index
 
+CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
+
 # stop indexing before rebuilding the index
 killall mds > /dev/null 2>&1
 
-# turning indexing off for all volumes
+# turning indexing off
 #sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
-sudo mdutil -i off /Volumes/*
+# all volumes
+#sudo mdutil -i off /Volumes/*
+# currently booted volume
+sudo mdutil -i off /Volumes/"$CURRENTLY_BOOTED_VOLUME"
 
 # listing spotlight folder content
 #sudo ls -a -l /.Spotlight-V100
 
 # deleting spotlight indexes folder
-sudo rm -rf /.Spotlight-V100/Store*
+sudo find /.Spotlight-V100 -name "Store*" -print0 | xargs -0 sudo rm -rf
 #sudo rm -rf /private/var/db/Spotlight-V100/Volumes/*
 
 # turning indexing on for all volumes
 #sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 #sudo mdutil -i on /Volumes/*
 
-# deleting and reindexing all turned on (mdutil -i) volumes
-sudo mdutil -E /Volumes/*
-
-# only turn on indexing of the currently booted volume
-#CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
-#sudo mdutil -i on /Volumes/"$CURRENTLY_BOOTED_VOLUME"
+# turn on indexing
+# all volumes
+#sudo mdutil -i on /Volumes/*
+# currently booted volume
+sudo mdutil -i on /Volumes/"$CURRENTLY_BOOTED_VOLUME"
 
 #turning on indexing for all volumes named macintosh*
-MACINTOSH_VOLUMES=$(ls -1 /Volumes | grep macintosh*)
-#echo "$MACINTOSH_VOLUMES"
-for i in $(echo "$MACINTOSH_VOLUMES" | cat )
-do
-	sudo mdutil -i on /Volumes/"$i"
-done
+#MACINTOSH_VOLUMES=$(ls -1 /Volumes | grep macintosh)
+#while IFS= read -r line || [[ -n "$line" ]]
+#do
+#    if [[ "$line" == "" ]]; then continue; fi
+#    i="$line"
+#    echo $i
+#    sudo mdutil -i on /Volumes/"$i"
+#done <<< "$(printf "%s\n" "${MACINTOSH_VOLUMES[@]}")"
 
-echo "done ;)"
+# deleting and reindexing volumes
+# all turned on volumes (mdutil -i)
+#sudo mdutil -E /Volumes/*
+# currently booted volume
+sudo mdutil -E /Volumes/"$CURRENTLY_BOOTED_VOLUME"
 
 # disable spotlight indexing for any volume that gets mounted and has not yet been indexed before.
 #sudo mdutil -i off "/Volumes/VOLUMENAME"
@@ -373,24 +242,44 @@ defaults write com.apple.lookup.shared LookupSuggestionsDisabled -bool true
 
 
 ### removing security permissions
-remove_apps_security_permissions_stop
+#remove_apps_security_permissions_stop
 
 
 ###
 ### killing affected applications
 ###
 
+echo ''
 echo "restarting affected apps"
 
-for app in "cfprefsd" "System Preferences"; do
-killall "${app}" > /dev/null 2>&1
-done
+apps_to_kill=(
+"cfprefsd"
+"System Preferences"
+#"Activity Monitor"
+#"Address Book"
+#"Calendar"
+#"Contacts"
+#"cfprefsd"
+#"Dock"
+#"Finder"
+#"Mail"
+#"Messages"
+#"System Preferences"
+#"Safari"
+#"SystemUIServer"
+#"TextEdit"
+)
 
-#for app in "Activity Monitor" "Address Book" "Calendar" "Contacts" "cfprefsd" "Dock" "Finder" "Mail" "Messages" "System Preferences" "Safari" "SystemUIServer" "TextEdit"; do
-#	killall "${app}" > /dev/null 2>&1
-#done
+while IFS= read -r line || [[ -n "$line" ]]
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    app="$line"
+    killall "$app" > /dev/null 2>&1
+done <<< "$(printf "%s\n" "${apps_to_kill[@]}")"
 
+echo ''
 echo "done ;)"
+echo ''
 #echo "a few changes need a reboot or logout to take effect"
 #echo "initializing reboot"
 
@@ -398,9 +287,4 @@ echo "done ;)"
 #osascript -e 'tell app "loginwindow" to «event aevtrsdn»'       # shutdown
 #osascript -e 'tell app "loginwindow" to «event aevtrlgo»'       # logout
 
-###
-### unsetting password
-###
-
-unset SUDOPASSWORD
 

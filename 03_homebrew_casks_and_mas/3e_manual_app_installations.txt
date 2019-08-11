@@ -1,4 +1,16 @@
 manual app installations
 
+if virtualbox does not install via brew cask on clean install
+boot to recovery (cmd + R)
+csrutil disable
+reboot
+# reinstall macosfuse after virtualbox installation as virtualbox often ships with an outdated version
+brew cask install --force virtualbox virtualbox-extension-pack osxfuse
+
+boot to recovery (cmd + R)
+adjust csrutil settings
+
+###
+
 brew cask install --force oversight
 # during "hanging" install open preferences from menu bar and activate headless mode until installer finishes

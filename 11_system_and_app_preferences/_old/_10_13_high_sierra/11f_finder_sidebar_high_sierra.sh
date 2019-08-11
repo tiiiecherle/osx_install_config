@@ -1,4 +1,13 @@
-#!/usr/bin/env bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
 
 # sfltool
 # sfltool restore|add-item|save-lists|test|archive|enable-modern|dump-server-state|clear|disable-modern|dump-storage|list-info [options]
@@ -99,10 +108,9 @@ else
 fi
 
 # run applescript to set sidebar preferences
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
 #open /"$SCRIPT_DIR"/11f_script_finder_sidebar/11f_finder_sidebar.app
 
-function enable_disable_finder_sidebar_items() {
+enable_disable_finder_sidebar_items() {
 #osascript 2>/dev/null <<EOF
 osascript <<EOF
 

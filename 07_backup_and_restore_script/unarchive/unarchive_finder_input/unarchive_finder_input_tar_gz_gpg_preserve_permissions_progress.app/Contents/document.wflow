@@ -1,124 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>AMApplicationBuild</key>
-	<string>444.42</string>
-	<key>AMApplicationVersion</key>
-	<string>2.9</string>
-	<key>AMDocumentVersion</key>
-	<string>2</string>
-	<key>actions</key>
-	<array>
-		<dict>
-			<key>action</key>
-			<dict>
-				<key>AMAccepts</key>
-				<dict>
-					<key>Container</key>
-					<string>List</string>
-					<key>Optional</key>
-					<true/>
-					<key>Types</key>
-					<array>
-						<string>com.apple.applescript.object</string>
-					</array>
-				</dict>
-				<key>AMActionVersion</key>
-				<string>1.0.2</string>
-				<key>AMApplication</key>
-				<array>
-					<string>Automator</string>
-				</array>
-				<key>AMParameterProperties</key>
-				<dict>
-					<key>source</key>
-					<dict/>
-				</dict>
-				<key>AMProvides</key>
-				<dict>
-					<key>Container</key>
-					<string>List</string>
-					<key>Types</key>
-					<array>
-						<string>com.apple.applescript.object</string>
-					</array>
-				</dict>
-				<key>ActionBundlePath</key>
-				<string>/System/Library/Automator/Run AppleScript.action</string>
-				<key>ActionName</key>
-				<string>AppleScript ausführen</string>
-				<key>ActionParameters</key>
-				<dict>
-					<key>source</key>
-					<string>on run {input, parameters}		repeat with inputFile in input				tell application "System Events" to set posixinputFile to POSIX path of inputFile		set ipp to quoted form of posixinputFile				set fileExtensions to (do shell script "echo \"$(basename " &amp; ipp &amp; " | rev | cut -d'.' -f-3 | rev )\"")		if (fileExtensions is "tar.gz.gpg") then			#display dialog fileExtensions			# tar.gz.gpg		else			display dialog "Wrong filetype, please select the first file of the archive ending with .tar.gz.gpg"			return false		end if				set newFolderName to (do shell script "echo \"$(basename " &amp; ipp &amp; " | rev | cut -d'.' -f4- | rev )\"")		#display dialog newFolderName		# filename				set filenameWithSuffix to (do shell script "echo \"$(basename " &amp; ipp &amp; " | rev | cut -d'.' -f1- | rev )\"")		# filename.tar.gz.gpg		#display dialog filenameWithSuffix				tell application "System Events" to set outputFolder to path of (the container of inputFile)		set opp to quoted form of POSIX path of outputFolder		set testFolderExists to (outputFolder as text) &amp; newFolderName &amp; ":"		set posixTestFolderExists to POSIX path of testFolderExists		#display dialog testFolderExists				tell application "Finder"			if exists folder testFolderExists then				set question to display dialog "" &amp; posixTestFolderExists &amp; "already exists, overwrite it?" buttons {"Yes", "No"} default button 2				set answer to button returned of question				if (answer is "Yes") then					#display dialog "answer is yes"					do shell script "cd \"$(dirname " &amp; opp &amp; ")\"/\"$(basename " &amp; opp &amp; ")\"/ &amp;&amp; rm -rf \"$(echo " &amp; newFolderName &amp; ")\""					#return true				else					return false				end if			else				#return false			end if		end tell				if application "Terminal" is running then			tell application "Terminal"				activate				delay 1				if (count windows) is 0 then					reopen					activate					#tell application "System Events" to keystroke "n" using command down					delay 0.1				else					tell application "System Events" to keystroke "n" using {option down, command down}					delay 0.1				end if				delay 0.5			end tell		else			tell application "Terminal"				activate				delay 0.5			end tell		end if				tell application "Terminal"			activate			delay 2			#repeat while contents of selected tab of window 1 starts with linefeed			#	delay 1.5			#end repeat			# using password upfront			#set currentTab to do script "printf '\\ec' &amp;&amp; echo '' &amp;&amp; echo -e '\\033[1mstarting decryption and unarchiving...\\033[0m'; if sudo -n true 2&gt;/dev/null; then :; else echo ''; echo 'please enter sudo password to preserve permissions while extracting...' &amp;&amp; sudo -v; fi; echo ''; echo 'please enter decryption password...' &amp;&amp; stty -echo &amp;&amp; trap 'stty echo' EXIT &amp;&amp; printf 'gpg decryption password: ' &amp;&amp; read -r $@ GPG_PASSWORD &amp;&amp; echo '' &amp;&amp; stty echo &amp;&amp; trap - EXIT &amp;&amp; echo '' &amp;&amp; echo unarchiving \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\"; printf '%-12s' 'to' \"$(dirname " &amp; opp &amp; ")\"/\"$(basename " &amp; opp &amp; ")\"/\"$(echo " &amp; newFolderName &amp; ")\" &amp;&amp; echo; echo ''; cat \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\" | $($SHELL -l -c 'which pv') -s $($($SHELL -l -c 'which gdu') -scb \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo \"$i*1\" | bc | cut -d'.' -f1 ) ; done ) | $($SHELL -l -c 'which gpg') --quiet --batch --no-tty --yes --passphrase=$GPG_PASSWORD -d - | $($SHELL -l -c 'which unpigz') -dc - | sudo $($SHELL -l -c 'which gtar') --same-owner -C \"$(dirname " &amp; opp &amp; ")\"/\"$(basename " &amp; opp &amp; ")\"/ -xpf -; if [ $? = 0 ]; then echo '' &amp;&amp; echo -e 'unarchiving \\033[1;32mSUCCESSFUL\\033[0m' &amp;&amp; echo ''; else echo '' &amp;&amp; echo -e 'an \\033[1;31mERROR\\033[0m occured, please unarchive again...' &amp;&amp; echo ''; fi" in window 1			# using onboard password command line			set currentTab to do script "printf '\\ec' &amp;&amp; echo '' &amp;&amp; echo -e '\\033[1mstarting decryption and unarchiving...\\033[0m'; if sudo -n true 2&gt;/dev/null; then :; else echo ''; echo 'please enter sudo password to preserve permissions while extracting...' &amp;&amp; sudo -v; fi; echo '' &amp;&amp; echo unarchiving \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\"; printf '%-12s' 'to' \"$(dirname " &amp; opp &amp; ")\"/\"$(basename " &amp; opp &amp; ")\"/\"$(echo " &amp; newFolderName &amp; ")\" &amp;&amp; echo; echo ''; export GPG_TTY=$(tty); export PINENTRY_USER_DATA='USE_CURSES=1'; cat \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\" | $($SHELL -l -c 'which pv') -s $($($SHELL -l -c 'which gdu') -scb \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo \"$i*1\" | bc | cut -d'.' -f1 ) ; done ) | $($SHELL -l -c 'which gpg') --quiet -d - | $($SHELL -l -c 'which unpigz') -dc - | sudo $($SHELL -l -c 'which gtar') --same-owner -C \"$(dirname " &amp; opp &amp; ")\"/\"$(basename " &amp; opp &amp; ")\"/ -xpf -; if [ $? = 0 ]; then echo '' &amp;&amp; echo -e 'unarchiving \\033[1;32mSUCCESSFUL\\033[0m' &amp;&amp; echo ''; else echo '' &amp;&amp; echo -e 'an \\033[1;31mERROR\\033[0m occured, please unarchive again...' &amp;&amp; echo ''; fi" in window 1			# using gui password			#set currentTab to do script "printf '\\ec' &amp;&amp; echo '' &amp;&amp; echo -e '\\033[1mstarting decryption and unarchiving...\\033[0m'; if sudo -n true 2&gt;/dev/null; then :; else echo ''; echo 'please enter sudo password to preserve permissions while extracting...' &amp;&amp; sudo -v; fi; echo '' &amp;&amp; echo unarchiving \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\"; printf '%-12s' 'to' \"$(dirname " &amp; opp &amp; ")\"/\"$(basename " &amp; opp &amp; ")\"/\"$(echo " &amp; newFolderName &amp; ")\" &amp;&amp; echo; echo ''; cat \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\" | $($SHELL -l -c 'which pv') -s $($($SHELL -l -c 'which gdu') -scb \"$(dirname " &amp; ipp &amp; ")\"/\"$(echo " &amp; filenameWithSuffix &amp; ")\" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo \"$i*1\" | bc | cut -d'.' -f1 ) ; done ) | $($SHELL -l -c 'which gpg') --quiet -d - | $($SHELL -l -c 'which unpigz') -dc - | sudo $($SHELL -l -c 'which gtar') --same-owner -C \"$(dirname " &amp; opp &amp; ")\"/\"$(basename " &amp; opp &amp; ")\"/ -xpf -; if [ $? = 0 ]; then echo '' &amp;&amp; echo -e 'unarchiving \\033[1;32mSUCCESSFUL\\033[0m' &amp;&amp; echo ''; else echo '' &amp;&amp; echo -e 'an \\033[1;31mERROR\\033[0m occured, please unarchive again...' &amp;&amp; echo ''; fi" in window 1		end tell	end repeat		return inputend run</string>
-				</dict>
-				<key>BundleIdentifier</key>
-				<string>com.apple.Automator.RunScript</string>
-				<key>CFBundleVersion</key>
-				<string>1.0.2</string>
-				<key>CanShowSelectedItemsWhenRun</key>
-				<false/>
-				<key>CanShowWhenRun</key>
-				<true/>
-				<key>Category</key>
-				<array>
-					<string>AMCategoryUtilities</string>
-				</array>
-				<key>Class Name</key>
-				<string>RunScriptAction</string>
-				<key>InputUUID</key>
-				<string>9DA80D72-2486-4135-8DBF-EE8BA744B256</string>
-				<key>Keywords</key>
-				<array>
-					<string>Ausführen</string>
-				</array>
-				<key>OutputUUID</key>
-				<string>4860947D-5F99-4124-9F65-F496760FF41E</string>
-				<key>UUID</key>
-				<string>E51C1AE3-2F27-4C5A-8D68-F27236D4D6F0</string>
-				<key>UnlocalizedApplications</key>
-				<array>
-					<string>Automator</string>
-				</array>
-				<key>arguments</key>
-				<dict>
-					<key>0</key>
-					<dict>
-						<key>default value</key>
-						<string>on run {input, parameters}
-	
-	(* Your script goes here *)
-	
-	return input
-end run</string>
-						<key>name</key>
-						<string>source</string>
-						<key>required</key>
-						<string>0</string>
-						<key>type</key>
-						<string>0</string>
-						<key>uuid</key>
-						<string>0</string>
-					</dict>
-				</dict>
-				<key>isViewVisible</key>
-				<true/>
-				<key>location</key>
-				<string>452.250000:788.000000</string>
-				<key>nibPath</key>
-				<string>/System/Library/Automator/Run AppleScript.action/Contents/Resources/Base.lproj/main.nib</string>
-			</dict>
-			<key>isViewVisible</key>
-			<true/>
-		</dict>
-	</array>
-	<key>connectors</key>
-	<dict/>
-	<key>workflowMetaData</key>
-	<dict>
-		<key>workflowTypeIdentifier</key>
-		<string>com.apple.Automator.application</string>
-	</dict>
-</dict>
-</plist>

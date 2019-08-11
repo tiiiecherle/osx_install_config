@@ -1,4 +1,25 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### asking password upfront
+###
+
+env_enter_sudo_password
+
+
+
+###
+### configuring network
+###
 
 # manpage
 # https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man8/networksetup.8.html
@@ -16,87 +37,6 @@
 # networksetup -listallhardwareports
 # networksetup -listallnetworkservices
 # networksetup -listlocations
-
-
-
-###
-### asking password upfront
-###
-
-# function for reading secret string (POSIX compliant)
-enter_password_secret()
-{
-    # read -s is not POSIX compliant
-    #read -s -p "Password: " SUDOPASSWORD
-    #echo ''
-    
-    # this is POSIX compliant
-    # disabling echo, this will prevent showing output
-    stty -echo
-    # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-    trap 'stty echo' EXIT
-    # asking for password
-    printf "Password: "
-    # reading secret
-    read -r "$@" SUDOPASSWORD
-    # reanabling echo
-    stty echo
-    trap - EXIT
-    # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-    printf "\n"
-    # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-    # has to be part of the function or it wouldn`t be updated during the maximum three tries
-    #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-}
-
-# unset the password if the variable was already set
-unset SUDOPASSWORD
-
-# making sure no variables are exported
-set +a
-
-# asking for the SUDOPASSWORD upfront
-# typing and reading SUDOPASSWORD from command line without displaying it and
-# checking if entered password is the sudo password with a set maximum of tries
-NUMBER_OF_TRIES=0
-MAX_TRIES=3
-while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-do
-    NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-    #echo "$NUMBER_OF_TRIES"
-    if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    then
-        enter_password_secret
-        ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-        if [ $? -eq 0 ]
-        then 
-            break
-        else
-            echo "Sorry, try again."
-        fi
-    else
-        echo ""$MAX_TRIES" incorrect password attempts"
-        exit
-    fi
-done
-
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
-# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-}
-
-
-
-###
-### configuring network
-###
 
 # names of devices
 # networksetup -listallhardwareports
@@ -206,20 +146,16 @@ configure_fritz_vpn() {
     echo "vpn_connections..."
     echo ''
 
-    ### loggedInUser
-    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-
 
     ### checking homebrew and script dependencies
-    if [[ $(sudo -u "$loggedInUser" command -v brew) == "" ]]
+    if command -v brew &> /dev/null
     then
-        echo "homebrew is not installed, skipping vpn profiles installation..."
-    else
+    	# installed
         echo "homebrew is installed..."
         # checking for missing dependencies
         for formula in gnu-tar pigz pv coreutils gnupg
         do
-        	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
+        	if [[ $(brew list | grep "^$formula$") == '' ]]
         	then
         		echo """$formula"" is NOT installed, installing..."
                 brew install "$formula"
@@ -233,7 +169,7 @@ configure_fritz_vpn() {
         # script uses https://github.com/halo/macosvpn
         #echo "configuring vpn connections..."
         SCRIPT_NAME="vpn_connections_network_macos_wr"
-        SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+        SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
         SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
         if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".tar.gz.gpg ]]
         then
@@ -244,10 +180,10 @@ configure_fritz_vpn() {
     		OUTPUT_PATH="$SCRIPT_DIR_INPUT_KEEP"/
     		
             # pure .gpg
-            #"$SHELL" -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d -o '"$SCRIPT_DIR_INPUT_KEEP"/'"$SCRIPT_NAME"'.sh' && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
+            #"$SCRIPT_INTERPRETER" -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d -o '"$SCRIPT_DIR_INPUT_KEEP"/'"$SCRIPT_NAME"'.sh' && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
             
             # .tar.gz.gpg
-            "$SHELL" -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d - | unpigz -dc - | gtar --same-owner -C '"$OUTPUT_PATH"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
+            "$SCRIPT_INTERPRETER" -c 'cat '"$item"' | pv -s $(gdu -scb '"$item"' | tail -1 | awk "{print $1}" | grep -o "[0-9]\+") | gpg --batch --passphrase='"$SUDOPASSWORD"' --quiet -d - | unpigz -dc - | gtar --same-owner -C '"$OUTPUT_PATH"' -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"'
             
             #echo ''			
     		if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
@@ -266,6 +202,9 @@ configure_fritz_vpn() {
             echo "encrypted script to configure vpn connections not found..."
         fi
         echo ''
+    else
+    	# not installed
+    	echo "homebrew is not installed, skipping vpn profiles installation..."
     fi
     
 }

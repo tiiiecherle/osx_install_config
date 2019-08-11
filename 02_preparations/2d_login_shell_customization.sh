@@ -1,18 +1,26 @@
-#!/bin/bash
+#!/bin/zsh
 
-### variables
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-SCRIPT_DIR_FINAL=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
-echo $SCRIPT_DIR_FINAL
+###
+### sourcing config file
+###
 
-
-### text output
-bold_text=$(tput bold)
-red_text=$(tput setaf 1)
-default_text=$(tput sgr0)
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
+
+###
+### asking password upfront
+###
+
+env_enter_sudo_password
+
+
+
+###
 ### script
+###
+
 # starting with version 10.15 macos uses zsh as default login shell
 # for assuring maximum compatibility setting zsh as default on 10.14
 
@@ -21,14 +29,14 @@ echo ''
 if [[ $(dscl . -read ~/ UserShell | sed 's/UserShell: //' | grep zsh) == "" ]]
 then
 	# checking if zsh is installed
-	if [[ $(command -v zsh) == "" ]]
-	then
-	    #echo ''
+	if command -v zsh &> /dev/null
+    then
+        # installed
+		echo "zsh is installed..."        
+	else
+	    # not installed
 	    echo "zsh is not installed, exiting..."
 	    exit
-	else
-		#echo ''
-		echo "zsh is installed..."
 	fi
 	
 	# checking if zsh definded as possible default shell
@@ -56,25 +64,14 @@ echo ''
 echo "customizing zsh shell..."
 
 # git is part of command line tools and needed for the customization
+SCRIPT_DIR_FINAL="$SCRIPT_DIR_TWO_BACK"
 echo ''
-if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ -nz "$(ls -A "$(xcode-select -print-path)")" ]]
-then
-  	echo "command line tools are installed..."
-    echo ''
-else
-	echo "command line tools are not installed, installing..."
-    if [[ -e "$SCRIPT_DIR_FINAL"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/2_command_line_tools.sh ]]
-    then
-        "$SCRIPT_DIR_FINAL"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/2_command_line_tools.sh
-    else
-        echo ''
-        echo "${bold_text}${red_text}.../03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/2_command_line_tools.sh not found, skipping...${default_text}"
-        echo ''
-        echo "${bold_text}please install command line tools and run this script again, exiting...${default_text}"
-        echo ''
-        exit
-    fi
-fi
+trap_function_exit_middle() { unset SUDOPASSWORD; unset USE_PASSWORD; env_stop_sudo; }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
+env_start_sudo
+env_command_line_tools_install_shell
+env_stop_sudo
 
 # https://github.com/robbyrussell/oh-my-zsh
 # starting with a clean install
@@ -108,19 +105,36 @@ sed -i '' 's|^ZSH_THEME=.*|ZSH_THEME=""|' ~/.zshrc
 sed -i '' 's|^plugins=.*|plugins=()|' ~/.zshrc
 sed -i '' '/DISABLE_AUTO_TITLE=/s/^#*//g' ~/.zshrc
 sed -i '' '/DISABLE_AUTO_TITLE=/s/^ *//g' ~/.zshrc
+sed -i '' '/DISABLE_AUTO_UPDATE=/s/^#*//g' ~/.zshrc
+sed -i '' '/DISABLE_AUTO_UPDATE=/s/^ *//g' ~/.zshrc
 # additions
+# promtp
 echo '' >> ~/.zshrc
 echo "# customized prompt" >> ~/.zshrc
 echo "PROMPT='%n%f %1~ %# '" >> ~/.zshrc
+# default editor
 echo '' >> ~/.zshrc
 echo "# default editor" >> ~/.zshrc
 echo "export EDITOR=nano" >> ~/.zshrc
+# format output of time command
+# http://zsh.sourceforge.net/Doc/Release/Parameters.html#index-TIMEFMT
+# posix
+# in hours, minutes, seconds, only printed if not zero
+#TIMEFMT=$'\nreal\t%*E\nuser\t%*U\nsys\t%*S'
+# in seconds
+#TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S'
+# default
+#TIMEFMT=$'%J %U user %S system %P cpu %*E total'
+# default without printing job name, e.g. if run for a function in a subshell
+echo '' >> ~/.zshrc
+echo "# time command output format" >> ~/.zshrc
+echo "export TIMEFMT=$'%U user %S system %P cpu %*E total'" >> ~/.zshrc
+
 
 # setting path if homebrew is installed
-if [[ $(command -v brew) == "" ]]
+if command -v brew &> /dev/null
 then
-	:
-else
+    # installed
 	# including homebrew commands in PATH
 	add_path_to_shell() {
 	    echo "# homebrew PATH" >> "$SHELL_CONFIG"
@@ -128,11 +142,9 @@ else
 	}
 	
 	set_path_for_shell() {
-		if [[ $(command -v "$SHELL_TO_CHECK") == "" ]]
+		if command -v "$SHELL_TO_CHECK" &> /dev/null
 		then
-		    #echo ''
-		    echo "$SHELL_TO_CHECK is not installed, skipping to set path..."
-		else
+	    	# installed
 		    echo "setting path for $SHELL_TO_CHECK..."
 	        if [[ ! -e "$SHELL_CONFIG" ]]
 	        then
@@ -150,10 +162,13 @@ else
 	        # sourcing changes for currently used shell
 	        if [[ $(echo "$SHELL") == "$SHELL_TO_CHECK" ]]
 	        then
-	            "$SHELL" -c "source "$SHELL_CONFIG""
+	        	source "$SHELL_CONFIG"
 	        else
 	            :
 	        fi
+		else
+			# not installed
+			echo "$SHELL_TO_CHECK is not installed, skipping to set path..."
 		fi
 	}
 	
@@ -164,6 +179,9 @@ else
 	SHELL_TO_CHECK="/bin/zsh"
 	SHELL_CONFIG="/Users/$(logname)/.zshrc"
 	set_path_for_shell
+else
+	# not installed
+	:
 fi
 
 # sourcing config file if script is run from zsh for changes to take effect
@@ -176,10 +194,10 @@ else
 fi
 
 # starting zsh shell in current terminal
-echo ''
-echo "switching to zsh shell..."
-echo ''
-exec zsh -l
+#echo ''
+#echo "switching to zsh shell..."
+#echo ''
+#exec zsh -l
 
 ### documentation
 # currently used shell

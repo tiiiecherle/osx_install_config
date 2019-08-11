@@ -1,25 +1,34 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### variables
+###
 
 #echo "script"
 #echo $FILESTARGZSAVEDIR
 #echo $FILESAPPLESCRIPTDIR
 
+
+
 ###
 ### asking password upfront
 ###
 
-if [[ -e /tmp/run_from_backup_script1 ]] && [[ $(cat /tmp/run_from_backup_script1) == 1 ]]
+if [[ -e /tmp/tmp_backup_script_fifo1 ]]
 then
-    function delete_tmp_backup_script_fifo1() {
-        if [ -e "/tmp/tmp_backup_script_fifo1" ]
+    delete_tmp_backup_script_fifo1() {
+        if [[ -e "/tmp/tmp_backup_script_fifo1" ]]
         then
             rm "/tmp/tmp_backup_script_fifo1"
-        else
-            :
-        fi
-        if [ -e "/tmp/run_from_backup_script1" ]
-        then
-            rm "/tmp/run_from_backup_script1"
         else
             :
         fi
@@ -29,193 +38,60 @@ then
     USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
     delete_tmp_backup_script_fifo1
     set +a
+    env_sudo
 else
-        
-    # function for reading secret string (POSIX compliant)
-    enter_password_secret()
-    {
-        # read -s is not POSIX compliant
-        #read -s -p "Password: " SUDOPASSWORD
-        #echo ''
-        
-        # this is POSIX compliant
-        # disabling echo, this will prevent showing output
-        stty -echo
-        # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-        trap 'stty echo' EXIT
-        # asking for password
-        printf "Password: "
-        # reading secret
-        read -r "$@" SUDOPASSWORD
-        # reanabling echo
-        stty echo
-        trap - EXIT
-        # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-        printf "\n"
-        # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-        # has to be part of the function or it wouldn`t be updated during the maximum three tries
-        #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-    }
-    
-    # unset the password if the variable was already set
-    unset SUDOPASSWORD
-    
-    # making sure no variables are exported
-    set +a
-    
-    # asking for the SUDOPASSWORD upfront
-    # typing and reading SUDOPASSWORD from command line without displaying it and
-    # checking if entered password is the sudo password with a set maximum of tries
-    NUMBER_OF_TRIES=0
-    MAX_TRIES=3
-    while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    do
-        NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-        #echo "$NUMBER_OF_TRIES"
-        if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-        then
-            enter_password_secret
-            ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-            if [ $? -eq 0 ]
-            then 
-                break
-            else
-                echo "Sorry, try again."
-            fi
-        else
-            echo ""$MAX_TRIES" incorrect password attempts"
-            exit
-        fi
-    done
-
+    env_enter_sudo_password
 fi
 
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
-### functions
-
-# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo() {
-    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-}
-
-ask_for_variable () {
-	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
-	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
-	do
-		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
-		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
-		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	done
-	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
-}
 
 
 ###
-### script trap and backup / restore selection
+### script
 ###
 
 
-function get_running_subprocesses()
-{
-    SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
-    SCRIPT_COMMAND=$(ps -o comm= $$)
-	PARENT_SCRIPT_COMMAND=$(ps -o comm= $PPID)
-	if [[ $PARENT_SCRIPT_COMMAND == "$(basename $SHELL)" ]] || [[ $PARENT_SCRIPT_COMMAND == "-$(basename $SHELL)" ]] || [[ $PARENT_SCRIPT_COMMAND == "" ]]
-	then
-        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | awk '{print $1}')
-    else
-        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | grep -v "$PARENT_SCRIPT_COMMAND" | awk '{print $1}')
-    fi
-}
+### checking for script dependencies
+echo ''
+echo "checking for script dependencies..."
+if command -v parallel &> /dev/null
+then
+    # installed
+    echo "all script dependencies installed..."
+else
+    echo "not all script dependencies installed, exiting..."
+    echo ''
+    exit
+fi
+#echo ''
 
-function kill_subprocesses() 
-{
-    # kills only subprocesses of the current process
-    #pkill -15 -P $$
-    #kill -15 $(pgrep -P $$)
-    #echo "killing processes..."
-    
-    # kills all descendant processes incl. process-children and process-grandchildren
-    # giving subprocesses the chance to terminate cleanly kill -15
-    get_running_subprocesses
-    if [[ $RUNNING_SUBPROCESSES != "" ]]
-    then
-        kill -15 $RUNNING_SUBPROCESSES
-        # do not wait here if a process can not terminate cleanly
-        #wait $RUNNING_SUBPROCESSES 2>/dev/null
-    else
-        :
-    fi
-    # waiting for clean subprocess termination
-    TIME_OUT=0
-    while [[ $RUNNING_SUBPROCESSES != "" ]] && [[ $TIME_OUT -lt 3 ]]
-    do
-        get_running_subprocesses
-        sleep 1
-        TIME_OUT=$((TIME_OUT+1))
-    done
-    # killing the rest of the processes kill -9
-    get_running_subprocesses
-    if [[ $RUNNING_SUBPROCESSES != "" ]]
-    then
-        kill -9 $RUNNING_SUBPROCESSES
-        wait $RUNNING_SUBPROCESSES 2>/dev/null
-    else
-        :
-    fi
-    # unsetting variable
-    unset RUNNING_SUBPROCESSES
-}
-
-function kill_main_process() 
-{
-    # kills processes itself
-    #kill $$
-    kill -13 $$
-}
 
 ### trapping
-[[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
-[[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
-# a sourced script does not exit, it ends with return, so checking for session master is sufficent
-# subprocesses will not be killed on return, only on exit
-#if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]] && [[ "$SCRIPT_SOURCED" == "no" ]]
-if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
-then
-    # script is session master and not run from another script (S on mac Ss on linux)
-    trap "printf '\n'; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
-else
-    # script is not session master and run from another script (S+ on mac and linux) 
-    trap "printf '\n'; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "unset SUDOPASSWORD; exit" EXIT
-fi
-#set -e
+trap_function_exit_middle() { unset SUDOPASSWORD; unset USE_PASSWORD; }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
 
-###
 
-if [ "$SELECTEDUSER" == "" ]
+### user selection
+if [[ "$SELECTEDUSER" == "" ]]
 then
+    echo ''
     # users on the system without ".localized" and "Shared"
     SYSTEMUSERS=$(ls -1 /Users/ | egrep -v "^[.]" | egrep -v "Shared" | egrep -v "Guest")
     
     # user profile for backup
-    export PS3="Please select user profile for file backup by typing the number: "
+    COLUMNS_DEFAULT="$COLUMNS"
+    COLUMNS=1 PS3="Please select user profile for file backup by typing the number: "
     select SELECTEDUSER in ""$SYSTEMUSERS""
-      do
-      echo You selected user "$SELECTEDUSER".
+    do
+        echo "you selected user "$SELECTEDUSER"..."
+        #echo ''
+        COLUMNS="$COLUMNS_DEFAULT"
         break
     done
     
     # check1 if a valid user was selected
     USERCHECK=$(find /Users -maxdepth 1 -name "$SELECTEDUSER" -exec basename {} \;)
-    if [ "$SELECTEDUSER" != "$USERCHECK" ]; then
+    if [[ "$SELECTEDUSER" != "$USERCHECK" ]]; then
         echo "no valid user selected - exiting script because of no real username..."
         exit
     else
@@ -223,7 +99,7 @@ then
     fi
     
     # check2 if a valid user was selected
-    if [ "$SELECTEDUSER" == "" ]; then
+    if [[ "$SELECTEDUSER" == "" ]]; then
         echo "no valid user selected - exiting script because of empty username..."
         exit
     else
@@ -234,10 +110,8 @@ else
 fi
 
 
-###
-
-
-if [ "$SELECTEDUSER" == "tom" ] || [ "$SELECTEDUSER" == "bobby" ] || [ "$SELECTEDUSER" == "wolfgang" ];
+### user backup files/directories
+if [[ "$SELECTEDUSER" == "tom" ]] || [[ "$SELECTEDUSER" == "bobby" ]] || [[ "$SELECTEDUSER" == "wolfgang" ]];
 then
     :
 else
@@ -245,7 +119,7 @@ else
     exit
 fi
 
-if [ "$SELECTEDUSER" == "tom" ];
+if [[ "$SELECTEDUSER" == "tom" ]];
 then
 
     BACKUPDIRS=(
@@ -263,7 +137,7 @@ else
     :
 fi
 
-if [ "$SELECTEDUSER" == "bobby" ];
+if [[ "$SELECTEDUSER" == "bobby" ]];
 then
 
     BACKUPDIRS=(
@@ -281,7 +155,7 @@ else
     :
 fi
 
-if [ "$SELECTEDUSER" == "wolfgang" ];
+if [[ "$SELECTEDUSER" == "wolfgang" ]];
 then
 
     BACKUPDIRS=(
@@ -293,8 +167,7 @@ else
 fi
 
 
-###
-
+### variables
 DATE=$(date +%F)
 FILESTARGZLOG="$FILESTARGZSAVEDIR"/targz_file_log_"$DATE".txt
 
@@ -306,9 +179,10 @@ touch "$FILESTARGZLOG"
 FILE_EXTENSION=tar.gz.gpg
 
 
-function targz_and_progress {
+### functions
+targz_and_progress() {
 
-    BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}')
+    BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo "$i*1.0" | bc | cut -d'.' -f1) ; done)
     echo archiving "$DIRS" 
     printf "%-10s" "to" "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz && echo
     #echo to "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
@@ -318,9 +192,9 @@ function targz_and_progress {
 
 }
 
-function tar_gz_gpg_and_progress {
+tar_gz_gpg_and_progress() {
 
-    BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}')
+    BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo "$i*1.0" | bc | cut -d'.' -f1) ; done)
     echo archiving "$DIRS" 
     printf "%-10s" "to" "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" && echo
     #echo to "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz.gpg
@@ -331,15 +205,16 @@ function tar_gz_gpg_and_progress {
 }
 
 
-# other commands before starting the actual archiving
+### other commands before starting the actual archiving
 mkdir -p /Users/$USER/Desktop/desktop/_current/
 echo "rsync from /Users/$USER/Desktop/"
 printf "%-11s" "to" "/Users/$USER/Desktop/desktop/_current/..." && echo
-rsync -a -z -v --delete --progress --stats --human-readable --links --exclude files --exclude backup --exclude backup_* --exclude desktop --exclude data --exclude extra --exclude scripts --exclude macintosh_hd /Users/$USER/Desktop/ /Users/$USER/Desktop/desktop/_current/ 1>/dev/null
+rsync -a -z -v --delete --progress --stats --human-readable --links --exclude 'files' --exclude 'backup' --exclude 'backup_*' --exclude 'desktop' --exclude 'data' --exclude 'extra' --exclude 'scripts' --exclude 'macintosh_hd' /Users/$USER/Desktop/ /Users/$USER/Desktop/desktop/_current/ 1>/dev/null
 echo "done ;)"
-echo ""
+echo ''
 
-# deleting some files / folders
+
+### deleting some files / folders
 if [[ -e "/Users/$USER/Music/iTunes/Mobile Applications/" ]]
 then
     if [[ $(find "/Users/$USER/Music/iTunes/Mobile Applications/" -type f) != "" ]]
@@ -352,13 +227,12 @@ else
     :
 fi
 
-# creating files from SOURCES to selected destination
-for DIRS in "${BACKUPDIRS[@]}";
-do
 
+### creating files from SOURCES to selected destination
+for DIRS in "${BACKUPDIRS[@]}"
+do
     if [[ -d "$DIRS" ]];
     then
-
         # checking if file exists
         SAVEFILE="$FILESTARGZSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION"
         if [[ -f "$SAVEFILE" ]];
@@ -367,7 +241,7 @@ do
             # default answer is "" and is defined as no
             VARIABLE_TO_CHECK="$OVERWRITE_EXISTING"
             QUESTION_TO_ASK="file $SAVEFILE already exists, do you want to overwrite it? (y/N) "
-            ask_for_variable
+            env_ask_for_variable
             OVERWRITE_EXISTING="$VARIABLE_TO_CHECK"
             
             if [[ "$OVERWRITE_EXISTING" =~ ^(no|n)$ ]]
@@ -385,36 +259,38 @@ do
             #targz_and_progress
             tar_gz_gpg_and_progress
         fi
-
     else
         :
     fi
 done
 
 
-#echo ""
+### checking integrity
+#echo ''
 echo "testing integrity of file(s) in "$FILESTARGZSAVEDIR"/..."
-echo ""
-#
-#
+echo ''
+
 NUMBER_OF_CORES=$(parallel --number-of-cores)
 NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
 #echo $NUMBER_OF_MAX_JOBS
 NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
 #echo $NUMBER_OF_MAX_JOBS_ROUNDED
-#
-parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -q "$SHELL" -c '
-    if [[ -f "{}" ]];
+
+check_files_parallel() {
+    file="$1"
+    if [[ -f "$file" ]];
     then
-        printf "%-45s" """$(basename "{}")""... " && builtin printf '$SUDOPASSWORD' | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "{}" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+        printf "%-45s" ""$(basename "$file")"..." && builtin printf "$SUDOPASSWORD" | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$file" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
     else
         :
     fi
-' ::: "$(cat "$FILESTARGZLOG")"
-wait
-#printf "%-45s" ""$(basename "{}")"... " && unpigz -c "{}" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m";
+}
 
+if [[ "$(cat "$FILESTARGZLOG")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(cat "$FILESTARGZLOG")"; fi
+wait
 
 echo ''
 echo 'backing up files done ;)'
+echo ''
+
 exit

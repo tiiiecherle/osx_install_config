@@ -1,18 +1,13 @@
-#!/bin/bash
+#!/bin/zsh
 
 ### variables
 SERVICE_NAME=com.screen_resolution.set
-SCRIPT_NAME=screen_resolution
+SCRIPT_INSTALL_NAME=screen_resolution
 
 echo ''
 
 
 ### getting logged in user before starting the log
-#echo "LOGNAME is $(logname)..."
-#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-#stat -f%Su /dev/console
-#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-# recommended way
 loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 NUM=0
 MAX_NUM=45
@@ -21,7 +16,7 @@ SLEEP_TIME=1
 while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
 do
     sleep "$SLEEP_TIME"
-    NUM=$(($NUM+1))
+    NUM=$((NUM+1))
     loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 done
 #echo ''
@@ -29,7 +24,7 @@ done
 #echo "loggedInUser is $loggedInUser..."
 if [[ "$loggedInUser" == "" ]]
 then
-    WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
+    WAIT_TIME=$((MAX_NUM*SLEEP_TIME))
     echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
     exit
 else
@@ -40,7 +35,7 @@ fi
 ### logfile
 EXECTIME=$(date '+%Y-%m-%d %T')
 LOGDIR=/Users/"$loggedInUser"/Library/Logs
-LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 if [[ -f "$LOGFILE" ]]
 then
@@ -69,60 +64,99 @@ echo "" >> "$LOGFILE"
 echo $EXECTIME >> "$LOGFILE"
 
 
-### function
+### functions
+setting_config() {
+    ### sourcing .$SHELLrc or setting PATH
+    # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
+    # needed if binary is installed in a special directory
+    if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'PATH=.*/usr/local/bin:') != "" ]]
+    then
+        echo "sourcing .bashrc..."
+        . /Users/"$loggedInUser"/.bashrc
+    elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'PATH=.*/usr/local/bin:') != "" ]]
+    then
+        echo "sourcing .zshrc..."
+        ZSH_DISABLE_COMPFIX="true"
+        . /Users/"$loggedInUser"/.zshrc
+    else
+        echo "setting path for script..."
+        export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+    fi
+}
+# run before main function, e.g. for time format
+setting_config &> /dev/null
+
+
+### screen resolution
 screen_resolution() {
     
     ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
     
     
-    ### sourcing .bash_profile or setting PATH
-    # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
-    # needed if binary is installed in a special directory
-    if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
-    then
-        . /Users/$loggedInUser/.bash_profile
-    else
-        #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-        PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-    fi
+    ### sourcing .$SHELLrc or setting PATH
+    #setting_config
     
-    
+     
     ### script
-    # checking if python3 is installed
+    # python2 deprecated 2020-01, checking if python3 and pip3 are installed
     echo ''
-    if [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) != "3" ]] && [[ $(compgen -c python | grep "^python3$") == "" ]]
+    if sudo -H -u "$loggedInUser" command -v python3 &> /dev/null && sudo -H -u "$loggedInUser" command -v pip3 &> /dev/null
     then
-        echo "python3 is not installed, using apple python2..."
-        PYTHON_VERSION='python'
-        PIP_VERSION='pip'
-        for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
-        do
-            if [[ $("$PIP_VERSION" list | grep "$i") == "" ]]
-            then
-                echo ''
-                echo "installing python module "$i"..."
-                sudo "$PIP_VERSION" install "$i"
-            else
-                echo "python module "$i" already installed..."
-            fi
-        done
-    else
-        echo "python3 is installed, checking modules..."
+        # installed
+        echo "python3 is installed..."
         PYTHON_VERSION='python3'
         PIP_VERSION='pip3'
-        for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
-        do
-            if [[ $("$PIP_VERSION" list | grep "$i") == "" ]]
-            then
-                echo ''
-                echo "installing python module "$i"..."
-                sudo -u $loggedInUser "$PIP_VERSION" install "$i"
-            else
-                echo "python3 module "$i" already installed..."
-            fi
-        done
+    else
+        # not installed
+        echo "python3 is not installed, trying apple python..."
+        
+        # checking if pip is installed
+        if sudo -H -u "$loggedInUser" command -v pip &> /dev/null
+        then
+            # installed
+            echo "pip is installed..."
+        else
+            # not installed
+            echo "pip is not installed, installing..."
+            sudo -H python -m ensurepip
+            sudo -H easy_install pip
+        fi
+        
+        # checking version of default apple python
+        if sudo -H -u "$loggedInUser" command -v python &> /dev/null && sudo -H -u "$loggedInUser" command -v pip &> /dev/null && [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) == "3" ]] && [[ $(pip --version 2>&1 | grep "python 3") != "" ]]
+        then
+            PYTHON_VERSION='python'
+            PIP_VERSION='pip'
+        else
+            echo "python3 or pip3 are not installed, exiting..."
+            echo ''
+            exit
+        fi
     fi
+    
+    echo ''
+    echo "checking python modules..."
+    for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
+    do
+        if [[ $("$PIP_VERSION" list | grep "$i") == "" ]]
+        then
+            echo ''
+            echo "installing python module "$i"..."
+            if [[ $(sudo -H -u "$loggedInUser" command -v "$PIP_VERSION" | grep "/usr/local") == "" ]]
+            then
+                sudo "$PIP_VERSION" install "$i"
+            else
+                sudo -H -u "$loggedInUser" "$PIP_VERSION" install "$i"
+            fi
+        else
+            echo "python module "$i" already installed..."
+        fi
+    done
+    
+    echo ''
+    echo "python version used in script is $PYTHON_VERSION with $PIP_VERSION..."
+    #echo ''
     
     # variables
     DISPLAY_TO_SET="EV2785"
@@ -185,5 +219,5 @@ screen_resolution() {
     fi
 }
 
-(time screen_resolution) 2>&1 | tee -a "$LOGFILE"
+(time ( screen_resolution )) 2>&1 | tee -a "$LOGFILE"
 echo '' >> "$LOGFILE"

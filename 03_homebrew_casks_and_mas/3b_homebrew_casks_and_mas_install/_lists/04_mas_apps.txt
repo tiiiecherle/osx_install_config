@@ -6,6 +6,7 @@
 409183694	Keynote
 824183456	Affinity Photo
 824171161	Affinity Designer
+881418622	Affinity Publisher
 595374522	VirusScannerPlus
 1209754386	eDrawings
 477670270       2Do
@@ -25,3 +26,4 @@
 1387766656	Overflow 3
 1197662954	HashBox
 #1055555711	fHash
+1294126402	HEIC Converter

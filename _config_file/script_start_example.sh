@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 ###
 ### sourcing config file
@@ -40,3 +40,4 @@ echo "script name is $SCRIPT_NAME"
 echo "script directory is $SCRIPT_DIR"
 echo "script directory one back is $SCRIPT_DIR_ONE_BACK"
 echo ''
+

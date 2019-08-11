@@ -1,34 +1,52 @@
- #!/bin/bash
+#!/bin/zsh
 
 ###
-### variables
+### sourcing config file
 ###
 
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
-MACOS_VERSION_NUMBER=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.' | cut -f2 -d'.')
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
 
 ###
 ### script frame
 ###
 
-# if script is run standalone, not sourced from another script, load script frame
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
+if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
 then
-    # script is sourced
-    :
+    . "$SCRIPT_DIR"/1_script_frame.sh
+    eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+    trap_function_exit_start() { delete_tmp_mas_script_fifo; }
 else
-    # script is not sourced, run standalone
-    if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
+    echo ''
+    echo "script for functions and prerequisits is missing, exiting..."
+    echo ''
+    exit
+fi
+
+
+
+###
+### password
+###
+
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_sudo_mas_script_fifo ]] || [[ -e /tmp/tmp_appstore_mas_script_fifo ]]
     then
-        . "$SCRIPT_DIR"/1_script_frame.sh
+        unset SUDOPASSWORD
+        unset MAS_APPSTORE_PASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_sudo_mas_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        MAS_APPSTORE_PASSWORD=$(cat "/tmp/tmp_appstore_mas_script_fifo" | head -n 1)
+        delete_tmp_mas_script_fifo
+        #set +a
     else
-        echo ''
-        echo "script for functions and prerequisits is missing, exiting..."
-        echo ''
-        exit
+        env_enter_sudo_password
     fi
+else
+    :
 fi
 
 
@@ -36,7 +54,8 @@ fi
 ### command line tools
 ###
 
-checking_command_line_tools
+echo ''
+env_command_line_tools_install_shell
 
 
 ###
@@ -57,10 +76,6 @@ else
 fi
 
 
-### starting sudo
-start_sudo
-
-
 ### installing mas
 # mas has its own formula for all macos versions
 # if mas in homebrew core is not working or out of date use
@@ -78,21 +93,26 @@ brew install mas
 echo ''
 
 ### parallel
-checking_parallel
+env_check_if_parallel_is_installed
 
 ### accepting privacy policy
 defaults write ~/Library/Preferences/com.apple.AppStore.plist ASAcknowledgedOnboardingVersion -int 1
 
 ### mas login
 
-function mas_login() {
+
+
+mas_login() {
     
     mas signout
     sleep 3
     
     #echo ''
     MAS_APPLE_ID="    "
-    read -r -p "please enter apple id to log into appstore: " MAS_APPLE_ID
+    VARIABLE_TO_CHECK="$MAS_APPLE_ID"
+    QUESTION_TO_ASK="please enter apple id to log into appstore: "
+    env_ask_for_variable
+    MAS_APPLE_ID="$VARIABLE_TO_CHECK"
     #echo $MAS_APPLE_ID
     
     if [[ "$MAS_APPLE_ID" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$ ]]
@@ -109,22 +129,11 @@ function mas_login() {
 }
 #mas_login
 
-ask_for_variable() {
-	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
-	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
-	do
-		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
-		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
-		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	done
-	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
-}
-
-function mas_login_applescript() {
+mas_login_applescript() {
     
     # macos 10.14 and newer
-    if [[ $(echo "$MACOS_VERSION" | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    VERSION_TO_CHECK_AGAINST=10.13
+    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
     then
         #echo ''
         echo "this part of the script to login to the appstore automatically via applescript is only compatible with macos 10.14 mojave..."
@@ -132,7 +141,7 @@ function mas_login_applescript() {
         
         VARIABLE_TO_CHECK="$CONT1_MAS"
         QUESTION_TO_ASK="are you logged in on the appstore (Y/n)? "
-        ask_for_variable
+        env_ask_for_variable
         CONT1_MAS="$VARIABLE_TO_CHECK"
         
         if [[ "$CONT1_MAS" =~ ^(yes|y)$ ]]
@@ -149,7 +158,10 @@ function mas_login_applescript() {
         then
             echo ''
             MAS_APPLE_ID="    "
-            read -r -p "please enter apple id to log into appstore: " MAS_APPLE_ID
+            VARIABLE_TO_CHECK="$MAS_APPLE_ID"
+            QUESTION_TO_ASK="please enter apple id to log into appstore: "
+            env_ask_for_variable
+            MAS_APPLE_ID="$VARIABLE_TO_CHECK"
             #echo $MAS_APPLE_ID
         else
             :
@@ -162,10 +174,10 @@ function mas_login_applescript() {
             MAS_APPSTORE_PASSWORD="    "
         
             # ask for password twice
-            #while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
+            while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
         
             # only ask for password once
-            stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && stty echo && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''
+            #stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && stty echo && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''
             echo ''
         else
             :
@@ -193,13 +205,15 @@ function mas_login_applescript() {
     			    delay 3
     		    end try
     		    ### login
-    		    if "$MACOS_VERSION_NUMBER" is equal to "14" then
+    		    if "$MACOS_VERSION_MAJOR" is equal to "10.14" then
         		    click menu item 15 of menu "Store" of menu bar item "Store" of menu bar 1
                 end if
-                if "$MACOS_VERSION_NUMBER" is equal to "15" then
+                if "$MACOS_VERSION_MAJOR" is equal to "10.15" then
         		    click menu item 16 of menu "Store" of menu bar item "Store" of menu bar 1
                 end if
         		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
+        		delay 2
+        		set focused of text field "Apple-ID:" of sheet 1 of window 1 to true
         		delay 2
         		tell application "System Events" to keystroke "$MAS_APPLE_ID"
         		delay 2
@@ -250,9 +264,9 @@ EOF
 ###
 
 install_mas_apps() {
-# always use _ instead of - because some sh commands called by parallel would give errors
-	#echo doing it for $1
-	if [[ "$USE_PARALLELS" == "yes" ]]
+    # always use _ instead of - because some sh commands called by parallel would give errors
+	# if parallels is used i needs to redefined
+	if [[ "$INSTALLATION_METHOD" == "parallel" ]]
 	then
 		# if parallels is used i needs to redefined
 		i="$1"
@@ -266,19 +280,8 @@ install_mas_apps() {
 	MAS_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
 	#echo $MAS_NAME
 	echo installing app "$MAS_NAME"...
-	if [[ "$INSTALLATION_METHOD" == "parallel" ]]
-	then
-	    # formatting of output gets lost
-	    #mas install --force "$MAS_NUMBER" | grep "Installed"
-	    #mas install --force "$MAS_NUMBER"
-	    mas install "$MAS_NUMBER"
-	else
-	    #mas install --force "$MAS_NUMBER"
-	    mas install "$MAS_NUMBER"
-	fi
-	            
+	mas install "$MAS_NUMBER" | grep "Installed"       
 }
-export -f install_mas_apps
 
 
 ### installing mas apps
@@ -304,21 +307,17 @@ then
     else
 	    if [[ "$INSTALLATION_METHOD" == "parallel" ]]
 	    then
-	        printf '%s\n' "${mas_apps[@]}" | tr "\n" "\0" | xargs -0 -n1 -L1 -P"$NUMBER_OF_MAX_JOBS_ROUNDED" -I{} "$SHELL" -c ' 
-	        i="{}"
-	        install_mas_apps
-	        '
+	    	# by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
+            # it is not neccessary to export variables or functions when using env_parallel
+            # zsh does not support exporting functions, thats why parallels is prefered over xargs (bash only)
+            if [[ "${mas_apps[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "install_mas_apps {}" ::: "${mas_apps[@]}"; fi
 	    else
-	    	old_IFS=$IFS
-	        IFS=$'\n'
-        	for i in ${mas_apps[@]}
-        	do
-        		IFS=$old_IFS
-        		#export USE_PARALLELS="no"
-        		install_mas_apps
-        		echo ''
-        	done
-        	#unset USE_PARALLELS
+    	    while IFS= read -r line || [[ -n "$line" ]]
+			do
+			    if [[ "$line" == "" ]]; then continue; fi
+                i="$line"
+                install_mas_apps "$i"
+            done <<< "$(printf "%s\n" "${mas_apps[@]}")"
 	    fi
 	fi
 
@@ -332,8 +331,8 @@ fi
 #echo "cleaning up..."
 # appstore cache should clean itself or should be cleaned by mas
 
-# if script is run standalone, not sourced from another script or run from run_all script
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$RUN_FROM_RUN_ALL_SCRIPT" == "yes" ]]
+# if script is run standalone, not sourced or run from run_all script, clean up
+if [[ "$SCRIPT_IS_SOURCED" == "yes" ]] || [[ "$RUN_FROM_RUN_ALL_SCRIPT" == "yes" ]]
 then
     # script is sourced or run from run_all script
     :
@@ -342,18 +341,17 @@ else
     :
 fi
 
-CHECK_IF_FORMULAE_INSTALLED="no"
-CHECK_IF_CASKS_INSTALLED="no"
 echo ''
 # waiting for apps to be registered correctly before checking success
-echo "resetting mas and waiting 5s for apps to be registered correctly before checking success"...
-echo ''
-sleep 1
-mas reset
-sleep 5
-. "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
-
+SLEEP_TIME=10
+#echo "resetting mas and waiting "$SLEEP_TIME"s for apps to be registered correctly before checking success"...
+echo "waiting "$SLEEP_TIME"s for apps to be registered correctly before checking success"...
+#echo ''
+#sleep 5
+#mas reset
+sleep "$SLEEP_TIME"
+CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_CASKS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 
 ###
 
-stop_sudo
+#echo ''

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 
 # sfltool
 # sfltool prepend|append|restore|archive|list-info|add [options]

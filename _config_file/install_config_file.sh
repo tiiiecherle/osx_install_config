@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 ### shell specific script dir
 if [[ -n "$BASH_SOURCE" ]]
@@ -23,6 +23,14 @@ then
     #echo ''
     cp "$SCRIPT_DIR"/"$SHELL_SCRIPTS_CONFIG_FILE".sh "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
     if [[ $? -eq 0 ]]; then SUCCESSFULLY_INSTALLED="yes"; else SUCCESSFULLY_INSTALLED="no"; fi
+    if [[ "$USER" == "tom" ]]
+    then
+        # deactivating self-update
+        sed -i '' '/env_config_file_self_update$/s/^#*/#/g' "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+    else
+        # activating self-update
+        sed -i '' '/env_config_file_self_update$/s/^#*//g' "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+    fi
 else
     echo "installing config file from github..."
     echo ''

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 #FILESTARGZSAVEDIR=~/Desktop/"test test"
 #FILESAPPLESCRIPTDIR=~/Desktop/07_backup_and_restore_script
@@ -27,7 +27,7 @@ tell application "Terminal"
 	#end repeat
 	set newTab to selected tab of front window
 	#set newTab's selected to true
-	do script "export SELECTEDUSER=\"$SELECTEDUSER\"; export FILESTARGZSAVEDIR=\"$FILESTARGZSAVEDIR\"; export FILESAPPLESCRIPTDIR=\"$FILESAPPLESCRIPTDIR\"; time bash \"$FILESAPPLESCRIPTDIR/files/backup_files.sh\" && echo ''" in newTab
+	do script "export SELECTEDUSER=\"$SELECTEDUSER\"; export FILESTARGZSAVEDIR=\"$FILESTARGZSAVEDIR\"; export FILESAPPLESCRIPTDIR=\"$FILESAPPLESCRIPTDIR\"; time ( \"$FILESAPPLESCRIPTDIR/files/backup_files.sh\" && echo '' )" in newTab
 	delay 10
 	set firstTab to tab 1 of front window
 	set firstTab's selected to true

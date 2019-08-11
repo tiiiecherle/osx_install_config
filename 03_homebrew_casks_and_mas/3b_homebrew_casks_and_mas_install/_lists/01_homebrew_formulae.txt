@@ -11,8 +11,8 @@ htop		# if htop is not working, use glances instead
 #glances
 ghostscript	# pdf shrink script
 xpdf		# pdf shrink script
-ffmpeg		# video encoding script
-qtfaststart	# video encoding script
+#ffmpeg		# video encoding script
+#qtfaststart	# video encoding script
 jq		# casks and casks update script
 cliclick	# backup/restore script
 python		# icon scripts, build scripts, hosts file script, screen resolution script

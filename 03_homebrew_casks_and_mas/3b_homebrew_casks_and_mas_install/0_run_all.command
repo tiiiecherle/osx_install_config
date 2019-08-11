@@ -1,265 +1,275 @@
-#!/bin/bash
-
-# wrap in function for getting time
-run_all() {
+#!/bin/zsh
 
 ###
-### variables
+### sourcing config file
 ###
 
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-FILENAME_INSTALL_SCRIPT=$(basename "$BASH_SOURCE")
-export FILENAME_INSTALL_SCRIPT
-
-
-
-###
-### script frame
-###
-
-if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
-then
-    . "$SCRIPT_DIR"/1_script_frame.sh
-else
-    echo ''
-    echo "script for functions and prerequisits is missing, exiting..."
-    echo ''
-    exit
-fi
-
-
-
-###
-### functions
-###
-
-ask_for_variable() {
-	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
-	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
-	do
-		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
-		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
-		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	done
-	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
-}
-
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
 ###
 ### script
 ###
 
-echo ''
-echo "installing homebrew and homebrew casks..."
-echo ''
+
+### traps
+#trap_function_exit_middle() { COMMAND1; COMMAND2; }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
 
 
-### killing possible old processes
-#ps aux | grep -ie /5_casks.sh | grep -v grep | awk '{print $2}' | xargs kill -9 
-#ps aux | grep -ie /6_mas_appstore.sh | grep -v grep | awk '{print $2}' | xargs kill -9 
-
-
-### asking for mas apps
-VARIABLE_TO_CHECK="$CONT3_BREW"
-QUESTION_TO_ASK="do you want to install appstore apps via mas? (Y/n)? "
-ask_for_variable
-CONT3_BREW="$VARIABLE_TO_CHECK"
-
-if [[ "$CONT3_BREW" =~ ^(yes|y)$ ]]
-then
-    if [[ "$MAS_APPLE_ID" == "" ]]
+### wrap in function for getting time
+run_all() {
+    
+    
+    ###
+    ### script frame
+    ###
+    
+    if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
     then
-        #echo ''
-        MAS_APPLE_ID="    "
-        read -r -p "please enter apple id to log into appstore: " MAS_APPLE_ID
-        #echo $MAS_APPLE_ID
+        . "$SCRIPT_DIR"/1_script_frame.sh
+        trap_function_exit_start() { delete_tmp_mas_script_fifo; delete_tmp_casks_script_fifo; deactivating_keepingyouawake >/dev/null 2>&1; }
+        eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
     else
-        :
-    fi
-    
-    if [[ "$MAS_APPSTORE_PASSWORD" == "" ]]
-    then
-        #echo ''
-        #echo "please enter appstore password..."
-        MAS_APPSTORE_PASSWORD="    "
-    
-        # ask for password twice
-        #while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
-    
-        # only ask for password once
-        stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && stty echo && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''
         echo ''
-    else
-        :
-    fi
-else
-    echo ''
-fi
-
-
-### asking for casks
-VARIABLE_TO_CHECK="$CONT2_BREW"
-QUESTION_TO_ASK="do you want to install casks apps? (Y/n)? "
-ask_for_variable
-CONT2_BREW="$VARIABLE_TO_CHECK"
-
-if [[ -e "/tmp/Caskroom" ]]
-then
-    read -p "$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/. to /usr/local/Caskroom/' '(Y/n)? ')" CONT_CASKROOM
-    if [[ "$CONT_CASKROOM" == "" ]]
-    then
-        CONT_CASKROOM=y
-    else
-        :
-    fi
-    CONT_CASKROOM="$(echo "$CONT_CASKROOM" | tr '[:upper:]' '[:lower:]')"    # tolower
-    if [[ "$CONT_CASKROOM" =~ ^(y|yes|n|no)$ || "$CONT_CASKROOM" == "" ]]
-    then
-        :
-    else
-        #echo ''
-        echo "wrong input, exiting script..."
+        echo "script for functions and prerequisits is missing, exiting..."
         echo ''
         exit
     fi
-else
-    :
-fi
-#echo ''
+        
+    ###
+    ### script
+    ###
+    
+    echo ''
+    echo "installing homebrew and homebrew casks..."
+    echo ''
+    
+    
+    ### killing possible old processes
+    ps aux | grep -ie /5_casks.sh | grep -v grep | awk '{print $2}' | xargs kill -9
+    ps aux | grep -ie /6_mas_appstore.sh | grep -v grep | awk '{print $2}' | xargs kill -9
+    
+    
+    ### asking for mas apps
+    VARIABLE_TO_CHECK="$CONT3_BREW"
+    QUESTION_TO_ASK="do you want to install appstore apps via mas? (Y/n)? "
+    env_ask_for_variable
+    CONT3_BREW="$VARIABLE_TO_CHECK"
+    
+    echo ''
+    
+    if [[ "$CONT3_BREW" =~ ^(yes|y)$ ]]
+    then
+        if [[ "$MAS_APPLE_ID" == "" ]]
+        then
+            #echo ''
+            MAS_APPLE_ID=""
+            VARIABLE_TO_CHECK="$MAS_APPLE_ID"
+            QUESTION_TO_ASK="please enter apple id to log into appstore: "
+            env_ask_for_variable
+            MAS_APPLE_ID="$VARIABLE_TO_CHECK"
+            #echo $MAS_APPLE_ID
+        else
+            :
+        fi
+        
+        if [[ "$MAS_APPSTORE_PASSWORD" == "" ]]
+        then
+            #echo ''
+            #echo "please enter appstore password..."
+            MAS_APPSTORE_PASSWORD=""
+        
+            # ask for password twice
+            # ask for password twice
+            while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
+        
+            # only ask for password once
+            #stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && stty echo && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''
+            echo ''
+        else
+            :
+        fi
+    else
+        #echo ''
+        :
+    fi
+    
+    
+    ### asking for casks
+    VARIABLE_TO_CHECK="$CONT2_BREW"
+    QUESTION_TO_ASK="do you want to install casks apps? (Y/n)? "
+    env_ask_for_variable
+    CONT2_BREW="$VARIABLE_TO_CHECK"
+    
+    if [[ -e "/tmp/Caskroom" ]] && [[ "$CONT2_BREW" =~ ^(y|yes)$ ]]
+    then
+        VARIABLE_TO_CHECK="$CONT_CASKROOM"
+        QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')"
+        env_ask_for_variable
+        CONT_CASKROOM="$VARIABLE_TO_CHECK"
+        
+        if [[ "$CONT_CASKROOM" =~ ^(y|yes|n|no)$ || "$CONT_CASKROOM" == "" ]]
+        then
+            :
+        else
+            #echo ''
+            echo "wrong input, exiting script..."
+            echo ''
+            exit
+        fi
+    else
+        :
+    fi
+    
+    
+    ### command line tools
+    RUN_FROM_RUN_ALL_SCRIPT="yes" . "$SCRIPT_DIR"/2_command_line_tools.sh
+    eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
+    
+    ### homebrew, homebrew-cask and other taps
+    RUN_FROM_RUN_ALL_SCRIPT="yes" . "$SCRIPT_DIR"/3_homebrew_cask.sh
+    eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
-### command line tools
-. "$SCRIPT_DIR"/2_command_line_tools.sh
-
-
-### homebrew, homebrew-cask and other taps
-. "$SCRIPT_DIR"/3_homebrew_cask.sh
-
-
-### updating homebrew
-UPDATE_HOMEBREW="yes"
-homebrew_update
-
-
-### mas
-if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
-then
-
-    create_tmp_homebrew_script_fifo
-    identify_terminal
-    UPDATE_HOMEBREW="no"
-    RUN_FROM_RUN_ALL_SCRIPT="yes"
-
-    #osascript 2>/dev/null <<EOF
-    osascript <<EOF
-    tell application "Terminal"
-    	if it is running then
-    		#if not (exists window 1) then
-    		if (count of every window) is 0 then
-    			reopen
-    			activate
-    			set Window1 to front window
-    			set runWindow to front window
-    		else
-    			activate
-    			delay 2
-    			set Window1 to front window
-    			#
-    			tell application "System Events" to keystroke "t" using command down
-    			delay 2
-    			set Window2 to front window
-    			set runWindow to front window
-    		end if
-    	else
-    		activate
-    		set Window1 to front window
-    		set runWindow to front window
-    	end if
-    	#delay 2
-        #    	
-        do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export MAS_APPLE_ID=\"$MAS_APPLE_ID\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; (time  \"$SCRIPT_DIR/6_mas_appstore.sh\") && echo ''" in runWindow
-    	#
-    	delay 40
-        set frontmost of Window1 to true
-    end tell
+    
+    ### updating homebrew
+    UPDATE_HOMEBREW="yes"
+    env_homebrew_update
+    
+    
+    ### mas
+    if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
+    then
+    
+        create_tmp_mas_script_fifo
+        env_identify_terminal
+        UPDATE_HOMEBREW="no"
+        RUN_FROM_RUN_ALL_SCRIPT="yes"
+    
+        #osascript 2>/dev/null <<EOF
+        osascript <<EOF
+        tell application "Terminal"
+        	if it is running then
+        		#if not (exists window 1) then
+        		if (count of every window) is 0 then
+        			reopen
+        			activate
+        			set Window1 to front window
+        			set runWindow to front window
+        		else
+        			activate
+        			delay 2
+        			set Window1 to front window
+        			#
+        			tell application "System Events" to keystroke "t" using command down
+        			delay 2
+        			set Window2 to front window
+        			set runWindow to front window
+        		end if
+        	else
+        		activate
+        		set Window1 to front window
+        		set runWindow to front window
+        	end if
+        	#delay 2
+            #    	
+            do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export MAS_APPLE_ID=\"$MAS_APPLE_ID\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; echo ''; (time \"$SCRIPT_DIR/6_mas_appstore.sh\"; echo '')" in runWindow
+        	#
+        	delay 60
+            set frontmost of Window1 to true
+        end tell
 EOF
-
-else 
-    CHECK_IF_MASAPPS_INSTALLED="no"
-fi
-
-
-### casks
-if [[ "$CONT2_BREW" =~ ^(yes|y)$ ]]
-then
-    sleep 5
-    create_tmp_homebrew_script_fifo
-    identify_terminal
-    UPDATE_HOMEBREW="no"
-    RUN_FROM_RUN_ALL_SCRIPT="yes"
-
-    #osascript 2>/dev/null <<EOF
-    osascript <<EOF
-    tell application "Terminal"
-    	if it is running then
-    		#if not (exists window 1) then
-    		if (count of every window) is 0 then
-    			reopen
-    			activate
-    			set Window1 to front window
-    			set runWindow to front window
-    		else
-    			activate
-    			delay 2
-    			set Window1 to front window
-    			#
-    			tell application "System Events" to keystroke "t" using command down
-    			delay 2
-    			set Window2 to front window
-    			set runWindow to front window
-    		end if
-    	else
-    		activate
-    		set Window1 to front window
-    		set runWindow to front window
-    	end if
-    	#delay 2
-    	#
-    	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export FIRST_RUN_DONE=\"$FIRST_RUN_DONE\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export CONT_CASKROOM=\"$CONT_CASKROOM\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; (time \"$SCRIPT_DIR/5_casks.sh\") && echo ''" in runWindow
-    	#
-    	delay 10
-        set frontmost of Window1 to true
-    end tell
+    
+    else 
+        CHECK_IF_MASAPPS_INSTALLED="no"
+    fi
+    
+    
+    ### casks
+    if [[ "$CONT2_BREW" =~ ^(yes|y)$ ]]
+    then
+        sleep 5
+        create_tmp_casks_script_fifo
+        env_identify_terminal
+        UPDATE_HOMEBREW="no"
+        RUN_FROM_RUN_ALL_SCRIPT="yes"
+    
+        #osascript 2>/dev/null <<EOF
+        osascript <<EOF
+        tell application "Terminal"
+        	if it is running then
+        		#if not (exists window 1) then
+        		if (count of every window) is 0 then
+        			reopen
+        			activate
+        			set Window1 to front window
+        			set runWindow to front window
+        		else
+        			activate
+        			delay 2
+        			set Window1 to front window
+        			#
+        			tell application "System Events" to keystroke "t" using command down
+        			delay 2
+        			set Window2 to front window
+        			set runWindow to front window
+        		end if
+        	else
+        		activate
+        		set Window1 to front window
+        		set runWindow to front window
+        	end if
+        	#delay 2
+        	#
+        	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export CONT_CASKROOM=\"$CONT_CASKROOM\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; echo ''; (time \"$SCRIPT_DIR/5_casks.sh\"; echo '')" in runWindow
+        	#
+        	delay 10
+            set frontmost of Window1 to true
+        end tell
 EOF
+    
+    else 
+        CHECK_IF_CASKS_INSTALLED="no"
+    fi
+    
+    
+    ### homebrew formulae
+    UPDATE_HOMEBREW="no"
+    RUN_FROM_RUN_ALL_SCRIPT="yes" . "$SCRIPT_DIR"/4_homebrew_formulae.sh
+    eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
-else 
-    CHECK_IF_CASKS_INSTALLED="no"
-fi
+    
+    ### waiting for the scripts in the separate tabs to finish
+    #echo ''
+    echo "waiting for casks and mas scripts..."
+    # grep space S+ space
+    
+    WAIT_PIDS=()
+    WAIT_PIDS+=$(ps aux | grep /5_casks.sh | grep -v grep | awk '{print $2;}')
+    WAIT_PIDS+=$(ps aux | grep /6_mas_appstore.sh | grep -v grep | awk '{print $2;}')
+    #WAIT_PIDS=$(ps -A | grep -m1 /6_mas_appstore.sh | awk '{print $1}')
+    #echo "$WAIT_PIDS"
+    #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+    while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"   
+    
+    
+    ### cleaning up
+    echo ''
+    echo "cleaning up..."
+    env_cleanup_all_homebrew
+    
+    
+    ### checking success of installations
+    #echo ''
+    RUN_FROM_ALL_SCRIPT="yes" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 
-
-### homebrew formulae
-UPDATE_HOMEBREW="no"
-. "$SCRIPT_DIR"/4_homebrew_formulae.sh
-
-
-### waiting for the scripts in the separate tabs to finish
-#echo ''
-echo "waiting for casks and mas scripts..."
-while ps aux | grep /5_casks.sh | grep -v grep >/dev/null; do sleep 1; done
-while ps aux | grep /6_mas_appstore.sh | grep -v grep >/dev/null; do sleep 1; done
-
-
-### cleaning up
-echo ''
-echo "cleaning up..."
-cleanup_all_homebrew
-
-
-### checking success of installations
-echo ''
-. "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
-
+    echo ''
 }
-time run_all
+time ( run_all )
+
+echo ''
+echo "done ;)"
+#echo ''

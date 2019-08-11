@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 
 applications_to_set_values=(
 "/Applications/WhatsApp.app															335"
@@ -12,12 +12,12 @@ applications_to_set_values=(
 PLIST_FILE='~/Library/Preferences/com.apple.ncprefs.plist'
 
 # functions
-getting-needed-entry () {
+getting-needed-entry() {
 
 	NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print apps" $(eval echo "$PLIST_FILE") | awk '/^[[:blank:]]*Dict {/' | wc -l)
 	#echo $NUMBER_OF_ENTRIES
 	# -1 because counting of items starts with 0, not with 1
-	LISTED_ENTRIES=$(($NUMBER_OF_ENTRIES-1))
+	LISTED_ENTRIES=$((NUMBER_OF_ENTRIES-1))
 	#echo $LISTED_ENTRIES
 	
 	NEEDED_ENTRY=""

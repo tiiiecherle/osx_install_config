@@ -1,11 +1,12 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 
 ###
-### variables
+### sourcing config file
 ###
 
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
 
 
 ###
@@ -13,8 +14,8 @@ MACOS_VERSION=$(sw_vers -productVersion)
 ###
 
 # forcing smb3 for every connection as user do
-
-if [ -f "~/Library/Preferences/nsmb.conf" ]
+echo ''
+if [[ -f "~/Library/Preferences/nsmb.conf" ]]
 then 
 	:
 	echo ""~/Library/Preferences/nsmb.conf" does not exist, will be created..."
@@ -23,17 +24,20 @@ else
 	rm -f "~/Library/Preferences/nsmb.conf"
 fi
 
-if [ -f "/etc/nsmb.conf" ]
+if [[ -f "/etc/nsmb.conf" ]]
 then 
 	:
-else 
+else
+	echo ''
 	sudo rm -f "/etc/nsmb.conf"
 fi
 
-if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "12" ]]
+# macos 10.13 and newer
+VERSION_TO_CHECK_AGAINST=10.12
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
 then
     # macos versions until and including 10.12
-    "$SHELL" -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
+    "$SCRIPT_INTERPRETER" -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
 [default]
 smb_neg=smb3_only
 signing_required=no
@@ -41,7 +45,7 @@ EOL
 
 else
     # macos versions 10.13 and up
-	"$SHELL" -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
+	"$SCRIPT_INTERPRETER" -c "cat > ~/Library/Preferences/nsmb.conf" <<'EOL'
 [default]
 protocol_vers_map=4
 signing_required=no
@@ -83,5 +87,6 @@ chown 501:staff ~/Library/Preferences/nsmb.conf
 ### restore default as user do
 #rm ~/Library/Preferences/nsmb.conf
 
-
+echo ''
 echo 'done ;)'
+echo ''

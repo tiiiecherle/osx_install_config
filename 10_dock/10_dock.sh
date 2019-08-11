@@ -1,4 +1,17 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### dock
+###
 
 # clears the dock of all apps, then adds your individual dock config
 # config file:
@@ -6,9 +19,6 @@
 
 
 ### variables
-DEF_W="/usr/bin/defaults write"
-PLB=/usr/libexec/PlistBuddy
-OSA=/usr/bin/osascript
 DOCK="com.apple.dock"
 
 # XML
@@ -17,33 +27,29 @@ APP_TAIL="</string><key>_CFURLStringType</key><integer>0</integer></dict></dict>
 FOLDER_HEAD="<dict><key>tile-data</key><dict><key>arrangement</key><integer>0</integer><key>displayas</key><integer>1</integer><key>file-data</key><dict><key>_CFURLString</key><string>"
 
 # script directory
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-SCRIPT_DIR_FINAL=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
-
-# getting logged in user
-#echo "LOGNAME is $(logname)..."
-#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-#stat -f%Su /dev/console
-#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-# recommended way
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-#echo "loggedInUser is $loggedInUser..."
+SCRIPT_DIR_FINAL="$SCRIPT_DIR_ONE_BACK"
 
 echo ''
 
 ### functions
 # left dock side (persistent-apps)
 add_spacer() {
-    $DEF_W $DOCK ''"$ENTRY_POSITION"'' -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
+    defaults write $DOCK "$ENTRY_POSITION" -array-add '{ tile-data = {}; tile-type = "spacer-tile"; }'
 }
+# small spacer
+# defaults write com.apple.dock persistent-others -array-add '{ "tile-data" = {}; "tile-type"="small-spacer-tile"; }' && \
 
 add_entry_app() {
-    $DEF_W $DOCK ''"$ENTRY_POSITION"'' -array-add "$APP_HEAD/Applications/$APP_NAME/$APP_TAIL"
+    defaults write $DOCK "$ENTRY_POSITION" -array-add "$APP_HEAD$PATH_TO_APPS/$APP_NAME/$APP_TAIL"
+}
+
+add_entry_system_app() {
+    defaults write $DOCK "$ENTRY_POSITION" -array-add "$APP_HEAD$PATH_TO_SYSTEM_APPS/$APP_NAME/$APP_TAIL"
 }
 
 add_entry_folder() {
     FOLDER_TAIL="</string><key>_CFURLStringType</key><integer>0</integer></dict><key>preferreditemsize</key><integer>"$PREFERRED_ITEM_SIZE"</integer><key>showas</key><integer>"$VIEWAS"</integer></dict><key>tile-type</key><string>directory-tile</string></dict>"
-    $DEF_W $DOCK ''"$ENTRY_POSITION"'' -array-add "$FOLDER_HEAD/$FOLDER_PATH/$FOLDER_TAIL"
+    defaults write $DOCK "$ENTRY_POSITION" -array-add "$FOLDER_HEAD/$FOLDER_PATH/$FOLDER_TAIL"
     
     # PREFERRED_ITEM_SIZE
     # -1  	default
@@ -58,8 +64,8 @@ add_entry_folder() {
 
 add_entry_recent() {
     # recents entry
-    $DEF_W $DOCK ''"$ENTRY_POSITION"'' -array-add "<dict><key>tile-data</key><dict><key>list-type</key><integer>"$LIST_TYPE"</integer><key>preferreditemsize</key><integer>"$PREFERRED_ITEM_SIZE"</integer><key>viewas</key><integer>"$VIEWAS"</integer></dict><key>tile-type</key><string>recents-tile</string></dict>"
-    
+    defaults write $DOCK "$ENTRY_POSITION" -array-add "<dict><key>tile-data</key><dict><key>list-type</key><integer>"$LIST_TYPE"</integer><key>preferreditemsize</key><integer>"$PREFERRED_ITEM_SIZE"</integer><key>viewas</key><integer>"$VIEWAS"</integer></dict><key>tile-type</key><string>recents-tile</string></dict>"
+        
     # LIST_TYPE
     # 1		Recent Applications
     # 2		Recent Documents
@@ -72,19 +78,20 @@ add_entry_recent() {
     # 2		any number, but only takes effect if viewas is set to grid
     #
     # VIEWAS   
-    # 0	     	Automatic
-    # 1	     	Stack
-    # 2		Grid
-    # 3	       	List
+    # 0	     Automatic
+    # 1	     Stack
+    # 2		 Grid
+    # 3	     List
 }
 
 # using profiles
 set_dock_from_profile() {
     LINENUMBER="0"
-    while IFS='' read -r line || [[ -n "$line" ]]
-    do
+    while IFS= read -r line || [[ -n "$line" ]]
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
         i="$line"
-        LINENUMBER=$(($LINENUMBER+1))
+        LINENUMBER=$((LINENUMBER+1))
 
         ENTRY_POSITION=$(echo "$i" | awk '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
 	    #echo "$ENTRY_POSITION"
@@ -101,10 +108,10 @@ set_dock_from_profile() {
         then
             #echo "line is commented out or empty..."
             :
-	    elif [[ ! "$ENTRY_POSITION" =~ ^(persistent-apps|persistent-others)$ ]] || [[ ! "$ENTRY_TYPE" =~ ^(spacer|app|folder|recent)$ ]]
+	    elif [[ ! "$ENTRY_POSITION" =~ ^(persistent-apps|persistent-others)$ ]] || [[ ! "$ENTRY_TYPE" =~ ^(spacer|app|system_app|system_volumes_data_app|folder|recents)$ ]]
     	then
             echo "wrong syntax for entry in profile in line "$LINENUMBER": "$i", skipping..."
-            SYNTAXERRORS=$(($SYNTAXERRORS+1))
+            SYNTAXERRORS=$((SYNTAXERRORS+1))
         else
 	    	if [[ "$ENTRY_TYPE" == "spacer" ]]
 	        then
@@ -113,13 +120,17 @@ set_dock_from_profile() {
 	        then
 	            APP_NAME="$ENTRY_VALUE1"
 	            add_entry_app
+	        elif [[ "$ENTRY_TYPE" == "system_app" ]]
+	        then
+	            APP_NAME="$ENTRY_VALUE1"
+	            add_entry_system_app
 	        elif [[ "$ENTRY_TYPE" == "folder" ]]
 	        then
 	            FOLDER_PATH="$(eval echo $ENTRY_VALUE1)"
 	            PREFERRED_ITEM_SIZE="$ENTRY_VALUE2"
 	            VIEWAS="$ENTRY_VALUE3"
 	            add_entry_folder
-	        elif [[ "$ENTRY_TYPE" == "recent" ]]
+	        elif [[ "$ENTRY_TYPE" == "recents" ]]
 	        then
 	            if [[ "$ENTRY_POSITION" == "persistent-others" ]]
 	            then
@@ -128,26 +139,16 @@ set_dock_from_profile() {
     	            VIEWAS="$ENTRY_VALUE3"
     	            add_entry_recent
     	        else
-    	            echo "recent entries are only allowed in the persistent-others section of the dock, skipping profile line $LINENUMBER: $i..."
+    	            echo "recents entries are only allowed in the persistent-others section of the dock, skipping profile line $LINENUMBER: $i..."
     	        fi
 	        else
 	            echo "incorrect profile entry..."
 	        fi
-        fi      
-    done <"$DOCK_PROFILE"    
+        fi
+    done <<< "$(cat "$DOCK_PROFILE")"
 }
 
-ask_for_variable() {
-	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
-	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
-	do
-		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
-		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
-		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	done
-	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
-}
+
 
 # profile based user specifc configuration
 use_user_costomized_profiles() {
@@ -161,7 +162,7 @@ use_user_costomized_profiles() {
         echo "running script with example profile..."
         DOCK_PROFILE="$SCRIPT_DIR"/profiles/dock_profile_example.conf
     else
-        echo "no dock profile found for $loggedInUser and no example profile found, exiting..."
+        echo "no dock profile found for "$loggedInUser" and no example profile found for this version of macos, exiting..."
         echo ''
         exit
     fi
@@ -171,16 +172,27 @@ use_user_costomized_profiles() {
 ### setting dock items
 ###
 
-
 # user customized profiles
 use_user_costomized_profiles
 
+echo "setting dock items..."
+
 # launchpad
-$DEF_W $DOCK 'checked-for-launchpad' -bool true
+defaults write $DOCK 'checked-for-launchpad' -bool true
+
+# making sure dock file is available (if changed recently before running this script)
+sleep 2
   
 # clearing dock
-$DEF_W $DOCK 'persistent-apps' -array ''
-$DEF_W $DOCK 'persistent-others' -array ''
+defaults write $DOCK 'persistent-apps' -array ''
+# hiding recent section in dock is a system preferences value which is re-set in 11c_macos_preferences
+# show last used applications in the dock
+defaults write com.apple.dock show-recents -bool false
+defaults write $DOCK 'recent-apps' -array ''
+defaults write $DOCK 'persistent-others' -array ''
+
+# making sure dock file is available (if changed recently before running this script)
+sleep 2
 
 # entries from profile
 set_dock_from_profile
@@ -213,7 +225,8 @@ set_dock_from_profile
 
 
 ### applying changes
-$OSA -e 'tell application "Dock" to quit'
+#osascript -e 'tell application "Dock" to quit'
+killall Dock
 
 
 ### done

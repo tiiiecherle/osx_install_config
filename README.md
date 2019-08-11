@@ -27,6 +27,7 @@ Happy installing, customizing and enjoying macOS ;)
 Table of contents
 -----
 
+[Default shell and config file](#default-shell-and-config-file)  
 [Usage](#usage)  
 [0 Bootable usb device](#0bootable-usb-device)  
 [1 NVRAM, system integrity protection and secure boot](#1nvram-system-integrity-protection-and-secure-boot)  
@@ -43,10 +44,23 @@ Table of contents
 [12 Licenses](#12-licenses)  
 [13 Apple Mail and accounts](#13-apple-mail-and-accounts)  
 [14 Samba](#14-samba)  
-[15 Manual Preferences](#15-manual-preferences)  
+[15 Finalizations](#15-finalizations)  
 [16 Seed update configuration](#16-seed-update-configuration)  
 [Disclaimer](#disclaimer)  
 [Credits](#credits)  
+
+
+Default shell and config file
+-----
+In macOS 10.15 zsh replaces bash as default shell. I took the chance to rewrite and improve all scripts in many different aspects and functionality.
+
+For optimization and easier maintenance I introduced a [config file](https://github.com/tiiiecherle/osx_install_config/blob/master/_config_file/shellscriptsrc.sh) that is installed to `~/.shellscriptrc` and is sourced before running a lot of the scripts. It includes an auto-update function. Make sure the versions of the script and the config file are always up-to-date and compatible.
+
+The config file can be installed by using this command in the terminal:
+
+`curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh`
+
+From now on all scripts use zsh as default interpreter. At the time of the change (2019-07) all scripts are zsh and bash compatible, but further development is only being done for the default macOS shell, therefore zsh. Using bash instead of zsh can easily be achieved by using the bash shebang in the script.
 
 
 Usage
@@ -68,6 +82,7 @@ For easier maintenance most of the comments inside the scripts and manuals are n
 Before deleting everything on your drive and starting a clean macOS install make sure you have at least one working backup of all relevant files. I recommend doing one backup with [the backup script](#7-backup-and-restore-script) and another one on a second external device or partition using time machine.
 
 As mentioned above some scripts (e.g. homebrew-update, hosts, network-select, etc.) come with installer scripts that copy the needed files to the respective locations in the system and adjust their ownership and permissions. They can be used on a regular basis (some of them automatically) after installation.
+
 
 
 0	Bootable usb device
@@ -113,22 +128,23 @@ If you want to disable SIP (partially or completely) follow these steps. Before 
 0. Open Utilities
 0. Open Terminal
 0. `csrutil status`
-0. `csrutil enable --without debug`
+0. `csrutil enable --without debug --without fs`
 0. `csrutil status`
 0. Reboot
 
 If SIP is enabled `csrutil status` shows the status of every SIP component. It is possible to disable one single component while keeping SIP partially enabled, e.g.:
 
 ```
-csrutil enable --no-internal  
+csrutil enable --no-internal
 csrutil enable --without kext  
 csrutil enable --without fs  
 csrutil enable --without debug  
 csrutil enable --without dtrace  
 csrutil enable --without nvram
+csrutil enable --without basesystem
 ```
-or multiple components can be disabled, e.g.:  
-`csrutil enable --without kext --without debug`
+or multiple components can be disabled, e.g. for these scripts to work use:  
+`csrutil enable --without debug --without fs`
 
 To disable SIP completely, use `csrutil disable`.  
 To enable all components, use `csrutil enable`.  
@@ -149,7 +165,11 @@ This can be reset for security reasons after finishing the installation.
 
 2	Preparations
 -----
+##### macOS Updates
 Script 2a updates macOS on the command line if the system should not be up to date. Script 2b is a short manual and checklist which contains a few steps that have to be done before continuing with the next steps.
+
+##### zsh as default shell und customizations
+[Install command line tools](https://github.com/tiiiecherle/osx_install_config/tree/master/02_preparations/2c_install_command_line_tools.sh) and [set zsh as default shell](https://github.com/tiiiecherle/osx_install_config/tree/master/02_preparations/2d_login_shell_customization.sh) incl. customizations with [oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh).
 
 3	Homebrew, Casks and Mas
 -----
@@ -286,6 +306,7 @@ The following preferences are not yet configurable with the script. Any help to 
 
 * preferences - control center - sorting order
 * preferences - mac app store - download all bought apps on other macs automatically
+* preferences - user & groups - applying login window accessibility settings without opening the dialog in system preferences
 
 12 Licenses
 -----
@@ -324,7 +345,7 @@ For the fastest and most reliable connection in the current version it
 * deletes all other entries from nsmb.conf file.
 
 
-15 Manual Preferences
+15 Finalizations
 -----
 Despite all the automation, not everything in the process can be done by scripts yet. These files (for Apple apps and System Preferences) just give me a checklist of all preferences to be set manually. Every help to make this list shorter and add the settings to a script is welcome.
 

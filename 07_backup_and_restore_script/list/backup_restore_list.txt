@@ -34,9 +34,8 @@ m	~/Library/Application Support/Adobe/Adobe PDF/Settings/ebook.joboptions
 
 # Affinity
 echo Affinity
-u	/Applications/Affinity Publisher Beta.app
-u	~/Library/Application Support/Affinity Publisher Beta/user/file_export_options.dat
-u	~/Library/Preferences/com.seriflabs.affinitypublisher.beta.plist
+u	~/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/user/file_export_options.dat
+u	~/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Preferences/com.seriflabs.affinitypublisher.plist
 u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/user/file_export_options.dat
 u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Preferences/com.seriflabs.affinitydesigner.plist
 u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/user/file_export_options.dat
@@ -158,8 +157,8 @@ echo Chromium
 
 # Color Profiles
 echo Color Profiles
-m	/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom
-u	/Library/ColorSync/Profiles/Displays/21.04.10-5000K-18-135cd-trc_ts_ohne_rotkorrektur.icc
+m	/Library/ColorSync/Profiles/eci
+#u	~/Library/ColorSync
 
 # Commander One
 echo Commander One
@@ -362,8 +361,8 @@ u	~/Library/Keychains
 #u	~/Library/LaunchAgents/com.run_script_on_boot.plist
 
 # LaunchDaemons
-echo LaunchDaemons
-m	/Library/LaunchDaemons/com.hostsfile.install_update.plist
+#echo LaunchDaemons
+#m	/Library/LaunchDaemons/com.hostsfile.install_update.plist
 
 # LibreOffice
 echo LibreOffice
@@ -541,6 +540,10 @@ echo Quicksilver
 m	~/Library/Application Support/Quicksilver
 m	~/Library/Preferences/com.blacktree.Quicksilver.plist
 
+# Reminders
+echo Reminders
+u	~/Library/Reminders
+
 # Remote Buddy
 #echo Remote Buddy
 #m	/Applications/Remote Buddy.app
@@ -638,6 +641,13 @@ u	~/.ssh
 #u	~/Library/Containers/ru.keepcoder.Telegram/Data/Library/Preferences/ru.keepcoder.Telegram.plist
 #u	~/Library/Preferences/ru.keepcoder.Telegram.plist
 
+# TextMate
+#echo TextMate
+#m	/Applications/TextMate.app
+u	~/Library/Application Support/TextMate/Bundles/Themes.tmbundle
+u	~/Library/Application Support/TextMate/Global.tmProperties
+u	~/Library/Preferences/com.macromates.TextMate.plist
+
 # The Archive Browser
 echo The Archive Browser
 #m	/Applications/The Archive Browser.app
@@ -705,7 +715,7 @@ u	~/Library/Preferences/org.idrix.VeraCrypt.plist
 # video ffmpeg
 echo video ffmpeg
 m	/Applications/video_720p_h265_aac_shrink.app
-m	/Applications/video_1080p_h265_aac_shrink.app
+#m	/Applications/video_1080p_h265_aac_shrink.app
 
 # VirtualBox
 echo VirtualBox

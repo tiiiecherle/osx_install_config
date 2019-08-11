@@ -1,0 +1,48 @@
+### macOS
+
+reboot to recovery (cmd +R)
+
+	set secure boot in recovery (only on macs with a t2 processor)
+	- only allow signed sources
+	- do not allow boot from usb
+	- set recovery password
+
+	set SIP in recovery
+	csrutil enable --without fs --without debug
+
+
+	reboot
+
+delete icloud account in internet accounts
+login to icloud account and select everything that shall sync
+
+open "mail" and keep open in background for indexing
+
+virus scanner
+	check if virus scan is autostarted (symbol "B" in menu bar, eventually in bartender)
+	virus scan (menu bar) - open main window - "user-defined scan" - complete disk (macintosh_hd)
+
+print filevault_key
+
+delete restore files on desktop and empty trash
+
+add card(s) to apple wallet (onyl possible with sip fully enabled)
+
+enable touch id
+
+
+
+
+
+### iOS (ws & ts)
+
+iphone manual preferences
+
+phone
+	calls on other devices
+		activate needed devices
+
+messages
+	text message forwarding
+		activate needed devices
+

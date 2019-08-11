@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 
 # sfltool
 # sfltool restore|add-item|save-lists|test|archive|enable-modern|dump-server-state|clear|disable-modern|dump-storage|list-info [options]
@@ -193,7 +193,7 @@ fi
 NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print systemitems:VolumesList" ~/Library/Preferences/com.apple.sidebarlists.plist | awk '/^[[:blank:]]*Dict {/' | wc -l)
 #echo $NUMBER_OF_ENTRIES
 # -1 because counting of items starts with 0, not with 1
-LISTED_ENTRIES=$(($NUMBER_OF_ENTRIES-1))
+LISTED_ENTRIES=$((NUMBER_OF_ENTRIES-1))
 #echo $LISTED_ENTRIES
 for i in $(seq 0 $LISTED_ENTRIES)
 do 
@@ -206,6 +206,7 @@ do
         #echo $i
     fi
 done
+
 if [[ $NEEDED_ENTRY != "" ]]
 then
     /usr/libexec/PlistBuddy -c "Add systemitems:VolumesList:$NEEDED_ENTRY:Visibility string NeverVisible" ~/Library/Preferences/com.apple.sidebarlists.plist

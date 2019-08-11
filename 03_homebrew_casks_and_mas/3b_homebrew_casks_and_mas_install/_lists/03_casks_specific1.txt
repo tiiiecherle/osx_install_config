@@ -6,3 +6,4 @@ jameica
 #jdownloader
 spotify
 transmission
+gas-mask

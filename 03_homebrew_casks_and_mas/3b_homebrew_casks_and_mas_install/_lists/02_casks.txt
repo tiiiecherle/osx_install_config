@@ -22,7 +22,7 @@ cyberduck
 disk-inventory-x
 eaglefiler
 easyfind
-flash-npapi
+#flash-npapi
 firefox
 geburtstagschecker
 google-earth-pro
@@ -53,6 +53,7 @@ sejda-pdf
 signal
 skype
 teamviewer
+textmate
 the-archive-browser
 the-unarchiver
 tnefs-enough

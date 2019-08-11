@@ -1,85 +1,19 @@
-#!/bin/bash
+#!/bin/zsh
 
 ###
-### backup / restore script v41
-### last version without parallel was v35
-### last version without gpg was v36
-### last version with separate backup scripts for calendar and contact backup scripts was v38
+### sourcing config file
 ###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
 
 
 ###
 ### asking password upfront
 ###
 
-# function for reading secret string (POSIX compliant)
-enter_password_secret()
-{
-    # read -s is not POSIX compliant
-    #read -s -p "Password: " SUDOPASSWORD
-    #echo ''
-    
-    # this is POSIX compliant
-    # disabling echo, this will prevent showing output
-    stty -echo
-    # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-    trap 'stty echo' EXIT
-    # asking for password
-    printf "Password: "
-    # reading secret
-    read -r "$@" SUDOPASSWORD
-    # reanabling echo
-    stty echo
-    trap - EXIT
-    # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-    printf "\n"
-    # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-    # has to be part of the function or it wouldn`t be updated during the maximum three tries
-    #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-}
-
-# unset the password if the variable was already set
-unset SUDOPASSWORD
-
-# making sure no variables are exported
-set +a
-
-# asking for the SUDOPASSWORD upfront
-# typing and reading SUDOPASSWORD from command line without displaying it and
-# checking if entered password is the sudo password with a set maximum of tries
-NUMBER_OF_TRIES=0
-MAX_TRIES=3
-while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-do
-    NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-    #echo "$NUMBER_OF_TRIES"
-    if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    then
-        enter_password_secret
-        ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-        if [ $? -eq 0 ]
-        then 
-            break
-        else
-            echo "Sorry, try again."
-        fi
-    else
-        echo ""$MAX_TRIES" incorrect password attempts"
-        exit
-    fi
-done
-
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
-# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-}
+env_enter_sudo_password
 
 
 
@@ -87,71 +21,7 @@ sudo()
 ### functions
 ###
 
-# kill can only be silenced when 
-# wrapped into function >/dev/null 2>&1 
-# or with wait 
-# or with kill -13
-
-function get_running_subprocesses()
-{
-    SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
-    SCRIPT_COMMAND=$(ps -o comm= $$)
-	PARENT_SCRIPT_COMMAND=$(ps -o comm= $PPID)
-	if [[ $PARENT_SCRIPT_COMMAND == "$(basename $SHELL)" ]] || [[ $PARENT_SCRIPT_COMMAND == "-$(basename $SHELL)" ]] || [[ $PARENT_SCRIPT_COMMAND == "" ]]
-	then
-        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | awk '{print $1}')
-    else
-        RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | grep -v "$PARENT_SCRIPT_COMMAND" | awk '{print $1}')
-    fi
-}
-
-function kill_subprocesses() 
-{
-    # kills only subprocesses of the current process
-    #pkill -15 -P $$
-    #kill -15 $(pgrep -P $$)
-    #echo "killing processes..."
-    
-    # kills all descendant processes incl. process-children and process-grandchildren
-    # giving subprocesses the chance to terminate cleanly kill -15
-    get_running_subprocesses
-    if [[ $RUNNING_SUBPROCESSES != "" ]]
-    then
-        kill -15 $RUNNING_SUBPROCESSES
-        # do not wait here if a process can not terminate cleanly
-        #wait $RUNNING_SUBPROCESSES 2>/dev/null
-    else
-        :
-    fi
-    # waiting for clean subprocess termination
-    TIME_OUT=0
-    while [[ $RUNNING_SUBPROCESSES != "" ]] && [[ $TIME_OUT -lt 3 ]]
-    do
-        get_running_subprocesses
-        sleep 1
-        TIME_OUT=$((TIME_OUT+1))
-    done
-    # killing the rest of the processes kill -9
-    get_running_subprocesses
-    if [[ $RUNNING_SUBPROCESSES != "" ]]
-    then
-        kill -9 $RUNNING_SUBPROCESSES
-        wait $RUNNING_SUBPROCESSES 2>/dev/null
-    else
-        :
-    fi
-    # unsetting variable
-    unset RUNNING_SUBPROCESSES
-}
-
-function kill_main_process() 
-{
-    # kills processes itself
-    #kill $$
-    kill -13 $$
-}
-
-function unset_variables() {
+unset_variables() {
     unset OPTION
     #unset RESTOREDIR
     unset RESTOREMASTERDIR
@@ -169,235 +39,171 @@ function unset_variables() {
     unset GUI_APP_TO_BACKUP
 }
 
-function delete_tmp_backup_script_fifo1() {
-    if [ -e "/tmp/tmp_backup_script_fifo1" ]
+delete_tmp_backup_script_fifo1() {
+    # fifo1 is used for files backup 
+    if [[ -e "/tmp/tmp_backup_script_fifo1" ]]
     then
         rm "/tmp/tmp_backup_script_fifo1"
     else
         :
     fi
-    if [ -e "/tmp/run_from_backup_script1" ]
-    then
-        rm "/tmp/run_from_backup_script1"
-    else
-        :
-    fi
 }
 
-function create_tmp_backup_script_fifo1() {
+create_tmp_backup_script_fifo1() {
+    # fifo1 is used for files backup 
     delete_tmp_backup_script_fifo1
-    touch "/tmp/run_from_backup_script1"
-    echo "1" > "/tmp/run_from_backup_script1"
     mkfifo -m 600 "/tmp/tmp_backup_script_fifo1"
     builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo1" &
 }
 
-function delete_tmp_backup_script_fifo2() {
-    if [ -e "/tmp/tmp_backup_script_fifo2" ]
+delete_tmp_backup_script_fifo2() {
+    # fifo2 is used for homebrew cask update 
+    if [[ -e "/tmp/tmp_backup_script_fifo2" ]]
     then
         rm "/tmp/tmp_backup_script_fifo2"
     else
         :
     fi
-    if [ -e "/tmp/run_from_backup_script2" ]
-    then
-        rm "/tmp/run_from_backup_script2"
-    else
-        :
-    fi
 }
 
-function create_tmp_backup_script_fifo2() {
+create_tmp_backup_script_fifo2() {
+    # fifo2 is used for homebrew cask update
     delete_tmp_backup_script_fifo2
-    touch "/tmp/run_from_backup_script2"
-    echo "1" > "/tmp/run_from_backup_script2"
     mkfifo -m 600 "/tmp/tmp_backup_script_fifo2"
     builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo2" &
 }
 
-function delete_tmp_homebrew_script_fifo() {
-    if [ -e "/tmp/tmp_homebrew_script_fifo" ]
+install_update_dependency_apps() {
+    ### gui apps backup
+    echo ''
+    echo "updating gui backup app..."    
+    APP_TO_INSTALL="gui_apps_backup"
+    if [[ -e /Applications/"$APP_TO_INSTALL".app ]]
     then
-        rm "/tmp/tmp_homebrew_script_fifo"
+    	rm -rf /Applications/"$APP_TO_INSTALL".app
     else
-        :
+    	:
     fi
-    if [ -e "/tmp/run_for_homebrew" ]
-    then
-        rm "/tmp/run_for_homebrew"
-    else
-        :
-    fi
-}
-
-function create_tmp_homebrew_script_fifo() {
-    delete_tmp_homebrew_script_fifo
-    touch "/tmp/run_for_homebrew"
-    echo "1" > "/tmp/run_for_homebrew"
-    mkfifo -m 600 "/tmp/tmp_homebrew_script_fifo"
-    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_homebrew_script_fifo" &
-}
-
-function databases_apps_security_permissions() {
-    DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
-    #echo "$DATABASE_SYSTEM"
-	DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
-    #echo "$DATABASE_USER"
-}
+    cp -a "$WORKING_DIR"/gui_apps/"$APP_TO_INSTALL".app /Applications/
+    chown 501:admin /Applications/"$APP_TO_INSTALL".app
+    chmod 755 /Applications/"$APP_TO_INSTALL".app
+    #xattr -dr com.apple.quarantine /Applications/"$APP_TO_INSTALL".app
     
-function identify_terminal() {
-    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]
+    ### vbox backup app
+    #echo ''
+    echo "updating vbox backup app..."    
+    APP_TO_INSTALL="virtualbox_backup"
+    if [[ -e /Applications/"$APP_TO_INSTALL".app ]]
     then
-    	export SOURCE_APP=com.apple.Terminal
-    	export SOURCE_APP_NAME="Terminal"
-    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]
-    then
-        export SOURCE_APP=com.googlecode.iterm2
-        export SOURCE_APP_NAME="iTerm"
-	else
-		export SOURCE_APP=com.apple.Terminal
-		echo "terminal not identified, setting automating permissions to apple terminal..."
-	fi
-}
-
-function give_apps_security_permissions() {
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-    then
-        # macos versions until and including 10.13 
-        # all gui app backups in one script
-        # accessibility entry for reminders backup
-        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-        # reminders
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-        # contacts
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
-        # calendar
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL);"
+    	rm -rf /Applications/"$APP_TO_INSTALL".app
     else
-        # macos versions 10.14 and up
-        # accessibility gui apps backup
-        #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
-        # accessibility brew cask update
-        sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"
-        # reminders
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceReminders','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
-        # contacts
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
-        # calendar
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,NULL,?,NULL,NULL,?);"
-        
-        # working, but does not show in gui of system preferences, use csreq for the entry to show
-        # automation gui backup app
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.gui-apps-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-        # automation files
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-        #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
-        # automation vbox backup app
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-        sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.virtualbox-backup',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
-        # automation brew cask update
-	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-	    #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
-	    
-	    :
+    	:
     fi
-    sleep 1
-}
-
-function remove_apps_security_permissions_start() {
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+    cp -a "$WORKING_DIR"/vbox_backup/"$APP_TO_INSTALL".app /Applications/
+    chown 501:admin /Applications/"$APP_TO_INSTALL".app
+    chown -R 501:admin /Applications/"$APP_TO_INSTALL".app/Contents/custom_files/
+    chmod 755 /Applications/"$APP_TO_INSTALL".app
+    chmod 770 /Applications/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
+    #xattr -dr com.apple.quarantine /Applications/"$APP_TO_INSTALL".app  
+    
+    ### installing / updating homebrew update script
+    #echo ''
+    echo "updating homebrew formulae and casks app..."
+	APP_TO_INSTALL="brew_casks_update"
+    if [[ -e /Applications/"$APP_TO_INSTALL".app ]]
     then
-        # macos versions until and including 10.13
-        # gui apps backup
-        sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
-        sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
-        # brew cask update
-        sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.brew-casks-update';"
+    	rm -rf /Applications/"$APP_TO_INSTALL".app
     else
-        # macos versions 10.14 and up
-        # gui apps backup
-        #sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
-        #sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.gui-apps-backup';"
-        # automation files
-        #sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
-        #sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
-        # vbox backup app
-        #sqlite3 "$DATABASE_USER" "delete from access where client='com.apple.ScriptEditor.id.virtualbox-backup';"
-        
-        :
+    	:
     fi
-    sleep 1
+    cp -a "$WORKING_DIR"/update_homebrew/"$APP_TO_INSTALL".app /Applications/
+    chown 501:admin /Applications/"$APP_TO_INSTALL".app
+    chown -R 501:admin /Applications/"$APP_TO_INSTALL".app/Contents/custom_files/
+    chmod 755 /Applications/"$APP_TO_INSTALL".app
+    chmod 770 /Applications/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
+    #xattr -dr com.apple.quarantine /Applications/"$APP_TO_INSTALL".app
+    
+    ### updating hosts script
+	if [[ -e "$WORKING_DIR"/update_hosts/hosts_file_generator.sh ]]
+	then
+        #echo ''
+        echo "updating hosts update script..."
+        sudo mkdir -p /Library/Scripts/custom/
+        sudo cp "$WORKING_DIR"/update_hosts/hosts_file_generator.sh /Library/Scripts/custom/hosts_file_generator.sh
+        sudo chown -R root:wheel /Library/Scripts/custom/
+        sudo chmod -R 755 /Library/Scripts/custom/
+    else
+        echo ""$WORKING_DIR"/update_hosts/hosts_file_generator.sh not found, skipping updating hosts script..."
+    fi
 }
 
-function remove_apps_security_permissions_stop() {
-    if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-    then
-        # macos versions until and including 10.13 
-        :
-    else
-        # macos versions 10.14 and up
-        # automation files
-        sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.systemevents');"
-        #sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.Terminal');"
-        
-        :
-    fi
-    #sleep 1
+give_apps_security_permissions() {
+    
+    ### security permissions
+	APPS_SECURITY_ARRAY=(
+    # app name									security service										    allowed (1=yes, 0=no)
+	"Script Editor                              kTCCServiceAccessibility                             	    1"
+	"brew_casks_update                          kTCCServiceAccessibility                                    1"
+	"gui_apps_backup                            kTCCServiceAccessibility                             	    1"
+	"gui_apps_backup                            kTCCServiceReminders                             	        1"
+	"gui_apps_backup                            kTCCServiceAddressBook                             	        1"
+	"gui_apps_backup                            kTCCServiceCalendar                             	        1"
+	"virtualbox_backup                          kTCCServiceAccessibility                             	    1"
+	)
+	PRINT_SECURITY_PERMISSIONS_ENTRYS="no" env_set_apps_security_permissions
+    
+    
+    ### automation
+    # macos versions 10.14 and up
+    # source app name							automated app name										allowed (1=yes, 0=no)
+	AUTOMATION_APPS=(
+	"Terminal									System Events                   						1"
+	"Terminal									Finder                   						        1"
+	"gui_apps_backup							System Events                   						1"
+	"brew_casks_update							System Events                   						1"
+	"brew_casks_update							Terminal                   						        1"
+	"virtualbox_backup							System Events                   						1"
+	"virtualbox_backup							Terminal                   						        1"
+	)
+	PRINT_AUTOMATING_PERMISSIONS_ENTRYS="no" env_set_apps_automation_permissions
+    
 }
 
-ask_for_variable() {
-	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
-	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
-	do
-		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
-		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
-		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	done
-	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
+number_of_max_processes() {
+    NUMBER_OF_CORES=$(parallel --number-of-cores)
+    NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
+    #echo $NUMBER_OF_MAX_JOBS
+    NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
+    #echo $NUMBER_OF_MAX_JOBS_ROUNDED
 }
 
 
 ### variables
-databases_apps_security_permissions
-identify_terminal
+env_databases_apps_security_permissions
+env_identify_terminal
 
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
-SCRIPT_DIR_FINAL=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
-APPLESCRIPTDIR="$SCRIPT_DIR"
-
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+WORKING_DIR="$SCRIPT_DIR_ONE_BACK"
+SCRIPT_DIR_FINAL="$SCRIPT_DIR_TWO_BACK"
+APPLESCRIPTDIR="$WORKING_DIR"
 
 
 ### trapping
-[[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
-[[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
-# a sourced script does not exit, it ends with return, so checking for session master is sufficent
-# subprocesses will not be killed on return, only on exit
-#if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]] && [[ "$SCRIPT_SOURCED" == "no" ]]
-if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
-then
-    # script is session master and not run from another script (S on mac Ss on linux)
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; stty sane; kill_subprocesses >/dev/null 2>&1; unset SUDOPASSWORD; exit" EXIT
-else
-    # script is not session master and run from another script (S+ on mac and linux)
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; printf '\n'; stty sane; unset SUDOPASSWORD; kill_main_process" SIGHUP SIGINT SIGTERM
-    trap "delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; delete_tmp_homebrew_script_fifo; remove_apps_security_permissions_stop; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; exit" EXIT
-fi
-set -e
+trap_function_exit_middle() { delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; unset USE_PASSWORD; }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
 
 echo ''
 
 if [[ "$OPTION" == "" ]]
 then
     # choosing the backup and defining $BACKUP variable
-    PS3="Please select option by typing the number: "
+    COLUMNS_DEFAULT="$COLUMNS"
+    COLUMNS=1 PS3="Please select option by typing the number: "
     select OPTION in BACKUP RESTORE
     do
-        echo You selected option $OPTION.
+        echo "you selected option "$OPTION"..."
         echo ''
+        COLUMNS="$COLUMNS_DEFAULT"
         break
     done
 else
@@ -419,7 +225,7 @@ fi
 ###
 
 # starting a function to tee a record to a logfile
-function backup_restore {
+backup_restore() {
     
     # backupdate
     DATE=$(date +%F)
@@ -428,14 +234,8 @@ function backup_restore {
     #SYSTEMUSERS=$(pushd /Users/ >/dev/null 2>&1; printf "%s " * | egrep -v "^[.]" | egrep -v "Guest"; popd >/dev/null 2>&1)
     SYSTEMUSERS=$(ls -1 /Users/ | egrep -v "^[.]" | egrep -v "Shared" | egrep -v "Guest")
     
-    # getting logged in user
-    #echo "LOGNAME is $(logname)..."
-    #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-    #stat -f%Su /dev/console
-    #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-    # recommended way
-    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-    #echo "loggedInUser is $loggedInUser..."
+    # getting logged in user and unique id
+    # done in config script
 
     if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/ //g') == "1" ]]
     then
@@ -453,18 +253,21 @@ function backup_restore {
     else
         if [[ "$OPTION" == "BACKUP" ]]
         then
-            PS3="Please select user to backup by typing the number: "
+            COLUMNS_DEFAULT="$COLUMNS"
+            COLUMNS=1 PS3="Please select user to backup by typing the number: "
         elif [[ "$OPTION" == "RESTORE" ]]
         then
-            PS3="Please select user to restore to by typing the number: "
+            COLUMNS_DEFAULT="$COLUMNS"
+            COLUMNS=1 PS3="Please select user to restore to by typing the number: "
         else
             :
         fi
         
         select SELECTEDUSER in ""$SYSTEMUSERS""
         do
-            echo You selected user "$SELECTEDUSER".
-            echo ""
+            echo "you selected user "$SELECTEDUSER"..."
+            echo ''
+            COLUMNS="$COLUMNS_DEFAULT"
             break
         done
     fi
@@ -492,7 +295,7 @@ function backup_restore {
     # confirm run
     VARIABLE_TO_CHECK="$RUN_SCRIPT"
     QUESTION_TO_ASK="do you want to run the script with option ""$OPTION"" and for user ""$SELECTEDUSER"" (Y/n)? "
-    ask_for_variable
+    env_ask_for_variable
     RUN_SCRIPT="$VARIABLE_TO_CHECK"
     sleep 0.1
     
@@ -522,34 +325,32 @@ function backup_restore {
     
         # path to current working directory
         CURRENT_DIR="$(pwd)"
-        echo current directory is "$CURRENT_DIR"
+        echo "current directory is "$CURRENT_DIR"..."
         
         # path to running script directory
-        #SCRIPT_DIR="$(dirname $0)"
-        #SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
-        echo script directory is "$SCRIPT_DIR"
+        echo "script directory is "$WORKING_DIR"..."
         
         # checking syntax of backup / restore list
-        BACKUP_RESTORE_LIST="$SCRIPT_DIR"/list/backup_restore_list.txt
+        BACKUP_RESTORE_LIST="$WORKING_DIR"/list/backup_restore_list.txt
         echo ""
         SYNTAXERRORS=0
         LINENUMBER=0
-        while IFS='' read -r line || [[ -n "$line" ]]
-        do
-            LINENUMBER=$(($LINENUMBER+1))
+        while IFS= read -r line || [[ -n "$line" ]]
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+            LINENUMBER=$((LINENUMBER+1))
         	if [[ ! "$line" == "" ]] && [[ ! $line =~ ^[\#] ]] && [[ ! $line =~ ^m[[:blank:]] ]] && [[ ! $line =~ ^u[[:blank:]] ]] && [[ ! $line =~ ^echo[[:blank:]] ]]
         	then
                 echo "wrong syntax for entry in line "$LINENUMBER": "$line""
-                SYNTAXERRORS=$(($SYNTAXERRORS+1))
+                SYNTAXERRORS=$((SYNTAXERRORS+1))
             else
             	:
                 #echo "correct entry"
             fi
-        	    
-        done <"$BACKUP_RESTORE_LIST"
+        done <<< "$(cat "$BACKUP_RESTORE_LIST")"
         
         #echo "$SYNTAXERRORS"
-        if [ "$SYNTAXERRORS" -gt "0" ]
+        if [[ "$SYNTAXERRORS" -gt "0" ]]
         then
             echo "there are syntax errors in the backup / restore list, please correct the entries and rerun the script..."
             exit
@@ -562,46 +363,34 @@ function backup_restore {
         ### updates and installations to all macs running the script
         ###
         
-        if [[ -e "$SCRIPT_DIR"/update_macos/updates_macos.sh ]]
+        if [[ -e "$WORKING_DIR"/update_macos/updates_macos.sh ]]
         then
-            . "$SCRIPT_DIR"/update_macos/updates_macos.sh
+            . "$WORKING_DIR"/update_macos/updates_macos.sh
             wait
         else
-            echo """$SCRIPT_DIR""/update_macos/updates_macos.sh not found, skipping..."
+            echo ""$WORKING_DIR"/update_macos/updates_macos.sh not found, skipping..."
         fi
         
         ###
         ### checking installation of needed tools
         ###
         
-        echo checking if all needed tools are installed...
+        echo "checking if all needed tools are installed"...
         
         # installing command line tools
-        if xcode-select --install 2>&1 | grep installed >/dev/null
-        then
-          	echo command line tools are installed...
-        else
-          	echo command line tools are not installed, installing...
-          	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
-          	#sudo xcodebuild -license accept
-        fi
+        env_command_line_tools_install_shell
         
         # checking homebrew including script dependencies
-        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-        #echo ''
-        #echo "loggedInUser is $loggedInUser..."
-        if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
+        if command -v brew &> /dev/null
         then
-            echo homebrew is not installed, exiting...
-            exit
-        else
-            echo homebrew is installed...
+        	# installed
+            echo "homebrew is installed..."
             if [[ "$OPTION" == "BACKUP" ]]; 
             then
                 # checking for missing dependencies
-                for formula in gnu-tar pigz pv coreutils parallel gnupg cliclick
+                for formula in gnu-tar pigz pv coreutils gnupg cliclick
                 do
-                	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
+                	if [[ $(brew list | grep "^$formula$") == '' ]]
                 	then
                 		#echo """$formula"" is NOT installed..."
                 		MISSING_SCRIPT_DEPENDENCY="yes"
@@ -612,7 +401,7 @@ function backup_restore {
                 done
                 if [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
                 then
-                    echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel, gnupg and cliclick is missing, exiting...
+                    echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, gnupg and cliclick is missing, exiting...
                     exit
                 else
                     echo needed homebrew tools are installed...     
@@ -622,7 +411,7 @@ function backup_restore {
                 # checking for missing dependencies
                 for formula in coreutils parallel
                 do
-                	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
+                	if [[ $(brew list | grep "^$formula$") == '' ]]
                 	then
                 		#echo """$formula"" is NOT installed..."
                 		MISSING_SCRIPT_DEPENDENCY="yes"
@@ -640,6 +429,10 @@ function backup_restore {
                 fi
                 unset MISSING_SCRIPT_DEPENDENCY
             fi
+        else
+            # not installed
+            echo "homebrew is not installed, exiting..."
+            exit
         fi
         
         #echo ''
@@ -649,31 +442,33 @@ function backup_restore {
         ###
         
         # activating keepingyouawake
-        if [ -e /Applications/KeepingYouAwake.app ]
+        if [[ -e /Applications/KeepingYouAwake.app ]]
         then
             echo ''
             echo "activating keepingyouawake..."
-            echo ''
+            #echo ''
             open -g keepingyouawake:///activate
         else
             :
         fi
         
+        install_update_dependency_apps
+        echo ''
+        
         echo "resetting security permissions for backup apps..."
-        remove_apps_security_permissions_start
         give_apps_security_permissions
         echo ''
         
         # checking if backup option was selected
         if [[ "$OPTION" == "BACKUP" ]]; 
-            then
+        then
             echo "running backup..."
             sleep 1
             
             # opening applescript which will ask for saving location of compressed file
             echo ''
             echo "asking for directory to save the backup to..."
-            TARGZSAVEDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_save_to.scpt 2> /dev/null | sed s'/\/$//')
+            TARGZSAVEDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_save_to.scpt 2> /dev/null | sed s'/\/$//')
             sleep 0.5
 
             #echo ''
@@ -690,12 +485,19 @@ function backup_restore {
             sleep 0.1
             
             ### asking for backups
-            if [[ -e "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".conf ]]
+            if [[ -e "$WORKING_DIR"/profiles/backup_profile_"$loggedInUser".conf ]]
             then
                 echo "backup profile found..."
                 #echo ''
-                while IFS='' read -r line || [[ -n "$line" ]]
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+				    VERSION_TO_CHECK_AGAINST=10.15
+                    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+                    then
+                        # macos 10.15 and newer
+                        if [[ $(echo "$line" | grep "REMINDERS_BACKUP") != "" ]]; then continue; fi
+                    fi
                     if [[ $(echo "$line" | grep "^#") != "" ]]
                     then
                         :
@@ -705,19 +507,25 @@ function backup_restore {
                         VARIABLE_VALUE=$(echo "$line" | cut -d= -f 2 | tr -d '"')
                         printf "%-25s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
                     fi
-                done <"$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".conf
-                #cat "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".conf | grep -v "^#" && printf '\n'
+                done <<< "$(cat ""$WORKING_DIR"/profiles/backup_profile_"$loggedInUser".conf")"
+                
                 echo ''
                 VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
                 QUESTION_TO_ASK="do you want to use these settings (Y/n)? "
-                ask_for_variable
+                env_ask_for_variable
                 RUN_WITH_PROFILE="$VARIABLE_TO_CHECK"
                 sleep 0.1
                 
                 if [[ "$RUN_WITH_PROFILE" =~ ^(yes|y)$ ]]
                 then
                     echo ''
-                    . "$SCRIPT_DIR"/profiles/backup_profile_"$loggedInUser".conf
+                    . "$WORKING_DIR"/profiles/backup_profile_"$loggedInUser".conf
+                    VERSION_TO_CHECK_AGAINST=10.15
+                    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+                    then
+                        # macos 10.15 and newer
+                        REMINDERS_BACKUP="no"
+                    fi
                 else
                     echo ''
                 fi
@@ -733,7 +541,7 @@ function backup_restore {
             then
                 VARIABLE_TO_CHECK="$BACKUP_VBOX"
                 QUESTION_TO_ASK="do you want to backup virtualbox images (y/N)? "
-                ask_for_variable
+                env_ask_for_variable
                 BACKUP_VBOX="$VARIABLE_TO_CHECK"
                 sleep 0.1
                 #
@@ -741,7 +549,7 @@ function backup_restore {
                 then
                     # opening applescript which will ask for saving location of compressed file
                     echo "asking for directory to save the vbox backup to..."
-                    VBOXSAVEDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/vbox_backup/ask_save_to_vbox.scpt 2> /dev/null | sed s'/\/$//')
+                    VBOXSAVEDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/vbox_backup/ask_save_to_vbox.scpt 2> /dev/null | sed s'/\/$//')
                     sleep 0.5
                     #echo ''
                     # checking if valid path for backup was selected
@@ -765,150 +573,165 @@ function backup_restore {
             # files backup
             VARIABLE_TO_CHECK="$FILES_BACKUP"
             QUESTION_TO_ASK="do you want to backup local files (y/N)? "
-            ask_for_variable
+            env_ask_for_variable
             FILES_BACKUP="$VARIABLE_TO_CHECK"
             sleep 0.1
             
             # reminders backup
-            VARIABLE_TO_CHECK="$REMINDERS_BACKUP"
-            QUESTION_TO_ASK="do you want to run a reminders backup (y/N)? "
-            ask_for_variable
-            REMINDERS_BACKUP="$VARIABLE_TO_CHECK"
-            sleep 0.1
+    	    VERSION_TO_CHECK_AGAINST=10.14
+            if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos versions until and including 10.14
+                VARIABLE_TO_CHECK="$REMINDERS_BACKUP"
+                QUESTION_TO_ASK="do you want to run a reminders backup (y/N)? "
+                env_ask_for_variable
+                REMINDERS_BACKUP="$VARIABLE_TO_CHECK"
+                sleep 0.1
+            else
+                # macos 10.15 and up
+                :
+            fi
         
             # running contacts backup applescript
             VARIABLE_TO_CHECK="$CONTACTS_BACKUP"
             QUESTION_TO_ASK="do you want to run a contacts backup (y/N)? "
-            ask_for_variable
+            env_ask_for_variable
             CONTACTS_BACKUP="$VARIABLE_TO_CHECK"
             sleep 0.1
               
             # running calendars backup applescript
             VARIABLE_TO_CHECK="$CALENDARS_BACKUP"
             QUESTION_TO_ASK="do you want to run a calendar backup (y/N)? "
-            ask_for_variable
+            env_ask_for_variable
             CALENDARS_BACKUP="$VARIABLE_TO_CHECK"
             sleep 0.1
 
             echo ''
             
             ### running backups
-            # reminders
-            if [[ "$REMINDERS_BACKUP" =~ ^(yes|y)$ ]]
-            then
-                echo "running reminders backup... please do not touch the computer until the app quits..."
-                # cleaning up old backups (only keeping the latest 4)
-                find "$HOMEFOLDER"/Documents/backup/reminders -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r REMINDERSBACKUPS
-                do
-                    rm -rf "$HOMEFOLDER"/Documents/backup/reminders/"$REMINDERSBACKUPS"
-                done
-                             
-                # running contacts backup
-                GUI_APP_TO_BACKUP=Reminders
-                export GUI_APP_TO_BACKUP
-                open "$SCRIPT_DIR"/gui_apps/gui_apps_backup.app
-                #PID=$(ps aux | grep gui_apps_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
-                osascript -e 'tell application "Terminal" to activate'
-            else
-                :
-            fi
-            
-            # contacts
-            if [[ "$CONTACTS_BACKUP" =~ ^(yes|y)$ ]]
-            then
-                echo "running contacts backup... please do not touch the computer until the app quits..."
-                # cleaning up old backups (only keeping the latest 4)
-                find "$HOMEFOLDER"/Documents/backup/contacts -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CONTACTSBACKUPS
-                do
-                    rm -rf "$HOMEFOLDER"/Documents/backup/contacts/"$CONTACTSBACKUPS"
-                done
+            run_gui_backups() {
+                # reminders
+                if [[ "$REMINDERS_BACKUP" =~ ^(yes|y)$ ]]
+                then
+                    if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running reminders backup... please do not touch the computer until the app quits..."; fi
+                    # cleaning up old backups (only keeping the latest 4)
+                    while IFS= read -r line || [[ -n "$line" ]]
+    				do
+    				    if [[ "$line" == "" ]]; then continue; fi
+                    	REMINDERSBACKUPS="$line"
+                    	#echo "$REMINDERSBACKUPS"
+                        rm -rf "$HOMEFOLDER"/Documents/backup/reminders/"$REMINDERSBACKUPS"
+                    done <<< "$(find "$HOMEFOLDER"/Documents/backup/reminders -type d -mindepth 0 -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d)"
+                                 
+                    # running contacts backup
+                    GUI_APP_TO_BACKUP=Reminders
+                    export GUI_APP_TO_BACKUP
+                    #open "$WORKING_DIR"/gui_apps/gui_apps_backup.app
+                    open /Applications/gui_apps_backup.app
+                    sleep 2
+                    # waiting for the process to finish
+                    #while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
+                    # or
+                    #WAIT_PIDS=$(ps -A | grep -m1 gui_apps_backup | awk '{print $1}')
+                    WAIT_PIDS=$(ps aux | grep gui_apps_backup.app/Contents | grep -v grep | awk '{print $2;}')
+                    #echo "$WAIT_PIDS"
+                    #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+                    while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"
+                    #osascript -e 'tell application "Terminal" to activate'
+                else
+                    :
+                fi
                 
-                # running contacts backup
-                GUI_APP_TO_BACKUP=Contacts
-                export GUI_APP_TO_BACKUP
-                open "$SCRIPT_DIR"/gui_apps/gui_apps_backup.app
-                #PID=$(ps aux | grep gui_apps_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
+                # contacts
+                if [[ "$CONTACTS_BACKUP" =~ ^(yes|y)$ ]]
+                then
+                    if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running contacts backup... please do not touch the computer until the app quits..."; fi
+                    # cleaning up old backups (only keeping the latest 4)
+                    while IFS= read -r line || [[ -n "$line" ]]
+    				do
+    				    if [[ "$line" == "" ]]; then continue; fi
+                    	CONTACTSBACKUPS="$line"
+                    	#echo "$CONTACTSBACKUPS"
+                        rm -rf "$HOMEFOLDER"/Documents/backup/contacts/"$CONTACTSBACKUPS"
+                    done <<< "$(find "$HOMEFOLDER"/Documents/backup/contacts -type d -mindepth 0 -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d)"
+                    
+                    # running contacts backup
+                    GUI_APP_TO_BACKUP=Contacts
+                    export GUI_APP_TO_BACKUP
+                    #open "$WORKING_DIR"/gui_apps/gui_apps_backup.app
+                    open /Applications/gui_apps_backup.app
+                    sleep 2
+                    # waiting for the process to finish
+                    #while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
+                    # or
+                    #WAIT_PIDS=$(ps -A | grep -m1 gui_apps_backup | awk '{print $1}')
+                    WAIT_PIDS=$(ps aux | grep gui_apps_backup.app/Contents | grep -v grep | awk '{print $2;}')
+                    #echo "$WAIT_PIDS"
+                    #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+                    while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"                    #osascript -e 'tell application "Terminal" to activate'
+                else
+                    :
+                fi
+            
+                # calendar
+                if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]
+                then
+                    if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running calendars backup... please do not touch the computer until the app quits..."; fi
+                    # cleaning up old backups (only keeping the latest 4)
+                    while IFS= read -r line || [[ -n "$line" ]]
+    				do
+    				    if [[ "$line" == "" ]]; then continue; fi
+                    	CALENDARSBACKUPS="$line"
+                    	#echo "$CALENDARSBACKUPS"
+                        rm -rf "$HOMEFOLDER"/Documents/backup/calendar/"$CALENDARSBACKUPS"
+                    done <<< "$(find "$HOMEFOLDER"/Documents/backup/calendar -type d -mindepth 0 -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d)"
+                    
+                    # running calendar backup
+                    GUI_APP_TO_BACKUP=Calendar
+                    export GUI_APP_TO_BACKUP
+                    #open "$WORKING_DIR"/gui_apps/gui_apps_backup.app
+                    open /Applications/gui_apps_backup.app
+                    sleep 2
+                    # waiting for the process to finish
+                    #while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
+                    # or
+                    #WAIT_PIDS=$(ps -A | grep -m1 gui_apps_backup | awk '{print $1}')
+                    WAIT_PIDS=$(ps aux | grep gui_apps_backup.app/Contents | grep -v grep | awk '{print $2;}')
+                    #echo "$WAIT_PIDS"
+                    #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+                    while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"                    #osascript -e 'tell application "Terminal" to activate'
+                else
+                    :
+                fi
                 osascript -e 'tell application "Terminal" to activate'
-                
-                # old working
-                # service entry for for contacts backup
-                #sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAddressBook','com.apple.ScriptEditor.id.contacts-backup',0,1,1,NULL,NULL);"
-                #sleep 2
-                # running contacts backup
-                #open "$SCRIPT_DIR"/gui_apps/contacts/contacts_backup.app
-                #PID=$(ps aux | grep contacts_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                #while ps aux | grep contacts_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
-                #osascript -e 'tell application "Terminal" to activate'
-            else
-                :
-            fi
+            }
             
-            # calendar
-            if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]
-            then
-                echo "running calendars backup... please do not touch the computer until the app quits..."
-                # cleaning up old backups (only keeping the latest 4)
-                find "$HOMEFOLDER"/Documents/backup/calendar -type d -maxdepth 0 -print0 | xargs -0 ls | sort -r | cat | sed 1,4d | while read -r CALENDARSBACKUPS
-                do
-                    rm -rf "$HOMEFOLDER"/Documents/backup/calendar/"$CALENDARSBACKUPS"
-                done
-                
-                # running calendar backup
-                GUI_APP_TO_BACKUP=Calendar
-                export GUI_APP_TO_BACKUP
-                open "$SCRIPT_DIR"/gui_apps/gui_apps_backup.app
-                #PID=$(ps aux | grep gui_apps_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
-                osascript -e 'tell application "Terminal" to activate'
-                 
-                # old working
-                # accessibility entry for calendar backup
-                #sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
-                # service entry for for calendar backup
-                #sqlite3 ""$HOMEFOLDER"/Library/Application Support/com.apple.TCC/TCC.db" "REPLACE INTO access VALUES('kTCCServiceCalendar','com.apple.ScriptEditor.id.calendars-backup',0,1,1,NULL,NULL);"
-                #sleep 2
-                # running calendar backup                
-                #open "$SCRIPT_DIR"/gui_apps/contacts/calendars_backup.app
-                #PID=$(ps aux | grep calendars_backup | grep -v grep | awk "{ print \$2 }")
-                #echo $PID
-                # waiting for the process to finish
-                #while ps aux | grep calendars_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
-                #osascript -e 'tell application "Terminal" to activate'
-            else
-                :
-            fi
-            
-            # files
-            if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]]            
-            then
-                FILESTARGZSAVEDIR="$TARGZSAVEDIR"
-                FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
-                echo "running local files backup..."
-                create_tmp_backup_script_fifo1
-                . "$SCRIPT_DIR"/files/run_files_backup.sh
-            else
-                :
-            fi
-            
-            # virtualbox
-            if [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]
-            then
-                echo "running virtualbox backup..."
-                export VBOXSAVEDIR
-                open "$SCRIPT_DIR"/vbox_backup/virtualbox_backup.app
-            else
-                :
-            fi
+            run_files_backup() {
+                # files
+                if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]]            
+                then
+                    FILESTARGZSAVEDIR="$TARGZSAVEDIR"
+                    FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
+                    if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running local files backup..."; fi
+                    create_tmp_backup_script_fifo1
+                    . "$WORKING_DIR"/files/run_files_backup.sh
+                else
+                    :
+                fi
+            }
+
+            run_vbox_backup() {
+                # virtualbox
+                if [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]
+                then
+                    if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running virtualbox backup..."; fi
+                    export VBOXSAVEDIR
+                    #open "$WORKING_DIR"/vbox_backup/virtualbox_backup.app
+                    open /Applications/virtualbox_backup.app
+                else
+                    :
+                fi
+            }
         
             # backup destination
             DESTINATION="$HOMEFOLDER"/Desktop/backup_"$SELECTEDUSER"_"$DATE"
@@ -922,271 +745,289 @@ function backup_restore {
             #echo ""
             echo "starting backup..."
             #    
-            BACKUP_RESTORE_LIST="$SCRIPT_DIR"/list/backup_restore_list.txt
+            BACKUP_RESTORE_LIST="$WORKING_DIR"/list/backup_restore_list.txt
             #STTY_ORIG=$(stty -g)
             #TERMINALWIDTH=$(echo $COLUMNS)
             #TERMINALWIDTH=$(stty size | awk '{print $2}')
             TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
             LINENUMBER=0
             
-            function backup_data () {
-                # using with parallel
-                # comment out the while, do done lines
-                # uncomment this line
-                line="$1"
-                #echo "$line"
+            backup_data() {
                 
-                #while IFS='' read -r line || [[ -n "$line" ]]
-                #do
+                if [[ "$USE_PARALLELS" == "yes" ]]
+                then
+                    line="$1"
+                    #echo "$line"
+                else
+                    :
+                fi
                 
-                	LINENUMBER=$(($LINENUMBER+1))
-                	
-                    # if starting with one # and whitespace / tab
-                	#if [[ $line =~ ^[\#][[:blank:]] ]]
-                	
-                	# if starting with more than one #
-                	#if [[ $line =~ ^[\#]{2,} ]]
+            	LINENUMBER=$((LINENUMBER+1))
+            	
+                # if starting with one # and whitespace / tab
+            	#if [[ $line =~ ^[\#][[:blank:]] ]]
+            	
+            	# if starting with more than one #
+            	#if [[ $line =~ ^[\#]{2,} ]]
+            
+            	# if line is empty
+            	#if [ -z "$line" ]
+            	
+            	if [[ "$line" == "" ]]
+            	then
+                    :
+                else
+                    :
+                fi
+            	
+            	# if starting with #
+            	if [[ "$line" =~ ^[\#] ]]
+            	then
+                    :
+                else
+                    :
+                fi
                 
-                	# if line is empty
-                	#if [ -z "$line" ]
-                	if [ "$line" == "" ]
-                	then
-                        :
-                    else
-                        :
-                    fi
-                	
-                	# if starting with #
-                	if [[ $line =~ ^[\#] ]]
-                	then
-                        :
-                    else
-                        :
-                    fi
-                    
-                    # if starting with echo and whitespace / tab
-                	if [[ $line =~ ^echo[[:blank:]] ]]
-                	then
-                        OUTPUT=$(echo "$line" | sed 's/^echo*//' | sed -e 's/^[ \t]*//')
-                		TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
-                        echo "$OUTPUT" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
-                    else
-                        :
-                    fi   
-                     	
-                	# if starting with m and space / tab or with u and space / tab
-                	if [[ $line =~ ^m[[:blank:]] ]] || [[ $line =~ ^u[[:blank:]] ]]
-                	then
-                        ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
-                        #echo "$ENTRY"
-                        DIRNAME_ENTRY=$(dirname "$ENTRY")
-                        #echo DIRNAME_ENTRY is "$DIRNAME_ENTRY"
-                        BASENAME_ENTRY=$(basename "$ENTRY")
-                        #echo BASENAME_ENTRY is "$BASENAME_ENTRY"
-                        if [[ "$ENTRY" =~ '*' ]]
+                # if starting with echo and whitespace / tab
+            	if [[ "$line" =~ ^echo[[:blank:]] ]]
+            	then
+                    OUTPUT=$(echo "$line" | sed 's/^echo*//' | sed -e 's/^[ \t]*//')
+            		TERMINALWIDTH_WITHOUT_LEADING_SPACES=$((TERMINALWIDTH-5))
+                    echo "$OUTPUT" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                else
+                    :
+                fi 
+                 	
+            	# if starting with m and space / tab or with u and space / tab
+            	if [[ "$line" =~ ^m[[:blank:]] ]] || [[ "$line" =~ ^u[[:blank:]] ]]
+            	then
+                    ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
+                    #echo "$ENTRY"
+                    DIRNAME_ENTRY=$(dirname "$ENTRY")
+                    #echo DIRNAME_ENTRY is "$DIRNAME_ENTRY"
+                    BASENAME_ENTRY=$(basename "$ENTRY")
+                    #echo BASENAME_ENTRY is "$BASENAME_ENTRY"
+                    if [[ "$ENTRY" =~ [*] ]]
+                    # or
+                    #if [[ $(echo "$ENTRY" | egrep '[*]') != "" ]]		# working
+			        #if [[ $(echo "$ENTRY" | grep '[*]') != "" ]]		# working
+                    then
+                        ENTRY_WITH_ASTERISK="$ENTRY"
+                        if [[ "$DIRNAME_ENTRY" =~ [*] ]]
                         then
-                            ENTRY_WITH_ASTERISK="$ENTRY"
-                            if [[ "$DIRNAME_ENTRY" =~ '*' ]]
-                            then
-                                ROOTDIR_PATH=$(echo "$DIRNAME_ENTRY" | cut -d "/" -f2)
-                                #echo ROOTDIR_PATH is "$ROOTDIR_PATH"
-                                ENTRY="$(find "/$ROOTDIR_PATH" -path "$DIRNAME_ENTRY" -name "$BASENAME_ENTRY" 2> /dev/null)"
-                            else
-                                ENTRY="$(find "$DIRNAME_ENTRY" -name "$BASENAME_ENTRY" 2> /dev/null)"
-                            fi
-                            if [[ $(echo "$ENTRY" | wc -l | sed 's/^ *//' | sed 's/ *$//') -gt 1 ]]
-                            then
-                                TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
-                                echo "`tput setaf 1``tput bold`"$ENTRY_WITH_ASTERISK" gave multiple results, please be more specific with the entry, only using first line of results...`tput sgr0`" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
-                                ENTRY=$(echo "$ENTRY" | head -n 1)
-                            else
-                                :
-                            fi
-                            DIRNAME_ENTRY=$(dirname "$ENTRY")
-                            BASENAME_ENTRY=$(basename "$ENTRY")
-                            if [[ "$ENTRY" == "" ]]
-                            then
-                                ENTRY="$ENTRY_WITH_ASTERISK"
-                                DIRNAME_ENTRY=$(dirname "$ENTRY")
-                                BASENAME_ENTRY=$(basename "$ENTRY")
-                            else
-                                :
-                            fi
+                            ROOTDIR_PATH=$(echo "$DIRNAME_ENTRY" | cut -d "/" -f2)
+                            #echo ROOTDIR_PATH is "$ROOTDIR_PATH"
+                            ENTRY="$(find "/$ROOTDIR_PATH" -path "$DIRNAME_ENTRY" -name "$BASENAME_ENTRY" 2> /dev/null)"
+                        else
+                            ENTRY="$(find "$DIRNAME_ENTRY" -name "$BASENAME_ENTRY" 2> /dev/null)"
+                        fi
+                        if [[ $(echo "$ENTRY" | wc -l | sed 's/^ *//' | sed 's/ *$//') -gt 1 ]]
+                        then
+                            TERMINALWIDTH_WITHOUT_LEADING_SPACES=$((TERMINALWIDTH-8))
+                            echo "`tput setaf 1``tput bold`"$ENTRY_WITH_ASTERISK" gave multiple results, please be more specific with the entry, only using first line of results...`tput sgr0`" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
+                            ENTRY=$(echo "$ENTRY" | head -n 1)
                         else
                             :
                         fi
-                        #echo ENTRY is "$ENTRY"
-                        #echo DIRNAME_ENTRY is "$DIRNAME_ENTRY"
-                        #echo BASENAME_ENTRY is "$BASENAME_ENTRY"
-                        if [ -e "$ENTRY" ]
+                        DIRNAME_ENTRY=$(dirname "$ENTRY")
+                        BASENAME_ENTRY=$(basename "$ENTRY")
+                        if [[ "$ENTRY" == "" ]]
                         then
-                            cd "$DIRNAME_ENTRY"
-                            mkdir -p "$DESTINATION$DIRNAME_ENTRY"
-                            sudo rsync -a "$BASENAME_ENTRY" "$DESTINATION$DIRNAME_ENTRY"
+                            ENTRY="$ENTRY_WITH_ASTERISK"
+                            DIRNAME_ENTRY=$(dirname "$ENTRY")
+                            BASENAME_ENTRY=$(basename "$ENTRY")
                         else
-                			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
-                            #echo "        ""$ENTRY" does not exist, skipping...
-                            echo "$BASENAME_ENTRY" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
+                            :
                         fi
                     else
                         :
                     fi
-                                    
-                #done <"$BACKUP_RESTORE_LIST"
+                    #echo ENTRY is "$ENTRY"
+                    #echo DIRNAME_ENTRY is "$DIRNAME_ENTRY"
+                    #echo BASENAME_ENTRY is "$BASENAME_ENTRY"
+                    if [[ -e "$ENTRY" ]]
+                    then
+                        cd "$DIRNAME_ENTRY"
+                        mkdir -p "$DESTINATION$DIRNAME_ENTRY"
+                        sudo rsync -a "$BASENAME_ENTRY" "$DESTINATION$DIRNAME_ENTRY"
+                    else
+            			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$((TERMINALWIDTH-8))
+                        #echo "        ""$ENTRY" does not exist, skipping...
+                        echo ""$BASENAME_ENTRY" does not exist, skipping..." | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
+                    fi
+                else
+                    :
+                fi
+                            
+            }
+
+            backup_data_parallel() {         
+                # when using env_parallel variables do not have to be exported
+                #export DESTINATION
+                #export TERMINALWIDTH
+                #export HOMEFOLDER
+                #export LINENUMBER
+                USE_PARALLELS="yes"
+                if [[ "$(cat "$BACKUP_RESTORE_LIST")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "backup_data {}" ::: "$(cat "$BACKUP_RESTORE_LIST")"; fi
+                wait
             }
             
-            # without parallel
-            # comment out the whole following parallel block
-            # uncomment the while read, done lines in the script and run the function
-            # backup_data
+            backup_data_sequential() {
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                    backup_data 
+                done <<< "$(cat "$BACKUP_RESTORE_LIST")"
+            }
             
-            # with parallel
-            # comment out the whole without parallel block
-            # comment out the while read, done lines in the script and run
-            export DESTINATION
-            export TERMINALWIDTH
-            export HOMEFOLDER
-            export LINENUMBER
-            #
-            mkdir -p /tmp/backup_restore
-            TMP_BACKUP_FUNCTION_SCRIPT="/tmp/backup_restore/backup_data.sh"
-            touch "$TMP_BACKUP_FUNCTION_SCRIPT"
-            chmod +x "$TMP_BACKUP_FUNCTION_SCRIPT"
-            echo "#!/bin/bash" > "$TMP_BACKUP_FUNCTION_SCRIPT"
-            echo $(declare -f backup_data) >> "$TMP_BACKUP_FUNCTION_SCRIPT"
-            #sed -i '' "s/backup_data () {//" "$TMP_BACKUP_FUNCTION_SCRIPT"
-            sed -i '' "s/^.*() {//" "$TMP_BACKUP_FUNCTION_SCRIPT"
-            sed -i '' "s/\(.*\)}/\1 /" "$TMP_BACKUP_FUNCTION_SCRIPT"
-            #
-            NUMBER_OF_CORES=$(parallel --number-of-cores)
-            NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-            #echo $NUMBER_OF_MAX_JOBS
-            NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-            #echo $NUMBER_OF_MAX_JOBS_ROUNDED
-            #
-            ulimit -n 4096
-            sudo -E parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k "$TMP_BACKUP_FUNCTION_SCRIPT" ::: "$(cat "$BACKUP_RESTORE_LIST")"
-            wait
-                     
-            # resetting terminal settings or further input will not work
-            #reset
-            #stty "$STTY_ORIG"
-            stty sane
-        
-            echo ''            
-            echo 'copying backup data to '"$DESTINATION"'/ done ;)'
-            echo ''
-            # opening app for archiving
-            #osascript -e 'tell application "Keka.app" to activate'
+            run_backup_data() {
+                number_of_max_processes
+            
+                ulimit -n 4096
+                
+                if [[ $(brew list | grep "^parallel$") == '' ]]
+            	then
+            		#echo parallel is NOT installed..."
+            		backup_data_sequential
+            	else
+            		#echo parallel is installed..."
+            		backup_data_parallel
+            	fi
+                
+                # resetting terminal settings or further input will not work
+                #reset
+                #stty "$STTY_ORIG"
+                #stty sane
+            
+                echo ''            
+                echo 'copying backup data to '"$DESTINATION"'/ done ;)'
+                echo ''
+            	
+                # moving log to backup directory
+                mv "$HOMEFOLDER"/Desktop/backup_restore_log.txt "$DESTINATION"/_backup_restore_log.txt
+            
+                # compressing and moving backup
+                #echo ''
+                echo "compressing and moving backup..."
+            
+                # checking and defining some variables
+            	#echo "TARGZSAVEDIR is "$TARGZSAVEDIR""
+                #echo "APPLESCRIPTDIR is "$APPLESCRIPTDIR""
+                DESKTOPBACKUPFOLDER="$DESTINATION"
+                #echo "DESKTOPBACKUPFOLDER is "$DESKTOPBACKUPFOLDER""
+                
+                . "$WORKING_DIR"/backup_restore_script/compress_and_move_backup.sh
+                wait
+                
+                # deleting backup folder on desktop
+                echo ''
+                echo "deleting backup folder on desktop..."
+                if [[ -e "$DESTINATION" ]]
+                then
+                    #:
+                    sudo rm -rf "$DESTINATION"
+                else
+                    :
+                fi
+                
+                WAIT_PIDS=$(ps aux | grep gui_apps_backup.app/Contents | grep -v grep | awk '{print $2;}')
+                if [[ "$WAIT_PIDS" == "" ]]; then :; else echo '' && echo "waiting for gui backups to finish..."; fi
 
-            #open -g -a "$SCRIPT_DIR"/archive/archive_tar_gz.app
-            #osascript -e 'display dialog "backup finished, starting archiving..."'
-            #osascript -e 'tell application "'"$SCRIPT_DIR"'/archive/archive_tar_gz.app" to activate'
+            }
             
-            # homebrew updates
-            # done in seperate script now
+            
+            ### running backups
+            run_backups() {
+                run_backup_data &
+            	sleep 5
+            	RUN_WITH_NO_OUTPUT_ON_START="yes"
+            	run_files_backup
+            	run_vbox_backup
+            	if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]] || [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]; then sleep 20; else :; fi
+            	run_gui_backups
+            	wait
+        	}
+        	run_backups
         	
-            # moving log to backup directory
-            mv "$HOMEFOLDER"/Desktop/backup_restore_log.txt "$DESTINATION"/_backup_restore_log.txt
-        
-            # compressing and moving backup
-            #echo ''
-            echo "compressing and moving backup..."
-        
-            # checking and defining some variables
-        	#echo "TARGZSAVEDIR is "$TARGZSAVEDIR""
-            #echo "APPLESCRIPTDIR is "$APPLESCRIPTDIR""
-            DESKTOPBACKUPFOLDER="$DESTINATION"
-            #echo "DESKTOPBACKUPFOLDER is "$DESKTOPBACKUPFOLDER""
+        	run_backups_with_gui_first() {
+        	    run_gui_backups
+        	    run_files_backup
+            	run_vbox_backup
+                run_backup_data
+        	}
+        	#run_backups_with_gui_first
             
-            #export DESKTOPBACKUPFOLDER
-            #export TARGZSAVEDIR
-            #sudo -E "$SHELL" -c ''"$SCRIPT_DIR"'/backup_restore_script/compress_and_move_backup.sh'
             
-            . "$SCRIPT_DIR"/backup_restore_script/compress_and_move_backup.sh
-            wait
-            
-            # deleting backup folder on desktop
-            echo ''
-            echo "deleting backup folder on desktop..."
-            if [ -e "$DESTINATION" ]
-            then
-                #:
-                sudo rm -rf "$DESTINATION"
-            else
-                :
-            fi
-            
-            # waiting for all scripts to finish before starting update script
+            ### waiting for all scripts to finish before starting update script
             echo ''
             echo "waiting for running backup scripts to finish..."
             
             if [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]
             then
-                while ps aux | grep /compress_and_move_vbox_backup.sh | grep -v grep > /dev/null; do sleep 1; done
+                #while ps aux | grep /compress_and_move_vbox_backup.sh | grep -v grep > /dev/null; do sleep 1; done
+                # or
+                #WAIT_PIDS=$(ps -A | grep -m1 /compress_and_move_vbox_backup.sh | awk '{print $1}')
+                WAIT_PIDS=$(ps aux | grep /virtualbox_backup.sh | grep -v grep | awk '{print $2;}')
+                #echo "$WAIT_PIDS"
+                #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+                while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"            
             else
                 :
             fi
     
             if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]]
             then
-                while ps aux | grep /backup_files.sh | grep -v grep > /dev/null; do sleep 1; done
+                #while ps aux | grep /backup_files.sh | grep -v grep > /dev/null; do sleep 1; done
+                # or
+                #WAIT_PIDS=$(ps -A | grep -m1 /backup_files.sh | awk '{print $1}')
+                WAIT_PIDS=$(ps aux | grep /backup_files.sh | grep -v grep | awk '{print $2;}')
+                #echo "$WAIT_PIDS"
+                #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+                while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"
             else
                 :
             fi
             
             # done
-            echo ''
+            #echo ''
             echo 'backup finished ;)'
             osascript -e 'display notification "complete ;)" with title "Backup Script"'
-            
-            # installing / updating homebrew update script
             echo ''
-            echo "updating homebrew formulae and casks app..."
-        	BREW_CASKS_UPDATE_APP="brew_casks_update"
-            if [ -e /Applications/"$BREW_CASKS_UPDATE_APP".app ]
-            then
-            	rm -rf /Applications/"$BREW_CASKS_UPDATE_APP".app
-            else
-            	:
-            fi
-            cp -a "$SCRIPT_DIR"/update_homebrew/"$BREW_CASKS_UPDATE_APP".app /Applications/
-            chown 501:admin /Applications/"$BREW_CASKS_UPDATE_APP".app
-            chown -R 501:admin /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/
-            chmod 755 /Applications/"$BREW_CASKS_UPDATE_APP".app
-            chmod 770 /Applications/"$BREW_CASKS_UPDATE_APP".app/custom_files/"$BREW_CASKS_UPDATE_APP".sh
-            xattr -dr com.apple.quarantine /Applications/"$BREW_CASKS_UPDATE_APP".app
-            # running homebrew update script
+
+
+            ### running homebrew update script
             create_tmp_backup_script_fifo2
             echo "updating homebrew formulae and casks..."
-        	open /Applications/"$BREW_CASKS_UPDATE_APP".app
+        	open /Applications/brew_casks_update.app
+        	sleep 2
         	
-        	# installing / updating homebrew update script
-        	if [[ -e "$SCRIPT_DIR"/update_hosts/hosts_file_generator.sh ]]
+
+        	### installing / updating hosts script
+        	echo "waiting for updating hosts file, homebrew formulae and casks..."
+        	if [[ -e /Library/Scripts/custom/hosts_file_generator.sh ]]
         	then
-                echo ''
-                echo "updating hosts update script..."
-                sudo mkdir -p /Library/Scripts/custom/
-                sudo cp "$SCRIPT_DIR"/update_hosts/hosts_file_generator.sh /Library/Scripts/custom/hosts_file_generator.sh
-                sudo chown -R root:wheel /Library/Scripts/custom/
-                sudo chmod -R 755 /Library/Scripts/custom/
-                echo "updating hosts file..."
                 # forcing update on next run by setting last modification time of /etc/hosts earlier
                 sudo touch -mt 201512010000 /etc/hosts
-                sudo /Library/Scripts/custom/hosts_file_generator.sh | grep "updating hosts file SUCCESSFULL\|FAILED..." &
+                sudo /Library/Scripts/custom/hosts_file_generator.sh | grep 'updating hosts file SUCCESSFULL\|FAILED...' &
             else
-                echo ""$SCRIPT_DIR"/update_hosts/hosts_file_generator.sh not found, skipping updating hosts script..."
+                echo "/Library/Scripts/custom/hosts_file_generator.sh not found, skipping updating hosts script..."
             fi
         	
-        	# waiting for the process to finish
-        	echo ''
-        	echo "waiting for updating hosts file, homebrew formulae and casks..."
-        	#sleep 5
-            while ps aux | grep ''"$BREW_CASKS_UPDATE_APP"'.app/Contents' | grep -v grep > /dev/null; do sleep 1; done
-            while ps aux | grep /brew_casks_update.sh | grep -v grep > /dev/null; do sleep 1; done
-            while ps aux | grep /hosts_file_generator.sh | grep -v grep > /dev/null; do sleep 1; done
+        	
+        	### waiting for processes to finish
+        	#echo ''
+            #while ps aux | grep brew_casks_update.app/Contents | grep -v grep > /dev/null; do sleep 1; done
+            #while ps aux | grep /brew_casks_update.sh | grep -v grep > /dev/null; do sleep 1; done
+            #while ps aux | grep /hosts_file_generator.sh | grep -v grep > /dev/null; do sleep 1; done
+            WAIT_PIDS=()
+            WAIT_PIDS+=$(ps aux | grep brew_casks_update.app/Contents | grep -v grep | awk '{print $2;}')
+            WAIT_PIDS+=$(ps aux | grep /brew_casks_update.sh | grep -v grep | awk '{print $2;}')
+            WAIT_PIDS+=$(ps aux | grep /hosts_file_generator.sh | grep -v grep | awk '{print $2;}')
+            #echo "$WAIT_PIDS"
+            #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+            while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"   
             
-            echo ''
+            #echo ''
             echo "updating hosts file, homebrew formulae and casks finished ;)"
             osascript -e 'display notification "complete ;)" with title "Update Script"'
             echo ''
@@ -1197,10 +1038,10 @@ function backup_restore {
             
             # disabling siri analytics
             # already done in system preferences script before but some apps seam to appear here later
-            for i in $(/usr/libexec/PlistBuddy -c "Print CSReceiverBundleIdentifierState" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
+            for i in $(/usr/libexec/PlistBuddy -c "Print CSReceiverBundleIdentifierState" /Users/"$USER"/Library/Preferences/com.apple.corespotlightui.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
             do
                 #echo $i
-            	/usr/libexec/PlistBuddy -c "Set CSReceiverBundleIdentifierState:$i false" /Users/$USER/Library/Preferences/com.apple.corespotlightui.plist
+            	/usr/libexec/PlistBuddy -c "Set CSReceiverBundleIdentifierState:$i false" /Users/"$USER"/Library/Preferences/com.apple.corespotlightui.plist
             done
             
             # disabling local time machine backups and cleaning up possible old ones
@@ -1234,7 +1075,7 @@ function backup_restore {
             fi
             
             # deactivating keepingyouawake
-            if [ -e /Applications/KeepingYouAwake.app ]
+            if [[ -e /Applications/KeepingYouAwake.app ]]
             then
                 echo "deactivating keepingyouawake..."
                 open -g keepingyouawake:///deactivate
@@ -1244,6 +1085,7 @@ function backup_restore {
             
             echo ''
             echo "script done ;)"
+            echo ''
             
             exit
         
@@ -1262,7 +1104,7 @@ function backup_restore {
         # restore dir
         # restore master dir
         echo "please select restore master directory..."
-        RESTOREMASTERDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
+        RESTOREMASTERDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
         if [[ $(echo "$RESTOREMASTERDIR") == "" ]]
         then
             echo ''
@@ -1277,13 +1119,13 @@ function backup_restore {
 
         # restore user dir
         echo "please select restore user directory..."
-        RESTOREUSERDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/backup_restore_script/ask_restore_user_dir.scpt 2> /dev/null | sed s'/\/$//')
+        RESTOREUSERDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_restore_user_dir.scpt 2> /dev/null | sed s'/\/$//')
         if [[ $(echo "$RESTOREUSERDIR") == "" ]]
         then
             echo ''
             VARIABLE_TO_CHECK="$AUTO_SET_USER_DIR"
             QUESTION_TO_ASK="restoreuserdir is empty, do you want to set it to the same directory as the restoremasterdir (Y/n)? "
-            ask_for_variable
+            env_ask_for_variable
             AUTO_SET_USER_DIR="$VARIABLE_TO_CHECK"
             
             if [[ "$AUTO_SET_USER_DIR" =~ ^(yes|y)$ ]]
@@ -1331,7 +1173,7 @@ function backup_restore {
             # casks install
             #VARIABLE_TO_CHECK="$INSTALL_CASKS"
             #QUESTION_TO_ASK="do you want to backup virtualbox images (y/N)? "
-            #ask_for_variable
+            #env_ask_for_variable
             #INSTALL_CASKS="$VARIABLE_TO_CHECK"
             #sleep 0.1
             
@@ -1339,25 +1181,24 @@ function backup_restore {
             sudo launchctl stop org.cups.cupsd
         
             ### running restore
-            BACKUP_RESTORE_LIST="$SCRIPT_DIR"/list/backup_restore_list.txt
+            BACKUP_RESTORE_LIST="$WORKING_DIR"/list/backup_restore_list.txt
             #STTY_ORIG=$(stty -g)
             #TERMINALWIDTH=$(echo $COLUMNS)
             #TERMINALWIDTH=$(stty size | awk '{print $2}')
             TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
             LINENUMBER=0
             
-            function restore_data () {
+            restore_data() {
                 
-                # using with parallel
-                # comment out the while, do done lines
-                # uncomment this line
-                line="$1"
-                #echo "$line"
+                if [[ "$USE_PARALLELS" == "yes" ]]
+                then
+                    line="$1"
+                    #echo "$line"
+                else
+                    :
+                fi
                 
-                #while IFS='' read -r line || [[ -n "$line" ]]
-                #do
-                
-                LINENUMBER=$(($LINENUMBER+1))
+                LINENUMBER=$((LINENUMBER+1))
             	
                 # if starting with one # and whitespace / tab
             	#if [[ $line =~ ^[\#][[:blank:]] ]]
@@ -1367,7 +1208,8 @@ function backup_restore {
             
             	# if line is empty
             	#if [ -z "$line" ]
-            	if [ "$line" == "" ]
+            	
+            	if [[ "$line" == "" ]]
             	then
                     :
                 else
@@ -1375,7 +1217,7 @@ function backup_restore {
                 fi
             	
             	# if starting with #
-            	if [[ $line =~ ^[\#] ]]
+            	if [[ "$line" =~ ^[\#] ]]
             	then
                     :
                 else
@@ -1383,17 +1225,17 @@ function backup_restore {
                 fi
                 
                 # if starting with echo and whitespace / tab
-            	if [[ $line =~ ^echo[[:blank:]] ]]
+            	if [[ "$line" =~ ^echo[[:blank:]] ]]
             	then
                     OUTPUT=$(echo "$line" | sed 's/^echo*//' | sed -e 's/^[ \t]*//')
-        			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+        			TERMINALWIDTH_WITHOUT_LEADING_SPACES=$((TERMINALWIDTH-5))
                     echo "$OUTPUT" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
                 else
                     :
                 fi
                     	
             	# if starting with m and space / tab
-            	if [[ $line =~ ^m[[:blank:]] ]]
+            	if [[ "$line" =~ ^m[[:blank:]] ]]
             	then
             	    LOWERCASESECTION=master
                     SECTIONUSER="$MASTERUSER"
@@ -1403,7 +1245,7 @@ function backup_restore {
                 fi
                 
                 # if starting with u and space / tab
-                if [[ $line =~ ^u[[:blank:]] ]]
+                if [[ "$line" =~ ^u[[:blank:]] ]]
             	then
             	    LOWERCASESECTION=user
                     SECTIONUSER="$USERUSER"
@@ -1413,10 +1255,13 @@ function backup_restore {
                 fi
                 
              	# if starting with m and space / tab or with u and space / tab
-            	if [[ $line =~ ^m[[:blank:]] ]] || [[ $line =~ ^u[[:blank:]] ]]
+            	if [[ "$line" =~ ^m[[:blank:]] ]] || [[ "$line" =~ ^u[[:blank:]] ]]
             	then
                     ENTRY=$(echo "$line" | cut -f2 | sed -e 's/[ /]\{2,\}/\//')
-                    if [[ "$ENTRY" =~ '*' ]]
+                    if [[ "$ENTRY" =~ [*] ]]
+                    # or
+                    #if [[ $(echo "$ENTRY" | egrep '[*]') != "" ]]		# working
+			        #if [[ $(echo "$ENTRY" | grep '[*]') != "" ]]		# working
                     then
                         ENTRY_WITH_ASTERISK="$ENTRY"
                         ENTRY_FROM=$(echo "$ENTRY" | sed 's|~|'"/Users/$SECTIONUSER"'|')
@@ -1425,7 +1270,7 @@ function backup_restore {
                         #echo DIRNAME_RESTORE_FROM is "$DIRNAME_RESTORE_FROM"
                         BASENAME_RESTORE_FROM=$(basename "$RESTORE_FROM")
                         #echo BASENAME_RESTORE_FROM is "$BASENAME_RESTORE_FROM"
-                        if [[ "$DIRNAME_RESTORE_FROM" =~ '*' ]]
+                        if [[ "$DIRNAME_RESTORE_FROM" =~ [*] ]]
                         then
                             ROOTDIR_PATH="$RESTORESECTIONDIR"
                             #echo ROOTDIR_PATH is "$ROOTDIR_PATH"
@@ -1435,7 +1280,7 @@ function backup_restore {
                         fi
                         if [[ $(echo "$ENTRY_RESTORE_FROM" | wc -l | sed 's/^ *//' | sed 's/ *$//') -gt 1 ]]
                         then
-                            TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-8))
+                            TERMINALWIDTH_WITHOUT_LEADING_SPACES=$((TERMINALWIDTH-8))
                             echo -e "\033[1;31m$ENTRY_WITH_ASTERISK gave multiple results, please be more specific with the entry, only using first line of results...\033[0m" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
                             ENTRY_RESTORE_FROM=$(echo "$ENTRY_RESTORE_FROM" | head -n 1)
                         else
@@ -1467,7 +1312,7 @@ function backup_restore {
                     #echo "$DIRNAME_RESTORE_TO"
                     BASENAME_RESTORE_TO=$(basename "$RESTORE_TO")
                     #
-                    TERMINALWIDTH_WITHOUT_LEADING_SPACES=$(($TERMINALWIDTH-5))
+                    TERMINALWIDTH_WITHOUT_LEADING_SPACES=$((TERMINALWIDTH-5))
                     #
                     if [[ -e "$RESTORE_FROM" ]]
                     then
@@ -1487,7 +1332,7 @@ function backup_restore {
                             echo '     '
                             sudo rsync -a "$BASENAME_RESTORE_FROM" "$DIRNAME_RESTORE_TO"
                         else
-                            echo "$DIRNAME_RESTORE_TO" does not exist, skipping... | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
+                            echo ""$DIRNAME_RESTORE_TO" does not exist, skipping..." | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
                         fi
                     else
                         echo "no "$ENTRY_FROM" in "$LOWERCASESECTION" backup - skipping..." | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ /g"
@@ -1496,49 +1341,45 @@ function backup_restore {
                 else
                     :
                 fi
-                
-            #done <"$BACKUP_RESTORE_LIST"
-                
+                                
             }
             
-            # without parallel
-            # comment out the whole following parallel block
-            # uncomment the while read, done lines in the script and run the function
-            # restore_data
+            number_of_max_processes
             
-            # with parallel
-            # comment out the whole without parallel block
-            # comment out the while read, done lines in the script and run
-            #export RESTOREDIR
-            export RESTOREMASTERDIR
-            export RESTOREUSERDIR
-            export RESTORETODIR
-            export DESTINATION
-            export HOMEFOLDER
-            export MASTERUSER
-            export USERUSER
-            export TERMINALWIDTH
-            export LINENUMBER
-            #
-            mkdir -p /tmp/backup_restore
-            TMP_RESTORE_FUNCTION_SCRIPT="/tmp/backup_restore/restore_data.sh"
-            touch "$TMP_RESTORE_FUNCTION_SCRIPT"
-            chmod +x "$TMP_RESTORE_FUNCTION_SCRIPT"
-            echo "#!/bin/bash" > "$TMP_RESTORE_FUNCTION_SCRIPT"
-            echo $(declare -f restore_data) >> "$TMP_RESTORE_FUNCTION_SCRIPT"
-            #sed -i '' "s/backup_data () {//" "$TMP_RESTORE_FUNCTION_SCRIPT"
-            sed -i '' "s/^.*() {//" "$TMP_RESTORE_FUNCTION_SCRIPT"
-            sed -i '' "s/\(.*\)}/\1 /" "$TMP_RESTORE_FUNCTION_SCRIPT"
-            #
-            NUMBER_OF_CORES=$(parallel --number-of-cores)
-            NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-            #echo $NUMBER_OF_MAX_JOBS
-            NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-            #echo $NUMBER_OF_MAX_JOBS_ROUNDED
-            #
             ulimit -n 4096
-            sudo -E parallel --will-cite -P "$NUMBER_OF_MAX_JOBS_ROUNDED" -k "$TMP_RESTORE_FUNCTION_SCRIPT" ::: "$(cat "$BACKUP_RESTORE_LIST")"
-            wait 
+            
+            restore_data_parallel() {
+                # when using env_parallel variables do not have to be exported
+                #export RESTOREMASTERDIR
+                #export RESTOREUSERDIR
+                #export RESTORETODIR
+                #export DESTINATION
+                #export HOMEFOLDER
+                #export MASTERUSER
+                #export USERUSER
+                #export TERMINALWIDTH
+                #export LINENUMBER
+                USE_PARALLELS="yes"
+                if [[ "$(cat "$BACKUP_RESTORE_LIST")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "restore_data {}" ::: "$(cat "$BACKUP_RESTORE_LIST")"; fi
+                wait
+            }
+            
+            restore_data_sequential() {
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                    restore_data 
+                done <<< "$(cat "$BACKUP_RESTORE_LIST")"
+            }
+            
+            if command -v parallel &> /dev/null
+        	then
+        		# installed
+        		restore_data_parallel
+        	else
+        		# not installed
+        		restore_data_sequential
+        	fi
 
             # resetting terminal settings or further input will not work
             #reset
@@ -1549,17 +1390,19 @@ function backup_restore {
             echo "restore done ;)"
         
             ### cleaning up old unused files after restore
-        
-            echo ""
+            echo ''
             echo "cleaning up some files..."
         
             # virtualbox extpack
             if [[ -e "$HOMEFOLDER"/Library/VirtualBox ]]
             then
-                find "$HOMEFOLDER"/Library/VirtualBox -name "*.vbox-extpack" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r VBOXEXTENSIONS
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                	VBOXEXTENSIONS="$line"
+                	#echo "$VBOXEXTENSIONS"
                     sudo rm "$VBOXEXTENSIONS"
-                done
+                done <<< "$(find "$HOMEFOLDER"/Library/VirtualBox -name "*.vbox-extpack" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d)"
             else
                 :
             fi
@@ -1567,10 +1410,13 @@ function backup_restore {
             # virtualbox logs
             if [[ -e "$HOMEFOLDER"/Library/VirtualBox ]]
             then
-                find "$HOMEFOLDER"/Library/VirtualBox -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r VBOXLOGS
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                	VBOXLOGS="$line"
+                	#echo "$VBOXLOGS"
                     sudo rm "$VBOXLOGS"
-                done
+                done <<< "$(find "$HOMEFOLDER"/Library/VirtualBox -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat)"
             else
                 :
             fi
@@ -1578,10 +1424,13 @@ function backup_restore {
             # fonts
             if [[ -e "$HOMEFOLDER"/Library/Fonts ]]
             then
-                find "$HOMEFOLDER"/Library/Fonts \( -name "*.dir" -o -name "*.list" -o -name "*.scale" \) -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r FONTSFILES
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                	FONTSFILES="$line"
+                	#echo "$FONTSFILES"
                     sudo rm "$FONTSFILES"
-                done
+                done <<< "$(find "$HOMEFOLDER"/Library/Fonts \( -name "*.dir" -o -name "*.list" -o -name "*.scale" \) -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat)"
             else
                 :
             fi
@@ -1589,10 +1438,13 @@ function backup_restore {
             # jameica backups
             if [[ -e "$HOMEFOLDER"/Library/jameica ]]
             then
-                find "$HOMEFOLDER"/Library/jameica -name "jameica-backup-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r JAMEICABACKUPS
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                	JAMEICABACKUPS="$line"
+                	#echo "$JAMEICABACKUPS"
                     sudo rm "$JAMEICABACKUPS"
-                done
+                done <<< "$(find "$HOMEFOLDER"/Library/jameica -name "jameica-backup-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d)"
             else
                 :
             fi
@@ -1600,10 +1452,13 @@ function backup_restore {
             # jameica logs
             if [[ -e "$HOMEFOLDER"/Library/jameica ]]
             then
-                find "$HOMEFOLDER"/Library/jameica -name "jameica.log-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d | while read -r JAMEICALOGS
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                	JAMEICALOGS="$line"
+                	#echo "$JAMEICALOGS"
                     sudo rm "$JAMEICALOGS"
-                done
+                done <<< "$(find "$HOMEFOLDER"/Library/jameica -name "jameica.log-*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,1d)"
             else
                 :
             fi
@@ -1611,10 +1466,13 @@ function backup_restore {
             # address book migration
             if [[ -e "$HOMEFOLDER"/Library/"Application Support"/AddressBook ]]
             then
-                find "$HOMEFOLDER"/Library/"Application Support"/AddressBook -name "Migration*.abbu.tbz" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r ADDRESSBOOKMIGRATION
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                	ADDRESSBOOKMIGRATION="$line"
+                	#echo "$ADDRESSBOOKMIGRATION"
                     sudo rm "$ADDRESSBOOKMIGRATION"
-                done
+                done <<< "$(find "$HOMEFOLDER"/Library/"Application Support"/AddressBook -name "Migration*.abbu.tbz" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat)"
             else
                 :
             fi
@@ -1622,10 +1480,13 @@ function backup_restore {
             # 2do
             if [[ -e "$HOMEFOLDER"/Library/"Application Support"/Backups ]]
             then
-                find "$HOMEFOLDER"/Library/"Application Support"/Backups -name "*.db" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,2d | while read -r TODOBACKUPS
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                	TODOBACKUPS="$line"
+                	#echo "$TODOBACKUPS"
                     sudo rm "$TODOBACKUPS"
-                done
+                done <<< "$(find "$HOMEFOLDER"/Library/"Application Support"/Backups -name "*.db" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | sed 1,2d)"
             else
                 :
             fi
@@ -1633,54 +1494,57 @@ function backup_restore {
             # unified remote
             if [[ -e "$HOMEFOLDER"/Library/"Application Support"/"Unified Remote" ]]
             then
-                find "$HOMEFOLDER"/Library/"Application Support"/"Unified Remote" -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat | while read -r UNIFIEDREMOTELOGS
-                do
+                while IFS= read -r line || [[ -n "$line" ]]
+				do
+				    if [[ "$line" == "" ]]; then continue; fi
+                	UNIFIEDREMOTELOGS="$line"
+                	#echo "$UNIFIEDREMOTELOGS"
                     sudo rm "$UNIFIEDREMOTELOGS"
-                done
+                done <<< "$(find "$HOMEFOLDER"/Library/"Application Support"/"Unified Remote" -name "*.log.*" -type f -maxdepth 1 -print0 | xargs -0 ls -m -t -1 | cat)"
             else
                 :
             fi
             
             # whatsapp
-            if [[ -e "/Users/$USER/Library/Application Support/WhatsApp/" ]]
+            if [[ -e "/Users/"$USER"/Library/Application Support/WhatsApp/" ]]
             then
-                sudo rm -rf "/Users/$USER/Library/Application Support/WhatsApp/main-process.log"*
-                sudo rm -rf "/Users/$USER/Library/Application Support/WhatsApp/IndexedDB/"*
-                sudo rm -rf "/Users/$USER/Library/Application Support/WhatsApp/Cache/"*
+                sudo rm -rf "/Users/"$USER"/Library/Application Support/WhatsApp/main-process.log"*
+                sudo rm -rf "/Users/"$USER"/Library/Application Support/WhatsApp/IndexedDB/"*
+                sudo rm -rf "/Users/"$USER"/Library/Application Support/WhatsApp/Cache/"*
             else
                 :
             fi
             
             # telegram
-            if [[ -e "/Users/$USER/Library/Application Support/Telegram/" ]]
+            if [[ -e "/Users/"$USER"/Library/Application Support/Telegram/" ]]
             then
-                rm -rf "/Users/$USER/Library/Application Support/Telegram/exports/"*
-                rm -rf "/Users/$USER/Library/Application Support/Telegram/logs/"*
+                rm -rf "/Users/"$USER"/Library/Application Support/Telegram/exports/"*
+                rm -rf "/Users/"$USER"/Library/Application Support/Telegram/logs/"*
             else
                 :
             fi
             # Caches/ru.keepcoder.Telegram/* not included in backup / restore
-            # rm -rf "/Users/$USER/Library/Caches/ru.keepcoder.Telegram/"*
+            # rm -rf "/Users/"$USER"/Library/Caches/ru.keepcoder.Telegram/"*
             # postbox/media/* not included in backup / restore
-            #find "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/" -name "media" -type d -print0 | xargs -0 rm -rf
+            #find "/Users/"$USER"/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/" -name "media" -type d -print0 | xargs -0 rm -rf
             # after deleting postbox/db/* or accounts-metadata the computer has to be reregistered with phone number
-            #rm -rf "/Users/$USER/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/"account-*"/postbox/db/"*
+            #rm -rf "/Users/"$USER"/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/"account-*"/postbox/db/"*
             
             # signal
-            if [[ -e "/Users/$USER/Library/Application Support/Signal/" ]]
+            if [[ -e "/Users/"$USER"/Library/Application Support/Signal/" ]]
             then
-                rm -rf "/Users/$USER/Library/Application Support/Signal/__update__"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/attachments.noindex"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/Cache/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/databases/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/GPUCache/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/IndexedDB/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/Local Storage/"
-                rm -rf "/Users/$USER/Library/Application Support/Signal/logs/"
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/QuotaManager"*
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/sql/"
+                rm -rf "/Users/"$USER"/Library/Application Support/Signal/__update__"
+                rm -rf "/Users/"$USER"/Library/Application Support/Signal/attachments.noindex"
+                rm -rf "/Users/"$USER"/Library/Application Support/Signal/Cache/"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/databases/"
+                rm -rf "/Users/"$USER"/Library/Application Support/Signal/GPUCache/"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/IndexedDB/"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/Local Storage/"
+                rm -rf "/Users/"$USER"/Library/Application Support/Signal/logs/"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/QuotaManager"*
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/sql/"
                 #
-                #rm -rf "/Users/$USER/Library/Application Support/Signal/"* 
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/"* 
                 osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
             else
                 :
@@ -1689,7 +1553,7 @@ function backup_restore {
             echo "cleaning done ;)"
             
             # post restore operations
-            echo ""
+            echo ''
             echo "running post restore operations..."
             sudo launchctl start org.cups.cupsd
             /System/Library/CoreServices/pbs -flush
@@ -1703,11 +1567,10 @@ function backup_restore {
                 # this has to run in a new shell due to variables, functions, etc.
                 # so do not source this script
                 # tee does not capture the output format, so e.g. you can not see the download progress of casks, use scripts command to keep output formats
-                #"$SHELL" -c """$SCRIPT_DIR_FINAL""/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh"
-                #bash "$SCRIPT_DIR_FINAL"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh
+                #"$SCRIPT_INTERPRETER" -c """$WORKING_DIR_FINAL""/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh"
                 # parentheses put script in subshell - this works with subprocess killing functions
-                # exec, bash and "$SHELL" -c output terminations of sleep 60 from start sudo at the end
-                ( "$SCRIPT_DIR_FINAL"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh )
+                # exec and "$SCRIPT_INTERPRETER" -c output terminations of sleep 60 from start sudo at the end
+                ( "$WORKING_DIR_FINAL"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/5_casks.sh )
                 wait
             else
                 :
@@ -1718,24 +1581,10 @@ function backup_restore {
             echo "setting ownerships and permissions..."
             export RESTOREMASTERDIR
             export RESTOREUSERDIR
-            . "$SCRIPT_DIR"/permissions/ownerships_and_permissions_restore.sh
-            wait
-            
-            ### safari extensions settings restore
-            # this can not be included in the restore script if the keychain is restored
-            # a reboot is needed after restoring the keychain before running the safari extensions restore script
-            # or the changes to safari would not be kept
-            #echo ""
-            #echo "restoring safari extensions and their settings..."
-            #export SELECTEDUSER
-            #export MASTERUSER
-            #export RESTOREMASTERDIR
-            #export HOMEFOLDER
-            #"$SHELL" -c "export SELECTEDUSER=\"$SELECTEDUSER\"; export MASTERUSER=\"$MASTERUSER\"; export RESTOREMASTERDIR=\"$RESTOREMASTERDIR\"; export HOMEFOLDER=\"$HOMEFOLDER\"; "$SCRIPT_DIR"/safari_extensions/safari_extensions_settings_restore.sh"
-            #bash "$SCRIPT_DIR"/safari_extensions/safari_extensions_settings_restore.sh
+            . "$WORKING_DIR"/permissions/ownerships_and_permissions_restore.sh
             #wait
             
-            echo ""
+            echo ''
             echo "script done ;)"
             
             osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot
@@ -1753,19 +1602,17 @@ function backup_restore {
 
 }
 
-#FUNC=$(declare -f backup_restore)
-#time "$SHELL" -c "OPTION=\"$OPTION\"; SCRIPT_DIR=\"$SCRIPT_DIR\"; APPLESCRIPTDIR=\"$APPLESCRIPTDIR\"; $FUNC; backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt"
 
 if [[ "$OPTION" == "BACKUP" ]]
 then
     # script is run with
-    # export OPTION=RESTORE; time "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
+	# export OPTION=RESTORE; time "$WORKING_DIR"/backup_restore_script/backup_restore_script_mac.sh
     # tee does not capture the output format, so e.g. you couldn`t see the download progress of casks
     backup_restore | tee "$HOME"/Desktop/backup_restore_log.txt
 elif [[ "$OPTION" == "RESTORE" ]]
 then
     # script is run with
-    # export OPTION=RESTORE; time script -q ~/Desktop/backup_restore_log.txt "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
+    # export OPTION=RESTORE; time script -q ~/Desktop/backup_restore_log.txt "$WORKING_DIR"/backup_restore_script/backup_restore_script_mac.sh
     # to read the output file including formats do
     # cat ~/Desktop/backup_restore_log.txt
     backup_restore

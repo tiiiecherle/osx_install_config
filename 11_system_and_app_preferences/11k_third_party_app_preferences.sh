@@ -1,91 +1,19 @@
-#!/usr/bin/env bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
 
 ###
 ### asking password upfront
 ###
 
-# function for reading secret string (POSIX compliant)
-enter_password_secret()
-{
-    # read -s is not POSIX compliant
-    #read -s -p "Password: " SUDOPASSWORD
-    #echo ''
-    
-    # this is POSIX compliant
-    # disabling echo, this will prevent showing output
-    stty -echo
-    # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-    trap 'stty echo' EXIT
-    # asking for password
-    printf "Password: "
-    # reading secret
-    read -r "$@" SUDOPASSWORD
-    # reanabling echo
-    stty echo
-    trap - EXIT
-    # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-    printf "\n"
-    # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-    # has to be part of the function or it wouldn`t be updated during the maximum three tries
-    #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-}
-
-# unset the password if the variable was already set
-unset SUDOPASSWORD
-
-# making sure no variables are exported
-set +a
-
-# asking for the SUDOPASSWORD upfront
-# typing and reading SUDOPASSWORD from command line without displaying it and
-# checking if entered password is the sudo password with a set maximum of tries
-NUMBER_OF_TRIES=0
-MAX_TRIES=3
-while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-do
-    NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-    #echo "$NUMBER_OF_TRIES"
-    if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    then
-        enter_password_secret
-        ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-        if [ $? -eq 0 ]
-        then 
-            break
-        else
-            echo "Sorry, try again."
-        fi
-    else
-        echo ""$MAX_TRIES" incorrect password attempts"
-        exit
-    fi
-done
-
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
-# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo()
-{
-    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-}
-
-
-###
-### functions
-###
-
-
-
-###
-### variables
-###
-
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+env_enter_sudo_password
 
 
 
@@ -172,7 +100,7 @@ then
     echo "iterm 2"
 
     # make terminal font sf mono available in other apps
-    cp -a /Applications/Utilities/Terminal.app/Contents/Resources/Fonts/* /Users/$USER/Library/Fonts/
+    cp -a "$PATH_TO_SYSTEM_APPS"/Utilities/Terminal.app/Contents/Resources/Fonts/* /Users/"$USER"/Library/Fonts/
     
     # set it in iterm2
     /usr/libexec/PlistBuddy ~/Library/Preferences/com.googlecode.iterm2.plist -c 'Set "New Bookmarks":1:"Normal Font" "SFMono-Regular 11"'
@@ -218,7 +146,7 @@ then
     # set default save location to local
     #defaults write ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave -bool true
     defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.officeprefs.plist" DefaultsToLocalOpenSave -bool true
-    chown $USER:staff "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.officeprefs.plist"
+    chown "$USER":staff "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.officeprefs.plist"
     # set theme
     # 1 = light
     # 2 = dark
@@ -302,22 +230,22 @@ then
     AVAST_DAEMON_CONFIG='/Library/Application Support/Avast/config/com.avast.daemon.conf'
     if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^STATISTICS*") == "" ]]
     then
-        sudo "$SHELL" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
-        sudo "$SHELL" -c "echo 'STATISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
+        sudo "$SCRIPT_INTERPRETER" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
+        sudo "$SCRIPT_INTERPRETER" -c "echo 'STATISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
     else
         :
     fi
     if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^HEURISTICS*") == "" ]]
     then
-        #sudo "$SHELL" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
-        sudo "$SHELL" -c "echo 'HEURISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
+        #sudo "$SCRIPT_INTERPRETER" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
+        sudo "$SCRIPT_INTERPRETER" -c "echo 'HEURISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
     else
         :
     fi
     
     # files
     AVAST_FILESHIELD_CONFIG='/Library/Application Support/Avast/config/com.avast.fileshield.conf'
-    sudo "$SHELL" -c "cat > '$AVAST_FILESHIELD_CONFIG' << 'EOF'
+    sudo "$SCRIPT_INTERPRETER" -c "cat > '$AVAST_FILESHIELD_CONFIG' << 'EOF'
 {
     \"fileshield\" : 
     {
@@ -332,7 +260,7 @@ EOF
 
     # mail and web
     AVAST_PROXY_CONFIG='/Library/Application Support/Avast/config/com.avast.proxy.conf'
-    sudo "$SHELL" -c "cat > '$AVAST_PROXY_CONFIG' << 'EOF'
+    sudo "$SCRIPT_INTERPRETER" -c "cat > '$AVAST_PROXY_CONFIG' << 'EOF'
 {
     \"general\" : 
     {

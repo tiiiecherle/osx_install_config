@@ -1,4 +1,17 @@
-#!/usr/bin/env bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### defaults with
+###
 
 # credit to
 # http://superuser.com/questions/273756/how-to-change-default-app-for-all-files-of-particular-file-type-through-terminal
@@ -20,17 +33,7 @@
 
 ### functions
 
-ask_for_variable() {
-	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
-	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
-	do
-		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
-		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
-		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	done
-	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
-}
+
 
 
 ###
@@ -39,7 +42,7 @@ ask_for_variable() {
 echo ''
 VARIABLE_TO_CHECK="$CLEAN_SERVICES_CACHE"
 QUESTION_TO_ASK="do you want to clean the launchservices (open with) index and the icon cache after setting the new defaults for open with (y/N)? "
-ask_for_variable
+env_ask_for_variable
 CLEAN_SERVICES_CACHE="$VARIABLE_TO_CHECK"
 
 sleep 0.1
@@ -47,78 +50,8 @@ echo ''
 
 if [[ "$CLEAN_SERVICES_CACHE" =~ ^(yes|y)$ ]]
 then
-
-    # function for reading secret string (POSIX compliant)
-    enter_password_secret()
-    {
-        # read -s is not POSIX compliant
-        #read -s -p "Password: " SUDOPASSWORD
-        #echo ''
-        
-        # this is POSIX compliant
-        # disabling echo, this will prevent showing output
-        stty -echo
-        # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-        trap 'stty echo' EXIT
-        # asking for password
-        printf "Password: "
-        # reading secret
-        read -r "$@" SUDOPASSWORD
-        # reanabling echo
-        stty echo
-        trap - EXIT
-        # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-        printf "\n"
-        # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-        # has to be part of the function or it wouldn`t be updated during the maximum three tries
-        #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-    }
-    
-    # unset the password if the variable was already set
-    unset SUDOPASSWORD
-    
-    # making sure no variables are exported
-    set +a
-    
-    # asking for the SUDOPASSWORD upfront
-    # typing and reading SUDOPASSWORD from command line without displaying it and
-    # checking if entered password is the sudo password with a set maximum of tries
-    NUMBER_OF_TRIES=0
-    MAX_TRIES=3
-    while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    do
-        NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-        #echo "$NUMBER_OF_TRIES"
-        if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-        then
-            enter_password_secret
-            ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-            if [ $? -eq 0 ]
-            then 
-                break
-            else
-                echo "Sorry, try again."
-            fi
-        else
-            echo ""$MAX_TRIES" incorrect password attempts"
-            exit
-        fi
-    done
-    
-    # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-    trap 'unset SUDOPASSWORD' EXIT
-    
-    # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-    sudo()
-    {
-        ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-        #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-        #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-    }
-    
+    env_enter_sudo_password
     echo ''
-
 else
     :
 fi
@@ -182,7 +115,7 @@ do
      #       break
     #fi
 
-    function create_entry {
+    create_entry() {
             if [[ "$KEY2" != "" ]] && [[ "$VALUE2" != "" ]]
             then
                 $BUDDY -c "Add LSHandlers:$I dict" $PLIST
@@ -271,9 +204,10 @@ else
 fi
 
 echo "done ;)"
+echo ''
 echo "the changes need a reboot to take effect..."
 #echo "initializing reboot"
-echo ""
+echo ''
 
 #osascript -e 'tell app "loginwindow" to «event aevtrrst»'       # reboot
 #osascript -e 'tell app "loginwindow" to «event aevtrsdn»'       # shutdown

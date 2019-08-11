@@ -13,10 +13,10 @@ decrypt and unarchive gpg apps
 		PATH_TO/icon_set_python3.py PATH_TO/gpgtools.icns PATH_TO/APPNAME.app
 	b	right click on APPNAME.app
 		show package content - Contents - Resources
-		copy icon.icns to .../Resources/icon.icns
+		copy icon.icns to .../Resources/applet.icns
 	c	show package content - Contents - Info.plist with texteditor
-		<string>Application Stub</string>
-		<key>icon.icns</key>
+		<string>CFBundleIconFile</string>
+		<key>AutomatorApplet</key>
 		# neither special chracters nore _ or - are supported in the filename.icns 
 
 3	set document icon for associated files
@@ -25,11 +25,11 @@ decrypt and unarchive gpg apps
 
 	a	right click on APPNAME.app
 		show package content - Contents - Resources
-		copy document_icon.icns to .../Resources/document_icon.icns
+		copy document.icns to .../Resources/document.icns
 	b	show package content - Contents - Info.plist with texteditor
 		add 
-		<string>Application Stub</string>
-		<key>document_icon.icns</key>
+		<key>CFBundleTypeIconFile</key>
+		<string>document.icns</string>
 		to <key>CFBundleDocumentTypes</key>
 		# neither special chracters nore _ or - are supported in the document.icns 
 	c	clear icon cache
@@ -40,7 +40,7 @@ decrypt and unarchive gpg apps
 	show package content - Contents - Info.plist with texteditor
 	<key>CFBundleTypeExtensions</key>
 	<array>
-		<string>fileextension</string>
+		<string>gpg</string>
 	</array>	
 
 

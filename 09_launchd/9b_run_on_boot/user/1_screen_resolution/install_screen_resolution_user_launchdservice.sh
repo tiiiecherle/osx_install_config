@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/bin/zsh
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
 
 ###
 ### launchd & applescript to do things on every boot after user login
@@ -6,56 +11,53 @@
 
 
 ### variables
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-
 SERVICE_NAME=com.screen_resolution.set
 SERVICE_INSTALL_PATH=/Users/$USER/Library/LaunchAgents
-SCRIPT_NAME=screen_resolution
+SCRIPT_INSTALL_NAME=screen_resolution
 SCRIPT_INSTALL_PATH=/Users/$USER/Library/Scripts
 
 LOGDIR=/Users/"$USER"/Library/Logs
-LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
-
-# UniqueID of loggedInUser
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-#UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
-UNIQUE_USER_ID=$(id -u "$loggedInUser")
+LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 
 ### uninstalling possible old files
 echo ''
 echo "uninstalling possible old files..."
-. "$SCRIPT_DIR"/launchd_and_script/uninstall_"$SCRIPT_NAME"_and_launchdservice.sh
+. "$SCRIPT_DIR"/launchd_and_script/uninstall_"$SCRIPT_INSTALL_NAME"_and_launchdservice.sh
 wait
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
 ### script file
 echo "installing script..."
-cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_NAME".sh "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh
+mkdir -p "$SCRIPT_INSTALL_PATH"
+chown "$USER":staff "$SCRIPT_INSTALL_PATH"
+chmod 700 "$SCRIPT_INSTALL_PATH"
+cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_INSTALL_NAME".sh "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh
 chown -R "$USER":staff "$SCRIPT_INSTALL_PATH"/
 chmod -R 750 "$SCRIPT_INSTALL_PATH"/
 
 
 ### launchd service file
 echo "installing launchd service..."
+mkdir -p "$SERVICE_INSTALL_PATH"
+chown "$USER":staff "$SERVICE_INSTALL_PATH"
+chmod 700 "$SERVICE_INSTALL_PATH"
 cp "$SCRIPT_DIR"/launchd_and_script/"$SERVICE_NAME".plist "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 chown "$USER":staff "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 chmod 640 "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
 
 ### installing display manager
-echo ''
-echo "checking internet connection..."
-ping -c5 google.com >/dev/null 2>&1
-if [[ "$?" = 0 ]]
+env_check_if_online
+if [[ "$ONLINE_STATUS" == "online" ]]
 then
-
-    echo ''
-    echo "we are online, installing display manager..."
+    # online
+    echo "installing display manager..."
 
     # creating installation directory
     mkdir -p /Applications/display_manager
-    chown $USER:admin /Applications/display_manager
+    chown "$USER":admin /Applications/display_manager
     chmod 755 /Applications/display_manager
 
     # downloading display manager from git repository
@@ -64,46 +66,71 @@ then
     echo ''
     echo "downloading display manager..."
     git clone --depth 1 https://github.com/univ-of-utah-marriott-library-apple/display_manager.git /Applications/display_manager/
-    
-    # checking if python3 is installed
+        
+    # python2 deprecated 2020-01, checking if python3 and pip3 are installed
     echo ''
-    if [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) != "3" ]] && [[ $(compgen -c python | grep "^python3$") == "" ]]
+    if sudo -H -u "$loggedInUser" command -v python3 &> /dev/null && sudo -H -u "$loggedInUser" command -v pip3 &> /dev/null
     then
-        echo "python3 is not installed, using apple python2..."
-        PYTHON_VERSION='python'
-        PIP_VERSION='pip'
-        for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
-        do
-            if [[ $("$PIP_VERSION" list | grep "$i") == "" ]]
-            then
-                echo ''
-                echo "installing python module "$i"..."
-                sudo "$PIP_VERSION" install "$i"
-            else
-                echo "python module "$i" already installed..."
-            fi
-        done
-    else
-        echo "python3 is installed, checking modules..."
+        # installed
+        echo "python3 is installed..."
         PYTHON_VERSION='python3'
         PIP_VERSION='pip3'
-        for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
-        do
-            if [[ $("$PIP_VERSION" list | grep "$i") == "" ]]
-            then
-                echo ''
-                echo "installing python module "$i"..."
-                sudo -u $loggedInUser "$PIP_VERSION" install "$i"
-            else
-                echo "python3 module "$i" already installed..."
-            fi
-        done
+    else
+        # not installed
+        echo "python3 is not installed, trying apple python..."
+        
+        # checking if pip is installed
+        if sudo -H -u "$loggedInUser" command -v pip &> /dev/null
+        then
+            # installed
+            echo "pip is installed..."
+        else
+            # not installed
+            echo "pip is not installed, installing..."
+            sudo -H python -m ensurepip
+            sudo -H easy_install pip
+        fi
+        
+        # checking version of default apple python
+        if sudo -H -u "$loggedInUser" command -v python &> /dev/null && sudo -H -u "$loggedInUser" command -v pip &> /dev/null && [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) == "3" ]] && [[ $(pip --version 2>&1 | grep "python 3") != "" ]]
+        then
+            PYTHON_VERSION='python'
+            PIP_VERSION='pip'
+        else
+            echo "python3 or pip3 are not installed, exiting..."
+            echo ''
+            exit
+        fi
     fi
     
-else
-
     echo ''
-	echo "we are not not online, exiting..."
+    echo "checking python modules..."
+    for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
+    do
+        if [[ $("$PIP_VERSION" list | grep "$i") == "" ]]
+        then
+            echo ''
+            echo "installing python module "$i"..."
+            echo ''
+            echo "installing python module "$i"..."
+            if [[ $(sudo -H -u "$loggedInUser" command -v "$PIP_VERSION" | grep "/usr/local") == "" ]]
+            then
+                sudo "$PIP_VERSION" install "$i"
+            else
+                sudo -H -u "$loggedInUser" "$PIP_VERSION" install "$i"
+            fi
+        else
+            echo "python module "$i" already installed..."
+        fi
+    done
+    
+    echo ''
+    echo "python version used in script is $PYTHON_VERSION with $PIP_VERSION..."
+    #echo ''
+else
+    # offline
+	echo "exiting..."
+	echo ''
 	exit
 	
 fi
@@ -116,13 +143,8 @@ echo "running installed script..."
 # be sure to have the correct path to the user logfiles specified for the logfile
 # /var/log is only writable as root
 #echo ''
-"$SHELL" -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh &
-# wait < <(jobs -p) works, but is bash only, not posix compatible
-# wait $(jobs -p)
-for job in $(jobs -p)
-do
-	wait ${job} ||  echo "at least one job did not exit cleanly => $?"
-done
+"$SCRIPT_INTERPRETER" -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh &
+wait
 
 
 ### launchd service

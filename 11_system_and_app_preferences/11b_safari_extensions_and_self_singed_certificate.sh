@@ -1,11 +1,24 @@
-#!/bin/bash
+#!/bin/zsh
 
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
 ### safari extensions
+###
+
 # as apple changed the format of extensions for 10.14 and up it is no longer necessary to restore the "*.safariextz" files
 # "/$HOMEFOLDER/Library/Safari/Extensions/Extensions.plist"
 # "/$HOMEFOLDER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
 # are restored by the restore script if they were present at backup
 
+echo ''
 echo "opening safari apps that include extensions..."
 # should already be enabled by restoring ~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions
 open "/Applications/Better.app"
@@ -21,7 +34,7 @@ echo ''
 #echo "please accept certificate by showing details, opening the website and entering the password..."
 echo "checking if certificate is installed correctly by opening the website..."
 
-SCRIPT_DIR_DEFAULTS_WRITE=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && cd .. && pwd)")
+SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
 if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh ]]
 then
     SERVER_IP=$(cat "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh | grep "^SERVER_IP" | awk -F '"' '{print $2}')
@@ -35,4 +48,6 @@ open -a /Applications/Safari.app https://"$SERVER_IP"
 echo "safari has to be quit before continuing..."
 while ps aux | grep '/Safari.app/' | grep -v grep > /dev/null; do sleep 1; done
 
+echo ''
 echo 'done ;)'
+echo ''

@@ -1,11 +1,23 @@
-#!/bin/bash
+#!/bin/zsh
 
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && cd .. && pwd)")
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+###
+### sourcing config file
+###
 
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### install
+###
+
+# variables
 APP_NAME="brew_casks_update"
+DMG_DIR="$SCRIPT_DIR_ONE_BACK"
 
+# remove old installed version
 if [[ -e /Applications/"$APP_NAME".app ]]
 then
 	rm -rf /Applications/"$APP_NAME".app
@@ -14,12 +26,12 @@ else
 fi
 
 # ownership and permissions
-cp -a "$SCRIPT_DIR"/app/"$APP_NAME".app /Applications/
-if [[ -e /Applications/"$APP_NAME".app/custom_files/"$APP_NAME".sh ]]
+cp -a "$DMG_DIR"/app/"$APP_NAME".app /Applications/
+if [[ -e /Applications/"$APP_NAME".app/Contents/custom_files/"$APP_NAME".sh ]]
 then
 	SCRIPT_NAME="$APP_NAME"
 else
-	SCRIPT_NAME=$(find /Applications/"$APP_NAME".app/custom_files -maxdepth 1 -mindepth 1 -type f -name "*.sh")
+	SCRIPT_NAME=$(find /Applications/"$APP_NAME".app/Contents/custom_files -maxdepth 1 -mindepth 1 -type f -name "*.sh")
 	if [[ $(echo "$SCRIPT_NAME" | wc -l | awk '{print $1}') != "1" ]]
 	then
 		echo "SCRIPT_NAME is not set correctly, exiting..."
@@ -29,36 +41,27 @@ else
 	fi
 fi
 chown 501:admin /Applications/"$APP_NAME".app
-chown -R 501:admin /Applications/"$APP_NAME".app/custom_files/
+chown -R 501:admin /Applications/"$APP_NAME".app/Contents/custom_files/
 chmod 755 /Applications/"$APP_NAME".app
-chmod 770 /Applications/"$APP_NAME".app/custom_files/"$SCRIPT_NAME".sh
+chmod 770 /Applications/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
 xattr -dr com.apple.quarantine /Applications/"$APP_NAME".app
 
 
 ### security permissions
-DATABASE_SYSTEM="/Library/Application Support/com.apple.TCC/TCC.db"
-#echo "$DATABASE_SYSTEM"
-DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
-#echo "$DATABASE_USER"
+APPS_SECURITY_ARRAY=(
+# app name									security service											allowed (1=yes, 0=no)
+"$APP_NAME                               	kTCCServiceAccessibility                             		1"
+)
+PRINT_SECURITY_PERMISSIONS_ENTRYS="no" env_set_apps_security_permissions
 
-if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
-then
-    # macos versions until and including 10.13
-    :
-else
-    # macos versions 10.14 and up
-    # removing old permissions
-    sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where client='com.apple.ScriptEditor.id.brew-casks-update';"
-    
-    sleep 1
-    
-	# accessibility
-	sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,NULL,NULL,NULL,?,NULL,0,?);"	
-	# automation
-	# working, but does not show in gui of system preferences, use csreq for the entry to show
-	#sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.systemevents',?,NULL,?);"
-	#sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.ScriptEditor.id.brew-casks-update',0,1,1,?,NULL,0,'com.apple.Terminal',?,NULL,?);"
-fi
+
+### automation
+# macos versions 10.14 and up
+AUTOMATION_APPS=(
+# source app name							automated app name											allowed (1=yes, 0=no)
+"$APP_NAME									System Events                   							1"
+"$APP_NAME									Terminal                   									1"
+)
+PRINT_AUTOMATING_PERMISSIONS_ENTRYS="no" env_set_apps_automation_permissions
 
 #open /Applications/"$APP_NAME".app
-

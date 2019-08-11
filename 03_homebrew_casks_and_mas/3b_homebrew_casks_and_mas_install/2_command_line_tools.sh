@@ -1,122 +1,80 @@
-#!/bin/bash
+#!/bin/zsh
 
 ###
-### variables
+### sourcing config file
 ###
 
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
-# or sw_vers | awk 'BEGIN { FS = ":[ \t]*" } /ProductVersion/ { print $2 }' | cut -f1,2 -d'.'
-# or sw_vers -productVersion | cut -f1,2 -d'.'
-MACOS_VERSION_NUMBER=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.' | cut -f2 -d'.')
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
 
 ###
 ### script frame
 ###
 
-# if script is run standalone, not sourced from another script, load script frame
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
+# script is not sourced, run standalone
+if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
 then
-    # script is sourced
-    :
+    . "$SCRIPT_DIR"/1_script_frame.sh
+    eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 else
-    # script is not sourced, run standalone
-    if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
-    then
-        . "$SCRIPT_DIR"/1_script_frame.sh
-    else
-        echo ''
-        echo "script for functions and prerequisits is missing, exiting..."
-        echo ''
-        exit
-    fi
+    echo ''
+    echo "script for functions and prerequisits is missing, exiting..."
+    echo ''
+    exit
 fi
 
+
+
+###
+### command line tools
+###
 
 ### starting sudo
-start_sudo
-
+env_start_sudo
+    
 # installing command line tools (graphical)
-function command_line_tools_install() {
-if xcode-select --install 2>&1 | grep installed >/dev/null
-then
-  	echo command line tools are installed...
-else
-  	echo command line tools are not installed, installing...
-  	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
-  	#sudo xcodebuild -license accept
-fi
+command_line_tools_install_gui() {
+    if xcode-select --install 2>&1 | grep installed >/dev/null
+    then
+      	echo "command line tools are installed..."
+    else
+      	echo "command line tools are not installed, installing..."
+      	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
+      	#sudo xcodebuild -license accept
+    fi
 }
 # does not work without power source connection in 10.13
-#command_line_tools_install
+#command_line_tools_install_gui
 
+# installing command line tools
 echo ''
+env_command_line_tools_install_shell
 
-# installing command line tools (command line)
-#if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ "$(ls -A "$(xcode-select -print-path)")" ]]
-if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ -nz "$(ls -A "$(xcode-select -print-path)")" ]]
-then
-  	echo "command line tools are installed..."
-else
-	echo "command line tools are not installed, installing..."
-	# prompting the softwareupdate utility to list the command line tools
-    touch "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
-    sleep 3
-    softwareupdate --list >/dev/null 2>&1
-    if [[ "$MACOS_VERSION_NUMBER" -le "14" ]]
-    then
-        COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
-    elif [[ "$MACOS_VERSION_NUMBER" == "15" ]]
-    then
-        COMMANDLINETOOLVERSION=$(softwareupdate --list | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
-    else
-        :
-    fi     
-	echo "installing "$COMMANDLINETOOLVERSION"..."
-    softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLVERSION")"
-fi
-
-# removing tmp file that forces command line tools to show up
-if [[ -e "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress" ]]
-then
-    rm -f "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
-else
-    :
-fi
-
-# choosing command line tools as default
-sudo xcode-select --switch /Library/Developer/CommandLineTools
-
-function command_line_tools_update() {
+# updating command line tools
+command_line_tools_update_shell() {
     # updating command line tools and system
-    #echo ''
+    echo ''
     echo "checking for command line tools update..."
-    if [[ "$MACOS_VERSION_NUMBER" -le "14" ]]
-    then
-        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo $MACOS_VERSION | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
-    elif [[ "$MACOS_VERSION_NUMBER" == "15" ]]
-    then
-        COMMANDLINETOOLUPDATE=$(softwareupdate --list | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
-    else
-        :
-    fi   
+    env_get_current_command_line_tools_version
+    #echo "COMMANDLINETOOLVERSION is "$COMMANDLINETOOLVERSION"..."
 
-    if [ "$COMMANDLINETOOLUPDATE" == "" ]
+    if [[ "$CURRENT_COMMANDLINETOOLVERSION" == "" ]]
     then
     	echo "no update for command line tools available..."
     else
     	echo "update for command line tools available, updating..."
-    	softwareupdate -i --verbose "$(echo "$COMMANDLINETOOLUPDATE")"
+    	softwareupdate -i --verbose "$(echo "$CURRENT_COMMANDLINETOOLVERSION")"
     fi
 }
-command_line_tools_update
+command_line_tools_update_shell
 
 # check active command line tools version
 # pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep "^version"
 
 # installing sdk headers on mojave
-if [[ "$MACOS_VERSION_NUMBER" -le "13" ]]
+VERSION_TO_CHECK_AGAINST=10.13
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
 then
     # macos versions until and including 10.13 
     :
@@ -124,13 +82,13 @@ else
     # macos versions 10.14 and up
     if [[ $(xcrun --show-sdk-path) == "" ]]
     then
-        if [[ "$MACOS_VERSION_NUMBER" == "14" ]]
+        if [[ "$MACOS_VERSION_MAJOR" == "10.14" ]]
         then
             echo ''
             echo "installing sdk headers..."
             #sudo install -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
             sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-        elif [[ "$MACOS_VERSION_NUMBER" == "15" ]]
+        elif [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
         then
             :
         else
@@ -145,5 +103,6 @@ fi
 
 echo ''
 
+
 ### stopping sudo
-stop_sudo
+env_stop_sudo

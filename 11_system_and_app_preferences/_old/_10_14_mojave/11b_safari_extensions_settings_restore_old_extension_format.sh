@@ -1,25 +1,24 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### restoring safari extensions
+###
 
 # this can not be included in the restore script if the keychain is restored
 # a reboot is needed after restoring the keychain before running this script
 # or the changes to safari would not be kept
 
-SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
-#echo "script dir is $SCRIPT_DIR$"
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
-
-# getting logged in user
-#echo "LOGNAME is $(logname)..."
-#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-#stat -f%Su /dev/console
-#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-# recommended way
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-#echo "loggedInUser is $loggedInUser..."
-
 echo "please select restore master directory..."
-RESTOREMASTERDIR=$(sudo -u "$loggedInUser" osascript "$SCRIPT_DIR"/11b_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
+RESTOREMASTERDIR=$(sudo -H -u "$loggedInUser" osascript "$SCRIPT_DIR"/11b_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
 SELECTEDUSER="$loggedInUser"
 MASTERUSER=$(ls "$RESTOREMASTERDIR"/Users | egrep -v "^[.]" | egrep -v "Shared")
 #RESTOREMASTERDIR=/Users/$USER/Desktop/restore/master
@@ -31,9 +30,10 @@ HOMEFOLDER=Users/$USER
 #echo "HOMEFOLDER is "$HOMEFOLDER""
 
 # restore file
-if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+VERSION_TO_CHECK_AGAINST=10.13
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
 then
-    # macos versions until and including 10.13 
+    # macos versions until and including 10.13
 	EXTENSIONS_PREFERENCESFILE_DESTINATION="/$HOMEFOLDER/Library/Preferences/com.apple.Safari.Extensions.plist"
 else
     # macos versions 10.14 and up
@@ -84,11 +84,14 @@ fi
 #osascript -e 'tell application "Safari" to quit'
 #sleep 2
 
-echo "restoring safari extensions..."
-find /$HOMEFOLDER/Desktop/Extensions -name "*.safariextz" -print0 | while IFS= read -r -d '' file; do
-    open "$file"
+while IFS= read -r line || [[ -n "$line" ]]
+do
+    if [[ "$line" == "" ]]; then continue; fi
+	file="$line"
+	#echo "$file"
+	open "$file"
     sleep 10
-done
+done <<< "$(find /$HOMEFOLDER/Desktop/Extensions -name "*.safariextz")"
 
 sleep 2
 

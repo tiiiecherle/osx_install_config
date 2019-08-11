@@ -1,0 +1,3 @@
+# ssd devices and settings should be good to go with default settings
+# if shall or need to be tweaked, have a look in the _old section
+# these scripts are no longer maintained and not tested

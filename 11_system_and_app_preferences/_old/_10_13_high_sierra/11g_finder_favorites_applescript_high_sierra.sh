@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 
-function add_finder_favorites() {
+add_finder_favorites() {
 #osascript 2>/dev/null <<EOF
 osascript <<EOF
 

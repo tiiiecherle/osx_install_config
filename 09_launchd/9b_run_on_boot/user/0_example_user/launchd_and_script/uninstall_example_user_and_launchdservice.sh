@@ -1,26 +1,34 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### uninstall service
+###
 
 ### variables
-UNINSTALL_SCRIPT_DIR=$(echo "$(cd "${BASH_SOURCE[0]%/*}" && pwd)")
+UNINSTALL_SCRIPT_DIR="$SCRIPT_DIR"
 
 SERVICE_NAME=com.example_user.show
 SERVICE_INSTALL_PATH=/Users/$USER/Library/LaunchAgents
-SCRIPT_NAME=example_user
+SCRIPT_INSTALL_NAME=example_user
 SCRIPT_INSTALL_PATH=/Users/$USER/Library/Scripts
 
-# UniqueID of loggedInUser
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-#UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
-UNIQUE_USER_ID=$(id -u "$loggedInUser")
-
 LOGDIR=/Users/"$loggedInUser"/Library/Logs
-LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 
 ### deleting script
-if [[ -f "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh ]]
+if [[ -f "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh ]]
 then
-    rm -f "$SCRIPT_INSTALL_PATH"/"$SCRIPT_NAME".sh
+    rm -f "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh
 else
     :
 fi
@@ -70,7 +78,7 @@ fi
 
 
 ### checking installation
-if [[ $(ps aux | grep /install_"$SCRIPT_NAME"_and_launchdservice.sh | grep -v grep) == "" ]]
+if [[ $(ps aux | grep /install_"$SCRIPT_INSTALL_NAME"_and_launchdservice.sh | grep -v grep) == "" ]]
 then
     echo ''
     echo "checking installation..."

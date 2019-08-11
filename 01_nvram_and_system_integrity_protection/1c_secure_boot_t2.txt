@@ -8,4 +8,5 @@ Reboot your mac to recovery mode (reboot with command + R pressed).
 Open Utilities - Start-Up-Security-Utility
 Set Secure Boot to Full Protection.
 Set External Boot to allow booting from external usb devices.
+Reverse the external boot setting after finishing the installation.
 Reboot

@@ -1,4 +1,13 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
 
 ###
 ### ownerships and permissions
@@ -7,15 +16,6 @@
 # checking if SELECTEDUSER is exported from backup / restore script
 if [[ "$SELECTEDUSER" == "" ]]
 then
-    # getting logged in user
-    #echo "LOGNAME is $(logname)..."
-    #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-    #stat -f%Su /dev/console
-    #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-    # recommended way
-    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-    #echo "loggedInUser is $loggedInUser..."
-    
     SELECTEDUSER="$loggedInUser"
     #echo "user is $SELECTEDUSER"
 else
@@ -24,158 +24,16 @@ fi
 
 if [[ "$SUDOPASSWORD" == "" ]]
 then
-    ###
     ### asking password upfront
-    ###
-        
-    # function for reading secret string (POSIX compliant)
-    enter_password_secret()
-    {
-        # read -s is not POSIX compliant
-        #read -s -p "Password: " SUDOPASSWORD
-        #echo ''
-        
-        # this is POSIX compliant
-        # disabling echo, this will prevent showing output
-        stty -echo
-        # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-        trap 'stty echo' EXIT
-        # asking for password
-        printf "Password: "
-        # reading secret
-        read -r "$@" SUDOPASSWORD
-        # reanabling echo
-        stty echo
-        trap - EXIT
-        # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-        printf "\n"
-        # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-        # has to be part of the function or it wouldn`t be updated during the maximum three tries
-        #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-    }
-    
-    # unset the password if the variable was already set
-    unset SUDOPASSWORD
-    
-    # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-    trap 'unset SUDOPASSWORD' EXIT
-    
-    # making sure no variables are exported
-    set +a
-    
-    # asking for the SUDOPASSWORD upfront
-    # typing and reading SUDOPASSWORD from command line without displaying it and
-    # checking if entered password is the sudo password with a set maximum of tries
-    NUMBER_OF_TRIES=0
-    MAX_TRIES=3
-    while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    do
-        NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-        #echo "$NUMBER_OF_TRIES"
-        if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-        then
-            enter_password_secret
-            ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-            if [ $? -eq 0 ]
-            then 
-                break
-            else
-                echo "Sorry, try again."
-            fi
-        else
-            echo ""$MAX_TRIES" incorrect password attempts"
-            exit
-        fi
-    done
-    
-    # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-    sudo()
-    {
-    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-    }
+    env_enter_sudo_password
 
     # unset password if script is run seperately
     UNSET_PASSWORD="YES"
     
-    function get_running_subprocesses()
-    {
-        SUBPROCESSES_PID_TEXT=$(pgrep -lg $(ps -o pgid= $$) | grep -v $$ | grep -v grep)
-        SCRIPT_COMMAND=$(ps -o comm= $$)
-    	PARENT_SCRIPT_COMMAND=$(ps -o comm= $PPID)
-	    if [[ $PARENT_SCRIPT_COMMAND == "$(basename $SHELL)" ]] || [[ $PARENT_SCRIPT_COMMAND == "-$(basename $SHELL)" ]] || [[ $PARENT_SCRIPT_COMMAND == "" ]]
-    	then
-            RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | awk '{print $1}')
-        else
-            RUNNING_SUBPROCESSES=$(echo "$SUBPROCESSES_PID_TEXT" | grep -v "$SCRIPT_COMMAND" | grep -v "$PARENT_SCRIPT_COMMAND" | awk '{print $1}')
-        fi
-    }
-    
-    function kill_subprocesses() 
-    {
-        # kills only subprocesses of the current process
-        #pkill -15 -P $$
-        #kill -15 $(pgrep -P $$)
-        #echo "killing processes..."
-        
-        # kills all descendant processes incl. process-children and process-grandchildren
-        # giving subprocesses the chance to terminate cleanly kill -15
-        get_running_subprocesses
-        if [[ $RUNNING_SUBPROCESSES != "" ]]
-        then
-            kill -15 $RUNNING_SUBPROCESSES
-            # do not wait here if a process can not terminate cleanly
-            #wait $RUNNING_SUBPROCESSES 2>/dev/null
-        else
-            :
-        fi
-        # waiting for clean subprocess termination
-        TIME_OUT=0
-        while [[ $RUNNING_SUBPROCESSES != "" ]] && [[ $TIME_OUT -lt 3 ]]
-        do
-            get_running_subprocesses
-            sleep 1
-            TIME_OUT=$((TIME_OUT+1))
-        done
-        # killing the rest of the processes kill -9
-        get_running_subprocesses
-        if [[ $RUNNING_SUBPROCESSES != "" ]]
-        then
-            kill -9 $RUNNING_SUBPROCESSES
-            wait $RUNNING_SUBPROCESSES 2>/dev/null
-        else
-            :
-        fi
-        # unsetting variable
-        unset RUNNING_SUBPROCESSES
-    }
-    
-    function kill_main_process() 
-    {
-        # kills processes itself
-        #kill $$
-        kill -13 $$
-    }
-    
     ### trapping
-    [[ "${BASH_SOURCE[0]}" != "${0}" ]] && SCRIPT_SOURCED="yes" || SCRIPT_SOURCED="no"
-    [[ $(echo $(ps -o stat= -p $PPID)) == "S+" ]] && SCRIPT_SESSION_MASTER="no" || SCRIPT_SESSION_MASTER="yes"
-    # a sourced script does not exit, it ends with return, so checking for session master is sufficent
-    # subprocesses will not be killed on return, only on exit
-    #if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]] && [[ "$SCRIPT_SOURCED" == "no" ]]
-    if [[ "$SCRIPT_SESSION_MASTER" == "yes" ]]
-    then
-        # script is session master and not run from another script (S on mac Ss on linux)
-        trap "unset SUDOPASSWORD; printf '\n'; kill_subprocesses >/dev/null 2>&1; kill_main_process" SIGHUP SIGINT SIGTERM
-        trap "unset SUDOPASSWORD; kill_subprocesses >/dev/null 2>&1; exit" EXIT
-    else
-        # script is not session master and run from another script (S+ on mac and linux) 
-        trap "unset SUDOPASSWORD; printf '\n'; kill_main_process" SIGHUP SIGINT SIGTERM
-        trap "unset SUDOPASSWORD; exit" EXIT
-    fi
-    #set -e
+    trap_function_exit_middle() { env_stop_sudo; unset SUDOPASSWORD; unset USE_PASSWORD; }
+    "${ENV_SET_TRAP_SIG[@]}"
+    "${ENV_SET_TRAP_EXIT[@]}"
 else
     #echo "SELECTEDUSER is $SELECTEDUSER"
     :
@@ -184,47 +42,51 @@ fi
 HOMEFOLDER=/Users/"$SELECTEDUSER"
 #echo "HOMEFOLDER before function is "$HOMEFOLDER""
 
+env_start_sudo
+
 # starting a function to tee a record to a logfile
-function backup_restore_permissions {
+backup_restore_permissions() {
 
     echo "SELECTEDUSER in function is ""$SELECTEDUSER"
     echo "HOMEFOLDER in function is ""$HOMEFOLDER"
         
     #USER_ID=$UID
-    USER_ID=`id -u`
+    export USER_ID="$UNIQUE_USER_ID"
     
     echo "USER_ID of ""$SELECTEDUSER"" is ""$USER_ID"
     
     # app permissions in applications folder
     echo "setting ownerships and permissions in /Applications..."
-    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chmod 755 &
-    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" -print0 | sudo xargs -0 chown "$USER_ID":admin &
-    if [ -e /Applications/VirtualBox.app ]; then sudo chown root:admin /Applications/VirtualBox.app; else :; fi
+    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" ! -type l -print0 | xargs -0 -n100 sudo chmod 755 &
+    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" ! -type l -print0 | xargs -0 -n100 sudo chown "$USER_ID":admin
+    if [[ -e /Applications/VirtualBox.app ]]; then sudo chown root:admin /Applications/VirtualBox.app; else :; fi
     #sudo chmod 644 "/Applications/.DS_Store"
-    
-    # color profiles
+
+    ### outside user folder
     echo "setting ownerships and permissions outside the user folder..."
-    if [ -e "/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom" ]
+
+    # color profiles
+    if [[ -e "/Library/ColorSync/Profiles/eci" ]]
     then
-        sudo chmod 755 "/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom"
-        sudo chown root:admin "/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom"
-        sudo "$SHELL" -c 'find "/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom" -maxdepth 1 -type f -print0 | xargs -0 chmod 644'
-        sudo "$SHELL" -c 'find "/Library/Application Support/Adobe/Color/Profiles/Recommended/profiles_tom" -maxdepth 1 -type f -print0 | xargs -0 chown root:wheel'
+        sudo chmod 755 "/Library/ColorSync/Profiles/eci"
+        sudo chown root:wheel "/Library/ColorSync/Profiles/eci"
+        sudo find "/Library/ColorSync/Profiles/eci" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chmod 644
+        sudo find "/Library/ColorSync/Profiles/eci" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chown root:wheel
     else
         :
     fi
-    
+
     # display profiles
-    if [ -e "/Library/ColorSync/Profiles/Displays" ]
+    if [[ -e "/Library/ColorSync/Profiles/Displays" ]]
     then
-        sudo "$SHELL" -c 'find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 chown root:wheel' &
+        sudo find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chown root:wheel &
     else
         :
     fi
-    
+
     # google earth web plugin
-    if [ -e "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin" ]
+    if [[ -e "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin" ]]
     then
         sudo chmod 755 "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
         sudo chown root:wheel "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
@@ -233,7 +95,7 @@ function backup_restore_permissions {
     fi
     
     # canon printer driver
-    if [ -e "/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz" ]
+    if [[ -e "/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz" ]]
     then
         sudo chmod 644 "/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz"
         sudo chown root:admin "/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz"
@@ -241,7 +103,7 @@ function backup_restore_permissions {
         :
     fi
     
-    if [ -e "/Library/Printers/Canon/CUPSPS2" ]
+    if [[ -e "/Library/Printers/Canon/CUPSPS2" ]]
     then
         # do not use & for the -R lines
         sudo chown -R root:admin "/Library/Printers/Canon/CUPSPS2"
@@ -249,28 +111,28 @@ function backup_restore_permissions {
         # do not use & for the -R lines
         sudo chmod -R 755 "/Library/Printers/Canon/CUPSPS2"
         sudo chmod 700 "/Library/Printers/Canon/CUPSPS2/backend/backend.bundle/Contents/Library/canonoipnets2" &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.nib" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.DAT" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.TBL" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.icc" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.icns" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.plist" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.strings" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.png" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.gif" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.html" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.js" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.gif" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.jpg" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.css" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.xib" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.helpindex" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "*.PRF" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "CodeResources" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "CodeDirectory" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "CodeRequirements*" -print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "CodeSignature"-print0 | xargs -0 chmod 644' &
-        sudo "$SHELL" -c 'find /Library/Printers/Canon -type f -name "PkgInfo" -print0 | xargs -0 chmod 644' &
+        sudo find /Library/Printers/Canon -type f -name "*.nib" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.DAT" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.TBL" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.icc" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.icns" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.plist" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.strings" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.png" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.gif" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.html" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.js" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.gif" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.jpg" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.css" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.xib" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.helpindex" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "*.PRF" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "CodeResources" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "CodeDirectory" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "CodeRequirements*" -print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "CodeSignature"-print0 | xargs -0 -n100 sudo chmod 644 &
+        sudo find /Library/Printers/Canon -type f -name "PkgInfo" -print0 | xargs -0 -n100 sudo chmod 644 &
         # find files with respective ownership and permission
         # find /Library/Printers/Canon -type f ! -user root
         # find /Library/Printers/Canon -type f ! -group admin
@@ -281,9 +143,9 @@ function backup_restore_permissions {
     else
         :
     fi
-    
+
     # custom scripts
-    if [ -e "/Library/Scripts/custom/" ]
+    if [[ -e "/Library/Scripts/custom/" ]]
     then
         sudo chown -R root:wheel "/Library/Scripts/custom/"
         sudo chmod -R 755 "/Library/Scripts/custom/"
@@ -292,7 +154,7 @@ function backup_restore_permissions {
     fi
     
     # launchd hostsfile
-    if [ -e "/Library/LaunchDaemons/com.hostsfile.install_update.plist" ]
+    if [[ -e "/Library/LaunchDaemons/com.hostsfile.install_update.plist" ]]
     then
         sudo chown root:wheel "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
         sudo chmod 644 "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
@@ -301,7 +163,7 @@ function backup_restore_permissions {
     fi
     
     # mysides
-    if [ -e "/usr/local/bin/mysides" ]
+    if [[ -e "/usr/local/bin/mysides" ]]
     then
         sudo chown root:wheel "/usr/local/bin/mysides"
         sudo chmod 755 "/usr/local/bin/mysides"
@@ -310,26 +172,26 @@ function backup_restore_permissions {
     fi
     
     # cups printer
-    if [ -e "/etc/cups/printers.conf" ]
+    if [[ -e "/etc/cups/printers.conf" ]]
     then
         sudo chown root:_lp "/etc/cups/printers.conf"
         sudo chmod 600 "/etc/cups/printers.conf"
     else
         :
     fi
-    if [ -e "/etc/cups/ppd/" ]
+    if [[ -e "/etc/cups/ppd/" ]]
     then
         sudo chown -R root:_lp "/etc/cups/ppd/"
-        sudo "$SHELL" -c 'find /etc/cups/ppd/ -type f -print0 | xargs -0 chmod 644'
+        sudo find /etc/cups/ppd/ -type f -print0 | xargs -0 -n100 sudo chmod 644
     else
         :
     fi
-    if [ -e "/Library/Application Support/AVGAntivirus/config" ]
+    if [[ -e "/Library/Application Support/AVGAntivirus/config" ]]
     then
-        sudo "$SHELL" -c 'find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 chmod 644'
-        sudo "$SHELL" -c 'find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 chown root:wheel'
-        sudo "$SHELL" -c 'find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 chmod 644'
-        sudo "$SHELL" -c 'find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 chown root:wheel'
+        sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 -n100 sudo chmod 644
+        sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 -n100 sudo chown root:wheel
+        sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 -n100 sudo chmod 644
+        sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 -n100 sudo chown root:wheel
     else
         :
     fi
@@ -343,19 +205,19 @@ function backup_restore_permissions {
         :
     fi
     
-    # user folder ~
+    
+    ### inside user folder
     echo "setting ownerships and permissions inside the user folder..."
     #echo "SELECTEDUSER is $SELECTEDUSER"
     # dscl . -read /Users/$USER UniqueID
     # id
-    # 501=UID of user
     # 80=group admin
     
     # reset acls (only for repair)
     #sudo chmod -R -N /"$HOMEFOLDER"/*
     
     # setting ownership and permissions
-    #sudo chown -R 501:staff /"$HOMEFOLDER"/.*
+    #sudo chown -R "$USER_ID":staff /"$HOMEFOLDER"/.*
     
     # apple support advice
     # https://support.apple.com/en-us/HT203538
@@ -365,18 +227,20 @@ function backup_restore_permissions {
     if [[ "$RESTOREMASTERDIR" != "" ]] && [[ "$RESTOREUSERDIR" != "" ]]
     then
         #echo running 1
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" -type f -print0 | xargs -0 chown '"$USER_ID"':staff' & pids+=($!)
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type d -print0 | xargs -0 chown '"$USER_ID"':staff' & pids+=($!)
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" -type f -print0 | xargs -0 chmod 600' & pids+=($!)
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' & pids+=($!)
-        wait "${pids[@]}"
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path ""$RESTOREMASTERDIR"/*" -not -path ""$RESTOREUSERDIR"/*" -type f -print0 | xargs -0 -n100 sudo chown "$USER_ID":staff ) & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path ""$RESTOREMASTERDIR"/*" -not -path ""$RESTOREUSERDIR"/*" ! -name "*.app" -type d -print0 | xargs -0 -n100 sudo chown "$USER_ID":staff ) & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path ""$RESTOREMASTERDIR"/*" -not -path ""$RESTOREUSERDIR"/*" -type f -print0 | xargs -0 -n100 sudo chmod 600 ) & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path ""$RESTOREMASTERDIR"/*" -not -path ""$RESTOREUSERDIR"/*" ! -name "*.app" -type d -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
+        #wait "${pids[@]}"
+        while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${pids[@]}")"
     else
         #echo running 2
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 chown "$USER_ID":staff' & pids+=($!)
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type d -print0 | xargs -0 chown "$USER_ID":staff' & pids+=($!)
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 chmod 600' & pids+=($!)
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type d -print0 | xargs -0 chmod 700' & pids+=($!)
-        wait "${pids[@]}"
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 -n100 sudo chown "$USER_ID":staff ) & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" ! -name "*.app" -type d -print0 | xargs -0 -n100 sudo chown "$USER_ID":staff ) & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -type f -print0 | xargs -0 -n100 sudo chmod 600 ) & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" ! -name "*.app" -type d -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
+        #wait "${pids[@]}"
+        while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${pids[@]}")"
     fi
     
     #sudo chmod -R u+rwX /"$HOMEFOLDER"/.*
@@ -400,27 +264,30 @@ function backup_restore_permissions {
     then
         #echo running 1
         # .sh files
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path ""$RESTOREMASTERDIR"/*" -not -path ""$RESTOREUSERDIR"/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
         # .command files
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path ""$RESTOREMASTERDIR"/*" -not -path ""$RESTOREUSERDIR"/*" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
         # .py files
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -name "*.py" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path ""$RESTOREMASTERDIR"/*" -not -path ""$RESTOREUSERDIR"/*" ! -name "*.app" -name "*.py" -type f -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
         # bash files without extension
-        #sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" -not -path "'"$RESTOREMASTERDIR"/*'" -not -path "'"$RESTOREUSERDIR"/*'" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' & pids+=($!)
+        #sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" -not -path "$RESTOREMASTERDIR"/* -not -path "$RESTOREUSERDIR"/* ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then sudo chmod 770 "$i"; else :; fi; done & pids+=($!)
         #
-        wait "${pids[@]}"
+        #wait "${pids[@]}"
+        while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${pids[@]}")"
     else
         #echo running 2
         # .sh files
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
+        #sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 -n100 sudo chmod 700
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
         # .command files
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.command" -type f -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
         # .py files
-        sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.py" -type f -print0 | xargs -0 chmod 700' & pids+=($!)
+        ( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.py" -type f -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
         # bash files without extension
-        #sudo "$SHELL" -c 'find '"$HOMEFOLDER"' -mount ! -path "*/*.app/*" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then chmod 770 "$i"; else :; fi; done' & pids+=($!)
+        #find "$HOMEFOLDER" -mount ! -path "*/*.app/*" ! -name "*.app" -type f ! -name "*.*" | while read i; do if [[ $(head -n 1 "$i") == $(echo "#!/bin/bash") ]]; then sudo chmod 770 "$i"; else :; fi; done & pids+=($!)
         #
-        wait "${pids[@]}"
+        #wait "${pids[@]}"
+        while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${pids[@]}")"
     fi
     
     if [[ -e "$HOMEFOLDER"/Library/Services/ ]] && [[ $(ls -A "$HOMEFOLDER"/Library/Services/) ]]
@@ -433,7 +300,7 @@ function backup_restore_permissions {
     #
     if [[ -e "$HOMEFOLDER"/Library/Widgets/ ]] && [[ $(ls -A "$HOMEFOLDER"/Library/Widgets/) ]]
     then
-        sudo find "$HOMEFOLDER"/Library/Widgets -type f -print0 | sudo xargs -0 chmod 644
+        sudo find "$HOMEFOLDER"/Library/Widgets -type f -print0 | xargs -0 -n100 sudo chmod 644
         sudo chmod 755 "$HOMEFOLDER"/Library/Widgets/*
     else
         :
@@ -455,11 +322,11 @@ function backup_restore_permissions {
         :
     fi
     # tunnelblick
-    if [ -e """$HOMEFOLDER""/Library/Application Support/Tunnelblick/Configurations" ]
+    if [[ -e """$HOMEFOLDER""/Library/Application Support/Tunnelblick/Configurations" ]]
     then
         sudo chown -R "$USER_ID":admin """$HOMEFOLDER""/Library/Application Support/Tunnelblick/Configurations"
-        sudo "$SHELL" -c 'find "'"$HOMEFOLDER"'/Library/Application Support/Tunnelblick/Configurations" -name .tblk -print0 | xargs -0 chmod 700'
-        sudo "$SHELL" -c 'find "'"$HOMEFOLDER"'/Library/Application Support/Tunnelblick/Configurations" -type f -print0 | xargs -0 chmod 600'
+        sudo find ""$HOMEFOLDER"/Library/Application Support/Tunnelblick/Configurations" -name .tblk -print0 | xargs -0 -n100 sudo chmod 700
+        sudo find ""$HOMEFOLDER"/Library/Application Support/Tunnelblick/Configurations" -type f -print0 | xargs -0 -n100 sudo chmod 600
     else
         :
     fi
@@ -471,8 +338,8 @@ function backup_restore_permissions {
     #	BREWGROUP="admin"
     #	BREWPATH=$(brew --prefix)
     #	sudo chown -R $UID:"$BREWGROUP" "$BREWPATH"
-    #	sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
-    #	sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
+    #	sudo find "$BREWPATH" -type f -print0 | xargs -0 -n100 sudo chmod g+rw
+    #	sudo find "$BREWPATH" -type d -print0 | xargs -0 -n100 sudo chmod g+rwx
     #else
     #	:
     #fi
@@ -494,7 +361,9 @@ function backup_restore_permissions {
         
     wait
     
+    echo ''
     echo 'done setting ownerships and permissions ;)'
+    echo ''
 
 }
 
@@ -506,9 +375,10 @@ else
     touch "$HOMEFOLDER"/Desktop/backup_restore_log.txt
 fi
 
-(time backup_restore_permissions) | tee -a "$HOMEFOLDER"/Desktop/backup_restore_log.txt
+(time ( backup_restore_permissions )) | tee -a "$HOMEFOLDER"/Desktop/backup_restore_log.txt
+echo ''
 
-if [ "$UNSET_PASSWORD" == "YES" ]
+if [[ "$UNSET_PASSWORD" == "YES" ]]
 then
     ###
     ### unsetting password
@@ -516,14 +386,22 @@ then
     
     unset SUDOPASSWORD
     
-    exit
-
 else
     :
 fi
 
-# exit
 
+###
+### documentation
+###
+
+# example for working find and xargs permissions with sudo
+# env_start_sudo has to be used before or xargs -0 -n100 sudo would ask for the password again
+# sudo -0 xargs does NOT work in this situation
+# the subshell () is needed for getting all pids in "${pids[@]}" and wait for them
+# -nx (default 5000, see man xargs) is needed to avoid unable to execute /bin/chmod: Argument list too long
+#( sudo find "$HOMEFOLDER" -mount ! -path "*/*.app/*" ! -name "*.app" -name "*.sh" -type f -print0 | xargs -0 -n100 sudo chmod 700 ) & pids+=($!)
+# env_stop_sudo or include in trap
 
 
 

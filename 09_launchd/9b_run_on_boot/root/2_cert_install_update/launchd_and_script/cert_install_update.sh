@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/zsh
 
-if [ $(id -u) -ne 0 ]
+if [[ $(id -u) -ne 0 ]]
 then 
     echo "script is not run as root, exiting..."
     exit
@@ -10,17 +10,12 @@ fi
 
 ### variables
 SERVICE_NAME=com.cert.install_update
-SCRIPT_NAME=cert_install_update
+SCRIPT_INSTALL_NAME=cert_install_update
 
 echo ''
 
 
 ### waiting for logged in user
-#echo "LOGNAME is $(logname)..."
-#/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
-#stat -f%Su /dev/console
-#defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-# recommended way
 loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 NUM=0
 MAX_NUM=15
@@ -29,7 +24,7 @@ SLEEP_TIME=3
 while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
 do
     sleep "$SLEEP_TIME"
-    NUM=$(($NUM+1))
+    NUM=$((NUM+1))
     loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 done
 #echo ''
@@ -37,7 +32,7 @@ done
 #echo "loggedInUser is $loggedInUser..."
 if [[ "$loggedInUser" == "" ]]
 then
-    WAIT_TIME=$(($MAX_NUM*$SLEEP_TIME))
+    WAIT_TIME=$((MAX_NUM*SLEEP_TIME))
     echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
     exit
 else
@@ -48,7 +43,7 @@ fi
 ### logfile
 EXECTIME=$(date '+%Y-%m-%d %T')
 LOGDIR=/var/log
-LOGFILE="$LOGDIR"/"$SCRIPT_NAME".log
+LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 if [[ -f "$LOGFILE" ]]
 then
@@ -58,7 +53,7 @@ then
     #echo $LOGFILEAGEINSECONDS
     #echo $MAXLOGFILEAGE
     # deleting logfile after 30 days
-    if [ "$LOGFILEAGEINSECONDS" -lt "$MAXLOGFILEAGE" ];
+    if [[ "$LOGFILEAGEINSECONDS" -lt "$MAXLOGFILEAGE" ]];
     then
         echo "logfile not older than 30 days..."
     else
@@ -85,9 +80,9 @@ certificate_variable_check() {
     # use "/System/Library/Keychains/SystemRootCertificates.keychain"
     
     KEYCHAIN="/System/Library/Keychains/SystemRootCertificates.keychain"
-# has to be aligned left for search/replace of the variable
-CERTIFICATE_NAME="FILL_IN_NAME_HERE"
-SERVER_IP="FILL_IN_IP_HERE"
+    # variable for search/replace by install script
+    CERTIFICATE_NAME="FILL_IN_NAME_HERE"
+    SERVER_IP="FILL_IN_IP_HERE"
     
     if [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]] || [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]]
     then
@@ -154,24 +149,37 @@ check_weekday() {
     fi
 }
 
+setting_config() {
+    ### sourcing .$SHELLrc or setting PATH
+    # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
+    # needed if binary is installed in a special directory
+    if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'PATH=.*/usr/local/bin:') != "" ]]
+    then
+        echo "sourcing .bashrc..."
+        . /Users/"$loggedInUser"/.bashrc
+    elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'PATH=.*/usr/local/bin:') != "" ]]
+    then
+        echo "sourcing .zshrc..."
+        ZSH_DISABLE_COMPFIX="true"
+        . /Users/"$loggedInUser"/.zshrc
+    else
+        echo "setting path for script..."
+        export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+    fi
+}
+# run before main function, e.g. for time format
+setting_config &> /dev/null
 
-### function
+
+### cert check
 cert_check() {
     
     ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
     
     
-    ### sourcing .bash_profile or setting PATH
-    # as the script is run as root from a launchd it would not detect the binary commands and would fail checking if binaries are installed
-    # needed if binary is installed in a special directory
-    if [[ -e /Users/$loggedInUser/.bash_profile ]] && [[ $(cat /Users/$loggedInUser/.bash_profile | grep '/usr/local/bin:') != "" ]]
-    then
-        . /Users/$loggedInUser/.bash_profile
-    else
-        #export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-        PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
-    fi
+    ### sourcing .$SHELLrc or setting PATH
+    #setting_config
     
     
     ### script
@@ -180,17 +188,15 @@ cert_check() {
     #check_weekday
     
     # checking homebrew and script dependencies
-    if [[ $(sudo -u $loggedInUser command -v brew) == "" ]]
+    if sudo -H -u "$loggedInUser" command -v brew &> /dev/null
     then
-        echo "homebrew is not installed, exiting..."
-        exit
-    else
+    	# installed
         echo "homebrew is installed..."
         # checking for missing dependencies
         for formula in openssl
         #for formula in 123
         do
-        	if [[ $(sudo -u "$loggedInUser" brew list | grep "$formula") == '' ]]
+        	if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^$formula$") == '' ]]
         	then
         		#echo """$formula"" is NOT installed..."
         		MISSING_SCRIPT_DEPENDENCY="yes"
@@ -208,6 +214,10 @@ cert_check() {
             echo "needed homebrew tools are installed..."   
         fi
         unset MISSING_SCRIPT_DEPENDENCY
+    else
+        # not installed
+        echo "homebrew is not installed, exiting..."
+        exit
     fi
     
     # giving the network some time
@@ -295,5 +305,5 @@ cert_check() {
 	
 }
 
-(time cert_check) 2>&1 | tee -a "$LOGFILE"
+(time ( cert_check )) 2>&1 | tee -a "$LOGFILE"
 echo '' >> "$LOGFILE"

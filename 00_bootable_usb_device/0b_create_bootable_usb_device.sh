@@ -1,88 +1,20 @@
-#!/bin/bash
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
 
 ###
 ### asking password upfront
 ###
 
-# function for reading secret string (POSIX compliant)
-enter_password_secret()
-{
-    # read -s is not POSIX compliant
-    #read -s -p "Password: " SUDOPASSWORD
-    #echo ''
-    
-    # this is POSIX compliant
-    # disabling echo, this will prevent showing output
-    stty -echo
-    # setting up trap to ensure echo is enabled before exiting if the script is terminated while echo is disabled
-    trap 'stty echo' EXIT
-    # asking for password
-    printf "Password: "
-    # reading secret
-    read -r "$@" SUDOPASSWORD
-    # reanabling echo
-    stty echo
-    trap - EXIT
-    # print a newline because the newline entered by the user after entering the passcode is not echoed. This ensures that the next line of output begins at a new line.
-    printf "\n"
-    # making sure builtin bash commands are used for using the SUDOPASSWORD, this will prevent showing it in ps output
-    # has to be part of the function or it wouldn`t be updated during the maximum three tries
-    #USE_PASSWORD='builtin echo '"$SUDOPASSWORD"''
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-}
+env_enter_sudo_password
 
-# unset the password if the variable was already set
-unset SUDOPASSWORD
-
-# making sure no variables are exported
-set +a
-
-# asking for the SUDOPASSWORD upfront
-# typing and reading SUDOPASSWORD from command line without displaying it and
-# checking if entered password is the sudo password with a set maximum of tries
-NUMBER_OF_TRIES=0
-MAX_TRIES=3
-while [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-do
-    NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
-    #echo "$NUMBER_OF_TRIES"
-    if [ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]
-    then
-        enter_password_secret
-        ${USE_PASSWORD} | sudo -k -S echo "" > /dev/null 2>&1
-        if [ $? -eq 0 ]
-        then 
-            break
-        else
-            echo "Sorry, try again."
-        fi
-    else
-        echo ""$MAX_TRIES" incorrect password attempts"
-        exit
-    fi
-done
-
-# setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
-trap 'unset SUDOPASSWORD' EXIT
-
-# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-sudo() {
-    ${USE_PASSWORD} | builtin command sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin command -p sudo -p '' -k -S "$@"
-    #${USE_PASSWORD} | builtin exec sudo -p '' -k -S "$@"
-}
-
-ask_for_variable () {
-	ANSWER_WHEN_EMPTY=$(echo "$QUESTION_TO_ASK" | awk 'NR > 1 {print $1}' RS='(' FS=')' | tail -n 1 | tr -dc '[[:upper:]]\n')
-	VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	while [[ ! "$VARIABLE_TO_CHECK" =~ ^(yes|y|no|n)$ ]] || [[ -z "$VARIABLE_TO_CHECK" ]]
-	do
-		read -r -p "$QUESTION_TO_ASK" VARIABLE_TO_CHECK
-		if [[ "$VARIABLE_TO_CHECK" == "" ]]; then VARIABLE_TO_CHECK="$ANSWER_WHEN_EMPTY"; else :; fi
-		VARIABLE_TO_CHECK=$(echo "$VARIABLE_TO_CHECK" | tr '[:upper:]' '[:lower:]') # to lower
-	done
-	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
-}
 
 
 ###
@@ -116,19 +48,36 @@ fi
 
 
 ### variables
-# adjust installer path and name and run the following command in terminal and enter admin password
-INSTALLERPATH="/Applications/Install macOS Mojave.app"
+echo ''
+# path to macos installer
+#INSTALLERPATH="/Applications/Install macOS High Sierra.app"
+#INSTALLERPATH="/Applications/Install macOS Mojave.app"
+NUMBER_OF_AVAILABLE_INSTALLERS=$(find /Applications -mindepth 1 -maxdepth 1 -name "Install*macOS*" | wc -l | awk '{print $1}')
+if [[ "$NUMBER_OF_AVAILABLE_INSTALLERS" -le "1" ]]
+then
+    INSTALLERPATH="$(find /Applications -mindepth 1 -maxdepth 1 -name "Install*macOS*")"
+else
+    installer=()
+    while IFS= read -r line; do installer+=("$line"); done <<< "$(find /Applications -mindepth 1 -maxdepth 1 -name "Install*macOS*")"
+    COLUMNS_DEFAULT="$COLUMNS"
+    COLUMNS=1 PS3="Please select installer to use: "
+    select INSTALLERPATH in "${installer[@]}"
+    do
+        #echo "you selected "$INSTALLERPATH"..."
+        #echo ''
+        COLUMNS="$COLUMNS_DEFAULT"
+        break
+    done
+fi
+echo "the path to the installer is "$INSTALLERPATH"..."
 VOLUMENAME="Untitled"
 VOLUMEPATH="/Volumes/$VOLUMENAME"
-MACOS_VERSION=$(sw_vers -productVersion)
-#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
-
 
 # checking if VOLUMEPATH is on USB_DEVICE
 if [[ $(diskutil list $USB_DEVICE | grep "$VOLUMENAME") == "" ]]
 then
 	echo ''
-	echo """$VOLUMENAME"" does not seem to be on $USB_DEVICE, exiting..."
+	echo "there is no partition named "$VOLUMENAME" on "$USB_DEVICE", exiting..."
 	echo ''
 	exit
 else
@@ -136,7 +85,7 @@ else
 fi
 
 # checking if available
-if [[ ! -e "$INSTALLERPATH" ]]
+if [[ ! -e "$INSTALLERPATH" ]] || [[ "$INSTALLERPATH" == "" ]]
 then
 	echo ''
 	echo "macos installer not found, exiting..."
@@ -161,9 +110,10 @@ fi
 echo ''
 echo "creating installer medium..."
 
-if [[ $(echo $MACOS_VERSION | cut -f1,2 -d'.' | cut -f2 -d'.') -le "13" ]]
+VERSION_TO_CHECK_AGAINST=10.13
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
 then
-    # macos versions until and including 10.13 
+    # macos versions until and including 10.13
     sudo "$INSTALLERPATH"/Contents/Resources/createinstallmedia --volume "$VOLUMEPATH" --applicationpath "$INSTALLERPATH" --nointeraction
 else
     # macos versions 10.14 and up
@@ -178,13 +128,13 @@ fi
 
 echo ''
 VARIABLE_TO_CHECK="$DELETE_EFI"
-QUESTION_TO_ASK="do you want to delete the efi partition on the usb storage device to make the exfat data partition usable on windows? (y/N) "
-ask_for_variable
+QUESTION_TO_ASK="do you want to delete the efi partition on the usb storage device to make the exfat data partition usable on windows? (Y/n) "
+env_ask_for_variable
 DELETE_EFI="$VARIABLE_TO_CHECK"
 
 echo ''
 diskutil umountDisk $USB_DEVICE
-sleep 2
+sleep 3
 if [[ $(mount | awk '{print $1}' | grep "$USB_DEVICE") != "" ]]
 then
     diskutil umountDisk force $USB_DEVICE
