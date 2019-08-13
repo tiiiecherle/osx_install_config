@@ -30,7 +30,7 @@ fi
 #launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
 #killall NotificationCenter
 
-PLIST_FILE='~/Library/Preferences/com.apple.ncprefs.plist'
+PLIST_FILE="/Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist"
 
 set_extended_attribute() {
 	# this sets some extended attributes on the file
@@ -41,7 +41,7 @@ set_extended_attribute() {
 	#xattr -l /Users/$USER/Library/Preferences/com.apple.ncprefs.plist
 	# clean all extended attributes
 	#xattr -c /Users/$USER/Library/Preferences/com.apple.ncprefs.plist
-	open $(eval echo "$PLIST_FILE")
+	open "$PLIST_FILE"
 	#open -a BBEdit.app $(eval echo "$PLIST_FILE")
 	sleep 5
 	#osascript -e "tell application (path to frontmost application as text) to quit saving no"
@@ -58,13 +58,25 @@ echo "setting flags..."
 
 # attributes
 applications_to_set_values=(
-"/Applications/WhatsApp.app																41943375"
-"/Applications/Signal.app																41943375"
-"/Applications/pdf_200dpi_shrink.app/Contents/custom_files/pdf_shrink_done.app			41943375"
-"/System/Applications/Reminders.app														41943383"
-"/Applications/EagleFiler.app															41943375"
-"/Applications/VirusScannerPlus.app														41943375"
-"/Applications/MacPass.app																41943375"
+""$PATH_TO_APPS"/WhatsApp.app																41943375"
+""$PATH_TO_APPS"/Signal.app																	41943375"
+""$PATH_TO_APPS"/pdf_200dpi_shrink.app/Contents/custom_files/pdf_shrink_done.app			41943375"
+""$PATH_TO_SYSTEM_APPS"/Reminders.app														41943383"
+""$PATH_TO_SYSTEM_APPS"/Calendar.app														41943375"
+""$PATH_TO_SYSTEM_APPS"/Notes.app															41943375"
+""$PATH_TO_SYSTEM_APPS"/Photos.app															41943375"
+""$PATH_TO_APPS"/EagleFiler.app																41943375"
+""$PATH_TO_APPS"/VirusScannerPlus.app														41943375"
+""$PATH_TO_APPS"/MacPass.app																41943375"
+""$PATH_TO_APPS"/Microsoft Word.app															41943375"
+""$PATH_TO_APPS"/Microsoft Excel.app														41943375"
+""$PATH_TO_APPS"/Alfred 4.app																41943375"
+""$PATH_TO_APPS"/Better.app																	41943375"
+""$PATH_TO_APPS"/BresinkSoftwareUpdater.app													41943375"
+""$PATH_TO_APPS"/Commander One.app															41943375"
+""$PATH_TO_APPS"/iTerm.app																	41943375"
+""$PATH_TO_APPS"/KeepingYouAwake.app														41943375"
+""$PATH_TO_APPS"/PrefEdit.app																41943375"
 )
 
 
@@ -72,7 +84,7 @@ applications_to_set_values=(
 getting-needed-entry() {
 
 	#NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print apps" $(eval echo "$PLIST_FILE") | awk '/^[[:blank:]]*Dict {/' | wc -l)
-	NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print apps" $(eval echo "$PLIST_FILE") | awk '/^[[:blank:]]*bundle-id =/' | wc -l)
+	NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print apps" "$PLIST_FILE" | awk '/^[[:blank:]]*bundle-id =/' | wc -l)
 	#echo $NUMBER_OF_ENTRIES
 	# -1 because counting of items starts with 0, not with 1
 	LISTED_ENTRIES=$((NUMBER_OF_ENTRIES-1))
@@ -83,7 +95,7 @@ getting-needed-entry() {
 	for i in $(seq 0 $LISTED_ENTRIES)
 	do 
 	    #if [[ $(/usr/libexec/PlistBuddy -c "Print apps:"$i"" $(eval echo "$PLIST_FILE") | grep "$BUNDLE_IDENTIFIER") != "" ]] 2> /dev/null
-	   	(/usr/libexec/PlistBuddy -c "Print apps:"$i"" $(eval echo "$PLIST_FILE") | grep "$BUNDLE_IDENTIFIER") >/dev/null 2>&1
+	   	(/usr/libexec/PlistBuddy -c "Print apps:"$i"" "$PLIST_FILE" | grep "$BUNDLE_IDENTIFIER") >/dev/null 2>&1
 	   	if [[ $? -eq 0 ]]
 	    then
 	        #echo $i
@@ -99,13 +111,14 @@ getting-needed-entry() {
 for application in "${applications_to_set_values[@]}"
 do
 
-	APP_PATH=$(echo "$application" | awk '{print $1}')
-    FLAGS_VALUE=$(echo "$application" | awk '{print $2}')
+	APP_PATH=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+	echo "$APP_PATH"
+    FLAGS_VALUE=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
     
     if [[ -e "$APP_PATH" ]]
     then
     
-		BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' $(eval echo "$APP_PATH")/Contents/Info.plist)
+		BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP_PATH"/Contents/Info.plist)
 		echo "setting flags for $BUNDLE_IDENTIFIER..."
 	
 		getting-needed-entry
@@ -113,16 +126,16 @@ do
 		#echo $NEEDED_ENTRY
 		if [[ "$NEEDED_ENTRY" != "" ]]
 		then
-		    /usr/libexec/PlistBuddy -c "Set apps:"$NEEDED_ENTRY":flags $(eval echo "$FLAGS_VALUE")" $(eval echo "$PLIST_FILE")
+		    /usr/libexec/PlistBuddy -c "Set apps:"$NEEDED_ENTRY":flags "$FLAGS_VALUE"" "$PLIST_FILE"
 		else
 			echo "entry for $BUNDLE_IDENTIFIER does not exist, creating it..."
 		    ITEM1=$(echo \'Item $NUMBER_OF_ENTRIES\')
 		    #echo $ITEM1
-		   	/usr/libexec/PlistBuddy -c "Add apps:"$ITEM1":bundle-id string $BUNDLE_IDENTIFIER" $(eval echo "$PLIST_FILE")
+		   	/usr/libexec/PlistBuddy -c "Add apps:"$ITEM1":bundle-id string "$BUNDLE_IDENTIFIER"" "$PLIST_FILE"
 		   	
 			getting-needed-entry
 			
-			/usr/libexec/PlistBuddy -c "Add apps:"$NEEDED_ENTRY":flags integer $(eval echo "$FLAGS_VALUE")" $(eval echo "$PLIST_FILE")
+			/usr/libexec/PlistBuddy -c "Add apps:"$NEEDED_ENTRY":flags integer "$FLAGS_VALUE"" "$PLIST_FILE"
 		fi
 	else
 		echo """$APP_PATH"" does not exist..."
@@ -171,13 +184,13 @@ echo "checking settings..."
 for application in "${applications_to_set_values[@]}"
 do
 
-	APP_PATH=$(echo "$application" | awk '{print $1}')
-    FLAGS_VALUE=$(echo "$application" | awk '{print $2}')
+	APP_PATH=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+    FLAGS_VALUE=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
     
     if [[ -e "$APP_PATH" ]]
     then
     
-		BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' $(eval echo "$APP_PATH")/Contents/Info.plist)
+		BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP_PATH"/Contents/Info.plist)
 		#echo "getting flags for $BUNDLE_IDENTIFIER..."
 	
 		getting-needed-entry
@@ -185,7 +198,7 @@ do
 		#echo $NEEDED_ENTRY
 		if [[ $NEEDED_ENTRY != "" ]]
 		then
-		    ACTIVE_FLAG_VALUE=$(/usr/libexec/PlistBuddy -c "Print apps:"$NEEDED_ENTRY":flags" $(eval echo "$PLIST_FILE"))
+		    ACTIVE_FLAG_VALUE=$(/usr/libexec/PlistBuddy -c "Print apps:"$NEEDED_ENTRY":flags" "$PLIST_FILE")
 		    BUNDLE_IDENTIFIER_PRINT=$(printf '%s\n' "$BUNDLE_IDENTIFIER" | awk -v len=35 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
 		    if [[ "$FLAGS_VALUE" == "$ACTIVE_FLAG_VALUE" ]]
 	        then
