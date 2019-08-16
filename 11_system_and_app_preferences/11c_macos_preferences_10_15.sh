@@ -2091,7 +2091,7 @@ EOF
     sudo defaults write /Library/Preferences/com.apple.TimeMachine RequiresACPower -bool false
     
     # exclude system files
-    sudo defaults write /Library/Preferences/com.apple.TimeMachine SkipSystemFiles -bool false
+    sudo defaults write /Library/Preferences/com.apple.TimeMachine SkipSystemFiles -bool true
     
     # show warning after deleting old backups
     sudo defaults write /Library/Preferences/com.apple.TimeMachine AlwaysShowDeletedBackupsWarning -bool true
