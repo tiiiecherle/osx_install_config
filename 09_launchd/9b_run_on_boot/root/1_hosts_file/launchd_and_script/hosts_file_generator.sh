@@ -340,7 +340,7 @@ hosts_file_install_update() {
         fi
         
         # backing up original hosts file
-        if [ ! -f "/etc/hosts.orig" ];
+        if [[ ! -f "/etc/hosts.orig" ]]
         then
             echo "backing up original hosts file..."
             sudo cp -a "/etc/hosts" "/etc/hosts.orig"
@@ -358,7 +358,7 @@ hosts_file_install_update() {
         # UnicodeDecodeError: 'ascii' codec can't decode byte 0xe2 in position 13: ordinal not in range(128)
         LANG_SCRIPT="de_DE.UTF-8"
         
-        sudo LC_ALL=$LANG_SCRIPT "${PYTHON_VERSION}" updateHostsFile.py -a -r -o alternates/gambling-porn -e gambling porn
+        sudo LC_ALL=$LANG_SCRIPT "${PYTHON_VERSION}" updateHostsFile.py -a -r -o alternates/fakenews-gambling-porn -e fakenews gambling porn
         if [[ $? -eq 0 ]]
         then
             echo ''
@@ -370,7 +370,7 @@ hosts_file_install_update() {
             echo ''
         fi
         
-        #sudo python updateHostsFile.py -a -n -r -o alternates/gambling-porn-social -e gambling porn social
+        #sudo python updateHostsFile.py -a -n -r -o alternates/fakenews-gambling-porn -e fakenews gambling porn
         #sudo python updateReadme.py
         cd - >/dev/null 2>&1
     
@@ -382,18 +382,18 @@ hosts_file_install_update() {
         ## sport1
         #sudo sed -i '' '/probe.yieldlab.net/s/^/#/g' /etc/hosts
         # anti-adblock
-        sudo sed -i '' '/0.0.0.0 prod.appnexus.map.fastly.net/s/^/#/g' /etc/hosts
-        sudo sed -i '' '/0.0.0.0 acdn.adnxs.com/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/0.0.0.0 prod.appnexus.map.fastly.net/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/0.0.0.0 acdn.adnxs.com/s/^/#/g' /etc/hosts
         ## spiegel.de
         #sudo sed -i '' '/imagesrv.adition.com/s/^/#/g' /etc/hosts        
 		## google shopping
-        sudo sed -i '' '/www.googleadservices.com/s/^/#/g' /etc/hosts
-        sudo sed -i '' '/0.0.0.0 ad.doubleclick.net/s/^/#/g' /etc/hosts
-        sudo sed -i '' '/pagead.l.doubleclick.net/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/www.googleadservices.com/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/0.0.0.0 ad.doubleclick.net/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/pagead.l.doubleclick.net/s/^/#/g' /etc/hosts
         ## wimbledon
         #sudo sed -i '' '/0.0.0.0 secure.brightcove.com/s/^/#/g' /etc/hosts
         ## sma
-        sudo sed -i '' '/0.0.0.0 eu.*.force.com/s/^/#/g' /etc/hosts
+        #sudo sed -i '' '/0.0.0.0 eu.*.force.com/s/^/#/g' /etc/hosts
         #sudo sed -i '' '/0.0.0.0 eu1.*.force.com/s/^/#/g' /etc/hosts
         #sudo sed -i '' '/0.0.0.0 eu10.force.com/s/^/#/g' /etc/hosts
         

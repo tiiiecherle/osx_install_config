@@ -71,19 +71,38 @@ sudo "$SCRIPT_INTERPRETER" -c "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh &
 wait
 
 
-### installing whitelist
+### installing whitelist(s)
 echo ''
-echo "checking for whitelist..."
+echo "installing empty whitelist file..."
+sudo cp -a /Applications/hosts_file_generator/whitelist.example /Applications/hosts_file_generator/whitelist
+sudo chown root:admin /Applications/hosts_file_generator/whitelist
+sudo chmod 644 /Applications/hosts_file_generator/whitelist
+
+# general whitelist entries all users
+echo ''
 SCRIPTS_DEFAULTS_WRITE_DIR="$SCRIPT_DIR_FIVE_BACK"
 #echo "$SCRIPTS_DEFAULTS_WRITE_DIR"
-if [[ -e /Applications/hosts_file_generator/whitelist ]] && [[ -e "$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_"$USER" ]]
+if [[ -e /Applications/hosts_file_generator/whitelist ]] && [[ -e "$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_general ]]
 then
-	echo "user whitelist file found, installing and re-running script..."
-    sudo "$SCRIPT_INTERPRETER" -c 'cat '"$SCRIPTS_DEFAULTS_WRITE_DIR"'/_scripts_input_keep/hosts/whitelist_'"$USER"' > /Applications/hosts_file_generator/whitelist'
+	echo "general whitelist file found, adding entries and re-running script..."
+    sudo "$SCRIPT_INTERPRETER" -c 'cat '"$SCRIPTS_DEFAULTS_WRITE_DIR"'/_scripts_input_keep/hosts/whitelist_general >> /Applications/hosts_file_generator/whitelist'
+    sudo "$SCRIPT_INTERPRETER" -c 'printf "\n" >> /Applications/hosts_file_generator/whitelist'
     # script will run a second time when activating service to respect whitelist while updating
     sudo touch -mt 201512010000 /etc/hosts
 else
-	echo "no user whitelist file found..."
+	echo "no general whitelist file found..."
+fi
+
+# user specific whitelist entries
+if [[ -e /Applications/hosts_file_generator/whitelist ]] && [[ -e "$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_"$USER" ]]
+then
+	echo "user specific whitelist file found, adding entries and re-running script..."
+    sudo "$SCRIPT_INTERPRETER" -c 'cat '"$SCRIPTS_DEFAULTS_WRITE_DIR"'/_scripts_input_keep/hosts/whitelist_'"$USER"' >> /Applications/hosts_file_generator/whitelist'
+    sudo "$SCRIPT_INTERPRETER" -c 'printf "\n" >> /Applications/hosts_file_generator/whitelist'
+    # script will run a second time when activating service to respect whitelist while updating
+    sudo touch -mt 201512010000 /etc/hosts
+else
+	echo "no user specific whitelist file found..."
 fi
 
 
