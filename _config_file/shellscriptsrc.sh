@@ -1342,6 +1342,10 @@ env_rename_files_and_directories() {
                 "export SUBSTITUTIONCHARACTERS='['; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '[' '_'"
                 # all ocurrences of ]
                 "export SUBSTITUTIONCHARACTERS=']'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ']' '_'"
+                # all ocurrences of (
+                "export SUBSTITUTIONCHARACTERS='('; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '(' '_'"
+                # all ocurrences of )
+                "export SUBSTITUTIONCHARACTERS=')'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ')' '_'"
                 # all ocurrences of +
                 "export SUBSTITUTIONCHARACTERS='+'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '+' '_'"
                 # all ocurrences of %
@@ -1384,8 +1388,12 @@ env_rename_files_and_directories() {
                 "export SUBSTITUTIONCHARACTERS='”'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '”' '_'"
                 # all ocurrences of '
                 "export SUBSTITUTIONCHARACTERS=''\'''; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ''\''' '_'"
+                # all ocurrences of whitespaces
+                "export SUBSTITUTIONCHARACTERS=' '; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ' ' '_'"
                 # all ocurrences of two or more __ substituted to a single _
                 "export SUBSTITUTIONCHARACTERS='__'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '__' '_'"
+                # all ocurrences of _.
+                "export SUBSTITUTIONCHARACTERS='_.'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '_.' '.'"
                 )
         
                 for i in "${RENAMINGS[@]}"; do
