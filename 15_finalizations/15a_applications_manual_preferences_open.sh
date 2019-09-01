@@ -59,7 +59,7 @@ applications_to_open=(
 #""$PATH_TO_APPS"/Macs Fan Control.app"
 #""$PATH_TO_APPS"/Signal.app"
 #""$PATH_TO_APPS"/Keka.app"
-""$PATH_TO_APPS"/Overflow 3.app"
+#""$PATH_TO_APPS"/Overflow 3.app"
 ""$PATH_TO_APPS"/BresinkSoftwareUpdater.app"
 ""$PATH_TO_APPS"/MacPass.app"
 ""$PATH_TO_APPS"/WireGuard.app"

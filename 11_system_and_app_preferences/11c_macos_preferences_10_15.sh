@@ -973,7 +973,7 @@ EOF
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Oversight", path:"'$PATH_TO_APPS'/OverSight.app/Contents/Library/LoginItems/OverSight Helper.app", hidden:false}'
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Virus Scanner Plus", path:"'$PATH_TO_APPS'/VirusScannerPlus.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Better", path:"'$PATH_TO_APPS'/Better.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"AdGuard for Safari", path:"$PATH_TO_APPS/AdGuard for Safari.app", hidden:false}'
+    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"AdGuard for Safari", path:"'$PATH_TO_APPS'/AdGuard for Safari.app", hidden:true}'
     
     # adding some more startup-items for specified user if script is run on multiple macs with different users
     if [[ "$USER" == "tom" ]]

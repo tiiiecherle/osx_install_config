@@ -253,6 +253,7 @@ ACCESSIBILITYAPPS=(
 "Commander One                                                       kTCCServiceAccessibility           1"
 "MacPass                                                             kTCCServiceAccessibility           1"
 "pdf_200dpi_shrink                                                   kTCCServiceAccessibility           1"
+"Unified Remote                                                      kTCCServiceAccessibility           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
