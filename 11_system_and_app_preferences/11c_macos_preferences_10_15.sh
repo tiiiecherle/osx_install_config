@@ -1076,6 +1076,7 @@ EOF
     #sudo osascript -e 'tell application "System Events" to set require password to wake of security preferences to false'
     
     ### no longer working
+    # https://stackoverflow.com/questions/45867402/macos-10-13-high-sierra-no-longer-stores-screensaver-settings-in-com-apple-scr
     # 0 = no, 1 = yes
     #defaults -currentHost write com.apple.screensaver askForPassword -int 0
     
