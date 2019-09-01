@@ -108,7 +108,7 @@ mas_login() {
     sleep 3
     
     #echo ''
-    MAS_APPLE_ID="    "
+    MAS_APPLE_ID=""
     VARIABLE_TO_CHECK="$MAS_APPLE_ID"
     QUESTION_TO_ASK="please enter apple id to log into appstore: "
     env_ask_for_variable
@@ -157,7 +157,7 @@ mas_login_applescript() {
         if [[ "$MAS_APPLE_ID" == "" ]]
         then
             echo ''
-            MAS_APPLE_ID="    "
+            MAS_APPLE_ID=""
             VARIABLE_TO_CHECK="$MAS_APPLE_ID"
             QUESTION_TO_ASK="please enter apple id to log into appstore: "
             env_ask_for_variable
@@ -171,7 +171,7 @@ mas_login_applescript() {
         then
             echo ''
             echo "please enter appstore password..."
-            MAS_APPSTORE_PASSWORD="    "
+            MAS_APPSTORE_PASSWORD=""
         
             # ask for password twice
             while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
