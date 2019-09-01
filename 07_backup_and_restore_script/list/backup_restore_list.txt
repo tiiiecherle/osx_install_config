@@ -402,7 +402,9 @@ u	~/Library/Preferences/com.crystalidea.macsfancontrol.plist
 
 # Microsoft Office 365
 echo Microsoft Office 365
-u	~/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg
+u	~/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB
+# relinking ~/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg is done in 11k_third_party_app_preferences.sh
+u	~/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365.plist
 
 # MonKey Office
 echo MonKey Office 2019

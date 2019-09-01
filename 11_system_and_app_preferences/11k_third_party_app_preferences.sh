@@ -52,7 +52,7 @@ fi
 
 ### xtrafinder
 
-if [ -e "/Applications/XtraFinder.app" ]
+if [[ -e "/Applications/XtraFinder.app" ]]
 then
 
 	echo ''
@@ -128,7 +128,7 @@ fi
 #defaults write ~/Library/Preferences/org.gpgtools.gpgmail SignNewEmailsByDefault -bool false
 
 
-### office 2016 & 2019
+### office 2019
 
 if [[ $(find "/Applications/" -mindepth 1 -maxdepth 1 -name "Microsoft *.app") != "" ]]
 then
@@ -136,6 +136,35 @@ then
     echo ''
     echo "office"
     
+	# uninstall/reinstall (testing only)
+	#cp -a "/Applications/Microsoft Excel.app" "/Users/"$USER"/Desktop/Microsoft Excel.app"
+	#brew cask zap --force microsoft-office
+	#cp -a "/Users/"$USER"/Desktop/Microsoft Excel.app" "/Applications/Microsoft Excel.app"
+	#rm -rf "/Applications/Microsoft Excel.app"
+	
+	# clening old preferences
+	rm -f "/Users/"$USER"/Library/Preferences/com.microsoft.office.plist"
+	
+	# restoring preferences (testing only)
+	#cp -a "/Users/"$USER"/Desktop/UBF8T346G9.Office" "/Users/"$USER"/Library/Group Containers/"
+	
+	# keeping settings and license
+	# privacy experience settings have to be set inside of excel or word to write them to the MicrosoftRegistrationDB and can then be preserved or restored
+	if [[ -e "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB" ]]
+	then
+		# MicrosoftRegistrationDB contains settings
+		# com.microsoft.Office365.plist contains license
+		mv "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB" /tmp/MicrosoftRegistrationDB
+		mv "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365.plist" /tmp/com.microsoft.Office365.plist
+		rm -rf /Users/"$USER"/Library/"Group Containers"/UBF8T346G9.Office/*
+		mv /tmp/MicrosoftRegistrationDB "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/"
+		mv /tmp/com.microsoft.Office365.plist "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/"
+	else
+		:
+	fi
+	#killall cfprefsd
+
+    #sleep 5
     # https://github.com/erikberglund/ProfileManifests/blob/master/Resources/ManifestsGenerated/Microsoft/Archive/Office%202016%20for%20Mac%20Preference%20Keys%20-%20Prefs-2018-09-19.csv
 
     # user name and initials
@@ -144,38 +173,75 @@ then
     #defaults read "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/MeContact.plist"
     
     # set default save location to local
-    #defaults write ~/Library/Preferences/com.microsoft.office DefaultsToLocalOpenSave -bool true
-    defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.officeprefs.plist" DefaultsToLocalOpenSave -bool true
-    chown "$USER":staff "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.officeprefs.plist"
+    defaults write ~/Library/Preferences/com.microsoft.office.plist DefaultsToLocalOpenSave -bool false
     # set theme
     # 1 = light
     # 2 = dark
-    defaults write ~/Library/Preferences/com.microsoft.office kCUIThemePreferencesThemeKeyPath -integer 1
+    defaults write ~/Library/Preferences/com.microsoft.office.plist kCUIThemePreferencesThemeKeyPath -integer 1
     # do not show documents popup on launch
-    defaults write ~/Library/Preferences/com.microsoft.office ShowDocStageOnLaunch -bool false
-    # do not send telemetry data and crash reports
-    defaults write ~/Library/Preferences/com.microsoft.autoupdate2.plist SendAllTelemetryEnabled -bool false
-    defaults write ~/Library/Preferences/com.microsoft.autoupdate2.plist SendCrashReportsEvenWithTelemetryDisabled -bool false
-    defaults write ~/Library/Preferences/com.microsoft.autoupdate.fba.plist SendAllTelemetryEnabled -bool false
-    defaults write ~/Library/Preferences/com.microsoft.autoupdate.fba.plist SendCrashReportsEvenWithTelemetryDisabled -bool false
-    defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365V2.plist" SendAllTelemetryEnabled -bool false
-    #defaults write "/Users/$USER/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365V2.plist" SendCrashReportsEvenWithTelemetryDisabled -bool false
+    defaults write ~/Library/Preferences/com.microsoft.office.plist ShowDocStageOnLaunch -bool false
+    # privacy experience
+    # privacy experience settings have to be set inside of excel or word to write them to the MicrosoftRegistrationDB and can then be preserved or restored
+    # just changing them here will not have any effect
+    defaults write ~/Library/Preferences/com.microsoft.office.plist OptionalConnectedExperiencesPreference -bool false
+    defaults write ~/Library/Preferences/com.microsoft.office.plist ConnectedOfficeExperiencesPreference -bool false
+    defaults write ~/Library/Preferences/com.microsoft.office.plist OfficeExperiencesAnalyzingContentPreference -bool false
+    defaults write ~/Library/Preferences/com.microsoft.office.plist OfficeExperiencesDownloadingContentPreference -bool false
+	# telemetry
+    defaults write ~/Library/Preferences/com.microsoft.office.plist SendAllTelemetryEnabled -bool false
+    # logging
+    defaults write ~/Library/Preferences/com.microsoft.office.plist CustomerLoggingEnabled -bool false
+    # diagnostics
+    defaults write ~/Library/Preferences/com.microsoft.office.plist DiagnosticDataTypePreference -string "ZeroDiagnosticData"
+	# terms
+    defaults write ~/Library/Preferences/com.microsoft.office.plist TermsAccepted1809 -bool true
+    # activation/license
+	SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
+	if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/office_license.sh ]]
+	then
+		"$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/office_license.sh  
+	    #defaults write ~/Library/Preferences/com.microsoft.office.plist OfficeActivationEmailAddress -string "YOUR_REGISTRATION_EMAIL"
+	else
+	    echo ''
+	    echo "script for setting OfficeActivationEmailAddress not found, skipping..."
+	    echo ''
+	fi
+	# re-linking MicrosoftRegistrationDB.reg
+    if [[ -e "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg" ]]
+    then
+    	rm -f "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg"
+    else
+    	:
+    fi
+    if [[ -e "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB" ]]
+    then
+    	OFFICE_REG_FILE=$(find "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB" -name "*.reg" | head -n 1)
+    	ln -s "$OFFICE_REG_FILE" "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg"
+    else
+    	:
+   	fi
+        
+    # merged old preferences
+    #defaults write ~/Library/Preferences/com.microsoft.office.plist HaveMergedOldPrefs -bool true
+    
+    # autoupdate
+    #defaults write ~/Library/Preferences/com.microsoft.autoupdate2.plist SendAllTelemetryEnabled -bool false
+    #defaults write ~/Library/Preferences/com.microsoft.autoupdate2.plist SendCrashReportsEvenWithTelemetryDisabled -bool false
+    #defaults write ~/Library/Preferences/com.microsoft.autoupdate.fba.plist SendAllTelemetryEnabled -bool false
+    #defaults write ~/Library/Preferences/com.microsoft.autoupdate.fba.plist SendCrashReportsEvenWithTelemetryDisabled -bool false
+
+    #osascript -e "tell application \"$APP_TEST\" to quit"
     
     # app specific settings
     for OFFICE_APP in Word Excel onenote.mac Outlook Powerpoint
     do 
-        if [[ -e ~/Library/Containers/com.microsoft.$OFFICE_APP ]]
-        then
-            # do not send telemetry data and crash reports
-            defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist SendAllTelemetryEnabled -bool false
-            defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist SendCrashReportsEvenWithTelemetryDisabled -bool false
-            # show ribbons
-            defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kOUIRibbonDefaultCollapse -bool false
-            # skip first run popups
-            defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kSubUIAppCompletedFirstRunSetup1507 -bool true
-        else
-            :
-        fi
+        # do not send telemetry data and crash reports
+        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist SendAllTelemetryEnabled -bool false
+        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist SendCrashReportsEvenWithTelemetryDisabled -bool false
+        # show ribbons
+        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kOUIRibbonDefaultCollapse -bool false
+        # skip first run popups
+        defaults write ~/Library/Containers/com.microsoft.$OFFICE_APP/Data/Library/Preferences/com.microsoft.$OFFICE_APP.plist kSubUIAppCompletedFirstRunSetup1507 -bool true
     done
     
 else

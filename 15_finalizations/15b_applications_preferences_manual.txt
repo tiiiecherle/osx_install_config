@@ -68,6 +68,10 @@ Microsoft Word/Excel 365
 	preferences - log out
 	decline smart services
 
+	preferences - privacy
+	optional diagnostics		deactivate
+	connected experiences		deactivate all
+
 iMessage (ts & ws)
 	account log-in or log-out
 	receive messages for telephone number, not for mail address
