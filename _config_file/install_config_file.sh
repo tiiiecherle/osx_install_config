@@ -46,9 +46,9 @@ chmod 600 "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
 echo ''
 if [[ -f "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH" ]] && [[ "$SUCCESSFULLY_INSTALLED" == "yes" ]]
 then
-    echo -e "config file was \033[1;32msuccessfully\033[0m installed to $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH..."
+    printf "config file was \033[1;32msuccessfully\033[0m installed to $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH...\n"
 else
-    echo -e "\033[1;31merror installing config file to $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH, please install it manually...\033[0m"
+    printf "\033[1;31merror installing config file to $SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH, please install it manually...\033[0m\n"
 fi
-echo ''
-    
+#echo ''
+printf '\n' 
