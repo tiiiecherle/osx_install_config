@@ -142,6 +142,7 @@ env_get_shell_specific_variables() {
     #echo $SCRIPT_PATH
     # script name
     SCRIPT_NAME="$(basename -- "$SCRIPT_PATH")"
+    SCRIPT_NAME_WITHOUT_EXTENSION=$(echo ${SCRIPT_NAME%%.*})
     #echo $SCRIPT_NAME
     # script dir
     SCRIPT_DIR="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
@@ -585,6 +586,15 @@ env_identify_terminal() {
 }
 
 
+### activating identified terminal
+env_active_source_app() {
+	sleep 0.5
+	osascript -e "tell application \"$SOURCE_APP_NAME\" to activate"
+	#osascript -e "tell application \"$SOURCE_APP_NAME.app\" to activate"
+	sleep 0.5
+}
+
+
 ### apps security permissions
 env_set_apps_security_permissions() {
     
@@ -716,7 +726,7 @@ env_set_apps_security_permissions() {
         local APP_NAME_PRINT=$(echo "$APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         
         # print line
-        if [[ "$PRINT_SECURITY_PERMISSIONS_ENTRYS" == "yes" ]]
+        if [[ "$PRINT_SECURITY_PERMISSIONS_ENTRIES" == "yes" ]]
         then
             printf "%-33s %-33s %-5s\n" "$APP_NAME_PRINT" "$INPUT_SERVICE" "$PERMISSION_GRANTED"
         else
@@ -737,6 +747,8 @@ env_set_apps_security_permissions() {
     
     #done
     done <<< "$(printf "%s\n" "${APPS_SECURITY_ARRAY[@]}")"
+    
+    #sleep 0.5
 }
 
 
@@ -941,7 +953,7 @@ env_set_apps_automation_permissions() {
             ### print line
             local SOURCE_APP_NAME_PRINT=$(echo "$SOURCE_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
             local AUTOMATED_APP_NAME_PRINT=$(echo "$AUTOMATED_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
-            if [[ "$PRINT_AUTOMATING_PERMISSIONS_ENTRYS" == "yes" ]]
+            if [[ "$PRINT_AUTOMATING_PERMISSIONS_ENTRIES" == "yes" ]]
             then
                 printf "%-33s %-33s %-5s\n" "$SOURCE_APP_NAME_PRINT" "$AUTOMATED_APP_NAME_PRINT" "$PERMISSION_GRANTED"
             else
@@ -969,6 +981,8 @@ env_set_apps_automation_permissions() {
         
         #done
         done <<< "$(printf "%s\n" "${AUTOMATION_APPS[@]}")"
+        
+        #sleep 0.5
     fi
 }
 
@@ -1025,7 +1039,12 @@ env_enter_sudo_password() {
         #echo "$NUMBER_OF_TRIES"
         if [[ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]]
         then
-            enter_password_secret
+            if [[ "$USE_PASSWORD" == "" ]]
+            then
+                enter_password_secret
+            else
+                :
+            fi
             env_use_password | sudo -k -S echo "" > /dev/null 2>&1
             if [[ $? -eq 0 ]]
             then 
@@ -1412,6 +1431,53 @@ env_rename_files_and_directories() {
                 echo "RENAME_DIR "$RENAME_DIR" does not exist, skipping..."
             fi
         done
+    fi
+}
+
+
+### batch script fifo
+env_delete_tmp_batch_script_fifo() {
+    if [[ -e "/tmp/tmp_batch_script_fifo" ]]
+    then
+        rm -f "/tmp/tmp_batch_script_fifo"
+    else
+        :
+    fi
+}
+
+
+### keepingyouawake
+env_activating_keepingyouawake() {
+    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
+    then
+        #echo ''
+    	#echo "activating keepingyouawake..."
+    	if [[ $(xattr -l ""$PATH_TO_APPS"/KeepingYouAwake.app") != "" ]]
+    	then
+            xattr -d com.apple.quarantine ""$PATH_TO_APPS"/KeepingYouAwake.app" &> /dev/null
+            /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted ""$PATH_TO_APPS"/KeepingYouAwake.app"
+        else
+            :
+        fi
+        open -g keepingyouawake:///activate
+        sleep 1
+        echo ''
+    else
+        :
+    fi
+}
+    
+env_deactivating_keepingyouawake() {
+    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
+    then
+        echo ''
+        echo "deactivating keepingyouawake..."
+        echo ''
+        #open -g "$PATH_TO_APPS"/KeepingYouAwake.app
+        open -g keepingyouawake:///deactivate
+        sleep 1
+    else
+        :
     fi
 }
 
