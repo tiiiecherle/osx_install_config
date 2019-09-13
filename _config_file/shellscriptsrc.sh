@@ -1039,7 +1039,7 @@ env_enter_sudo_password() {
         #echo "$NUMBER_OF_TRIES"
         if [[ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]]
         then
-            if [[ "$USE_PASSWORD" == "" ]]
+            if [[ "$USE_PASSWORD" == "" ]] || [[ "$SUDOPASSWORD_CORRECT" == "no" ]]
             then
                 enter_password_secret
             else
@@ -1051,6 +1051,7 @@ env_enter_sudo_password() {
                 break
             else
                 echo "Sorry, try again."
+                SUDOPASSWORD_CORRECT="no"
             fi
         else
             echo ""$MAX_TRIES" incorrect password attempts"
@@ -1476,6 +1477,18 @@ env_deactivating_keepingyouawake() {
         #open -g "$PATH_TO_APPS"/KeepingYouAwake.app
         open -g keepingyouawake:///deactivate
         sleep 1
+    else
+        :
+    fi
+}
+
+
+### permissions for opening on first run
+env_set_open_on_first_run_permissions() {
+    if [[ $(xattr -l "$PATH_TO_FIRST_RUN_APP") != "" ]]
+	then
+        xattr -d com.apple.quarantine "$PATH_TO_FIRST_RUN_APP" &> /dev/null
+        /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted "$PATH_TO_FIRST_RUN_APP"
     else
         :
     fi
