@@ -1525,6 +1525,9 @@ env_start_error_log() {
     echo "### "$SCRIPT_NAME"" >> "$ERROR_LOG"
     #echo "### $(date "+%Y-%m-%d %H:%M:%S")" >> "$ERROR_LOG"
     echo '' >> "$ERROR_LOG"
+    # compatible with bash and zsh
+    # if running (not sourcing) this file without shebang it will complain about an unexpected token >
+    # this is expected and ok, only source this file, do not run it
     exec 2> >(tee -ia "$ERROR_LOG" >&2)
 }
 
