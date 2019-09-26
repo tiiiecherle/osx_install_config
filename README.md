@@ -85,7 +85,7 @@ As mentioned above some scripts (e.g. homebrew-update, hosts, network-select, et
 
 ##### Batch Installation
 
-After a lot of changes to the structure, the content, the config file and the default shell in the scripts it's finally possible (as of 2019-09, macOS 10.15 only) to combine most of them as a batch installer. After customizing and adjusting all scripts to your needs follow these steps:
+After a lot of changes to the structure, the content, the config file and the default shell in the scripts it's finally possible (as of 2019-09, macOS 10.14 and newer) to combine most of them as a batch installer. After customizing and adjusting all scripts to your needs follow these steps:
 
 0. Make a backup to an external drive/server/nas with the [backup script](#7backup-and-restore-script). Just to be safe I recommend an additional time machine backup.
 0. Create the [bootable usb device](#0bootable-usb-device) and perform a clean macOS install.
