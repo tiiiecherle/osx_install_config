@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # script and all credits
 # https://gist.github.com/korylprince/be2e09e049d2fd721ce769770d983850#file-overwrite-py
@@ -21,7 +21,69 @@ favorites_path = "/Users/{user}/Library/Application Support/com.apple.sharedfile
 # Use a tuple: ("<name>", "<path>") to set a name for the favorite.
 # Otherwise just use a string and the path will be used as the name
 #servers = (("My Name", "smb://server.example.com/share"), "vnc://server.example.com")
-servers = ("smb://172.16.1.200",)
+#servers = ("smb://192.168.1.xyz",)
+
+
+###
+
+def import_server_variable():
+
+    # python3 compatibility by setting unicode = str
+    import sys
+    if sys.version_info[0] >= 3:
+        unicode = str
+        
+    # getting logged in user
+    global username
+    #import getpass
+    #user = getpass.getuser()
+    # or (see loggedInUser in shell scripts)
+    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+    import sys
+    username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]
+    #print (username)
+    
+    # defining path to script with server variable
+    from os.path import dirname as up
+    three_up = up(up(up(__file__)))
+    #print (three_up)
+    path = (three_up) + "/_scripts_input_keep/finder_favorites.py"
+    #path = (three_up) + "/_scripts_input_keep/finder_favorites_" + username + ".py"
+    
+    # checking if file exists
+    import os
+    if not os.path.exists(path):
+        print("file " + path + " does not exists, exiting...")
+        quit()
+    
+    # reading server variable
+    def getVarFromFile(filename):
+        import imp
+        f = open(filename)
+        global data
+        data = imp.load_source('data', path)
+        f.close()
+    
+    getVarFromFile(path)
+    print ('')
+    print("severs entry...")
+    print (data.servers)
+    global servers
+    servers = (data.servers)
+    
+    # checking if server variable is defined
+    try:
+        servers
+    except NameError:
+        print("servers is not defined, exiting...")
+        quit()
+    else:
+        print('')
+
+import_server_variable()
+
+
+###
 
 def get_users():
     "Get users with a home directory in /Users"
@@ -80,10 +142,11 @@ if __name__ == "__main__":
             # fix owner if ran as root
             if user == "root":
                 os.system(("chown {user} " + favorites_path).format(user=user))
-            print "Server Favorites set for " + user
+            print ("Server Favorites set for " + user)
         except Exception as e:
             # if there's an error, log it an continue on
-            print "Failed setting Server Favorites for {0}: {1}".format(user, str(e))
+            print ("Failed setting Server Favorites for {0}: {1}".format(user, str(e)))
 
     # kill sharedfilelistd process to reload file. Finder should be closed when this happens
     os.system("killall sharedfilelistd")
+print ('')
