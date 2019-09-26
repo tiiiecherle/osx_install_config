@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### script frame
 ###
 
@@ -50,30 +61,24 @@ else
 fi
 
 
+
 ###
 ### command line tools
 ###
 
-echo ''
+#echo ''
 env_command_line_tools_install_shell
 
 
 ###
-### homebrew
+### mas
 ###
 
 checking_homebrew
 
 
-### keepingyouawake
-if [[ "$KEEPINGYOUAWAKE" != "active" ]]
-then
-    echo ''
-    activating_keepingyouawake
-    echo ''
-else
-    echo ''
-fi
+### activating keepingyouawake
+env_activating_keepingyouawake
 
 
 ### installing mas
@@ -342,16 +347,40 @@ else
 fi
 
 echo ''
+
 # waiting for apps to be registered correctly before checking success
-SLEEP_TIME=10
-#echo "resetting mas and waiting "$SLEEP_TIME"s for apps to be registered correctly before checking success"...
-echo "waiting "$SLEEP_TIME"s for apps to be registered correctly before checking success"...
-#echo ''
-#sleep 5
+#sleep 10
 #mas reset
-sleep "$SLEEP_TIME"
-CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_CASKS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+WAITING_TIME=30
+NUM1=0
+echo ''
+while [[ "$NUM1" -le "$WAITING_TIME" ]]
+do 
+	NUM1=$((NUM1+1))
+	if [[ "$NUM1" -le "$WAITING_TIME" ]]
+	then
+		#echo "$NUM1"
+		sleep 1
+		tput cuu 1 && tput el
+		# output has to fit in one terminal line
+		echo "waiting $((WAITING_TIME-NUM1)) seconds for apps to be registered before checking success..."
+	else
+		:
+	fi
+done
+
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+    :
+else
+    CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_CASKS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+fi
+
 
 ###
 
 #echo ''
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+

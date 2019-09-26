@@ -6,7 +6,18 @@
 
 if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
- 
+
+
+
+###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
 
 
 ###
@@ -52,7 +63,8 @@ env_check_if_parallel_is_installed
 ### variables
 casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
 homebrew_formulae=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_formulae.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
-casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d' | grep -vi "xtrafinder" | grep -vi "totalfinder")
+finder_enhancements=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d' | grep -i -e "xtrafinder" -e "totalfinder")
 casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
 mas_apps=$(cat "$SCRIPT_DIR"/_lists/04_mas_apps.txt | sed '/^#/ d' | sed '/^$/d' | sort -k 2 -t $'\t' --ignore-case)
 
@@ -81,7 +93,7 @@ check_mas_apps() {
 	then
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$MAS_NAME";
 	else 
-		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$MAS_NAME"
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$MAS_NAME" >&2;
 	fi
 }
 
@@ -91,6 +103,13 @@ then
 	:
 else
     echo "checking mas appstore apps installation..."
+    # updating index
+    mas list &> /dev/null
+    echo "waiting for mas index to get ready..."
+    while [[ $(mas list) == "" ]]
+    do
+        sleep 1
+    done
     if [[ "$INSTALLATION_METHOD" == "parallel" ]]
     then
         # by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
@@ -134,7 +153,7 @@ check_homebrew_formulae() {
 	then 
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"; 
 	else 
-		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$i"; 
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$i" >&2; 
 	fi
 }
 
@@ -200,7 +219,7 @@ check_casks() {
 	then 
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"; 
 	else 
-		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$i"; 
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$i" >&2; 
 	fi
 }
 
@@ -277,14 +296,28 @@ else
 	# additonal apps / xtrafinder
 	echo ''
 	echo "checking additional apps installation..."
-	if [[ -e "/Applications/XtraFinder.app" ]]; 
-	then 
-		printf "%-50s\e[1;32mok\e[0m%-10s\n" "xtrafinder"; 
-	else 
-		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "xtrafinder"; 
-	fi
-	#echo ''
-
+    if [[ "${finder_enhancements[@]}" != "" ]]
+    then
+	    # casks specific1
+	    while IFS= read -r line || [[ -n "$line" ]] 
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+            i="$line"
+            i=$(echo "$i" | tr '[:upper:]' '[:lower:]')
+           	if [[ -e ""$PATH_TO_APPS"/"$i".app" ]]; 
+			then 
+				printf "%-50s\e[1;32mok\e[0m%-10s\n" ""$i""; 
+			else 
+				printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" ""$i"" >&2; 
+			fi
+    	done <<< "$(printf "%s\n" "${finder_enhancements[@]}")"
+    else
+        :
+    fi
 fi
 
 #echo ''
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

@@ -17,6 +17,18 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 #echo $FILESTARGZSAVEDIR
 #echo $FILESAPPLESCRIPTDIR
 
+FILESSAVEDIR="$FILESTARGZSAVEDIR"
+
+if [[ "$FILESSAVEDIR" == "" ]]
+then
+    echo ''
+    echo "FILESSAVEDIR not set, exiting..."
+    echo ''
+    exit
+else
+    :
+fi
+
 
 
 ###
@@ -74,24 +86,29 @@ trap_function_exit_middle() { unset SUDOPASSWORD; unset USE_PASSWORD; }
 ### user selection
 if [[ "$SELECTEDUSER" == "" ]]
 then
-    echo ''
     # users on the system without ".localized" and "Shared"
     SYSTEMUSERS=$(ls -1 /Users/ | egrep -v "^[.]" | egrep -v "Shared" | egrep -v "Guest")
     
-    # user profile for backup
-    COLUMNS_DEFAULT="$COLUMNS"
-    COLUMNS=1 PS3="Please select user profile for file backup by typing the number: "
-    select SELECTEDUSER in ""$SYSTEMUSERS""
-    do
-        echo "you selected user "$SELECTEDUSER"..."
-        #echo ''
-        COLUMNS="$COLUMNS_DEFAULT"
-        break
-    done
+    if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/ //g') == "1" ]]
+    then
+        SELECTEDUSER="$SYSTEMUSERS"
+    else
+        echo ''
+        COLUMNS_DEFAULT="$COLUMNS"
+        COLUMNS=1 PS3="Please select user profile for file backup by typing the number: "
+        select SELECTEDUSER in ""$SYSTEMUSERS""
+        do
+            echo "you selected user "$SELECTEDUSER"..."
+            #echo ''
+            COLUMNS="$COLUMNS_DEFAULT"
+            break
+        done
+    fi
     
     # check1 if a valid user was selected
     USERCHECK=$(find /Users -maxdepth 1 -name "$SELECTEDUSER" -exec basename {} \;)
-    if [[ "$SELECTEDUSER" != "$USERCHECK" ]]; then
+    if [[ "$SELECTEDUSER" != "$USERCHECK" ]]
+    then
         echo "no valid user selected - exiting script because of no real username..."
         exit
     else
@@ -99,7 +116,8 @@ then
     fi
     
     # check2 if a valid user was selected
-    if [[ "$SELECTEDUSER" == "" ]]; then
+    if [[ "$SELECTEDUSER" == "" ]]
+    then
         echo "no valid user selected - exiting script because of empty username..."
         exit
     else
@@ -123,10 +141,11 @@ if [[ "$SELECTEDUSER" == "tom" ]];
 then
 
     BACKUPDIRS=(
-    "/Users/$USER/Pictures"
+    #"/Users/$USER/Pictures"
     "/Users/$USER/Music"
     "/Users/$USER/Desktop/desktop"
     "/Users/$USER/Desktop/backup"
+    "/Users/$USER/Desktop/macos"
     "/Users/$USER/github"
     "/Users/$USER/Desktop/files"
     "/Users/$USER/Documents"
@@ -169,14 +188,11 @@ fi
 
 ### variables
 DATE=$(date +%F)
-FILESTARGZLOG="$FILESTARGZSAVEDIR"/targz_file_log_"$DATE".txt
+FILESLOG="$FILESSAVEDIR"/targz_file_log_"$DATE".txt
 
 echo ""
-if [[ -f "$FILESTARGZLOG" ]]; then rm "$FILESTARGZLOG"; else :; fi
-touch "$FILESTARGZLOG"
-
-#FILE_EXTENSION=tar.gz
-FILE_EXTENSION=tar.gz.gpg
+if [[ -f "$FILESLOG" ]]; then rm "$FILESLOG"; else :; fi
+touch "$FILESLOG"
 
 
 ### functions
@@ -184,10 +200,10 @@ targz_and_progress() {
 
     BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo "$i*1.0" | bc | cut -d'.' -f1) ; done)
     echo archiving "$DIRS" 
-    printf "%-10s" "to" "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz && echo
-    #echo to "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz
-    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz > "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz; popd 1> /dev/null
-    echo "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz >> "$FILESTARGZLOG"
+    printf "%-10s" "to" "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" && echo
+    #echo to "$FILESSAVEDIR"/"$(basename "$DIRS")".tar.gz
+    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz > "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION"; popd 1> /dev/null
+    echo "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" >> "$FILESLOG"
     echo ""
 
 }
@@ -196,10 +212,10 @@ tar_gz_gpg_and_progress() {
 
     BACKUPSIZE=$(gdu -scb /"$DIRS/" | tail -1 | awk '{print $1}' | while read i ; do echo $(echo "$i*1.0" | bc | cut -d'.' -f1) ; done)
     echo archiving "$DIRS" 
-    printf "%-10s" "to" "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" && echo
-    #echo to "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")".tar.gz.gpg
-    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz | gpg --batch --yes --quiet --passphrase="$SUDOPASSWORD" --symmetric --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65536 --compress-algo 0 -o "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" 1> /dev/null; popd 1> /dev/null
-    echo "$FILESTARGZSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" >> "$FILESTARGZLOG"
+    printf "%-10s" "to" "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" && echo
+    #echo to "$FILESSAVEDIR"/"$(basename "$DIRS")".tar.gz.gpg
+    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz | gpg --batch --yes --quiet --passphrase="$SUDOPASSWORD" --symmetric --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65536 --compress-algo 0 -o "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" 1> /dev/null; popd 1> /dev/null
+    echo "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" >> "$FILESLOG"
     echo ""
 
 }
@@ -209,7 +225,9 @@ tar_gz_gpg_and_progress() {
 mkdir -p /Users/$USER/Desktop/desktop/_current/
 echo "rsync from /Users/$USER/Desktop/"
 printf "%-11s" "to" "/Users/$USER/Desktop/desktop/_current/..." && echo
-rsync -a -z -v --delete --progress --stats --human-readable --links --exclude 'files' --exclude 'backup' --exclude 'backup_*' --exclude 'desktop' --exclude 'data' --exclude 'extra' --exclude 'scripts' --exclude 'macintosh_hd' /Users/$USER/Desktop/ /Users/$USER/Desktop/desktop/_current/ 1>/dev/null
+# alternatively to -aH -iW use -a -z -v
+rsync -aH -iW --delete --progress --stats --human-readable --safe-links --delete-excluded --exclude '/macos' --exclude '/files' --exclude '/backup' --exclude '/backup_*' --exclude '/desktop' /Users/"$USER"/Desktop/ /Users/"$USER"/Desktop/desktop/_current/ 1> /dev/null
+
 echo "done ;)"
 echo ''
 
@@ -231,11 +249,19 @@ fi
 ### creating files from SOURCES to selected destination
 for DIRS in "${BACKUPDIRS[@]}"
 do
-    if [[ -d "$DIRS" ]];
+    if [[ -d "$DIRS" ]]
     then
+        if [[ "$DIRS" == "/Users/"$USER"/Desktop/macos" ]]
+        then
+            FILE_EXTENSION=tar.gz
+            ARCHIVING_FUNCTION=targz_and_progress
+        else
+            FILE_EXTENSION=tar.gz.gpg
+            ARCHIVING_FUNCTION=tar_gz_gpg_and_progress
+        fi
         # checking if file exists
-        SAVEFILE="$FILESTARGZSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION"
-        if [[ -f "$SAVEFILE" ]];
+        SAVEFILE="$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION"
+        if [[ -f "$SAVEFILE" ]]
         then
             # asking for deleting existing file
             # default answer is "" and is defined as no
@@ -247,27 +273,27 @@ do
             if [[ "$OVERWRITE_EXISTING" =~ ^(no|n)$ ]]
             then
                 #exit 1
-                echo skipping "$SAVEFILE"
+                echo "skipping "$SAVEFILE""
                 echo ""
             else
                 rm "$SAVEFILE"
-                #targz_and_progress
-                tar_gz_gpg_and_progress
+                "${ARCHIVING_FUNCTION}"
             fi
             unset OVERWRITE_EXISTING
         else
-            #targz_and_progress
-            tar_gz_gpg_and_progress
+            "${ARCHIVING_FUNCTION}"
         fi
     else
         :
     fi
+    unset FILE_EXTENSION
+    unset ARCHIVING_FUNCTION
 done
 
 
 ### checking integrity
 #echo ''
-echo "testing integrity of file(s) in "$FILESTARGZSAVEDIR"/..."
+echo "testing integrity of file(s) in "$FILESSAVEDIR"/..."
 echo ''
 
 NUMBER_OF_CORES=$(parallel --number-of-cores)
@@ -278,15 +304,24 @@ NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS
 
 check_files_parallel() {
     file="$1"
-    if [[ -f "$file" ]];
+    if [[ -f "$file" ]]
     then
-        printf "%-45s" ""$(basename "$file")"..." && builtin printf "$SUDOPASSWORD" | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$file" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+        if [[ "$file" == *.tar.gz.gpg ]]
+        then
+            printf "%-45s" ""$(basename "$file")"..." && builtin printf "$SUDOPASSWORD" | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$file" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+        elif [[ "$file" == *.tar.gz ]]
+        then
+            printf "%-45s" ""$(basename "$file")"..." && unpigz -c "$file" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+        else
+            echo ""$file" does not have a recognized file extension, skipping..."
+        fi
     else
         :
     fi
 }
 
-if [[ "$(cat "$FILESTARGZLOG")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(cat "$FILESTARGZLOG")"; fi
+#if [[ "$(cat "$FILESLOG")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(cat "$FILESLOG")"; fi
+if [[ "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')"; fi
 wait
 
 echo ''

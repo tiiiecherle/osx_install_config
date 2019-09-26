@@ -10,10 +10,35 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -79,7 +104,7 @@ wait
 
 
 ### unloading and disabling launchd services launched by network_select
-echo ''
+#echo ''
 echo "unloading other launchd services..."
 for i in "${other_launchd_services[@]}"
 do
@@ -119,8 +144,33 @@ fi
 sudo launchctl enable system/"$SERVICE_NAME"
 sudo launchctl load "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
 
-echo "waiting 10s for launchd services to load before checking installation..."
-sleep 10
+WAITING_TIME=10
+NUM1=0
+echo ''
+while [[ "$NUM1" -le "$WAITING_TIME" ]]
+do 
+	NUM1=$((NUM1+1))
+	if [[ "$NUM1" -le "$WAITING_TIME" ]]
+	then
+		#echo "$NUM1"
+		sleep 1
+		tput cuu 1 && tput el
+		echo "waiting $((WAITING_TIME-NUM1)) seconds for launchd service to load before checking installation..."
+	else
+		:
+	fi
+done
+
+echo ''
+echo "waiting for script from launchd to finish..."
+#echo ''
+sleep 3
+WAIT_PIDS=()
+WAIT_PIDS+=$(ps aux | grep /"$SCRIPT_INSTALL_NAME".sh | grep -v grep | awk '{print $2;}')
+#echo "$WAIT_PIDS"
+#if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; sudo lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"
+sleep 1
 
 
 ### checking installation
@@ -132,6 +182,10 @@ wait
 #echo ''
 #echo "opening logfile..."
 #open "$LOGFILE"
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
 
 #echo ''

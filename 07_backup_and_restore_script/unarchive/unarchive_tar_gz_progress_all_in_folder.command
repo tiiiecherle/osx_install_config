@@ -8,27 +8,31 @@ if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
+
+###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
 ###
 ### traps
 ###
 
-trap_function_exit_middle() { env_stop_sudo; unset GPG_PASSWORD }
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+    #trap_function_exit_middle() { COMMAND1; COMMAND2; }
+    :
+else
+    trap_function_exit_middle() { env_deactivating_keepingyouawake; }
+fi
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
-
-
-
-###
-### asking password upfront
-###
-
-env_enter_sudo_password
-unset -f sudo
-# replacing sudo command with a function, so all sudo commands of the script do not have to be changed
-# can not be used in untar pipe "| sudo gtar", use start_sudo with env_use_password instead
-
-# getting logged in user and unique id
-# done in config file
 
 
 
@@ -37,7 +41,7 @@ unset -f sudo
 ###
 
 echo ''
-echo checking if all needed tools are installed...
+echo "checking if all needed tools are installed..."
 
 # installing command line tools
 if xcode-select --install 2>&1 | grep installed >/dev/null
@@ -55,7 +59,7 @@ then
 	# installed
     echo "homebrew is installed..."
     # checking for missing dependencies
-    for formula in gnu-tar pigz pv coreutils parallel gnupg
+    for formula in gnu-tar pigz pv coreutils parallel
     do
     	if [[ $(brew list | grep "^$formula$") == '' ]]
     	then
@@ -68,10 +72,10 @@ then
     done
     if [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
     then
-        echo at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel, and gnupg is missing, exiting...
+        echo "at least one needed homebrew tools of gnu-tar, pigz, pv, coreutils, parallel, and gnupg is missing, exiting..."
         exit
     else
-        echo needed homebrew tools are installed...     
+        echo "needed homebrew tools are installed..." 
     fi
     unset MISSING_SCRIPT_DEPENDENCY
 else
@@ -82,24 +86,8 @@ fi
 
 
 ###
-### decrypting and unarchiving
+### unarchiving
 ###
-
-# this script finds all .tar.gz.gpg files in the folder where the script is located,
-# decrypts and unarchives them if they have the same password
-# if there are multiple files
-
-# gpg password
-echo ''
-echo 'please enter decryption password...'
-stty -echo
-#trap 'stty echo' EXIT
-printf 'gpg decryption password: '
-read -r $@ GPG_PASSWORD
-echo ''
-stty echo
-#trap - EXIT
-echo ''
 
 NUMBER_OF_CORES=$(parallel --number-of-cores)
 NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
@@ -107,29 +95,33 @@ NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
 NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
 #echo $NUMBER_OF_MAX_JOBS_ROUNDED
 
-env_start_sudo
-
-decrypt_and_unarchive_sequential() {
+unarchive_sequential() {
     
-    echo "decrypting and unarchiving is set to sequential mode..."
+    echo "unarchiving is set to sequential mode..."
     #echo ''
      
     while IFS= read -r line || [[ -n "$line" ]]
-	do
+	do        
 	    if [[ "$line" == "" ]]; then continue; fi
         item="$line"
         echo ''
+        env_activating_keepingyouawake
     	echo "decrypting and unarchiving..."
     	echo "$item"
     	echo to "$SCRIPT_DIR"/
     	# only needed if password is not passed via --passphrase
     	#export GPG_TTY=$(tty)
     	#export PINENTRY_USER_DATA='USE_CURSES=1'
-    	cat "$item" | pv -s $(gdu -scb "$item" | tail -1 | awk '{print $1}' | grep -o "[0-9]\+") | gpg --batch --passphrase="$GPG_PASSWORD" --quiet -d - | unpigz -dc - |   sudo gtar --same-owner -C "$SCRIPT_DIR" -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m"
-    done <<< "$(find "$SCRIPT_DIR" -mindepth 1 -name '*.tar.gz.gpg')"
+    	cat "$item" | pv -f -s $(gdu -scb "$item" | tail -1 | awk '{print $1}' | grep -o "[0-9]\+") | unpigz -dc - | gtar --same-owner -C "$SCRIPT_DIR" -xpf - >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m" >&2
+    done <<< "$(find "$SCRIPT_DIR" -mindepth 1 -maxdepth 1 -name '*.tar.gz')"
         
 }
-decrypt_and_unarchive_sequential
+unarchive_sequential
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo ''
 echo 'done ;)'

@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### security permissions
 ###
 
@@ -25,7 +36,7 @@ AUTOMATION_APPS=(
 # source app name							automated app name										    allowed (1=yes, 0=no)
 "$SOURCE_APP_NAME                           System Events                                               1"
 )
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="yes" env_set_apps_automation_permissions
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 #echo ''
 
 
@@ -40,7 +51,7 @@ echo "opening apps for applying preferences manually..."
 applications_to_open=(
 #"/Applications/Safari.app"
 #"/Applications/Firefox.app"
-""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
+#""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
 #""$PATH_TO_APPS"/Adobe Acrobat X Pro/Adobe Acrobat Pro.app"
 ""$PATH_TO_APPS"/AppCleaner.app"
 ""$PATH_TO_SYSTEM_APPS"/FaceTime.app"
@@ -48,8 +59,8 @@ applications_to_open=(
 ""$PATH_TO_SYSTEM_APPS"/Calendar.app"
 ""$PATH_TO_SYSTEM_APPS"/Contacts.app"
 ""$PATH_TO_SYSTEM_APPS"/Reminders.app"
-""$PATH_TO_SYSTEM_APPS"/Mail.app"
-""$PATH_TO_APPS"/Microsoft Word.app"
+#""$PATH_TO_SYSTEM_APPS"/Mail.app"
+#""$PATH_TO_APPS"/Microsoft Word.app"
 ""$PATH_TO_APPS"/Microsoft Excel.app"
 ""$PATH_TO_SYSTEM_APPS"/Messages.app"
 ""$PATH_TO_APPS"/The Unarchiver.app"
@@ -59,9 +70,9 @@ applications_to_open=(
 #""$PATH_TO_APPS"/Macs Fan Control.app"
 #""$PATH_TO_APPS"/Signal.app"
 #""$PATH_TO_APPS"/Keka.app"
-#""$PATH_TO_APPS"/Overflow 3.app"
+""$PATH_TO_APPS"/Overflow 3.app"
 ""$PATH_TO_APPS"/BresinkSoftwareUpdater.app"
-""$PATH_TO_APPS"/MacPass.app"
+#""$PATH_TO_APPS"/MacPass.app"
 ""$PATH_TO_APPS"/WireGuard.app"
 )
 
@@ -71,6 +82,7 @@ do
 	then
 	    echo "opening $(basename "$i")"
 		open "$i" &
+		sleep 5
 	else
 		:
 	fi
@@ -78,14 +90,14 @@ done
 
 # google consent
 open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
-open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a "/Applications/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
+#open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a "/Applications/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 
 if [[ "$USER" == "wolfgang" ]]
 then
     i="/Users/$USER/PVGuardClient/installer/pvdownload.jnlp"
     echo "opening $(basename "$i")"
 	open "$i" &
-	sleep 1
+	sleep 2
 else
     :
 fi
@@ -126,6 +138,11 @@ fi
              
 ### removing security permissions
 #remove_apps_security_permissions_stop
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo ''
 echo "done ;)"

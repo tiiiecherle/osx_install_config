@@ -1,19 +1,4 @@
 RESTORE LICENSES
 
-
-
-MANUAL RESTORE
-
-microsoft office (logout from account afterwards)
-ondesoft audiobook converter
-extfs mac
-
-
-
-DONE BY RESTORE SCRIPT
-
-monkey bilanz					
-eagle filer						
-imazing
-istat menus
-the archive browser
+# enter all licenses for apps which can not be restored
+# done in 15_finalizations

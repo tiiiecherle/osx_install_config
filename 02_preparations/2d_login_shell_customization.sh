@@ -10,10 +10,34 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -130,7 +154,6 @@ echo '' >> ~/.zshrc
 echo "# time command output format" >> ~/.zshrc
 echo "export TIMEFMT=$'%U user %S system %P cpu %*E total'" >> ~/.zshrc
 
-
 # setting path if homebrew is installed
 if command -v brew &> /dev/null
 then
@@ -194,7 +217,7 @@ else
 fi
 
 # starting zsh shell in current terminal
-#echo ''
+echo ''
 #echo "switching to zsh shell..."
 #echo ''
 #exec zsh -l
@@ -216,3 +239,7 @@ fi
 # source ~/.zshrc
 # sudo "$SHELL" -c "echo $(which zsh) >> /etc/shells"
 # chsh -s $(which zsh) $USER
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

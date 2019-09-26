@@ -10,10 +10,35 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -63,7 +88,7 @@ AUTOMATION_APPS=(
 "$SOURCE_APP_NAME                           System Events                                               1"
 "$SOURCE_APP_NAME                           System Preferences                                          1"
 )
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="no" env_set_apps_automation_permissions
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
 #echo ''
 
 
@@ -204,21 +229,28 @@ EOF
     
     # interface appearance
     # becomes active after logout
+    # defaults read -g | grep AppleInterfaceStyle
     # light
+    defaults delete -g AppleInterfaceStyle &> /dev/null
     #defaults write -g AppleInterfaceStyle -string "Light"
-    #defaults delete -g AppleInterfaceStyle
+    defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
     # dark
+    #defaults delete -g AppleInterfaceStyle &> /dev/null
     #defaults write -g AppleInterfaceStyle -string "Dark"
+    #defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
+    # automatic
+    #defaults delete -g AppleInterfaceStyle &> /dev/null
+    #defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool true
     
     # immediate change
-    osascript -e '
-    tell application "System Events"
-    tell appearance preferences
-    set properties to {dark mode:false}
-    end tell
-    end tell
-    '
-
+    #osascript -e '
+    #tell application "System Events"
+    #    tell appearance preferences
+    #        set properties to {dark mode:scheduled}
+    #    end tell
+    #end tell
+    #'
+    
     # automatically switch between light and dark mode (needs reboot)
     defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
     
@@ -965,8 +997,8 @@ EOF
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"'$PATH_TO_APPS'/GeburtstagsChecker.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"AppCleaner Helper", path:"'$PATH_TO_APPS'/AppCleaner Helper.app", hidden:false}'
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"SMARTReporter", path:"'$PATH_TO_APPS'/SMARTReporter.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"TotalFinder", path:"'$PATH_TO_APPS'/TotalFinder.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"'$PATH_TO_APPS'/XtraFinder.app", hidden:false}'
+    osascript -e 'tell application "System Events" to make login item at end with properties {name:"TotalFinder", path:"'$PATH_TO_APPS'/TotalFinder.app", hidden:false}'
+    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"'$PATH_TO_APPS'/XtraFinder.app", hidden:false}'
     #osascript -e 'tell application "System Events" to make login item at end with properties {name:"iStat Menus", path:"'$PATH_TO_APPS'/iStat Menus.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"witchdaemon", path:"/Users/'$USER'/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app", hidden:false}'
     osascript -e 'tell application "System Events" to make login item at end with properties {name:"Quicksilver", path:"'$PATH_TO_APPS'/Quicksilver.app", hidden:false}'
@@ -1010,20 +1042,44 @@ EOF
         echo "opening autostart apps to make them available after reboot"
         if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//') != "" ]]
         then
+                
             while IFS= read -r line || [[ -n "$line" ]]        
         	do
         	    if [[ "$line" == "" ]]; then continue; fi
                 autostartapp="$line"
+                
+                if [[ "$line" == "witchdaemon" ]]
+                then
+                    PATH_TO_FIRST_RUN_APP="/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app"
+                    env_set_open_on_first_run_permissions
+                elif [[ "$line" == "run_on_login_whatsapp" ]]
+                then
+                    PATH_TO_FIRST_RUN_APP="/Users/"$USER"/Library/Scripts/run_on_login_whatsapp.app"
+                    env_set_open_on_first_run_permissions
+                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/WhatsApp.app"
+                    env_set_open_on_first_run_permissions
+                elif [[ "$line" == "run_on_login_signal" ]]
+                then
+                    PATH_TO_FIRST_RUN_APP="/Users/"$USER"/Library/Scripts/run_on_login_signal.app"
+                    env_set_open_on_first_run_permissions
+                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/Signal.app"
+                    env_set_open_on_first_run_permissions
+                else
+                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/"$autostartapp".app"
+                    env_set_open_on_first_run_permissions
+                fi
+                
                 osascript -e "tell application \"$autostartapp\" to activate" &
                 sleep 1
                 #osascript -e "tell application \"$autostartapp\" to quit"
             done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//')"
+            
             if [[ -e "/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app" ]]
             then
                 #open /Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app
                 killall witchdaemon &> /dev/null
                 sleep 1
-                osascript -e "tell application \"/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app\" to activate"
+                osascript -e "tell application \"/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app\" to activate" &
                 #/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app/Contents/MacOS/witchdaemon
             else
                 :
@@ -1896,13 +1952,22 @@ EOF
     
     echo "preferences sharing"
     
-    # set computer name (as done via system preferences - sharing)
-    if [[ "$USER" == "tom" ]]
+    MY_HOSTNAME=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g' | sed 's/^/'"$USER"'s-/g')    
+    if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd2" ]]
     then
-        MY_HOSTNAME="toms-macbookpro"
+        MY_HOSTNAME=$(echo "$MY_HOSTNAME" | sed 's/$/2/g') 
     else
+        :
+    fi
+    #echo "$MY_HOSTNAME"
+    
+    # set computer name (as done via system preferences - sharing)
+    if [[ "$MY_HOSTNAME" == "" ]]
+    then
         echo 'only numbers, characters [a-zA-Z] and '-' are allowed...'
         read -p "Enter new hostname: " MY_HOSTNAME
+    else
+        echo "setting hostname to "$MY_HOSTNAME""
     fi
     
     sudo scutil --set ComputerName "$MY_HOSTNAME"
@@ -2073,7 +2138,79 @@ EOF
     # content caching
     #sudo AssetCacheManagerUtil activate
     #sudo AssetCacheManagerUtil deactivate
+
+
+
+    ###
+    ### preferences - printer
+    ###
     
+    echo "preferences printer"
+    
+    DEFAULTS_WRITE_DIR="$SCRIPT_DIR_TWO_BACK"
+    if [[ -e "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer_data.sh ]]
+    then
+    
+        # variables
+        #PRINTER_NAME="NAME_HERE"
+        #PRINTER_URL="ipp://IP_HERE/ipp/print"
+        #PRINTER_PPD="PATH_TO_PPD_GZ_FILE_HERE"
+        
+        # sourcing variables
+        . "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer_data.sh
+        
+        if [[ "$PRINTER_PPD" != "" ]] && [[ -e "$PRINTER_PPD" ]]
+        then
+            #echo ''
+            #echo "$PRINTER_NAME"
+            
+            # backing up printer config
+            if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
+            then
+            	#echo ''
+            	echo "backing up printer preferences for "$PRINTER_NAME"..."
+            	cp -a "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" "/tmp/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist"
+            else
+            	:
+            fi
+            
+            # deleting old printer/config
+            if [[ $(lpstat -p | grep "$PRINTER_NAME") != "" ]]
+            then
+            	#echo ''
+            	echo "deleting old printer "$PRINTER_NAME"..."
+            	lpadmin -x "$PRINTER_NAME"
+            	sleep 1
+            else
+            	:
+            fi
+            
+            # restoring printer config if needed
+            if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
+            then
+            	:
+            else
+            	#echo ''
+            	echo "restoring printer preferences for "$PRINTER_NAME"..."
+            	cp -a "/tmp/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist"
+            fi
+            
+            # adding printer printer/config
+            #echo ''
+            echo "adding printer "$PRINTER_NAME"..."
+            # more options can be set via -o
+            lpadmin -E -p "$PRINTER_NAME" -v "$PRINTER_URL" -P "$PRINTER_PPD" -o printer-is-shared=false
+            cupsenable "$PRINTER_NAME"
+            cupsaccept "$PRINTER_NAME"
+            
+        else
+	        echo "PPD file "$PRINTER_PPD" empty or not found, skipping..."
+        fi
+
+    else
+    	echo ""$DEFAULTS_WRITE_DIR"/script_input_keep/printer_data.sh not found, skipping reinstalling printer..."
+    fi
+       
      
         
     ###
@@ -2634,6 +2771,9 @@ EOF
     ### safari websites
     
     WEBSITE_SAFARI_DATABASE="/Users/"$USER"/Library/Safari/PerSitePreferences.db"
+    
+    # on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
+    # e.g. in script 11b_safari_extensions_and_certificate
     
     # general preferences
     # /Users/$USER/Library/Safari/PerSitePreferences.db
@@ -3570,15 +3710,29 @@ EOF
     
 }
 
-setting_preferences 2>&1 | tee "$HOME"/Desktop/"$SCRIPT_NAME"_log.txt
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then 
+    setting_preferences | tee "$HOME"/Desktop/"$SCRIPT_NAME"_log.txt
+else
+    setting_preferences 2>&1 | tee "$HOME"/Desktop/"$SCRIPT_NAME"_log.txt
+fi
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo "done ;)"
 echo "a few changes need a reboot or logout to take effect"
-echo "initializing reboot"
 
-osascript -e 'tell app "loginwindow" to «event aevtrrst»'       # reboot
-#osascript -e 'tell app "loginwindow" to «event aevtrsdn»'       # shutdown
-#osascript -e 'tell app "loginwindow" to «event aevtrlgo»'       # logout
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+    :
+else  
+    osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot
+    #osascript -e 'tell app "loginwindow" to «event aevtrsdn»'          # shutdown
+    #osascript -e 'tell app "loginwindow" to «event aevtrlgo»'          # logout
+fi
 
 ###
 ### unsetting password

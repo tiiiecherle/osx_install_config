@@ -8,6 +8,18 @@ if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
+
+###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
 ###
 ### script
 ###
@@ -24,3 +36,7 @@ echo ''
 env_command_line_tools_install_shell
 env_stop_sudo
 echo ''
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

@@ -30,7 +30,12 @@ run_cleaning1 () {
 	echo "running cleaning function 1..."
 	
 	# cleaning safari
-	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Safari/History.db*
+	if [[ $(find /Users/"$loggedInUser"/Library/Safari -mindepth 1 -maxdepth 1 -name "History.db*") != "" ]]
+	then
+		sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Safari/History.db*
+	else
+		:
+	fi
 	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Safari/LastSession.plist
 	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Safari/Downloads.plist
 	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Safari/KnownSitesUsingPlugIns.plist
@@ -43,10 +48,10 @@ run_cleaning1 () {
 	sudo -H -u "$loggedInUser" rm -rf "/Users/"$loggedInUser"/Library/Safari/Template Icons"
 	sudo -H -u "$loggedInUser" rm -rf "/Users/"$loggedInUser"/Library/Safari/Touch Icons Cache"
 	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Caches
-	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Cookies/com.apple.Safari.SearchHelper.binarycookies
+	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Cookies/com.apple.Safari.SearchHelper.binarycookies
 	# cookies moved to run_cleaning2
 	#sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
-	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Cookies/HSTS.plist
+	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Cookies/HSTS.plist
 	sudo -H -u "$loggedInUser" rm -rf "/Users/"$loggedInUser"/Library/Preferences/Macromedia/Flash Player/"
 	
 	# cleaning firefox storage
@@ -104,12 +109,20 @@ run_cleaning2 () {
 	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Caches/*
 	
 	# safari cookies
-	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+	# restoring basic cookies
+	if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
+	then
+		sudo -H -u "$loggedInUser" mkdir -p /Users/"$loggedInUser"/Library/Cookies/
+		sudo -H -u "$loggedInUser" cp /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+	else
+		:
+	fi
 	
 	# cleaning dnscaches
 	dns_caches () {
-	dscacheutil -flushcache
-	killall -HUP mDNSResponder
+		dscacheutil -flushcache
+		killall -HUP mDNSResponder
 	}
 	dns_caches
 

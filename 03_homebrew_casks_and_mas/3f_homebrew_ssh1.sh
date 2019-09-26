@@ -13,7 +13,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### functions
 ###
 
-activating_keepingyouawake() {
+env_activating_keepingyouawake() {
     if [[ -e /Applications/KeepingYouAwake.app ]]
     then
     	echo "activating keepingyouawake..."
@@ -25,7 +25,7 @@ activating_keepingyouawake() {
     fi
 }
 
-deactivating_keepingyouawake() {
+env_deactivating_keepingyouawake() {
     if [[ -e /Applications/KeepingYouAwake.app ]]
     then
         echo "deactivating keepingyouawake..."
@@ -69,7 +69,7 @@ then
             echo "installing keepingyouawake..."
             brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
         fi
-        activating_keepingyouawake
+        env_activating_keepingyouawake
         
         # updating homebrew
         echo ''
@@ -109,7 +109,7 @@ then
         
         # deactivating keepingyouawake
         echo ''
-        deactivating_keepingyouawake
+        env_deactivating_keepingyouawake
         
         # checking openssh version and ssh1 compatibility
         echo ''

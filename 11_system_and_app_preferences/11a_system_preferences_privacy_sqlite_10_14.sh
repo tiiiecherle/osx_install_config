@@ -10,10 +10,35 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -50,6 +75,33 @@ then
 else
     :
 fi
+
+
+
+###
+### preparations
+###
+
+starting_witchdaemon () {
+    if [[ -e /Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app/Contents/MacOS/witchdaemon ]]
+    then
+        ACCESSIBILITYAPPS=(
+        # app name									                         security service					allowed (1=yes, 0=no)
+        "Terminal                                                            kTCCServiceAccessibility           1"
+        )
+        APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
+        PRINT_SECURITY_PERMISSIONS_ENTRIES="no" env_set_apps_security_permissions
+        /Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app/Contents/MacOS/witchdaemon &
+        sleep 3
+        #killall witchdaemon
+    else
+        :
+    fi
+}
+echo ''
+echo "starting witchdaemon to make it available to get the app_id..."
+starting_witchdaemon &> /dev/null
+#echo ''
 
 
 
@@ -209,7 +261,7 @@ ACCESSIBILITYAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - contacts
@@ -227,7 +279,7 @@ CONTACTSAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CONTACTSAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - calendar
@@ -244,7 +296,7 @@ CALENDARAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CALENDARAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - reminders
@@ -260,7 +312,7 @@ REMINDERAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${REMINDERAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - microphone
@@ -277,7 +329,7 @@ MICROPHONEAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${MICROPHONEAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - automation
@@ -322,11 +374,12 @@ AUTOMATION_APPS=(
 "witchdaemon                                                                Mail                        0"
 )
         
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="yes" env_set_apps_automation_permissions
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 
 
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
-###
 
 echo ''
 echo "done ;)"

@@ -1,5 +1,10 @@
 #!/bin/zsh
 
+### config file
+# this script will not source the config file as it runs as root and does not ask for a password after installation
+
+
+### checking root
 if [[ $(id -u) -ne 0 ]]
 then 
     echo "script is not run as root, exiting..."
@@ -7,6 +12,7 @@ then
 else
     :
 fi
+
 
 ### variables
 SERVICE_NAME=com.example_root.show
@@ -38,6 +44,44 @@ then
 else
     :
 fi
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script() {
+    BATCH_PIDS=()
+    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    then
+        RUN_FROM_BATCH_SCRIPT="yes"
+    else
+        :
+    fi
+}
+
+env_start_error_log() {
+    local ERROR_LOG_DIR=/Users/"$loggedInUser"/Desktop/batch_error_logs
+    if [[ ! -e "$ERROR_LOG_DIR" ]]
+    then
+        local ERROR_LOG_NUM=1
+    else
+        local ERROR_LOG_NUM=$(($(ls -1 "$ERROR_LOG_DIR" | awk -F'_' '{print $1}' | sort -n | tail -1)+1))
+    fi
+    mkdir -p "$ERROR_LOG_DIR"
+    if [[ "$ERROR_LOG_NUM" -le "9" ]]; then ERROR_LOG_NUM="0"$ERROR_LOG_NUM""; else :; fi
+    local ERROR_LOG="$ERROR_LOG_DIR"/"$ERROR_LOG_NUM"_"$SERVICE_NAME"_errorlog.txt
+    echo "### "$SERVICE_NAME"" >> "$ERROR_LOG"
+    #echo "### $(date "+%Y-%m-%d %H:%M:%S")" >> "$ERROR_LOG"
+    echo '' >> "$ERROR_LOG"
+    exec 2> >(tee -ia "$ERROR_LOG" >&2)
+}
+
+env_stop_error_log() {
+    exec 2<&-
+    exec 2>&1
+}
+
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 
 
 ### logfile
@@ -111,5 +155,14 @@ example_function() {
 	
 }
 
-(time ( example_function )) 2>&1 | tee -a "$LOGFILE"
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then 
+    (time ( example_function )) | tee -a "$LOGFILE"
+else
+    (time ( example_function )) 2>&1 | tee -a "$LOGFILE"
+fi
+
 echo '' >> "$LOGFILE"
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

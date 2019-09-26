@@ -6,7 +6,7 @@
 	<string>com.example_user.show</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>bash</string>
+		<string>zsh</string>
 		<string>-c</string>
 		<string>/Users/$USER/Library/Scripts/example_user.sh</string>
 	</array>

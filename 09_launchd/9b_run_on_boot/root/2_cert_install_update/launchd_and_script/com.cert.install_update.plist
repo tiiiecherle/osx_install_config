@@ -6,7 +6,7 @@
 	<string>com.cert.install_update</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>bash</string>
+		<string>zsh</string>
 		<string>-c</string>
 		<string>/Library/Scripts/custom/cert_install_update.sh</string>
 	</array>

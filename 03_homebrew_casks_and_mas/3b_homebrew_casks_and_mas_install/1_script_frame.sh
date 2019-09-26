@@ -20,6 +20,12 @@ then
 elif [[ -e /tmp/tmp_sudo_cask_script_fifo ]] || [[ -e /tmp/tmp_appstore_mas_script_fifo ]]
 then
     :
+elif [[ -e /tmp/tmp_batch_script_fifo ]]
+then
+    unset SUDOPASSWORD
+    SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+    env_delete_tmp_batch_script_fifo
 else
     env_enter_sudo_password
 fi
@@ -42,56 +48,6 @@ unset_variables() {
     unset CHECK_IF_MASAPPS_INSTALLED
     unset INSTALLATION_METHOD
     unset KEEPINGYOUAWAKE
-}
-
-activating_keepingyouawake() {
-    if [[ -e /Applications/KeepingYouAwake.app ]]
-    then
-        #echo ''
-    	echo "activating keepingyouawake..."
-    	if [[ ! -e /tmp/quarantine_keepingyouawake.xattr ]]
-        then    
-            # avoiding "this application is downloaded from the internet. do you really want to open it?" message on first run
-            # must be reset from .xattr file or be reinstalling later
-            xattr -p com.apple.quarantine "/Applications/KeepingYouAwake.app" > /tmp/quarantine_keepingyouawake.xattr
-            xattr -d com.apple.quarantine "/Applications/KeepingYouAwake.app"
-        else
-            :
-        fi
-        KEEPINGYOUAWAKE="active"
-    	open -g /Applications/KeepingYouAwake.app
-        open -g keepingyouawake:///activate
-        sleep 1
-        if [[ -e /tmp/quarantine_keepingyouawake.xattr ]]
-        then    
-            xattr -w com.apple.quarantine `cat "/tmp/quarantine_keepingyouawake.xattr"` "/Applications/KeepingYouAwake.app"
-            rm -f /tmp/quarantine_keepingyouawake.xattr
-        else
-            :
-        fi
-    else
-        :
-    fi
-}
-    
-deactivating_keepingyouawake() {
-    if [[ -e /Applications/KeepingYouAwake.app ]]
-    then
-        echo "deactivating keepingyouawake..."
-        KEEPINGYOUAWAKE=""
-        #open -g /Applications/KeepingYouAwake.app
-        open -g keepingyouawake:///deactivate
-        sleep 1
-        if [[ -e /tmp/quarantine_keepingyouawake.xattr ]]
-        then    
-            xattr -w com.apple.quarantine `cat "/tmp/quarantine_keepingyouawake.xattr"` "/Applications/KeepingYouAwake.app"
-            rm -f /tmp/quarantine_keepingyouawake.xattr
-        else
-            :
-        fi
-    else
-        :
-    fi
 }
 
 delete_tmp_mas_script_fifo() {
@@ -153,8 +109,8 @@ then
     trap_function_exit_end() { :; }
 else
     # script is session master and not run from another script (S on mac Ss on linux)
-    trap_function_exit_middle() { env_stop_sudo; stty sane; unset SUDOPASSWORD; unset USE_PASSWORD; deactivating_keepingyouawake >/dev/null 2>&1; }
-    #trap_function_exit_middle() { env_stop_sudo; stty sane; pkill ruby; unset SUDOPASSWORD; deactivating_keepingyouawake >/dev/null 2>&1; }
+    trap_function_exit_middle() { env_stop_sudo; stty sane; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_keepingyouawake >/dev/null 2>&1; }
+    #trap_function_exit_middle() { env_stop_sudo; stty sane; pkill ruby; unset SUDOPASSWORD; env_deactivating_keepingyouawake >/dev/null 2>&1; }
     #trap_function_exit_end() { :; }
 fi
 "${ENV_SET_TRAP_SIG[@]}"
@@ -178,7 +134,7 @@ else
     # app name									security service										    allowed (1=yes, 0=no)
 	"$SOURCE_APP_NAME                           kTCCServiceAccessibility                             	    1"
 	)
-	PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+	PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
     
     
     ### automation
@@ -188,7 +144,7 @@ else
     "$SOURCE_APP_NAME                           System Events                                               1"
     "$SOURCE_APP_NAME                           Finder                                                      1"
     )
-    PRINT_AUTOMATING_PERMISSIONS_ENTRYS="yes" env_set_apps_automation_permissions
+    PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
     #echo ''
 fi
 

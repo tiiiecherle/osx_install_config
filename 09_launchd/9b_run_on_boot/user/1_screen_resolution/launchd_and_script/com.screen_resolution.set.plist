@@ -6,7 +6,7 @@
 	<string>com.screen_resolution.set</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>bash</string>
+		<string>zsh</string>
 		<string>-c</string>
 		<string>/Users/$USER/Library/Scripts/screen_resolution.sh</string>
 	</array>

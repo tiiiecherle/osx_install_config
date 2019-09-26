@@ -6,8 +6,8 @@
 #echo "DESKTOPBACKUPFOLDER is "$DESKTOPBACKUPFOLDER""
 #TARGZFILE="$TARGZSAVEDIR"/"$(basename "$DESKTOPBACKUPFOLDER")".tar.gz
 #TARGZFILE="$DESKTOPBACKUPFOLDER".tar.gz
-TARGZFILE="$DESKTOPBACKUPFOLDER".tar.gz.gpg
-#echo "TARGZFILE is "$TARGZFILE""
+#TARGZGPGFILE="$DESKTOPBACKUPFOLDER".tar.gz.gpg
+#echo "TARGZGPGFILE is "$TARGZGPGFILE""
 
 
 ### functions
@@ -24,7 +24,7 @@ archiving_tar_gz() {
     printf "%-10s" "to" "$TARGZFILE" && echo
     #echo "to "$(echo "$TARGZFILE")""
     pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz > "$TARGZFILE"; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZFILE")... " && unpigz -c "$TARGZFILE" | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
-    echo ''
+    #echo ''
 
 }
 
@@ -37,10 +37,10 @@ archiving_tar_gz_gpg() {
     # compressing and checking integrity of backup folder on desktop
     echo ''
     echo "archiving "$(dirname "$DESKTOPBACKUPFOLDER")"/"$(basename "$DESKTOPBACKUPFOLDER")"/"
-    printf "%-10s" "to" "$TARGZFILE" && echo
-    #echo "to "$(echo "$TARGZFILE")""
-    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz | gpg --batch --yes --quiet --passphrase="$SUDOPASSWORD" --symmetric --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65536 --compress-algo 0 -o "$TARGZFILE" 1> /dev/null; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZFILE")... " && env_use_password | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$TARGZFILE" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
-    echo ''
+    printf "%-10s" "to" "$TARGZGPGFILE" && echo
+    #echo "to "$(echo "$TARGZGPGFILE")""
+    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz | gpg --batch --yes --quiet --passphrase="$SUDOPASSWORD" --symmetric --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65536 --compress-algo 0 -o "$TARGZGPGFILE" 1> /dev/null; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZGPGFILE")... " && env_use_password | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$TARGZGPGFILE" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
+    #echo ''
 
 }
 
@@ -48,16 +48,16 @@ archiving_tar_gz_gpg() {
 
 ###
 
-if [[ -e "$TARGZFILE" ]]
+if [[ -e "$TARGZGPGFILE" ]]
 then
     VARIABLE_TO_CHECK="$OVERWRITE_LOCAL_FILE"
-    QUESTION_TO_ASK="file \"$TARGZFILE\" already exist, overwrite it (y/N)? "
+    QUESTION_TO_ASK="file \"$TARGZGPGFILE\" already exist, overwrite it (y/N)? "
     env_ask_for_variable
     OVERWRITE_LOCAL_FILE="$VARIABLE_TO_CHECK"
     
     if [[ "$OVERWRITE_LOCAL_FILE" =~ ^(yes|y)$ ]]
     then
-        rm "$TARGZFILE"
+        rm "$TARGZGPGFILE"
         #archiving_tar_gz
         archiving_tar_gz_gpg
     else
@@ -68,38 +68,41 @@ else
     archiving_tar_gz_gpg
 fi
 
-# moving compressed backup from desktop to selected destination
-echo "moving "$TARGZFILE""
-printf "%-7s" "to" "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && echo
-#echo "to "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")"..."
-if [[ "$TARGZFILE" == "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]]
-then
-    echo "backup und save directory are identical, moving not required..."
-else
-    if [[ -d "$TARGZSAVEDIR" ]]
+moving_compressed_backup() {
+    # moving compressed backup from desktop to selected destination
+    echo "moving "$TARGZGPGFILE""
+    printf "%-7s" "to" "$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")" && echo
+    #echo "to "$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")"..."
+    if [[ "$TARGZGPGFILE" == "$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")" ]]
     then
-        if [[ -e "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" ]]
+        echo "backup und save directory are identical, moving not required..."
+    else
+        if [[ -d "$TARGZSAVEDIR" ]]
         then
-            VARIABLE_TO_CHECK="$OVERWRITE_DESTINATION_FILE"
-            QUESTION_TO_ASK="file \"$TARGZSAVEDIR"/"$(basename "$TARGZFILE")\" already exist, overwrite it (y/N)? "
-            env_ask_for_variable
-            OVERWRITE_DESTINATION_FILE="$VARIABLE_TO_CHECK"
-            
-            if [[ "$OVERWRITE_DESTINATION_FILE" =~ ^(yes|y)$ ]]         
-			then
-                rm "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")"
-                pv "$TARGZFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && rm "$TARGZFILE" && printf "%-45s" "backup file successfully moved... " && echo -e "this is \033[1;32mOK\033[0m"
+            if [[ -e "$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")" ]]
+            then
+                VARIABLE_TO_CHECK="$OVERWRITE_DESTINATION_FILE"
+                QUESTION_TO_ASK="file \"$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")\" already exist, overwrite it (y/N)? "
+                env_ask_for_variable
+                OVERWRITE_DESTINATION_FILE="$VARIABLE_TO_CHECK"
+                
+                if [[ "$OVERWRITE_DESTINATION_FILE" =~ ^(yes|y)$ ]]         
+    			then
+                    rm "$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")"
+                    pv "$TARGZGPGFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")" && rm "$TARGZGPGFILE" && printf "%-45s" "backup file successfully moved... " && echo -e "this is \033[1;32mOK\033[0m"
+                else
+                    :
+                fi
             else
-                :
+                #pv "$TARGZGPGFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")" && rm "$TARGZGPGFILE" && echo -e "backup file successfully moved... this is \033[1;32mOK\033[0m"
+                pv "$TARGZGPGFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZGPGFILE")" && rm "$TARGZGPGFILE" && printf "%-45s" "backup file successfully moved... " && echo -e "this is \033[1;32mOK\033[0m"
             fi
         else
-            #pv "$TARGZFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && rm "$TARGZFILE" && echo -e "backup file successfully moved... this is \033[1;32mOK\033[0m"
-            pv "$TARGZFILE" > "$TARGZSAVEDIR"/"$(basename "$TARGZFILE")" && rm "$TARGZFILE" && printf "%-45s" "backup file successfully moved... " && echo -e "this is \033[1;32mOK\033[0m"
+            echo ""$TARGZSAVEDIR" does not exist, backup file cannot be moved..."
         fi
-    else
-        echo ""$TARGZSAVEDIR" does not exist, backup file cannot be moved..."
     fi
-fi
+}
+#moving_compressed_backup
 
 #exit
 

@@ -10,10 +10,35 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -75,7 +100,7 @@ create_tmp_backup_script_fifo2() {
 
 install_update_dependency_apps() {
     ### gui apps backup
-    echo ''
+    #echo ''
     echo "updating gui backup app..."    
     APP_TO_INSTALL="gui_apps_backup"
     if [[ -e /Applications/"$APP_TO_INSTALL".app ]]
@@ -150,7 +175,7 @@ give_apps_security_permissions() {
 	"gui_apps_backup                            kTCCServiceCalendar                             	        1"
 	"virtualbox_backup                          kTCCServiceAccessibility                             	    1"
 	)
-	PRINT_SECURITY_PERMISSIONS_ENTRYS="no" env_set_apps_security_permissions
+	PRINT_SECURITY_PERMISSIONS_ENTRIES="no" env_set_apps_security_permissions
     
     
     ### automation
@@ -165,7 +190,7 @@ give_apps_security_permissions() {
 	"virtualbox_backup							System Events                   						1"
 	"virtualbox_backup							Terminal                   						        1"
 	)
-	PRINT_AUTOMATING_PERMISSIONS_ENTRYS="no" env_set_apps_automation_permissions
+	PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
     
 }
 
@@ -315,7 +340,7 @@ backup_restore() {
     
     # user home folder
     HOMEFOLDER=/Users/"$SELECTEDUSER"
-    echo HOMEFOLDER is "$HOMEFOLDER"
+    echo "HOMEFOLDER is "$HOMEFOLDER""
     
     # checking if user directory exists
     if [[ -d "$HOMEFOLDER" ]]
@@ -442,16 +467,9 @@ backup_restore() {
         ###
         
         # activating keepingyouawake
-        if [[ -e /Applications/KeepingYouAwake.app ]]
-        then
-            echo ''
-            echo "activating keepingyouawake..."
-            #echo ''
-            open -g keepingyouawake:///activate
-        else
-            :
-        fi
+        env_activating_keepingyouawake
         
+        # checking and installing dependencies
         install_update_dependency_apps
         echo ''
         
@@ -468,14 +486,14 @@ backup_restore() {
             # opening applescript which will ask for saving location of compressed file
             echo ''
             echo "asking for directory to save the backup to..."
-            TARGZSAVEDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_save_to.scpt 2> /dev/null | sed s'/\/$//')
+            TARGZGPGZSAVEDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_save_to.scpt 2> /dev/null | sed s'/\/$//')
             sleep 0.5
 
             #echo ''
             # checking if valid path for backup was selected
-            if [[ -e "$TARGZSAVEDIR" ]]
+            if [[ -e "$TARGZGPGZSAVEDIR" ]]
             then
-                echo "backup will be saved to "$TARGZSAVEDIR""
+                echo "backup will be saved to "$TARGZGPGZSAVEDIR""
                 sleep 0.1
             else
                 echo "no valid path for saving the backup selected, exiting script..."
@@ -710,7 +728,7 @@ backup_restore() {
                 # files
                 if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]]            
                 then
-                    FILESTARGZSAVEDIR="$TARGZSAVEDIR"
+                    FILESTARGZSAVEDIR="$TARGZGPGZSAVEDIR"
                     FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
                     if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running local files backup..."; fi
                     create_tmp_backup_script_fifo1
@@ -735,6 +753,8 @@ backup_restore() {
         
             # backup destination
             DESTINATION="$HOMEFOLDER"/Desktop/backup_"$SELECTEDUSER"_"$DATE"
+            #DESTINATION="$TARGZGPGZSAVEDIR"/backup_"$SELECTEDUSER"_"$DATE"
+            TARGZGPGFILE="$TARGZGPGZSAVEDIR"/backup_"$SELECTEDUSER"_"$DATE".tar.gz.gpg
             mkdir -p "$DESTINATION"
             
             # backup macos system
@@ -908,10 +928,10 @@ backup_restore() {
             
                 # compressing and moving backup
                 #echo ''
-                echo "compressing and moving backup..."
+                echo "compressing backup..."
             
                 # checking and defining some variables
-            	#echo "TARGZSAVEDIR is "$TARGZSAVEDIR""
+            	#echo "TARGZSAVEDIR is "$TARGZGPGZSAVEDIR""
                 #echo "APPLESCRIPTDIR is "$APPLESCRIPTDIR""
                 DESKTOPBACKUPFOLDER="$DESTINATION"
                 #echo "DESKTOPBACKUPFOLDER is "$DESKTOPBACKUPFOLDER""
@@ -1016,6 +1036,7 @@ backup_restore() {
         	
         	### waiting for processes to finish
         	#echo ''
+        	sleep 2
             #while ps aux | grep brew_casks_update.app/Contents | grep -v grep > /dev/null; do sleep 1; done
             #while ps aux | grep /brew_casks_update.sh | grep -v grep > /dev/null; do sleep 1; done
             #while ps aux | grep /hosts_file_generator.sh | grep -v grep > /dev/null; do sleep 1; done
@@ -1084,7 +1105,7 @@ backup_restore() {
             fi
             
             echo ''
-            echo "script done ;)"
+            echo "done ;)"
             echo ''
             
             exit
@@ -1103,47 +1124,38 @@ backup_restore() {
                 
         # restore dir
         # restore master dir
-        echo "please select restore master directory..."
-        RESTOREMASTERDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
-        if [[ $(echo "$RESTOREMASTERDIR") == "" ]]
-        then
-            echo ''
-            echo "restoremasterdir is empty - exiting script..."
-            echo ''
-            exit
-        else
-            echo ''
-            echo 'restoremasterdir for restore is '"$RESTOREMASTERDIR"''
-            echo ''
-        fi
+        #echo "please select restore master directory..."
+        #RESTOREMASTERDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_restore_master_dir.scpt 2> /dev/null | sed s'/\/$//')
+        #if [[ $(echo "$RESTOREMASTERDIR") == "" ]]
+        #then
+        #    echo ''
+        #    echo "restoremasterdir is empty - exiting script..."
+        #    echo ''
+        #    exit
+        #else
+        #    echo ''
+        #    echo 'restoremasterdir for restore is '"$RESTOREMASTERDIR"''
+        #    echo ''
+        #fi
 
         # restore user dir
-        echo "please select restore user directory..."
-        RESTOREUSERDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_restore_user_dir.scpt 2> /dev/null | sed s'/\/$//')
-        if [[ $(echo "$RESTOREUSERDIR") == "" ]]
+        if [[ "$RESTOREUSERDIR" == "" ]]
         then
-            echo ''
-            VARIABLE_TO_CHECK="$AUTO_SET_USER_DIR"
-            QUESTION_TO_ASK="restoreuserdir is empty, do you want to set it to the same directory as the restoremasterdir (Y/n)? "
-            env_ask_for_variable
-            AUTO_SET_USER_DIR="$VARIABLE_TO_CHECK"
-            
-            if [[ "$AUTO_SET_USER_DIR" =~ ^(yes|y)$ ]]
+            echo "please select restore user directory..."
+            RESTOREUSERDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/backup_restore_script/ask_restore_user_dir.scpt 2> /dev/null | sed s'/\/$//')
+            if [[ $(echo "$RESTOREUSERDIR") == "" ]]
             then
-                RESTOREUSERDIR="$RESTOREMASTERDIR"
-                echo ''
-                echo 'restoreuserdir for restore is '"$RESTOREUSERDIR"''
-                echo ''
-            else
                 echo ''
                 echo "restoreuserdir is empty - exiting script..."
                 echo ''
                 exit
+            else
+                echo ''
+                echo 'restoreuserdir for restore is '"$RESTOREUSERDIR"''
+                echo ''
             fi
         else
-            echo ''
-            echo 'restoreuserdir for restore is '"$RESTOREUSERDIR"''
-            echo ''
+            :
         fi
         
         #echo ''
@@ -1585,12 +1597,17 @@ backup_restore() {
             #wait
             
             echo ''
-            echo "script done ;)"
+            echo "done ;)"
             
-            osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot
-            #osascript -e 'tell app "loginwindow" to «event aevtrsdn»'          # shutdown
-            #osascript -e 'tell app "loginwindow" to «event aevtrlgo»'          # logout
-        
+            if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+            then
+                :
+            else
+                echo '' 
+                osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot
+                #osascript -e 'tell app "loginwindow" to «event aevtrsdn»'          # shutdown
+                #osascript -e 'tell app "loginwindow" to «event aevtrlgo»'          # logout
+            fi
         else
             :
         fi
@@ -1630,6 +1647,11 @@ unset_variables
 # kill all child and grandchild processes and the parent process itself
 #ps -o pgid= $$ | grep -o '[0-9]*'
 #kill -9 -$(ps -o pgid= $$ | grep -o '[0-9]*') 1> /dev/null
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 exit
 

@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### defaults with
 ###
 
@@ -39,7 +50,12 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ###
 
 # option for cleaning launchservices index
-echo ''
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+    :
+else
+    echo ''
+fi
 VARIABLE_TO_CHECK="$CLEAN_SERVICES_CACHE"
 QUESTION_TO_ASK="do you want to clean the launchservices (open with) index and the icon cache after setting the new defaults for open with (y/N)? "
 env_ask_for_variable
@@ -202,6 +218,11 @@ then
 else
     :
 fi
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo "done ;)"
 echo ''

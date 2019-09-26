@@ -1,5 +1,10 @@
 #!/bin/zsh
 
+### config file
+# this script will not source the config file as it runs as root and does not ask for a password after installation
+
+
+### checking root
 if [[ $(id -u) -ne 0 ]]
 then 
     echo "script is not run as root, exiting..."
@@ -7,6 +12,7 @@ then
 else
     :
 fi
+
 
 ### variables
 SERVICE_NAME=com.cert.install_update
@@ -38,6 +44,44 @@ then
 else
     :
 fi
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script() {
+    BATCH_PIDS=()
+    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    then
+        RUN_FROM_BATCH_SCRIPT="yes"
+    else
+        :
+    fi
+}
+
+env_start_error_log() {
+    local ERROR_LOG_DIR=/Users/"$loggedInUser"/Desktop/batch_error_logs
+    if [[ ! -e "$ERROR_LOG_DIR" ]]
+    then
+        local ERROR_LOG_NUM=1
+    else
+        local ERROR_LOG_NUM=$(($(ls -1 "$ERROR_LOG_DIR" | awk -F'_' '{print $1}' | sort -n | tail -1)+1))
+    fi
+    mkdir -p "$ERROR_LOG_DIR"
+    if [[ "$ERROR_LOG_NUM" -le "9" ]]; then ERROR_LOG_NUM="0"$ERROR_LOG_NUM""; else :; fi
+    local ERROR_LOG="$ERROR_LOG_DIR"/"$ERROR_LOG_NUM"_"$SERVICE_NAME"_errorlog.txt
+    echo "### "$SERVICE_NAME"" >> "$ERROR_LOG"
+    #echo "### $(date "+%Y-%m-%d %H:%M:%S")" >> "$ERROR_LOG"
+    echo '' >> "$ERROR_LOG"
+    exec 2> >(tee -ia "$ERROR_LOG" >&2)
+}
+
+env_stop_error_log() {
+    exec 2<&-
+    exec 2>&1
+}
+
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 
 
 ### logfile
@@ -74,12 +118,15 @@ sudo echo $EXECTIME >> "$LOGFILE"
 
 ### additional functions
 certificate_variable_check() {
-
-    # do NOT add to "/Users/$USER/Library/Keychains/login.keychain"
-    # does not work
-    # use "/System/Library/Keychains/SystemRootCertificates.keychain"
     
+    # macos
+    MACOS_VERSION=$(sw_vers -productVersion)
+    MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
+    env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
+
+    # keychain
     KEYCHAIN="/System/Library/Keychains/SystemRootCertificates.keychain"
+    
     # variable for search/replace by install script
     CERTIFICATE_NAME="FILL_IN_NAME_HERE"
     SERVER_IP="FILL_IN_IP_HERE"
@@ -123,7 +170,22 @@ install_update_certificate() {
     #sudo security add-trusted-cert -r trustAsRoot -k "$KEYCHAIN" "/Users/$USER/Desktop/cacert.pem"
     
     # add certificate to keychain and trust ssl
-    sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
+    VERSION_TO_CHECK_AGAINST=10.14
+    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+    then
+        # macos versions until and including 10.14
+        sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
+    else
+        # macos versions 10.15 and up
+        # in 10.15 /System default gets mounted read-only
+        # can only be mounted read/write with according SIP settings
+        sudo mount -uw /
+        # stays mounted rw until next reboot
+        sleep 0.5
+        sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
+        #sudo mount -ur /
+        #sleep 0.5
+    fi
     
     # checking that certificate is installed, not untrusted and matches the domain
     # exporting certificate
@@ -232,7 +294,7 @@ cert_check() {
  
     # checking if online
     ping -c5 "$SERVER_IP" >/dev/null 2>&1
-    if [ "$?" = 0 ]
+    if [[ "$?" = 0 ]]
     then
         echo "server found, checking certificates..."
         
@@ -243,60 +305,68 @@ cert_check() {
         else
             :
         fi
-        SERVER_CERT_PEM=$(echo quit | openssl s_client -connect "$SERVER_IP":443 2>/dev/null | openssl x509)
-        #echo quit | openssl s_client -connect "$SERVER_IP":443 2>/dev/null | openssl x509 > /tmp/server_"$CERTIFICATE_NAME".pem
-        #SERVER_CERT_PEM=$(cat /tmp/server_"$CERTIFICATE_NAME".pem)
-        # or
-        #true | openssl s_client -connect services.greenenergypeak.de:443 2>/dev/null | openssl x509
+        SERVER_CERT_PEM=$(echo quit | openssl s_client -connect "$SERVER_IP":443 2>/dev/null | openssl x509) &> /dev/null
+        if [[ "$?" -eq 0 ]]
+        then
         
-        # checking if certificate is installed
-        if [[ $(security find-certificate -a -c "$CERTIFICATE_NAME" "$KEYCHAIN") == "" ]]
-        then
-            echo "certificate $CERTIFICATE_NAME not found, installing..."
-            install_update_certificate
+            #echo quit | openssl s_client -connect "$SERVER_IP":443 2>/dev/null | openssl x509 > /tmp/server_"$CERTIFICATE_NAME".pem
+            #SERVER_CERT_PEM=$(cat /tmp/server_"$CERTIFICATE_NAME".pem)
+            # or
+            #true | openssl s_client -connect services.greenenergypeak.de:443 2>/dev/null | openssl x509
+            
+            # checking if certificate is installed
+            if [[ $(security find-certificate -a -c "$CERTIFICATE_NAME" "$KEYCHAIN") == "" ]]
+            then
+                echo "certificate $CERTIFICATE_NAME not found, installing..."
+                install_update_certificate
+            else
+                :
+            fi
+            
+            # local cert in pem format
+            if [[ -e /tmp/local_"$CERTIFICATE_NAME".pem ]]
+            then
+                rm -f /tmp/local_"$CERTIFICATE_NAME".pem
+            else
+                :
+            fi
+            LOCAL_CERT_PEM=$(security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN")
+            #security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN" > /tmp/local_"$CERTIFICATE_NAME".pem
+            #LOCAL_CERT_PEM=$(cat /tmp/local_"$CERTIFICATE_NAME".pem)
+    
+            # checking if update needed
+            if [[ "$SERVER_CERT_PEM" == "$LOCAL_CERT_PEM" ]]
+            then
+                echo "server certificate matches local certificate, no need to update..."
+            else
+                echo "server certificate does not match local certificate, updating..."
+                install_update_certificate
+            fi
+            
+            # cleaning up
+            if [[ -e /tmp/"$CERTIFICATE_NAME".crt ]]
+            then
+                rm -f /tmp/"$CERTIFICATE_NAME".crt
+            else
+                :
+            fi
+            if [[ -e /tmp/server_"$CERTIFICATE_NAME".pem ]]
+            then
+                rm -f /tmp/server_"$CERTIFICATE_NAME".pem
+            else
+                :
+            fi
+            if [[ -e /tmp/local_"$CERTIFICATE_NAME".pem ]]
+            then
+                rm -f /tmp/local_"$CERTIFICATE_NAME".pem
+            else
+                :
+            fi  
+            
         else
-            :
-        fi
-        
-        # local cert in pem format
-        if [[ -e /tmp/local_"$CERTIFICATE_NAME".pem ]]
-        then
-            rm -f /tmp/local_"$CERTIFICATE_NAME".pem
-        else
-            :
-        fi
-        LOCAL_CERT_PEM=$(security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN")
-        #security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN" > /tmp/local_"$CERTIFICATE_NAME".pem
-        #LOCAL_CERT_PEM=$(cat /tmp/local_"$CERTIFICATE_NAME".pem)
-
-        # checking if update needed
-        if [[ "$SERVER_CERT_PEM" == "$LOCAL_CERT_PEM" ]]
-        then
-            echo "server certificate matches local certificate, no need to update..."
-        else
-            echo "server certificate does not match local certificate, updating..."
-            install_update_certificate
-        fi
-        
-        # cleaning up
-        if [[ -e /tmp/"$CERTIFICATE_NAME".crt ]]
-        then
-            rm -f /tmp/"$CERTIFICATE_NAME".crt
-        else
-            :
-        fi
-        if [[ -e /tmp/server_"$CERTIFICATE_NAME".pem ]]
-        then
-            rm -f /tmp/server_"$CERTIFICATE_NAME".pem
-        else
-            :
-        fi
-        if [[ -e /tmp/local_"$CERTIFICATE_NAME".pem ]]
-        then
-            rm -f /tmp/local_"$CERTIFICATE_NAME".pem
-        else
-            :
-        fi        
+            echo "certificate could not be loaded from server, exiting script..."
+            exit
+        fi      
         
     else
         echo "server not found, exiting script..."
@@ -305,5 +375,14 @@ cert_check() {
 	
 }
 
-(time ( cert_check )) 2>&1 | tee -a "$LOGFILE"
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then 
+    (time ( cert_check )) | tee -a "$LOGFILE"
+else
+    (time ( cert_check )) 2>&1 | tee -a "$LOGFILE"
+fi
+
 echo '' >> "$LOGFILE"
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

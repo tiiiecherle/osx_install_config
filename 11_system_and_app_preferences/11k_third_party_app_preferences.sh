@@ -10,10 +10,35 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -24,71 +49,79 @@ env_enter_sudo_password
 
 ### totalfinder
 
-if [[ -e "/Applications/TotalFinder.app" ]]
-then
-	
-	echo ''
-	echo "totalfinder"
-	
-	# do not restore windows and tabs after reboot (does not exist in version 1.7.3 and above)
-	#defaults write com.apple.finder TotalFinderDontRestoreTabsState -bool yes
-	
-	# keep original finder icon in dock
-	defaults write com.binaryage.totalfinder TotalFinderDontCustomizeDockIcon -bool true
-	
-	# allow copy of paths in context menu
-	#defaults write com.binaryage.totalfinder TotalFinderCopyPathMenuEnabled -bool true
-	
-	# disable totalfinder tabs
-	defaults write com.binaryage.totalfinder TotalFinderTabsDisabled -bool true
-	
-	# display totalfinder icon in menu bar
-	#defaults write com.binaryage.totalfinder TotalFinderShowStatusItem -bool false
-	
-else
-	:
-fi
+totalfinder_settings() {
+	if [[ -e "/Applications/TotalFinder.app" ]]
+	then
+		
+		echo ''
+		echo "totalfinder"
+		
+		# do not restore windows and tabs after reboot (does not exist in version 1.7.3 and above)
+		#defaults write com.apple.finder TotalFinderDontRestoreTabsState -bool yes
+		
+		# keep original finder icon in dock
+		defaults write com.binaryage.totalfinder TotalFinderDontCustomizeDockIcon -bool true
+		
+		# allow copy of paths in context menu
+		#defaults write com.binaryage.totalfinder TotalFinderCopyPathMenuEnabled -bool true
+		
+		# disable totalfinder tabs
+		defaults write com.binaryage.totalfinder TotalFinderTabsDisabled -bool true
+		
+		# display totalfinder icon in menu bar
+		#defaults write com.binaryage.totalfinder TotalFinderShowStatusItem -bool false
+		
+	else
+		:
+	fi
+}
+# moved to install script
+#totalfinder_settings
 
 
 ### xtrafinder
 
-if [[ -e "/Applications/XtraFinder.app" ]]
-then
-
-	echo ''
-    echo "xtrafinder"
+xtrafinder_settings() {
+	if [[ -e "/Applications/XtraFinder.app" ]]
+	then
 	
-	# automatically check for updates
-	defaults write com.apple.finder XFAutomaticChecksForUpdate -bool true
+		echo ''
+	    echo "xtrafinder"
+		
+		# automatically check for updates
+		defaults write com.apple.finder XFAutomaticChecksForUpdate -bool true
+		
+		# enable copy / cut - paste
+		defaults write com.apple.finder XtraFinder_XFCutAndPastePlugin -bool true
+		
+		# disable xtrafinder tabs
+		defaults write com.apple.finder XtraFinder_XFTabPlugin -bool false
+		
+		# # disable xtrafinder menu bar icon
+		#defaults write com.apple.finder XtraFinder_ShowStatusBarIcon -bool false
+		
+		
+		### right click finder plugins
+		
+		# show copy path
+		#defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin -bool true
+		
+		# path type options
+		# 0 = path, 3 = hfs path, 4 = terminal path
+		defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin_Default -integer 0
+		
+		# show make symbolic link
+		defaults write com.apple.finder XtraFinder_XFMakeSymbolicLinkActionPlugin -bool false
+		
+		# show open in new window
+		defaults write com.apple.finder XtraFinder_XFOpenInNewWindowPlugin -bool true
 	
-	# enable copy / cut - paste
-	defaults write com.apple.finder XtraFinder_XFCutAndPastePlugin -bool true
-	
-	# disable xtrafinder tabs
-	defaults write com.apple.finder XtraFinder_XFTabPlugin -bool false
-	
-	# # disable xtrafinder menu bar icon
-	#defaults write com.apple.finder XtraFinder_ShowStatusBarIcon -bool false
-	
-	
-	### right click finder plugins
-	
-	# show copy path
-	#defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin -bool true
-	
-	# path type options
-	# 0 = path, 3 = hfs path, 4 = terminal path
-	defaults write com.apple.finder XtraFinder_XFCopyPathMenuPlugin_Default -integer 0
-	
-	# show make symbolic link
-	defaults write com.apple.finder XtraFinder_XFMakeSymbolicLinkActionPlugin -bool false
-	
-	# show open in new window
-	defaults write com.apple.finder XtraFinder_XFOpenInNewWindowPlugin -bool true
-
-else
-	:
-fi
+	else
+		:
+	fi
+}
+# moved to install script
+#xtrafinder_settings
 
 
 ### iterm 2                                                      
@@ -142,7 +175,7 @@ then
 	#cp -a "/Users/"$USER"/Desktop/Microsoft Excel.app" "/Applications/Microsoft Excel.app"
 	#rm -rf "/Applications/Microsoft Excel.app"
 	
-	# clening old preferences
+	# cleaning old preferences
 	rm -f "/Users/"$USER"/Library/Preferences/com.microsoft.office.plist"
 	
 	# restoring preferences (testing only)
@@ -150,18 +183,20 @@ then
 	
 	# keeping settings and license
 	# privacy experience settings have to be set inside of excel or word to write them to the MicrosoftRegistrationDB and can then be preserved or restored
-	if [[ -e "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB" ]]
-	then
-		# MicrosoftRegistrationDB contains settings
-		# com.microsoft.Office365.plist contains license
-		mv "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB" /tmp/MicrosoftRegistrationDB
-		mv "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365.plist" /tmp/com.microsoft.Office365.plist
-		rm -rf /Users/"$USER"/Library/"Group Containers"/UBF8T346G9.Office/*
-		mv /tmp/MicrosoftRegistrationDB "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/"
-		mv /tmp/com.microsoft.Office365.plist "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/"
-	else
-		:
-	fi
+	#if [[ -e "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB" ]]
+	#then
+	#	# MicrosoftRegistrationDB contains settings
+	#	# com.microsoft.Office365.plist contains license
+	#	mv "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB" /tmp/MicrosoftRegistrationDB
+	#	mv "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365.plist" /tmp/com.microsoft.Office365.plist
+	#	mv "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/com.microsoft.Office365V2.plist" /tmp/com.microsoft.Office365V2.plist
+	#	rm -rf /Users/"$USER"/Library/"Group Containers"/UBF8T346G9.Office/*
+	#	mv /tmp/MicrosoftRegistrationDB "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/"
+	#	mv /tmp/com.microsoft.Office365.plist "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/"
+	#	mv /tmp/com.microsoft.Office365V2.plist "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/"
+	#else
+	#	:
+	#fi
 	#killall cfprefsd
 
     #sleep 5
@@ -383,6 +418,11 @@ EOF
 else
 	:
 fi
+
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
 
 ###

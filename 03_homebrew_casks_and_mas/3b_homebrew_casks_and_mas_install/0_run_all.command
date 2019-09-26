@@ -8,6 +8,18 @@ if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
+
+###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
 ###
 ### script
 ###
@@ -17,6 +29,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 #trap_function_exit_middle() { COMMAND1; COMMAND2; }
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
+
 
 
 ### wrap in function for getting time
@@ -30,7 +43,7 @@ run_all() {
     if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
     then
         . "$SCRIPT_DIR"/1_script_frame.sh
-        trap_function_exit_start() { delete_tmp_mas_script_fifo; delete_tmp_casks_script_fifo; deactivating_keepingyouawake >/dev/null 2>&1; }
+        trap_function_exit_start() { delete_tmp_mas_script_fifo; delete_tmp_casks_script_fifo; }
         eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
     else
         echo ''
@@ -46,6 +59,22 @@ run_all() {
     echo ''
     echo "installing homebrew and homebrew casks..."
     echo ''
+
+    
+    
+    ### sourcing some variables
+    if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+    then
+        SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_THREE_BACK"
+        if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/homebrew_cask_mas_data.sh ]]
+        then
+            . "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/homebrew_cask_mas_data.sh
+        else
+            :
+        fi
+    else
+        :
+    fi
     
     
     ### killing possible old processes
@@ -54,15 +83,20 @@ run_all() {
     
     
     ### asking for mas apps
+    if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+    then
+        :
+    else
+        echo ''
+    fi
     VARIABLE_TO_CHECK="$CONT3_BREW"
     QUESTION_TO_ASK="do you want to install appstore apps via mas? (Y/n)? "
     env_ask_for_variable
     CONT3_BREW="$VARIABLE_TO_CHECK"
-    
-    echo ''
-    
+        
     if [[ "$CONT3_BREW" =~ ^(yes|y)$ ]]
     then
+
         if [[ "$MAS_APPLE_ID" == "" ]]
         then
             #echo ''
@@ -73,7 +107,9 @@ run_all() {
             MAS_APPLE_ID="$VARIABLE_TO_CHECK"
             #echo $MAS_APPLE_ID
         else
-            :
+            #echo ''
+            echo "MAS_APPLE_ID is "$MAS_APPLE_ID"..."
+            echo ''
         fi
         
         if [[ "$MAS_APPSTORE_PASSWORD" == "" ]]
@@ -88,7 +124,12 @@ run_all() {
         
             # only ask for password once
             #stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && stty echo && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''
-            echo ''
+            if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+            then
+                :
+            else
+                echo ''
+            fi
         else
             :
         fi
@@ -264,12 +305,17 @@ EOF
     
     ### checking success of installations
     #echo ''
-    RUN_FROM_ALL_SCRIPT="yes" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+    CHECK_IF_CASKS_INSTALLED="$CHECK_IF_CASKS_INSTALLED" CHECK_IF_MASAPPS_INSTALLED="$CHECK_IF_MASAPPS_INSTALLED" RUN_FROM_ALL_SCRIPT="yes" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 
-    echo ''
+    #echo ''
 }
 time ( run_all )
+sleep 1
 
 echo ''
 echo "done ;)"
 #echo ''
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

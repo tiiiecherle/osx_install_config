@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### compatibility
 ###
 
@@ -43,7 +54,7 @@ AUTOMATION_APPS=(
 "$SOURCE_APP_NAME                           System Events                                               1"
 "$SOURCE_APP_NAME                           Finder		                                                1"
 )
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="yes" env_set_apps_automation_permissions
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 echo ''
 
 
@@ -281,7 +292,6 @@ defaults write com.apple.finder ShowRecentTags -bool false
 ### restarting finder
 killall cfprefsd
 killall Finder
-
 sleep 5
 
 enable_disable_finder_sidebar_items2() {
@@ -327,8 +337,18 @@ EOF
 enable_disable_finder_sidebar_items2
 
 
+### restarting finder
+killall cfprefsd
+killall Finder
+sleep 5
+
+
 ### removing security permissions
 #remove_apps_security_permissions_stop
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
 
 echo ''

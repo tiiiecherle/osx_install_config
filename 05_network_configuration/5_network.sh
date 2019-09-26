@@ -10,10 +10,35 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -98,6 +123,16 @@ create_network_devices_profile() {
     ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep -v "Bluetooth" | grep -v "Bridge")
     #ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018
     #ETHERNET_DEVICE="Ethernet"                 # imacs
+    HARDWARE_TYPE=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g') 
+    if [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "macbookpro" ]]
+    then
+        ETHERNET_DEVICE="USB 10/100/1000 LAN"
+    elif [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "imac" ]]
+    then
+        ETHERNET_DEVICE="Ethernet"
+    else
+        :
+    fi
     BLUETOOTH_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep "Bluetooth")
     THUNDERBOLT_BRIDGE_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep "Bridge")
 
@@ -413,7 +448,12 @@ profile_based_config() {
         fi       
     done <<< "$(cat "$NETWORK_PROFILE")"
     
-    echo ''
+    if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+    then
+        :
+    else
+        echo ''
+    fi
     VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
     QUESTION_TO_ASK="do you want to use these settings (Y/n)? "
     env_ask_for_variable
@@ -444,10 +484,10 @@ getting_network_device_ids
 
 if [[ -z "$ETHERNET_DEVICE" || -z "$WLAN_DEVICE" || -z "$SUBNET" || -z "$IP" || -z "$DNS" || -z "$CREATE_LOCATION_AUTOMATIC" || -z "$CREATE_LOCATION_OFFICE_LAN" || -z "$CREATE_LOCATION_WLAN" || -z "$SHOW_VPN_IN_MENU_BAR" || -z "$CONFIGURE_FRITZ_VPN" ]]
 then
-  # one or more variables are undefined, running profile based config
-  profile_based_config
+    # one or more variables are undefined, running profile based config
+    profile_based_config
 else
-  :
+    :
 fi
 
 echo "configuring network..."
@@ -552,6 +592,7 @@ set_location() {
                 :
             fi
             LOCATION_ALREADY_SET="yes"
+            printf '\n'
         else
             :
         fi
@@ -564,12 +605,12 @@ check_if_ethernet_is_active() {
     #echo ''
     echo "checking ethernet connection..."
     NUM1=0
-    FIND_APP_PATH_TIMEOUT=4
+    FIND_ETHERNET_DEVICE_TIMEOUT=4
     while [[ "$ETHERNET_CONNECTED" != "TRUE" ]]
     do
     	#printf "%.2f\n" "$NUM1"
     	NUM1=$(bc<<<$NUM1+1)
-    	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+    	if (( $(echo "$NUM1 <= $FIND_ETHERNET_DEVICE_TIMEOUT" | bc -l) ))
     	then
     		# bash builtin printf can not print floating numbers
     		#perl -e 'printf "%.2f\n",'$NUM1''
@@ -589,6 +630,7 @@ check_if_ethernet_is_active() {
         echo ''
     else
         echo "ethernet is active..."
+        echo ''
     fi
     #echo ''
 }
@@ -598,7 +640,6 @@ unset LOCATION_ALREADY_SET
 LOCATION_TO_SET="office_lan"
 WLAN_ON_OR_OFF="off"
 set_location
-printf '\n\n'
 check_if_ethernet_is_active
 
 LOCATION_TO_SET="wlan"
@@ -617,7 +658,11 @@ else
 fi
 
 
-echo ''
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
+
+if [[ "$ETHERNET_CONNECTED" == "TRUE" ]]; then :; else echo ''; fi
 echo "done ;)"
 echo ''
 

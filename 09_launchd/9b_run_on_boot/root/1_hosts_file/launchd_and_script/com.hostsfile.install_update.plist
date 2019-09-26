@@ -6,7 +6,7 @@
 	<string>com.hostsfile.install_update</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>bash</string>
+		<string>zsh</string>
 		<string>-c</string>
 		<string>/Library/Scripts/custom/hosts_file_generator.sh</string>
 	</array>

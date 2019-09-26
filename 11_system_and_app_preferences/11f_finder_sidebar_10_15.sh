@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### compatibility
 ###
 
@@ -43,9 +54,7 @@ AUTOMATION_APPS=(
 "$SOURCE_APP_NAME                           System Events                                               1"
 "$SOURCE_APP_NAME                           Finder		                                                1"
 )
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="yes" env_set_apps_automation_permissions
-echo ''
-
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 
 
 ### sfltool
@@ -64,6 +73,12 @@ echo ''
 # https://github.com/Tatsh/mysides
 MYSIDESVERSION="1.0.1"
 
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+    :
+else
+    echo ''
+fi
 VARIABLE_TO_CHECK="$INSTALL_UPDATE_MYSIDES"
 QUESTION_TO_ASK="do you want to install / update to mysides "$MYSIDESVERSION"? (y/N) "
 env_ask_for_variable
@@ -163,17 +178,11 @@ tell application "System Events"
 		#click button "Seitenleiste" of toolbar 1 of window "Finder-Einstellungen"
 		click button 3 of toolbar 1 of window 1
 		delay 1
-		# zugang zu meinem mac
-		#set theCheckbox to checkbox "iCloud Drive" of window "Finder-Einstellungen"
-		set theCheckbox to checkbox 11 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
-		# computer
-		set host_name to (do shell script "echo $HOSTNAME")
-		--return host_name
+		
+		
+		###
+		
+		
 		# last used
 		#set theCheckbox to checkbox host_name of window "Finder-Einstellungen"
 		set theCheckbox to checkbox 1 of window 1
@@ -182,6 +191,7 @@ tell application "System Events"
 			if checkboxStatus is true then click theCheckbox
 		end tell
 		delay 0.2
+		
 		# airdrop
 		#set theCheckbox to checkbox host_name of window "Finder-Einstellungen"
 		set theCheckbox to checkbox 2 of window 1
@@ -190,16 +200,33 @@ tell application "System Events"
 			if checkboxStatus is true then click theCheckbox
 		end tell
 		delay 0.2
+		
+		
+		###
+
+		
+		# icloud drive
+		set theCheckbox to checkbox 11 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is true then click theCheckbox
+		end tell
+		delay 0.2		
+		
+
+		###
+		
+		
 		# my computer
-		#set theCheckbox to checkbox host_name of window "Finder-Einstellungen"
 		set theCheckbox to checkbox 12 of window 1
 		tell theCheckbox
 			set checkboxStatus to value of theCheckbox as boolean
 			if checkboxStatus is true then click theCheckbox
 		end tell
 		delay 0.2
-		# festplatten
-		#set theCheckbox to checkbox "Festplatten" of window "Finder-Einstellungen"
+		
+		# drives
 		set theCheckbox to checkbox 13 of window 1
 		click theCheckbox
 		tell theCheckbox
@@ -207,16 +234,16 @@ tell application "System Events"
 			if checkboxStatus is false then click theCheckbox
 		end tell
 		delay 0.2
-		# externe festplatten
-		#set theCheckbox to checkbox "Externe Festplatten" of window "Finder-Einstellungen"
+		
+		# external drives
 		set theCheckbox to checkbox 14 of window 1
 		tell theCheckbox
 			set checkboxStatus to value of theCheckbox as boolean
 			if checkboxStatus is false then click theCheckbox
 		end tell
 		delay 0.2
-		# cds, dvds, ios-devices
-		#set theCheckbox to checkbox "CDs, DVDs und iPods" of window "Finder-Einstellungen"
+		
+		# cds, dvds and ios-devices
 		set theCheckbox to checkbox 15 of window 1
 		click theCheckbox
 		tell theCheckbox
@@ -224,39 +251,35 @@ tell application "System Events"
 			if checkboxStatus is false then click theCheckbox
 		end tell
 		delay 0.2
-		# icloud storage
-		set theCheckbox to checkbox 16 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
+
 		# bonjour
-		#set theCheckbox to checkbox "Bonjour-Computer" of window "Finder-Einstellungen"
-		set theCheckbox to checkbox 17 of window 1
+		set theCheckbox to checkbox 16 of window 1
 		tell theCheckbox
 			set checkboxStatus to value of theCheckbox as boolean
 			if checkboxStatus is true then click theCheckbox
 		end tell
 		delay 0.2
-		# verbundene server
-		#set theCheckbox to checkbox "Verbundene Server" of window "Finder-Einstellungen"
-		set theCheckbox to checkbox 18 of window 1
+		
+		# connected servers
+		set theCheckbox to checkbox 17 of window 1
 		tell theCheckbox
 			set checkboxStatus to value of theCheckbox as boolean
 			if checkboxStatus is false then click theCheckbox
 		end tell
 		delay 0.2
+		
 		# tags
-		#set theCheckbox to checkbox "Benutzte Tags" of window "Finder-Einstellungen"
-		set theCheckbox to checkbox 19 of window 1
+		set theCheckbox to checkbox 18 of window 1
 		tell theCheckbox
 			set checkboxStatus to value of theCheckbox as boolean
 			if checkboxStatus is true then click theCheckbox
 		end tell
 		delay 0.2
-		#
+		
+		
+		###
+		
+		
 		delay 1
 		#tell application "Finder" to close window "Finder-Einstellungen"
 		tell application "Finder" to close window 1
@@ -289,7 +312,6 @@ defaults write com.apple.finder ShowRecentTags -bool false
 ### restarting finder
 killall cfprefsd
 killall Finder
-
 sleep 5
 
 enable_disable_finder_sidebar_items2() {
@@ -335,9 +357,20 @@ EOF
 enable_disable_finder_sidebar_items2
 
 
+### restarting finder
+killall cfprefsd
+killall Finder
+sleep 5
+
+
 ### removing security permissions
 #remove_apps_security_permissions_stop
 
-echo ''
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
+
+#echo ''
 echo "done ;)"
 echo ''

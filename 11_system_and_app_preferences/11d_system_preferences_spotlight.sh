@@ -10,10 +10,35 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -31,9 +56,10 @@ echo "setting security and automation permissions..."
 # macos versions 10.14 and up
 AUTOMATION_APPS=(
 # source app name							automated app name										    allowed (1=yes, 0=no)
-"$SOURCE_APP_NAME                           System Preferences                                               1"
+"$SOURCE_APP_NAME                           System Preferences                                         	1"
+"$SOURCE_APP_NAME                           System Events                                               1"
 )
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="yes" env_set_apps_automation_permissions
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 #echo ''
 
 
@@ -109,6 +135,7 @@ sleep 10
 
 }
 # only use the function if the spotlight preferences shall be reset completely
+# without using it on a clean install the com.apple.Spotlight.plist will be missing
 open_system_prefs_spotlight
 
 # if script hangs it has to be run with an app that has the the right to write to accessibility settings
@@ -168,31 +195,72 @@ do
     /usr/libexec/PlistBuddy -c 'Add orderedItems:'$ITEMNR':name string '$SPOTLIGHTENTRY'' ~/Library/Preferences/com.apple.Spotlight.plist
 done
 
-echo ''
+sleep 1
+defaults read ~/Library/Preferences/com.apple.Spotlight.plist &> /dev/null
+sleep 1
 
 # another way of stopping indexing AND searching for a volume (very helpful for network volumes) is putting an empty file ".metadata_never_index"
 # in the root directory of the volume and run "mdutil -E /Volumes/*" afterwards, check if it worked with sudo mdutil -s /Volumes/*
 # to turn indexing back on delete ".metadata_never_index" on the volume run mdutil -i followed by mdutil -E for that volume
 #sudo touch /Volumes/VOLUMENAME/.metadata_never_index
 
-CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
-
 # stop indexing before rebuilding the index
-killall mds > /dev/null 2>&1
+#killall mds &> /dev/null
+
+# listing spotlight folder content
+#sudo ls -a -l /.Spotlight-V100
+
+# deleting spotlight indexes folder
+echo ''
+echo "removing the Spotlight index files..."
+#if [[ -e /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/.Spotlight-V100 ]]
+#then
+#	echo ''
+#	echo "cleaning spotlight index..."
+#	sudo find /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/.Spotlight-V100 -mindepth 1 -maxdepth 1 -name "Store*" -print0 | xargs -0 sudo rm -rf
+#	#sudo rm -rf /private/var/db/Spotlight-V100/Volumes/*
+#else
+#	:
+#fi
+# using /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/ with -X does not work
+sudo mdutil -X /
+echo ''
+
+# stop indexing for some volumes which will not be indexed again
+VERSION_TO_CHECK_AGAINST=10.14
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos versions until and including 10.14
+	:
+else
+    # macos versions 10.15 and up
+	env_use_password | sudo mount -uw /
+	sleep 1
+fi
+sudo defaults write /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes/office" "/Volumes/extra" "/Volumes/scripts"
+
+# disable spotlight indexing for any volume that gets mounted and has not yet been indexed before.
+#sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
+
+# check entries
+#sudo defaults read /.Spotlight-V100/VolumeConfiguration Exclusions
+
+# deleting and reindexing volumes
+# all turned on volumes (mdutil -i)
+#sudo mdutil -E /Volumes/*
+# currently booted volume
+#sudo mdutil -E /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"
+sudo mdutil -E /
 
 # turning indexing off
 #sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 # all volumes
 #sudo mdutil -i off /Volumes/*
 # currently booted volume
-sudo mdutil -i off /Volumes/"$CURRENTLY_BOOTED_VOLUME"
-
-# listing spotlight folder content
-#sudo ls -a -l /.Spotlight-V100
-
-# deleting spotlight indexes folder
-sudo find /.Spotlight-V100 -name "Store*" -print0 | xargs -0 sudo rm -rf
-#sudo rm -rf /private/var/db/Spotlight-V100/Volumes/*
+echo ''
+echo "disabling indexing..."
+#sudo mdutil -i off /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"
+sudo mdutil -i off /
 
 # turning indexing on for all volumes
 #sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
@@ -202,35 +270,24 @@ sudo find /.Spotlight-V100 -name "Store*" -print0 | xargs -0 sudo rm -rf
 # all volumes
 #sudo mdutil -i on /Volumes/*
 # currently booted volume
-sudo mdutil -i on /Volumes/"$CURRENTLY_BOOTED_VOLUME"
+echo ''
+echo "enabling indexing..."
+#sudo mdutil -i on -E /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"
+sudo mdutil -i on /
 
-#turning on indexing for all volumes named macintosh*
-#MACINTOSH_VOLUMES=$(ls -1 /Volumes | grep macintosh)
+# turning on indexing for all volumes named macintosh*
+#MACINTOSH_VOLUMES=$(ls -1 /Volumes | grep macintosh | grep -v "Daten$")
 #while IFS= read -r line || [[ -n "$line" ]]
 #do
 #    if [[ "$line" == "" ]]; then continue; fi
 #    i="$line"
-#    echo $i
-#    sudo mdutil -i on /Volumes/"$i"
+#    #echo $i
+#    sudo mdutil -i on -E /Volumes/"$i"
 #done <<< "$(printf "%s\n" "${MACINTOSH_VOLUMES[@]}")"
 
-# deleting and reindexing volumes
-# all turned on volumes (mdutil -i)
-#sudo mdutil -E /Volumes/*
-# currently booted volume
-sudo mdutil -E /Volumes/"$CURRENTLY_BOOTED_VOLUME"
-
-# disable spotlight indexing for any volume that gets mounted and has not yet been indexed before.
-#sudo mdutil -i off "/Volumes/VOLUMENAME"
-#sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
-
-# stop indexing for some volumes which will not be indexed again
-sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes/office" "/Volumes/extra" "/Volumes/scripts"
-
-# check entries
-#sudo defaults read /.Spotlight-V100/VolumeConfiguration Exclusions
-
 # checking status of volumes
+echo ''
+echo "checking status of volumes..."
 sudo mdutil -s /Volumes/*
 
 # disabling lookup / spotlight suggestions
@@ -250,7 +307,7 @@ defaults write com.apple.lookup.shared LookupSuggestionsDisabled -bool true
 ###
 
 echo ''
-echo "restarting affected apps"
+echo "restarting affected apps..."
 
 apps_to_kill=(
 "cfprefsd"
@@ -276,6 +333,11 @@ do
     app="$line"
     killall "$app" > /dev/null 2>&1
 done <<< "$(printf "%s\n" "${apps_to_kill[@]}")"
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo ''
 echo "done ;)"

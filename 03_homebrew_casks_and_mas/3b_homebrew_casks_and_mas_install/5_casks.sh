@@ -6,7 +6,18 @@
 
 if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
- 
+
+
+
+###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
 
 
 ###
@@ -89,20 +100,33 @@ install_casks_parallel() {
         then 
         	sleep 2
         	osascript -e "tell app \"/Applications/TeamViewer.app\" to quit" >/dev/null 2>&1
+        	sleep 2
+            env_active_source_app
         fi
         if [[ "$i" == "libreoffice-language-pack" ]]
         then
             # waiting for libreoffice to be detectable by language pack
-            sleep 60
+            sleep 120
             # installung language pack
             LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-            open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+            PATH_TO_FIRST_RUN_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+            env_set_open_on_first_run_permissions
+            PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
+            env_set_open_on_first_run_permissions
+            open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
+            sleep 2
+            env_active_source_app
         fi
         if [[ "$i" == "textmate" ]]
         then
             # removing quicklook syntax highlight
             #rm -r /Applications/TextMate.app/Contents/Library/QuickLook/TextMateQL.qlgenerator
             :
+        fi
+        if [[ "$i" == "nextcloud" ]]
+        then
+            sleep 2
+            env_active_source_app
         fi
     else
         # listing dependencies
@@ -139,15 +163,9 @@ install_casks_parallel() {
 checking_homebrew
 env_homebrew_update
 
-### keepingyouawake
-if [[ "$KEEPINGYOUAWAKE" != "active" ]]
-then
-    echo ''
-    activating_keepingyouawake
-    echo ''
-else
-    echo ''
-fi
+
+### activating keepingyouawake
+env_activating_keepingyouawake
 
 
 ### parallel
@@ -189,7 +207,7 @@ then
         else
             :
         fi
-        echo ''
+        #echo ''
     fi
 else
     :
@@ -423,7 +441,7 @@ then
     }
     cleaning_before_installing
 
-	echo ''
+	#echo ''
 	echo "installing casks..."
 	
 	# installing some casks that have to go first for compatibility reasons
@@ -451,7 +469,8 @@ then
 	    fi
 	fi
 	
-	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d' | grep -vi "xtrafinder" | grep -vi "totalfinder")
+	finder_enhancements=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d' | grep -i -e "xtrafinder" -e "totalfinder")
     if [[ "$casks" == "" ]]
     then
     	:
@@ -502,53 +521,38 @@ then
         :
     fi
     
-	# xtrafinder
-	if [[ -e "/Applications/XtraFinder.app" ]]
-	then
-	    echo ''
-    	echo "xtrafinder already installed..."
-	else
-    	# as xtrafinder is no longer installable by cask let`s install it that way ;)
-
-    	echo ''
-    	echo "setting security permissions for xtrafinder..."
-        ### automation
-        # macos versions 10.14 and up
-        AUTOMATION_APPS=(
-        # source app name							automated app name										    allowed (1=yes, 0=no)
-        "XtraFinder                                 Finder                                                      1"
-        )
-        PRINT_AUTOMATING_PERMISSIONS_ENTRYS="no" env_set_apps_automation_permissions
-
-        # registering xtrafinder
-        SCRIPT_DIR_LICENSE="$SCRIPT_DIR_THREE_BACK"
-    	if [[ -e "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh ]]
-    	then
-    	    "$SCRIPT_DIR_LICENSE"/_scripts_input_keep/xtrafinder_register.sh
-    	else
-    	    echo "script to register xtrafinder not found..."
-    	fi
-    	
-    	# as xtrafinder is no longer installable by cask let`s install it that way ;)
-    	echo "downloading xtrafinder..."
-    	XTRAFINDER_INSTALLER="/Users/$USER/Desktop/XtraFinder.dmg"
-    	#wget https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -O "$XTRAFINDER_INSTALLER"
-    	curl https://www.trankynam.com/xtrafinder/downloads/XtraFinder.dmg -o "$XTRAFINDER_INSTALLER" --progress-bar
-    	#open "$XTRAFINDER_INSTALLER"
-	    echo "mounting image..."
-	    yes | hdiutil attach "$XTRAFINDER_INSTALLER" 1>/dev/null
-	    sleep 5
-    	echo "installing application..."
-    	env_use_password | sudo installer -pkg /Volumes/XtraFinder/XtraFinder.pkg -target / 1>/dev/null
-    	#sudo installer -pkg /Volumes/XtraFinder/XtraFinderInstaller.pkg -target / 1>/dev/null
-    	sleep 1
-    	#echo "waiting for installer to finish..."
-    	#while ps aux | grep 'installer' | grep -v grep > /dev/null; do sleep 1; done
-    	echo "unmounting and removing installer file..."
-    	hdiutil detach /Volumes/XtraFinder -quiet
-    	if [[ -e "$XTRAFINDER_INSTALLER" ]]; then rm "$XTRAFINDER_INSTALLER"; else :; fi
+	# finder enhancement
+	# as "$FINDER_ENHANCEMENT" is no longer installable by cask let`s install it that way ;)
+	#FINDER_ENHANCEMENT=XtraFinder
+	if [[ "${finder_enhancements[@]}" != "" ]]
+    then
+	    # casks specific1
+	    while IFS= read -r line || [[ -n "$line" ]] 
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+            FINDER_ENHANCEMENT="$line"
+        	FINDER_ENHANCEMENT_LOWERED=$(echo "$FINDER_ENHANCEMENT" | tr '[:upper:]' '[:lower:]')
+        	if [[ -e ""$PATH_TO_APPS"/"$FINDER_ENHANCEMENT".app" ]]
+        	then
+        	    echo ''
+        	    echo ""$FINDER_ENHANCEMENT_LOWERED" already installed..."
+        	else
+        
+                SCRIPT_DIR_HOMEBREW_CASK="$SCRIPT_DIR_ONE_BACK"
+            	if [[ -e "$SCRIPT_DIR_HOMEBREW_CASK"/3d_"$FINDER_ENHANCEMENT_LOWERED"_install.sh ]]
+            	then
+            	    RUN_FROM_CASKS_SCRIPT="yes" . "$SCRIPT_DIR_HOMEBREW_CASK"/3d_"$FINDER_ENHANCEMENT_LOWERED"_install.sh
+            	    eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+            	else
+            	    echo "script to install "$FINDER_ENHANCEMENT_LOWERED" not found..."
+            	fi
+            	
+            fi
+    	done <<< "$(printf "%s\n" "${finder_enhancements[@]}")"
+    else
+        :
     fi
-	
+
 else
 	:
 fi
@@ -613,7 +617,12 @@ else
     env_cleanup_all_homebrew
 fi
 
-CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_MASAPPS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then 
+    :
+else
+    CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_MASAPPS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+fi
 
 # installing user specific casks
 if [[ "$USER" == "wolfgang" ]]
@@ -638,3 +647,7 @@ env_stop_sudo
 echo ''
 
 #exit
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+

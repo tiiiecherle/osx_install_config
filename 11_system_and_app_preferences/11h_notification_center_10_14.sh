@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### compatibility
 ###
 
@@ -61,7 +72,7 @@ applications_to_set_values=(
 "/Applications/WhatsApp.app																335"
 "/Applications/Signal.app																335"
 "/Applications/pdf_200dpi_shrink.app/Contents/custom_files/pdf_shrink_done.app			335"
-"/Applications/Reminders.app															343"
+"/Applications/Reminders.app															8535"
 "/Applications/EagleFiler.app															335"
 "/Applications/VirusScannerPlus.app														335"
 )
@@ -195,6 +206,11 @@ do
 	fi
 
 done
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo ''
 echo 'done ;)'

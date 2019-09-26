@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### compatibility
 ###
 
@@ -70,6 +81,8 @@ applications_to_set_values=(
 ""$PATH_TO_APPS"/MacPass.app																41943375"
 ""$PATH_TO_APPS"/Microsoft Word.app															41943375"
 ""$PATH_TO_APPS"/Microsoft Excel.app														41943375"
+""$PATH_TO_APPS"/Microsoft PowerPoint.app													41943375"
+""$PATH_TO_APPS"/Microsoft Remote Desktop.app												41943375"
 ""$PATH_TO_APPS"/Alfred 4.app																41943375"
 ""$PATH_TO_APPS"/Better.app																	41943375"
 ""$PATH_TO_APPS"/BresinkSoftwareUpdater.app													41943375"
@@ -77,6 +90,22 @@ applications_to_set_values=(
 ""$PATH_TO_APPS"/iTerm.app																	41943375"
 ""$PATH_TO_APPS"/KeepingYouAwake.app														41943375"
 ""$PATH_TO_APPS"/PrefEdit.app																41943375"
+""$PATH_TO_APPS"/TextMate.app																41943375"
+""$PATH_TO_APPS"/Keka.app																	41943375"
+""$PATH_TO_APPS"/Burn.app																	41943375"
+""$PATH_TO_APPS"/2Do.app																	41943375"
+""$PATH_TO_APPS"/Cyberduck.app																41943375"
+""$PATH_TO_APPS"/HandBrake.app																41943375"
+""$PATH_TO_APPS"/nextcloud.app																41943375"
+""$PATH_TO_APPS"/Progressive Downloader.app													41943375"
+""$PATH_TO_APPS"/Spotify.app																41943375"
+""$PATH_TO_APPS"/Transmission.app															41943375"
+""$PATH_TO_APPS"/Tunnelblick.app															41943375"
+""$PATH_TO_APPS"/TinkerTool.app																41943375"
+""$PATH_TO_APPS"/Vox.app																	41943375"
+""$PATH_TO_APPS"/X-Lite.app																	41943375"
+""$PATH_TO_APPS"/TotalFinder.app															41943375"
+""$PATH_TO_APPS"/Firefox.app																41943375"
 )
 
 
@@ -112,7 +141,7 @@ for application in "${applications_to_set_values[@]}"
 do
 
 	APP_PATH=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
-	echo "$APP_PATH"
+	#echo "$APP_PATH"
     FLAGS_VALUE=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
     
     if [[ -e "$APP_PATH" ]]
@@ -157,6 +186,8 @@ echo "restarting notification center..."
 #killall sighup NotificationCenter
 killall usernoted
 killall NotificationCenter
+sleep 2
+defaults read "$PLIST_FILE" &> /dev/null
 echo ''
 
 echo ''
@@ -217,6 +248,11 @@ do
 	fi
 
 done
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo ''
 echo 'done ;)'

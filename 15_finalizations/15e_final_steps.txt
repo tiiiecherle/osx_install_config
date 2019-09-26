@@ -10,11 +10,7 @@ reboot to recovery (cmd +R)
 	set SIP in recovery
 	csrutil enable --without fs --without debug
 
-
 	reboot
-
-delete icloud account in internet accounts
-login to icloud account and select everything that shall sync
 
 open "mail" and keep open in background for indexing
 
@@ -26,15 +22,16 @@ print filevault_key
 
 delete restore files on desktop and empty trash
 
-add card(s) to apple wallet (onyl possible with sip fully enabled)
+add card(s) to apple wallet (only possible with sip fully enabled)
 
 enable touch id
 
-
-
+clear list of old devices in icloud acccount
 
 
 ### iOS (ws & ts)
+
+connect iphone via usb and trust the mac
 
 iphone manual preferences
 
@@ -45,4 +42,13 @@ phone
 messages
 	text message forwarding
 		activate needed devices
+
+
+### additional steps when changing to new hardware
+
+keychain (after batch_script1)
+	login and save passwords that are stored in "local" part of the keychain
+enable safari extensions
+office license
+imazing (license has to be deactivated on old install before it can be re-used, otherwise contact support for license-reset)
 

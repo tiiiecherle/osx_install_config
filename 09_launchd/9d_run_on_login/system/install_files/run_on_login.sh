@@ -63,8 +63,8 @@ reset_safari_download_location () {
 
 # workaround for macos bug that prevents /etc/fstab entries to work for encrypted apfs volumes
 unmount_test_partition() {
-    CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
-    if [[ "$CURRENTLY_BOOTED_VOLUME" == "macintosh_hd" ]]
+    MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
+    if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd" ]]
     then
         sleep 15
         #if [[ -e "/Volumes/macintosh_hd2" ]]; then sudo diskutil unmount /Volumes/macintosh_hd2; fi

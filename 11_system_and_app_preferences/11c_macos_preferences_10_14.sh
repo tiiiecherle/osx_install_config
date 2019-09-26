@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
@@ -63,7 +74,7 @@ AUTOMATION_APPS=(
 "$SOURCE_APP_NAME                           System Events                                               1"
 "$SOURCE_APP_NAME                           System Preferences                                          1"
 )
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="no" env_set_apps_automation_permissions
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
 #echo ''
 
 
@@ -1344,6 +1355,78 @@ EOF
     #defaults write -g NSScrollAnimationEnabled -bool false
     
     
+    
+    ###
+    ### preferences - printer
+    ###
+    
+    echo "preferences printer"
+    
+    DEFAULTS_WRITE_DIR="$SCRIPT_DIR_TWO_BACK"
+    if [[ -e "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer_data.sh ]]
+    then
+    
+        # variables
+        #PRINTER_NAME="NAME_HERE"
+        #PRINTER_URL="ipp://IP_HERE/ipp/print"
+        #PRINTER_PPD="PATH_TO_PPD_GZ_FILE_HERE"
+        
+        # sourcing variables
+        . "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer_data.sh
+        
+        if [[ "$PRINTER_PPD" != "" ]] && [[ -e "$PRINTER_PPD" ]]
+        then
+            #echo ''
+            #echo "$PRINTER_NAME"
+            
+            # backing up printer config
+            if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
+            then
+            	#echo ''
+            	echo "backing up printer preferences for "$PRINTER_NAME"..."
+            	cp -a "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" "/tmp/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist"
+            else
+            	:
+            fi
+            
+            # deleting old printer/config
+            if [[ $(lpstat -p | grep "$PRINTER_NAME") != "" ]]
+            then
+            	#echo ''
+            	echo "deleting old printer "$PRINTER_NAME"..."
+            	lpadmin -x "$PRINTER_NAME"
+            	sleep 1
+            else
+            	:
+            fi
+            
+            # restoring printer config if needed
+            if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
+            then
+            	:
+            else
+            	#echo ''
+            	echo "restoring printer preferences for "$PRINTER_NAME"..."
+            	cp -a "/tmp/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist"
+            fi
+            
+            # adding printer printer/config
+            #echo ''
+            echo "adding printer "$PRINTER_NAME"..."
+            # more options can be set via -o
+            lpadmin -E -p "$PRINTER_NAME" -v "$PRINTER_URL" -P "$PRINTER_PPD" -o printer-is-shared=false
+            cupsenable "$PRINTER_NAME"
+            cupsaccept "$PRINTER_NAME"
+            
+        else
+	        echo "PPD file "$PRINTER_PPD" empty or not found, skipping..."
+        fi
+
+    else
+    	echo ""$DEFAULTS_WRITE_DIR"/script_input_keep/printer_data.sh not found, skipping reinstalling printer..."
+    fi
+    
+    
     ###
     ### preferences - sound
     ###
@@ -1460,13 +1543,22 @@ EOF
     
     echo "preferences sharing"
     
-    # set computer name (as done via system preferences - sharing)
-    if [[ "$USER" == "tom" ]]
+    MY_HOSTNAME=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g' | sed 's/^/'"$USER"'s-/g')    
+    if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd2" ]]
     then
-        MY_HOSTNAME="toms-macbookpro"
+        MY_HOSTNAME=$(echo "$MY_HOSTNAME" | sed 's/$/2/g') 
     else
+        :
+    fi
+    #echo "$MY_HOSTNAME"
+    
+    # set computer name (as done via system preferences - sharing)
+    if [[ "$MY_HOSTNAME" == "" ]]
+    then
         echo 'only numbers, characters [a-zA-Z] and '-' are allowed...'
         read -p "Enter new hostname: " MY_HOSTNAME
+    else
+        echo "setting hostname to "$MY_HOSTNAME""
     fi
     
     sudo scutil --set ComputerName "$MY_HOSTNAME"
@@ -2605,7 +2697,7 @@ EOF
     # 1 = 100%, 1.25 = 125%, etc.
     defaults write com.apple.Safari DefaultPageZoom -integer 1
     
-    # allow camera
+    # camera
     # ask = 0
     # do not allow = 1
     # allow = 2
@@ -2616,7 +2708,7 @@ EOF
         sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesCamera'"
     fi
     
-    # allow microphone
+    # microphone
     # ask = 0
     # do not allow = 1
     # allow = 2
@@ -2625,6 +2717,17 @@ EOF
         sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesMicrophone', '1');"
     else
         sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesMicrophone'"
+    fi
+    
+    # downloads
+    # allow = 0
+    # ask = 1
+    # not allow = 2
+    if [[ $(sqlite3 "$WEBSITE_SAFARI_DATABASE" "select * from default_preferences;" | grep "PerSitePreferencesDownloads") == "" ]]
+    then
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into default_preferences (preference, default_value) values ('PerSitePreferencesDownloads', '0');"
+    else
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='0' WHERE preference='PerSitePreferencesDownloads'"
     fi
     
     # website use of location services
@@ -3427,7 +3530,17 @@ EOF
     
 }
 
-setting_preferences 2>&1 | tee "$HOME"/Desktop/"$SCRIPT_NAME"_log.txt
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then 
+    setting_preferences | tee "$HOME"/Desktop/"$SCRIPT_NAME"_log.txt
+else
+    setting_preferences 2>&1 | tee "$HOME"/Desktop/"$SCRIPT_NAME"_log.txt
+fi
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo "done ;)"
 echo "a few changes need a reboot or logout to take effect"

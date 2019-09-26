@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### script frame
 ###
 
@@ -27,9 +38,11 @@ fi
 
 
 ###
-### command line tools
+### homebrew cask
 ###
 
+
+### command line tools
 env_command_line_tools_install_shell
 
 
@@ -142,7 +155,7 @@ echo "installing homebrew cask..."
 
 brew tap caskroom/cask
 
-# activating keepingyouawake
+# installing keepingyouawake
 #if [[ -e /Applications/KeepingYouAwake.app ]]
 if [[ $(brew cask list | grep "^keepingyouawake$") != "" ]]
 then
@@ -152,11 +165,13 @@ else
     echo "installing keepingyouawake..."
     env_use_password | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
     sleep 1
-    activating_keepingyouawake
 fi
 
+# activating keepingyouawake
+env_activating_keepingyouawake
+
 # installing cask repair to contribute to homebrew casks
-echo ''
+#echo ''
 echo "installing cask-repair..."
 brew install vitorgalvao/tiny-scripts/cask-repair
 #cask-repair --help
@@ -194,3 +209,7 @@ env_cleanup_all_homebrew
 ### stopping sudo
 # done in trap
 #env_stop_sudo
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

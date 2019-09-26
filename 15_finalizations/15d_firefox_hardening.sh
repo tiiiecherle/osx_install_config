@@ -8,6 +8,18 @@ if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
+
+###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
 ###
 ### firefox hardening
 ###
@@ -80,8 +92,12 @@ reset_v2() {
 
 
 ### script
-
-echo ''
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+    :
+else
+    echo ''
+fi
 VARIABLE_TO_CHECK="$CONT1"
 # single line
 QUESTION_TO_ASK="do you want completely reset firefox? script will run hardened only option when answerded with no... (y/N)? "
@@ -89,7 +105,7 @@ QUESTION_TO_ASK="do you want completely reset firefox? script will run hardened 
 #QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')"
 env_ask_for_variable
 CONT1="$VARIABLE_TO_CHECK"
-echo ''
+#echo ''
 
 if [[ "$CONT1" == "r" || "$CONT1" == "reset" ]]
 then
@@ -101,7 +117,7 @@ fi
 
 # hardening
 # very restrictive
-curl https://raw.githubusercontent.com/pyllyukko/user.js/master/user.js > "$FIREFOX_PROFILE_PATH"/user.js
+curl --silent https://raw.githubusercontent.com/pyllyukko/user.js/master/user.js > "$FIREFOX_PROFILE_PATH"/user.js
 # less restrictive
 #curl https://raw.githubusercontent.com/pyllyukko/user.js/relaxed/user.js > "$FIREFOX_PROFILE_PATH"/user.js
 chown "$USER":staff "$FIREFOX_PROFILE_PATH"/user.js
@@ -179,6 +195,11 @@ then
 else
 	:
 fi
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo ''
 echo "done ;)"

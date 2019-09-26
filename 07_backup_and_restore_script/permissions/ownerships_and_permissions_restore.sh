@@ -376,7 +376,7 @@ else
 fi
 
 (time ( backup_restore_permissions )) | tee -a "$HOMEFOLDER"/Desktop/backup_restore_log.txt
-echo ''
+#echo ''
 
 if [[ "$UNSET_PASSWORD" == "YES" ]]
 then

@@ -13,7 +13,22 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
+
 
 
 
@@ -28,7 +43,12 @@ env_enter_sudo_password
 ###
 ###
 
-echo ''
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+    :
+else
+    echo ''
+fi
 
 # asking for casks zap
 VARIABLE_TO_CHECK="$ZAP_CASKS"

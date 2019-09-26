@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### compatibility
 ###
 
@@ -35,33 +46,7 @@ env_check_if_online
 if [[ "$ONLINE_STATUS" == "online" ]]
 then
     # online
-    echo ''
-	   
-	# checking for time logged in to give macos time to build the calendar cache
-	#TIME_USER_IS_LOGGED_IN=$(w | grep "console" | grep -o '[0-9]\+' | tail -n1)
-	# or
-	# w | sed 1d | awk 'NR==1{for(i=1;i<=NF;i++)if($i~/IDLE/)f[n++]=i}{for(i=0;i<n;i++)printf"%s%s",i?" ":"",$f[i];print""}' | grep -o '[0-9]*' | sed '/^\s*$/d'
-	# or
-	# w | grep "console" | awk '{print $(NF-1)}'
-	
-	WAITING_TIME=30
-	NUM1=0
-	#echo ''
-	echo ''
-	while [[ "$NUM1" -le "$WAITING_TIME" ]]
-	do 
-		NUM1=$((NUM1+1))
-		if [[ "$NUM1" -le "$WAITING_TIME" ]]
-		then
-			#echo "$NUM1"
-			sleep 1
-			tput cuu 1 && tput el
-			echo "waiting $((WAITING_TIME-NUM1)) seconds to give macos time to rebuild the calendar cache..."
-		else
-			:
-		fi
-	done
-	
+    echo ''	
 	
 	### variables
 	PATH_TO_CALENDARS=/Users/"$USER"/Library/Calendars
@@ -90,7 +75,7 @@ EOF
 	}
 	
 	waiting_and_quitting_calendar() {
-		WAITING_TIME=10
+		WAITING_TIME=20
 		NUM1=0
 		#echo ''
 		echo ''
@@ -107,22 +92,12 @@ EOF
 				:
 			fi
 		done
-		
-		osascript <<EOF					
-				try
-					tell application "Calendar"
-						quit
-					end tell
-				end try
-EOF
-	
-		sleep 2
 	}
 	#opening_calendar
 	#waiting_and_quitting_calendar
 	
 	### quitting calandar and contacts
-	echo ''
+	#echo ''
 	echo "quitting calendar..."
 	osascript <<EOF
 	
@@ -151,7 +126,7 @@ EOF
 			#echo $i
 			if [[ -e "$PATH_TO_CALENDARS"/"$i"/Info.plist ]]
 			then
-				if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$i"/Info.plist) != "$CALENDAR_TO_LOOK_FOR" ]]
+				if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$i"/Info.plist 2> /dev/null) != "$CALENDAR_TO_LOOK_FOR" ]]
 				then
 					:
 				else
@@ -176,7 +151,7 @@ EOF
 				if [[ -e "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist ]]
 				then
 					#echo $i
-					CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
+					CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist 2> /dev/null)
 					#echo "$CALENDAR_TITLE"
 					
 					# calender notifications
@@ -196,7 +171,10 @@ EOF
 						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 					fi
-					
+					# activating entry
+					#sleep 0.5
+					#defaults read "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist &> /dev/null
+					#sleep 0.5
 					sleep 0.1
 					
 					# enable all reminder notifications
@@ -212,7 +190,6 @@ EOF
 					else
 						#echo "$CALENDAR_TITLE is a calendar..."
 						ENTRY_TYPE="calendar"
-						:
 					fi
 					
 					sleep 0.1
@@ -251,7 +228,7 @@ EOF
 			#echo $i
 			if [[ -e "$PATH_TO_CALENDARS"/"$i"/Info.plist ]]
 			then
-				if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$i"/Info.plist) != "$CALENDAR_TO_LOOK_FOR" ]]
+				if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$i"/Info.plist 2> /dev/null) != "$CALENDAR_TO_LOOK_FOR" ]]
 				then
 					:
 				else
@@ -277,7 +254,7 @@ EOF
 				if [[ -e "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist ]]
 				then
 					
-					CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
+					CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist 2> /dev/null)
 					
 					# disable calendar add-on
 					if [[ "$CALENDAR_TITLE" == "add-on" ]]
@@ -340,6 +317,30 @@ EOF
 	echo "color for holiday and week number calendar is #CAABE4"
 	
 	opening_calendar
+	
+	if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+	then
+		WAITING_TIME=30
+		NUM1=0
+		#echo ''
+		echo ''
+		while [[ "$NUM1" -le "$WAITING_TIME" ]]
+		do 
+			NUM1=$((NUM1+1))
+			if [[ "$NUM1" -le "$WAITING_TIME" ]]
+			then
+				#echo "$NUM1"
+				sleep 1
+				tput cuu 1 && tput el
+				echo "waiting $((WAITING_TIME-NUM1)) seconds before quitting calendar..."
+			else
+				:
+			fi
+		done
+	    osascript -e "tell application \"Calendar\" to quit"
+	else  
+		:
+	fi
 
 	echo ''
 	echo "done ;)"
@@ -348,4 +349,8 @@ else
     echo "not online, this would prevent restoring cache and data - exiting script..."
 	echo ''
 fi
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 

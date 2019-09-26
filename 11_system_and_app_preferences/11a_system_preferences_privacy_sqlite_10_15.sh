@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### compatibility
 ###
 
@@ -30,7 +41,21 @@ fi
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
 
 
 
@@ -77,26 +102,41 @@ fi
 ###
 
 starting_witchdaemon () {
-if [[ -e /Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app/Contents/MacOS/witchdaemon ]]
-then
-    ACCESSIBILITYAPPS=(
-    # app name									                         security service					allowed (1=yes, 0=no)
-    "Terminal                                                            kTCCServiceAccessibility           1"
-    )
-    APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
-    PRINT_SECURITY_PERMISSIONS_ENTRYS="no" env_set_apps_security_permissions
-    /Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app/Contents/MacOS/witchdaemon &
-    sleep 3
-    #killall witchdaemon
-else
-    :
-fi
+    if [[ -e /Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app/Contents/MacOS/witchdaemon ]]
+    then
+        ACCESSIBILITYAPPS=(
+        # app name									                         security service					allowed (1=yes, 0=no)
+        "Terminal                                                            kTCCServiceAccessibility           1"
+        )
+        APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
+        PRINT_SECURITY_PERMISSIONS_ENTRIES="no" env_set_apps_security_permissions
+        /Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app/Contents/MacOS/witchdaemon &
+        sleep 3
+        #killall witchdaemon
+    else
+        :
+    fi
 }
 echo ''
 echo "starting witchdaemon to make it available to get the app_id..."
 starting_witchdaemon &> /dev/null
 #echo ''
 
+# stop totalfinder if running or it will complain about missing permissiions after resetting automation entries
+#if [[ $(ps aux | grep "TotalFinder.app/Contents/MacOS/TotalFinder" | grep -v grep) != "" ]]
+if pgrep TotalFinder &> /dev/null
+then
+    RESTART_TOTALFINDER="yes"
+    echo ''
+    echo "stopping totalfinder..."
+    #killall TotalFinder
+    #killall TotalFinderCrashWatcher
+    osascript -e "tell application \"TotalFinder\" to quit"
+    osascript -e "tell application \"TotalFinderCrashWatcher\" to quit"
+    sleep 2
+else
+    :
+fi
 
 
 ###
@@ -231,6 +271,7 @@ sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where service='kTCCServiceAc
 
 ACCESSIBILITYAPPS=(
 # app name									                         security service					allowed (1=yes, 0=no)
+"Terminal                                                            kTCCServiceAccessibility           1"
 "brew_casks_update                                                   kTCCServiceAccessibility           1"
 "video_720p_h265_aac_shrink                                          kTCCServiceAccessibility           1"
 "gui_apps_backup                                                     kTCCServiceAccessibility           1"
@@ -242,7 +283,6 @@ ACCESSIBILITYAPPS=(
 "Script Editor                                                       kTCCServiceAccessibility           1"
 "System Preferences                                                  kTCCServiceAccessibility           1"
 "witchdaemon                                                         kTCCServiceAccessibility           1"
-"Terminal                                                            kTCCServiceAccessibility           1"
 "iTerm                                                               kTCCServiceAccessibility           1"
 "VirtualBox                                                          kTCCServiceAccessibility           1"
 "PasswordWallet                                                      kTCCServiceAccessibility           1"
@@ -254,10 +294,11 @@ ACCESSIBILITYAPPS=(
 "MacPass                                                             kTCCServiceAccessibility           1"
 "pdf_200dpi_shrink                                                   kTCCServiceAccessibility           1"
 "Unified Remote                                                      kTCCServiceAccessibility           1"
+"TeamViewer                                                          kTCCServiceAccessibility           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - contacts
@@ -275,7 +316,7 @@ CONTACTSAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CONTACTSAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - calendar
@@ -292,7 +333,7 @@ CALENDARAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CALENDARAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - reminders
@@ -308,7 +349,23 @@ REMINDERAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${REMINDERAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
+
+
+### privacy - camera
+
+echo ''
+tput bold; echo "camera..." ; tput sgr0
+
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCamera';"
+
+CAMERAAPPS=(
+# app name									security service										    allowed (1=yes, 0=no)
+"Microsoft Remote Desktop                   kTCCServiceCamera                                           0"
+)
+
+APPS_SECURITY_ARRAY=$(printf "%s\n" "${CAMERAAPPS[@]}")
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - microphone
@@ -322,10 +379,11 @@ MICROPHONEAPPS=(
 # app name									security service										    allowed (1=yes, 0=no)
 "VirtualBox                                 kTCCServiceMicrophone                                       1"
 "VirtualBox Menulet                         kTCCServiceMicrophone                                       1"
+"Microsoft Remote Desktop                   kTCCServiceMicrophone                                       0"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${MICROPHONEAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 ### privacy - screen recording
@@ -342,7 +400,7 @@ SCREENCAPTUREAPPS=(
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${SCREENCAPTUREAPPS[@]}")
-PRINT_SECURITY_PERMISSIONS_ENTRYS="yes" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
 
@@ -382,17 +440,32 @@ AUTOMATION_APPS=(
 "run_on_login_whatsapp                                                      System Events               1"
 "iTerm                                                                      System Events               1"
 "XtraFinder                                                                 Finder                      1"
+"TotalFinder.app                                                            Finder                      1"
 "Ondesoft AudioBook Converter                                               iTunes                      1"
 "EagleFiler                                                                 Mail                        1"
 "EagleFiler                                                                 Finder                      1"
 "witchdaemon                                                                Mail                        0"
 )
         
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="yes" env_set_apps_automation_permissions
-
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 
 
 ###
+
+if [[ "$RESTART_TOTALFINDER" == "yes" ]]
+then
+    echo ''
+    echo "restarting totalfinder..."
+	osascript -e "tell application \"TotalFinder\" to activate"
+	sleep 0.5
+else
+    :
+fi
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
 
 echo ''
 echo "done ;)"

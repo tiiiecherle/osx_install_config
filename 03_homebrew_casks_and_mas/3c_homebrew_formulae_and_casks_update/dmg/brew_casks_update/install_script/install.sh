@@ -52,7 +52,7 @@ APPS_SECURITY_ARRAY=(
 # app name									security service											allowed (1=yes, 0=no)
 "$APP_NAME                               	kTCCServiceAccessibility                             		1"
 )
-PRINT_SECURITY_PERMISSIONS_ENTRYS="no" env_set_apps_security_permissions
+PRINT_SECURITY_PERMISSIONS_ENTRIES="no" env_set_apps_security_permissions
 
 
 ### automation
@@ -62,6 +62,6 @@ AUTOMATION_APPS=(
 "$APP_NAME									System Events                   							1"
 "$APP_NAME									Terminal                   									1"
 )
-PRINT_AUTOMATING_PERMISSIONS_ENTRYS="no" env_set_apps_automation_permissions
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
 
 #open /Applications/"$APP_NAME".app

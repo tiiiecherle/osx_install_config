@@ -6,7 +6,7 @@
 	<string>com.example_root.show</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>bash</string>
+		<string>zsh</string>
 		<string>-c</string>
 		<string>/Library/Scripts/custom/example_root.sh</string>
 	</array>
