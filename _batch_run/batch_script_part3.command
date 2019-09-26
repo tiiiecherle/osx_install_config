@@ -1,0 +1,247 @@
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### asking password upfront
+###
+
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
+
+
+
+###
+### functions
+###
+
+create_tmp_batch_script_fifo() {
+    env_delete_tmp_batch_script_fifo
+    mkfifo -m 600 "/tmp/tmp_batch_script_fifo"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_batch_script_fifo" &
+    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
+}
+
+env_active_source_app() {
+	sleep 0.5
+	osascript -e "tell application \"$SOURCE_APP_NAME\" to activate"
+	#osascript -e "tell application \"$SOURCE_APP_NAME.app\" to activate"
+	sleep 0.5
+}
+
+
+
+###
+### variables
+###
+
+SCRIPTS_FINAL_DIR="$SCRIPT_DIR_ONE_BACK"
+env_identify_terminal
+
+
+
+###
+### trap
+###
+
+trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_keepingyouawake; rm -f "/tmp/batch_script_in_progress" }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
+
+
+
+###
+### batch script part 2
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+touch "/tmp/batch_script_in_progress"
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+### batch run all function
+batch_run_all() {
+
+
+	### silencing sounds
+	osascript -e "set Volume 0"
+
+
+	### activating keepingyouawake
+	env_activating_keepingyouawake
+
+
+	### spotlight
+	printf "\n${bold_text}###\nspotlight...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11d_system_preferences_spotlight.sh
+	env_active_source_app
+	
+		
+	### open with
+	printf "\n${bold_text}###\nopen with...\n###\n${default_text}"
+	CLEAN_SERVICES_CACHE="no" "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11e_defaults_open_with.sh
+	
+	
+	### finder sidebar
+	printf "\n${bold_text}###\nfinder sidebar...\n###\n${default_text}"
+	INSTALL_UPDATE_MYSIDES="no" "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11f_finder_sidebar_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
+	env_active_source_app
+	
+	
+	### finder favorites
+	printf "\n${bold_text}###\nfinder favorites...\n###\n${default_text}"
+	echo ''
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11g_finder_favorites.py
+	#echo ''
+	
+	
+	### notification center
+	printf "\n${bold_text}###\nnotification center...\n###\n${default_text}"
+	INSTALL_UPDATE_MYSIDES="no" "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11h_notification_center_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
+	
+	
+	### reset calendar, contacts & reminders
+	printf "\n${bold_text}###\nreset calendar, contacts & reminders...\n###\n${default_text}"
+	CLEAR_LOCAL_DATA="yes" "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11i_reset_calendar_contacts_reminders_data_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
+	
+	
+	### calendar alarms and visibility
+	printf "\n${bold_text}###\ncalendar alarms and visibility...\n###\n${default_text}"
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11j_set_calendar_alarms_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
+	
+	
+	### third party app preferences
+	printf "\n${bold_text}###\nthird party app preferences...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11k_third_party_app_preferences.sh
+	
+	
+	### migrate internet accounts
+	printf "\n${bold_text}###\nmigrate internet accounts...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/13_apple_mail_and_accounts/13a_migrate_internet_accounts.sh
+
+	
+	### reset mail index
+	printf "\n${bold_text}###\nreset mail index...\n###\n${default_text}"
+	"$SCRIPTS_FINAL_DIR"/13_apple_mail_and_accounts/13b_reset_mail_index.sh
+	env_active_source_app
+
+
+	### samba
+	printf "\n${bold_text}###\nsamba...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/14_samba/14a_samba.sh
+
+
+	### manual app preferences
+	printf "\n${bold_text}###\nmanual app preferences...\n###\n${default_text}"
+	"$SCRIPTS_FINAL_DIR"/15_finalizations/15a_applications_manual_preferences_open.sh
+	
+
+	### siri analytics and learning
+	printf "\n${bold_text}###\nsiri analytics and learning...\n###\n${default_text}"
+	"$SCRIPTS_FINAL_DIR"/15_finalizations/15c_disable_siri_analytics_and_learning_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh	
+	
+	
+	### firefox hardening
+	printf "\n${bold_text}###\nfirefox hardening...\n###\n${default_text}"
+	CONT1="no" "$SCRIPTS_FINAL_DIR"/15_finalizations/15d_firefox_hardening.sh
+	
+	
+	### batch script done
+	printf "\n${bold_text}###\nbatch script done...\n###\n${default_text}"
+	echo ''
+	
+}
+
+time ( batch_run_all )
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
+COMBINED_ERROR_LOG="/Users/"$USER"/Desktop/"$SCRIPT_NAME_WITHOUT_EXTENSION"_errorlog.txt"
+if [[ -e "$COMBINED_ERROR_LOG" ]]; then rm -f "$COMBINED_ERROR_LOG"; else :; fi
+while IFS= read -r line || [[ -n "$line" ]] 
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    i="$line"
+    echo '' >> "$COMBINED_ERROR_LOG"
+    echo '' >> "$COMBINED_ERROR_LOG"
+	cat "$i" >> "$COMBINED_ERROR_LOG"
+done <<< "$(find "$ERROR_LOG_DIR" -mindepth 1 -maxdepth 1 -type f -name "*.txt" | sort -n)"
+if [[ -e "$ERROR_LOG_DIR" ]]; then rm -rf "$ERROR_LOG_DIR"; else :; fi
+
+sed -i '' '/kMDConfigSearchLevelFSSearchOnly/d' "$COMBINED_ERROR_LOG"
+sed -i '' '/Internet Accounts Migration starting/d' "$COMBINED_ERROR_LOG"
+#awk '/./ { e=0 } /^$/ { e += 1 } e <= 2' "$COMBINED_ERROR_LOG" > /tmp/errorlog.txt
+#cat /tmp/errorlog.txt > "$COMBINED_ERROR_LOG"
+#rm -f /tmp/errorlog.txt
+perl -i -ane '$n=(@F==0) ? $n+1 : 0; print if $n<=2' "$COMBINED_ERROR_LOG"
+
+
+### done
+echo ''
+echo "done ;)"
+echo ''
+
+
+### play sound
+osascript -e "set Volume 5"
+#osascript -e "beep"
+#/System/Library/Sounds/
+#/System/Library/PrivateFrameworks/ToneLibrary.framework/Versions/A/Resources/AlertTones/
+SOUND_FILE="/System/Library/PrivateFrameworks/ToneLibrary.framework/Versions/A/Resources/AlertTones/Modern/Chord.m4r"
+afplay "$SOUND_FILE" && afplay "$SOUND_FILE"
+osascript -e "set Volume 3"
+
+
+### checking output and rebooting
+ask_for_reboot() {
+	VARIABLE_TO_CHECK="$REBOOT_NOW"
+	QUESTION_TO_ASK="${bold_text}please check the complete output before rebooting... reboot now (Y/n)? "
+	env_ask_for_variable
+	printf "%s" "${default_text}"
+	REBOOT_NOW="$VARIABLE_TO_CHECK"
+	sleep 0.1
+	
+	if [[ "$REBOOT_NOW" =~ ^(yes|y)$ ]]
+	then
+	    #echo ''
+		osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot
+		#osascript -e 'tell app "loginwindow" to «event aevtrsdn»'          # shutdown
+		#osascript -e 'tell app "loginwindow" to «event aevtrlgo»'          # logout
+	    #echo ''
+	else
+		:
+	fi
+}
+#ask_for_reboot
+
+if [[ -e "/tmp/batch_script_in_progress" ]]; then rm -f "/tmp/batch_script_in_progress"; else :; fi
+
+

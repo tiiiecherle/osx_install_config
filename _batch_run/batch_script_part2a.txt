@@ -1,0 +1,17 @@
+# before starting batch_script_part2b.command
+
+macos 10.15
+
+0	delete old icloud account
+	in preferences - internet accounts
+
+1	connect to icloud
+	in preferences - icloud
+
+2	rename icloud account to $USER_icloud
+	in preferences - internet accounts - icloud - details
+
+3	if restoring to a new hardware it is not possible to use the old "local" part of the keychain seamlessly
+	if doing so connect to all accounts in the system preferences - internet accounts
+	press cancel for each dropdown password field (copy/paste will not work)
+	copy passwords to empty fields in system preferences under description and name

@@ -1,0 +1,268 @@
+#!/bin/zsh
+
+###
+### sourcing config file
+###
+
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+
+###
+### asking password upfront
+###
+
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+        env_sudo
+        RUN_FROM_BATCH_SCRIPT_ONE="yes"
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
+
+
+
+###
+### functions
+###
+
+create_tmp_batch_script_fifo() {
+    env_delete_tmp_batch_script_fifo
+    mkfifo -m 600 "/tmp/tmp_batch_script_fifo"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_batch_script_fifo" &
+    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
+}
+
+env_active_source_app() {
+	sleep 0.5
+	osascript -e "tell application \"$SOURCE_APP_NAME\" to activate"
+	#osascript -e "tell application \"$SOURCE_APP_NAME.app\" to activate"
+	sleep 0.5
+}
+
+
+
+###
+### variables
+###
+
+SCRIPTS_FINAL_DIR="$SCRIPT_DIR_ONE_BACK"
+env_identify_terminal
+
+
+
+###
+### trap
+###
+
+trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_keepingyouawake; rm -f "/tmp/batch_script_in_progress" }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
+
+
+
+###
+### batch script part 2
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+touch "/tmp/batch_script_in_progress"
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+### batch run all function
+batch_run_all() {
+
+	### silencing sounds
+	osascript -e "set Volume 0"
+	
+
+	### activating keepingyouawake
+	env_activating_keepingyouawake
+
+
+	### hosts file generator
+	printf "\n${bold_text}###\nhosts file generator...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/1_hosts_file/install_hosts_file_generator_and_launchdservice.sh
+	env_active_source_app
+		
+	
+	### local ssl certificate
+	printf "\n${bold_text}###\nlocal ssl certificate...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/2_cert_install_update/install_cert_install_update_launchdservice.sh
+	env_active_source_app
+	
+	
+	### network locations
+	printf "\n${bold_text}###\nnetwork locations...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/3_network_select/install_network_select_and_launchdservice.sh
+	env_active_source_app
+	# waiting until online
+	ONLINE_STATUS=""
+	NUM=0
+	while [[ "$ONLINE_STATUS" != "online" ]] && [[ "$NUM" -le 60 ]]
+	do
+		env_check_if_online &> /dev/null
+		sleep 5
+		NUM=$((NUM+10))
+	done
+	
+	
+	### screen resolution	
+	if [[ "$USER" == "tom" ]]
+	then
+		printf "\n${bold_text}###\nscreen resolution...\n###\n${default_text}"
+		"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/user/1_screen_resolution/install_screen_resolution_user_launchdservice.sh
+		env_active_source_app
+	else
+		:
+	fi
+	
+	
+	### logout hook
+	printf "\n${bold_text}###\nlogout hook...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/09_launchd/9c_run_on_logout/install_run_on_logout_hook.sh
+	
+	
+	### login hook
+	printf "\n${bold_text}###\nlogin hook...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/system/install_run_on_login_hook.sh
+	
+		
+	### special autostart apps	
+	if [[ "$USER" == "tom" ]]
+	then
+		printf "\n${bold_text}###\nspecial autostart apps...\n###\n${default_text}"
+		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_signal.sh
+		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_whatsapp.sh
+	elif [[ "$USER" == "bobby" ]]
+	then
+		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_whatsapp.sh
+	else
+		:
+	fi
+	
+	
+	### dock
+	printf "\n${bold_text}###\ndock...\n###\n${default_text}"
+	"$SCRIPTS_FINAL_DIR"/10_dock/10_dock.sh
+	
+	
+	### privacy database entries
+	printf "\n${bold_text}###\nprivacy database entries...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11a_system_preferences_privacy_sqlite_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
+	
+	
+	### safari
+	printf "\n${bold_text}###\nsafari...\n###\n${default_text}"
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11b_safari_extensions_cookies_certificate.sh
+	env_active_source_app
+	
+	
+	### macos and app preferences
+	printf "\n${bold_text}###\nmacos and app preferences...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11c_macos_preferences_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
+	
+	
+	### batch script done
+	echo ''
+	printf "\n${bold_text}###\nbatch script done...\n###\n${default_text}"
+	echo ''
+}
+
+time ( batch_run_all )
+
+
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
+
+COMBINED_ERROR_LOG="/Users/"$USER"/Desktop/"$SCRIPT_NAME_WITHOUT_EXTENSION"_errorlog.txt"
+if [[ -e "$COMBINED_ERROR_LOG" ]]; then rm -f "$COMBINED_ERROR_LOG"; else :; fi
+while IFS= read -r line || [[ -n "$line" ]] 
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    i="$line"
+    echo '' >> "$COMBINED_ERROR_LOG"
+    echo '' >> "$COMBINED_ERROR_LOG"
+	cat "$i" >> "$COMBINED_ERROR_LOG"
+done <<< "$(find "$ERROR_LOG_DIR" -mindepth 1 -maxdepth 1 -type f -name "*.txt" | sort -n)"
+if [[ -e "$ERROR_LOG_DIR" ]]; then rm -rf "$ERROR_LOG_DIR"; else :; fi
+
+sed -i '' '/Klone nach/d' "$COMBINED_ERROR_LOG"
+sed -i '' '/YES (0)/d' "$COMBINED_ERROR_LOG"
+sed -i '' '/YES (0)/d' "$COMBINED_ERROR_LOG"
+sed -i '' '/Von https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
+sed -i '' '/From https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
+sed -i '' '/\* branch.*FETCH_HEAD/d' "$COMBINED_ERROR_LOG"
+#awk '/./ { e=0 } /^$/ { e += 1 } e <= 2' "$COMBINED_ERROR_LOG" > /tmp/errorlog.txt
+#cat /tmp/errorlog.txt > "$COMBINED_ERROR_LOG"
+#rm -f /tmp/errorlog.txt
+perl -i -ane '$n=(@F==0) ? $n+1 : 0; print if $n<=2' "$COMBINED_ERROR_LOG"
+
+
+### done
+echo ''
+echo "done ;)"
+echo ''
+
+
+### play sound
+osascript -e "set Volume 5"
+#osascript -e "beep"
+#/System/Library/Sounds/
+#/System/Library/PrivateFrameworks/ToneLibrary.framework/Versions/A/Resources/AlertTones/
+SOUND_FILE="/System/Library/PrivateFrameworks/ToneLibrary.framework/Versions/A/Resources/AlertTones/Modern/Chord.m4r"
+afplay "$SOUND_FILE" && afplay "$SOUND_FILE"
+osascript -e "set Volume 3"
+
+
+### checking output and rebooting
+ask_for_reboot() {
+	VARIABLE_TO_CHECK="$REBOOT_NOW"
+	QUESTION_TO_ASK="${bold_text}please check the complete output before rebooting... reboot now (Y/n)? "
+	env_ask_for_variable
+	printf "%s" "${default_text}"
+	REBOOT_NOW="$VARIABLE_TO_CHECK"
+	sleep 0.1
+	
+	if [[ "$REBOOT_NOW" =~ ^(yes|y)$ ]]
+	then
+	    #echo ''
+		osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot
+		#osascript -e 'tell app "loginwindow" to «event aevtrsdn»'          # shutdown
+		#osascript -e 'tell app "loginwindow" to «event aevtrlgo»'          # logout
+	    #echo ''
+	else
+		:
+	fi
+}
+echo ''
+
+if [[ "$RUN_FROM_BATCH_SCRIPT_ONE" == "yes" ]]
+then
+	:
+else
+	ask_for_reboot
+fi
+
+if [[ -e "/tmp/batch_script_in_progress" ]]; then rm -f "/tmp/batch_script_in_progress"; else :; fi
+
