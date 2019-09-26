@@ -389,6 +389,7 @@ MACOS_VERSION=$(sw_vers -productVersion)
 MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
 #MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | sed 's|\.|_|g')
 MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | tr '.' '_')
+MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
 
 env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
 
@@ -685,6 +686,7 @@ env_set_apps_security_permissions() {
             # delete entry before resetting
             sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where (service='$INPUT_SERVICE' and client='$APP_ID');" 2>&1 | grep -v '^$'
             sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where (service='kTCCServicePostEvent' and client='$APP_ID');" 2>&1 | grep -v '^$'
+            sleep 0.1
             if [[ "$MACOS_VERSION_MAJOR" == "10.13" ]]
             then
                 # macos 10.13
@@ -704,6 +706,7 @@ env_set_apps_security_permissions() {
         else
             # delete entry before resetting
             sqlite3 "$DATABASE_USER" "delete from access where (service='$INPUT_SERVICE' and client='$APP_ID');" 2>&1 | grep -v '^$'
+            sleep 0.1
             if [[ "$MACOS_VERSION_MAJOR" == "10.13" ]]
             then
                 # macos 10.13
@@ -748,7 +751,7 @@ env_set_apps_security_permissions() {
     #done
     done <<< "$(printf "%s\n" "${APPS_SECURITY_ARRAY[@]}")"
     
-    #sleep 0.5
+    sleep 0.1
 }
 
 
@@ -946,6 +949,7 @@ env_set_apps_automation_permissions() {
             
             # delete entry before resetting
             sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='$SOURCE_APP_ID' and indirect_object_identifier='$AUTOMATED_APP_ID');"
+            sleep 0.1
             # working and showing in gui of system preferences if csreq is not '?'
             sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
             
@@ -982,7 +986,7 @@ env_set_apps_automation_permissions() {
         #done
         done <<< "$(printf "%s\n" "${AUTOMATION_APPS[@]}")"
         
-        #sleep 0.5
+        sleep 0.1
     fi
 }
 
@@ -1492,6 +1496,41 @@ env_set_open_on_first_run_permissions() {
     else
         :
     fi
+}
+
+
+### checking if run from batch script and error logs
+env_check_if_run_from_batch_script() {
+    BATCH_PIDS=()
+    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    then
+        RUN_FROM_BATCH_SCRIPT="yes"
+    else
+        :
+    fi
+}
+
+env_start_error_log() {
+    ERROR_LOG_DIR=/Users/"$USER"/Desktop/batch_error_logs
+    if [[ ! -e "$ERROR_LOG_DIR" ]]
+    then
+        ERROR_LOG_NUM=1
+    else
+        ERROR_LOG_NUM=$(($(ls -1 "$ERROR_LOG_DIR" | awk -F'_' '{print $1}' | sort -n | tail -1)+1))
+    fi
+    mkdir -p "$ERROR_LOG_DIR"
+    if [[ "$ERROR_LOG_NUM" -le "9" ]]; then ERROR_LOG_NUM="0"$ERROR_LOG_NUM""; else :; fi
+    ERROR_LOG="$ERROR_LOG_DIR"/"$ERROR_LOG_NUM"_"$SCRIPT_NAME_WITHOUT_EXTENSION"_errorlog.txt
+    echo "### "$SCRIPT_NAME"" >> "$ERROR_LOG"
+    #echo "### $(date "+%Y-%m-%d %H:%M:%S")" >> "$ERROR_LOG"
+    echo '' >> "$ERROR_LOG"
+    exec 2> >(tee -ia "$ERROR_LOG" >&2)
+}
+
+env_stop_error_log() {
+    exec 2<&-
+    exec 2>&1
 }
 
 
