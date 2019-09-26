@@ -83,7 +83,18 @@ Before deleting everything on your drive and starting a clean macOS install make
 
 As mentioned above some scripts (e.g. homebrew-update, hosts, network-select, etc.) come with installer scripts that copy the needed files to the respective locations in the system and adjust their ownership and permissions. They can be used on a regular basis (some of them automatically) after installation.
 
+##### Batch Installation
 
+After a lot of changes to the structure, the content, the config file and the default shell in the scripts it's finally possible (as of 2019-09, macOS 10.15 only) to combine most of them as a batch installer. After customizing and adjusting all scripts to your needs follow these steps:
+
+0. Make a backup to an external drive/server/nas with the [backup script](#7backup-and-restore-script). Just to be safe I recommend an additional time machine backup.
+0. Create the [bootable usb device](#0bootable-usb-device) and perform a clean macOS install.
+0. Adjust the settings for [NVRAM, SIP and Secure Boot](#1nvram-system-integrity-protection-and-secure-boot).
+0. Use the [batch install scripts](https://github.com/tiiiecherle/osx_install_config/blob/master/_batch_run/) and reboot in between.
+
+This has the advantage that the scripts do not have to be run one by one. Instead the batch scripts sequentially processes all the scripts and play a sound when done. After each batch script check all outputs (and logfiles if needed) and reboot before starting the next one.
+
+This makes the install/restore itself easy, mostly unattended, clean and fast.
 
 0	Bootable usb device
 -----
@@ -179,8 +190,8 @@ Mas makes it possible to install and update apps from the macOS appstore using t
 
 You will find more information here:
 
-* [homebrew](http://brew.sh)
-* [homebrew-cask](http://caskroom.io)
+* [homebrew](https://brew.sh)
+* [homebrew-cask](https://formulae.brew.sh/cask)
 * [mas-cli](https://github.com/mas-cli/mas)
 
 [These scripts](https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install) install macOS Command Line Tools, homebrew, homebrew-cask and mas. Additionally, they take the entries from separate list files and install homebrew formulas, apps from the App Store, macOS-plugins and macOS-apps in parallel mode. It is like downloading and installing them manually but a lot faster and more comfortable. To easily keep all packages and apps up-to-date a [macOS-app Wrapper update script](https://github.com/tiiiecherle/osx_install_config/tree/master/03_homebrew_casks_and_mas/3c_homebrew_formulae_and_casks_update) is also included and can be installed to /Applications using the dmg installer.
@@ -219,23 +230,21 @@ This backup/restore tool is highly customizable, configurable and based on well-
 
 At first glance it seems a bit complicated but it really isn`t ;)
 
-When running the script by double clicking the `run_backup_script.command` you will be asked to select a user if you have multiple users on your mac. Afterwards you will be prompted by an applescript to choose a directory where to save the backup. The backup files and folders will temporarily be saved to `~/Desktop/backup_$USER_DATE` and is supposed to preserve all file permissions. In the next step the script creates a .tar.gz.gpg file of the backup folder (also on the Desktop) and checks the file integrity. After the test has passed successfully the file will be moved to the specified location and the temporary files on the Desktop get deleted.  It uses your macOS password to encrypt the backup.
+When running the script by double clicking the `run_backup_script.command` you will be asked to select a user if you have multiple users on your mac. Afterwards you will be prompted by an applescript to choose a directory where to save the backup. The backup files and folders will temporarily be saved to `~/Desktop/backup_$USER_DATE` and is supposed to preserve all file permissions. In the next step the script creates a .tar.gz.gpg file of the backup folder and checks the file integrity. After the test has passed successfully the temporary files on the Desktop get deleted. It uses your macOS password to encrypt the backup.
 
 The lines in the `.../list/backup_restore_list.txt` specify the files and folders to be backed up or restored.
 
-All lines that get backed up or restored start by an m (master) or u (user) and the script does a syntax check of the backup_restore_list.txt file at the beginning. Lines that are commented out are ignored and the echo lines will be displayed in the Terminal while running.
+All lines that get backed up or restored start by u (user) and the script does a syntax check of the backup_restore_list.txt file at the beginning. Lines that are commented out are ignored and the echo lines will be displayed in the Terminal while running.
 
 Over time the script gathered more and more backup options for different purposes, e.g. an applescript for backing up calendars, contacts and reminders using the GUI. 
 
 To make usage for multiple users easier and faster it can be run with profiles. More information can be found in the comments inside the script and in the example profile. To run the script with a profile, duplicate the example profile and name it `backup_profile_USER.conf`. Change USER to your logged in macOS username.
 
-If there are multiple macs that are not kept up to date every time with all apps and settings the script has a user/master mode. Everything that is marked as master will be restored from a selected master backup, all entries marked as user will be restored from the selected user backup. Master and user backups can be selected when running `run_restore_script.command`.
-
 ##### restore
 
 Make sure you only restore files and folders this way that were backed up with this script, so they have the correct structure inside the backup/restore directory. 
 
-If you do not use a master/user structure and only backup/restore one mac just select the same folder for master und user when the script prompts for the respective input.
+Select the folder containing the backup files when the script prompts for the respective input.
 
 Use `run_restore_script.command` to restore.
 
