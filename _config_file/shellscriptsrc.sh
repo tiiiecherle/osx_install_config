@@ -389,6 +389,21 @@ MACOS_VERSION=$(sw_vers -productVersion)
 MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
 #MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | sed 's|\.|_|g')
 MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | tr '.' '_')
+MACOS_MARKETING_NAME=$(awk '/SOFTWARE LICENSE AGREEMENT FOR macOS/' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | awk -F 'macOS ' '{print $NF}')
+if [[ "$MACOS_MARKETING_NAME" == "" ]]
+then
+    if [[ "$MACOS_VERSION_MAJOR" == 10.14 ]]
+    then
+        MACOS_MARKETING_NAME="Mojave"
+    elif [[ "$MACOS_VERSION_MAJOR" == 10.15 ]]
+    then
+        MACOS_MARKETING_NAME="Catalina"
+    else
+        :
+    fi
+else
+    :
+fi
 MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
 
 env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
