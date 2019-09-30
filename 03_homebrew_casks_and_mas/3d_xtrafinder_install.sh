@@ -37,7 +37,9 @@ install_finder_enhancement() {
 		local APP_NAME_LOWERED=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]')
 		local AUTOMATION_APP_NAME="$APP_NAME".app
 		local APP_INSTALLER="/Users/"$USER"/Desktop/"$APP_NAME".dmg"
-		
+		local APP_PATH_SOURCE="/Volumes/"$APP_NAME"/For OS X 10.13 - 10.6"
+		local BUNDLE_PATH_SOURCE="/Volumes/"$APP_NAME"/For OS X "$MACOS_VERSION_MAJOR" "$MACOS_MARKETING_NAME"/"$APP_NAME"Plugins.bundle"
+		local BUNDLE_PATH_DESTINATION="/System/Library/PrivateFrameworks/FileProvider.framework/OverrideBundles/"$APP_NAME"Plugins.bundle"
 		
 		### registering "$APP_NAME"
 	    local SCRIPT_DIR_LICENSE="$SCRIPT_DIR_TWO_BACK"
@@ -58,13 +60,20 @@ install_finder_enhancement() {
 		echo "mounting image..."
 		yes | hdiutil attach "$APP_INSTALLER" 1>/dev/null
 		sleep 5
-		# uninstall
+		# uninstall before xtrafinder 1.5.1
 		if [[ -e "$PATH_TO_APPS"/XtraFinder.app ]]
 		then
 			echo "uninstalling application..."
-			#env_use_password | sudo /Volumes/XtraFinder/Extra/Uninstall.app/Contents/MacOS/Uninstall 1>/dev/null
-			env_use_password | sudo /Volumes/XtraFinder/Extra/Uninstall.app/Contents/MacOS/Uninstall 2>&1 | grep -v "Failed to connect (window) outlet"
+			env_use_password | sudo "$APP_PATH_SOURCE"/Extra/Uninstall.app/Contents/MacOS/Uninstall 2>&1 | grep -v "Failed to connect (window) outlet"
 			sleep 10
+		else
+			:
+		fi
+		# additional uninstall steps xtrafinder 1.5.1 and newer
+		if [[ -e /System/Library/PrivateFrameworks/FileProvider.framework/OverrideBundles/"$APP_NAME"Plugins.bundle ]]
+		then
+			echo "uninstalling bundle..."
+			env_use_password | sudo rm -rf "$BUNDLE_PATH_DESTINATION"
 		else
 			:
 		fi
@@ -79,8 +88,12 @@ install_finder_enhancement() {
 			env_use_password | sudo mount -uw /
 			sleep 1
 		fi
-		#env_use_password | sudo installer -pkg /Volumes/"$APP_NAME"/"$APP_NAME".pkg -target / 1>/dev/null
-		env_use_password | sudo installer -pkg /Volumes/"$APP_NAME"/"$APP_NAME".pkg -target /
+		# install xtrafinder
+		env_use_password | sudo installer -pkg "$APP_PATH_SOURCE"/"$APP_NAME".pkg -target /
+		# additional install steps xtrafinder 1.5.1 and newer
+		echo "installing bundle..."
+		env_use_password | sudo cp -a "$BUNDLE_PATH_SOURCE" "$BUNDLE_PATH_DESTINATION"
+		env_use_password | sudo chown -R root:wheel "$BUNDLE_PATH_DESTINATION"
 		sleep 1
 		echo "unmounting and removing installer..."
 		hdiutil detach /Volumes/"$APP_NAME" -quiet
