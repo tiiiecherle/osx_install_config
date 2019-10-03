@@ -99,7 +99,7 @@ PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
 uuid1=$(python  -c 'import uuid; print uuid.uuid1()')
 
 echo "user uuid is $uuid1"
-echo ''
+#echo ''
 
 
 ### displayid
@@ -987,51 +987,83 @@ EOF
     fi
     
     # adding startup-items
-    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 3", path:"'$PATH_TO_APPS'/Bartender 3.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"AudioSwitcher", path:"'$PATH_TO_APPS'/AudioSwitcher.app", hidden:false}'
-    # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Overflow 3", path:"'$PATH_TO_APPS'/Overflow 3.app", hidden:true}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"KeepingYouAwake", path:"'$PATH_TO_APPS'/KeepingYouAwake.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 4", path:"'$PATH_TO_APPS'/Alfred 4.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"'$PATH_TO_APPS'/GeburtstagsChecker.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"AppCleaner Helper", path:"'$PATH_TO_APPS'/AppCleaner Helper.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"SMARTReporter", path:"'$PATH_TO_APPS'/SMARTReporter.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"TotalFinder", path:"'$PATH_TO_APPS'/TotalFinder.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"'$PATH_TO_APPS'/XtraFinder.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"iStat Menus", path:"'$PATH_TO_APPS'/iStat Menus.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"witchdaemon", path:"/Users/'$USER'/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Quicksilver", path:"'$PATH_TO_APPS'/Quicksilver.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Oversight", path:"'$PATH_TO_APPS'/OverSight.app/Contents/Library/LoginItems/OverSight Helper.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Virus Scanner Plus", path:"'$PATH_TO_APPS'/VirusScannerPlus.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Better", path:"'$PATH_TO_APPS'/Better.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"AdGuard for Safari", path:"'$PATH_TO_APPS'/AdGuard for Safari.app", hidden:true}'
+    add_startup_items() {
+	    while IFS= read -r line || [[ -n "$line" ]] 
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+	        i="$line"
+	        local APP_PATH=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+	        #echo "APP_PATH is "$APP_PATH"..."
+	        local APP_NAME=$(basename "$APP_PATH")
+	       	#echo "APP_NAME is "$APP_NAME"..."
+			local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	       	#echo "START_HIDDEN is "$START_HIDDEN"..."
+			if [[ -e "$APP_PATH".app ]]
+			then
+			    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
+	            osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$APP_PATH.app'", hidden:"'$START_HIDDEN'"}'
+	        else
+	        	echo ""$APP_PATH".app not found, skipping..."
+	        fi
+		done <<< "$(printf "%s\n" "${AUTOSTART_ITEMS[@]}")"
+	}
+	
+    AUTOSTART_ITEMS=(
+    # name													                                                start hidden
+    ""$PATH_TO_APPS"/Bartender 3                                                                            false"
+    ""$PATH_TO_APPS"/AudioSwitcher                                                                          false"   
+    ""$PATH_TO_APPS"/KeepingYouAwake                                                                        false" 
+    ""$PATH_TO_APPS"/Alfred 4                                                                               false" 
+    ""$PATH_TO_APPS"/GeburtstagsChecker                                                                     false" 
+    ""$PATH_TO_APPS"/AppCleaner.app/Contents/Library/LoginItems/AppCleaner SmartDelete                      false" 
+    ""$PATH_TO_APPS"/TotalFinder                                                                            false" 
+    ""$PATH_TO_APPS"/XtraFinder                                                                             false" 
+    "/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon                     false" 
+    ""$PATH_TO_APPS"/Quicksilver                                                                            false" 
+    #""$PATH_TO_APPS"/Oversight                                                                              false" 
+    ""$PATH_TO_APPS"/Better                                                                                 false"                     
+    # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
+    )
+    add_startup_items
     
     # adding some more startup-items for specified user if script is run on multiple macs with different users
     if [[ "$USER" == "tom" ]]
     then
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"VirtualBox Menulet", path:"'$PATH_TO_APPS'/VirtualBox Menulet.app", hidden:false}'
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_signal", path:"/Users/'$USER'/Library/Scripts/run_on_login_signal.app", hidden:false}'
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_whatsapp", path:"/Users/'$USER'/Library/Scripts/run_on_login_whatsapp.app", hidden:false}'
-    	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"Unified Remote", path:"'$PATH_TO_APPS'/Unified Remote.app", hidden:false}'
-    	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_network_change_login", path:"/Users/'$USER'/Library/Scripts/run_on_network_change_login.app", hidden:true}'
-    else
-    	:
-    fi
-    
-    if [[ "$USER" == "wolfgang" ]]
+        AUTOSTART_ITEMS=(
+        # name													                                                start hidden
+        ""$PATH_TO_APPS"/VirtualBox Menulet                                                                     false"
+        "/Users/"$USER"/Library/Scripts/run_on_login_signal                                                     false"   
+        "/Users/"$USER"/Library/Scripts/run_on_login_whatsapp                                                   false"                      
+        )
+        add_startup_items
+    elif [[ "$USER" == "bobby" ]]
     then
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Firefox", path:"'$PATH_TO_APPS'/Firefox.app", hidden:false}'
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Mail", path:"'$PATH_TO_SYSTEM_APPS'/Mail.app", hidden:true}'
-        osascript -e 'tell application "System Events" to make login item at end with properties {name:"PV Guard", path:"/Users/$USER/Library/Application Support/Oracle/Java/Deployment/cache/6.0/bundles/PVGuard.app", hidden:true}'
+    	AUTOSTART_ITEMS=(
+        # name													                                                start hidden
+        "/Users/"$USER"/Library/Scripts/run_on_login_whatsapp                                                   false"                      
+        )
+        add_startup_items
+    elif [[ "$USER" == "wolfgang" ]]
+    then
+        AUTOSTART_ITEMS=(
+        # name													                                                start hidden
+        ""$PATH_TO_APPS"/Firefox                                                                                false"
+        ""$PATH_TO_SYSTEM_APPS"/Mail                                                                            false"   
+        "/Users/"$USER"/Library/Application Support/Oracle/Java/Deployment/cache/6.0/bundles/PVGuard            false"                      
+        )
+        add_startup_items
     else
-    	:
+        :
     fi
     
     if [[ $(sysctl hw.model | grep "iMac11,2") != "" || $(sysctl hw.model | grep "iMac12,1") != "" ]] && [[ $(system_profiler SPStorageDataType | grep "Medium Type" | grep SSD) != "" ]]
     #if [[ $(system_profiler SPHardwareDataType | grep "Model Identifier" | grep "iMac11,2") != "" ]]
     then
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Macs Fan Control", path:"'$PATH_TO_APPS'/Macs Fan Control.app", hidden:false}'
+        AUTOSTART_ITEMS=(
+        # name													                                                start hidden
+        ""$PATH_TO_APPS"/Macs Fan Control                                                                       false"                     
+        )
+        add_startup_items
     else
     	:
     fi
@@ -1064,14 +1096,34 @@ EOF
                     env_set_open_on_first_run_permissions
                     PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/Signal.app"
                     env_set_open_on_first_run_permissions
+                elif [[ "$line" == "AppCleaner SmartDelete" ]]
+                then
+                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/AppCleaner.app/Contents/Library/LoginItems/AppCleaner SmartDelete.app"
+                    env_set_open_on_first_run_permissions
                 else
                     PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/"$autostartapp".app"
                     env_set_open_on_first_run_permissions
                 fi
                 
-                osascript -e "tell application \"$autostartapp\" to activate" &
-                sleep 1
-                #osascript -e "tell application \"$autostartapp\" to quit"
+                if [[ "$line" == "XtraFinder" ]]
+        		then
+        			osascript <<EOF
+        			tell application "System Events"
+        				tell application "XtraFinder" to activate
+        				delay 2
+        				tell application "System Events"
+        					keystroke "w" using command down
+        				end tell
+        				delay 1
+        			end tell
+EOF
+                env_active_source_app
+                else
+                    osascript -e "tell application \"$autostartapp\" to activate" &
+                    sleep 1
+                    #osascript -e "tell application \"$autostartapp\" to quit"
+                fi
+                
             done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//')"
             
             if [[ -e "/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app" ]]

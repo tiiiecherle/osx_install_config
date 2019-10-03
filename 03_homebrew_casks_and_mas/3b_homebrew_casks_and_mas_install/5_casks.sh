@@ -72,6 +72,15 @@ env_sudo
 env_command_line_tools_install_shell
 
 
+
+###
+### variables
+###
+
+BREW_CASKS_PATH=$(brew cask doctor | grep -A1 -B1 "Cask Staging Location" | tail -1)
+
+
+
 ###
 ### functions
 ###
@@ -84,7 +93,21 @@ install_casks_parallel() {
     if [[ $(brew cask list | grep "^$i$") == "" ]]
     then
         echo "installing cask "$i"..."
-        env_use_password | brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
+        env_use_password | env_timeout 300 brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
+        if [[ $? -eq 0 ]]
+        then
+            # successfull
+            :
+        else
+            # failed
+            # making sure install check recognizes the failed install when using brew cask list | grep "$i"
+            if [[ -e "$BREW_CASKS_PATH"/"$i" ]]
+            then
+            	rm -rf "$BREW_CASKS_PATH"/"$i"
+            else
+            	:
+            fi
+        fi
         #
         if [[ "$i" == "avg-antivirus" ]]
         then 
@@ -105,17 +128,22 @@ install_casks_parallel() {
         fi
         if [[ "$i" == "libreoffice-language-pack" ]]
         then
-            # waiting for libreoffice to be detectable by language pack
-            sleep 120
-            # installung language pack
-            LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-            PATH_TO_FIRST_RUN_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
-            env_set_open_on_first_run_permissions
-            PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
-            env_set_open_on_first_run_permissions
-            open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
-            sleep 2
-            env_active_source_app
+            if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+            then
+                :
+            else
+                # waiting for libreoffice to be detectable by language pack
+                sleep 120
+                # installung libreoffice language pack
+                LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+                PATH_TO_FIRST_RUN_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+                env_set_open_on_first_run_permissions
+                PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
+                env_set_open_on_first_run_permissions
+                open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
+                sleep 2
+                env_active_source_app
+            fi
         fi
         if [[ "$i" == "textmate" ]]
         then
@@ -143,7 +171,21 @@ install_casks_parallel() {
                 if [[ $(brew cask list | grep "^$d$") == "" ]]
                 then
                     echo "installing missing dependency "$d"..."
-                    env_use_password | brew cask install --force "$d" 2> /dev/null | grep "successfully installed"
+                    env_use_password | env_timeout 300 brew cask install --force "$d" 2> /dev/null | grep "successfully installed"
+                    if [[ $? -eq 0 ]]
+                    then
+                        # successfull
+                        :
+                    else
+                        # failed
+                        # making sure install check recognizes the failed install when using brew cask list | grep "$i"
+                        if [[ -e "$BREW_CASKS_PATH"/"$d" ]]
+                        then
+                        	rm -rf "$BREW_CASKS_PATH"/"$d"
+                        else
+                        	:
+                        fi
+                    fi
                 else
                     :
                 fi
@@ -516,7 +558,23 @@ then
     then
         echo ''
         echo "updating macosfuse after virtualbox install..."
-        env_use_password | brew cask install --force osxfuse 2> /dev/null | grep "successfully installed"
+        i="osxfuse"
+        env_use_password | env_timeout 300 brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
+        if [[ $? -eq 0 ]]
+        then
+            # successfull
+            :
+        else
+            # failed
+            # making sure install check recognizes the failed install when using brew cask list | grep "$i"
+            if [[ -e "$BREW_CASKS_PATH"/"$i" ]]
+            then
+            	rm -rf "$BREW_CASKS_PATH"/"$i"
+            else
+            	:
+            fi
+        fi
+        unset i
     else
         :
     fi
@@ -630,8 +688,16 @@ then
     echo ''
     #env_use_password | brew cask uninstall java
     #env_use_password | brew cask uninstall adoptopenjdk
-    env_use_password | brew cask install caskroom/versions/java8
+    #env_use_password | brew cask install caskroom/versions/java8
     #env_use_password | brew cask install AdoptOpenJDK/openjdk/adoptopenjdk8
+	SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_THREE_BACK"
+	if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh ]]
+	then
+		echo ''
+	    "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh
+	else
+	    echo "script to install java8 not found..." >&2
+	fi
     echo ''
 else
     :
