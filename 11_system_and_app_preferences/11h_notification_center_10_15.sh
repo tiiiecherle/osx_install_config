@@ -236,7 +236,7 @@ do
 	            CHECK_RESULT_PRINT=$(echo -e '\033[1;32m    ok\033[0m')
 	            #CHECK_RESULT_PRINT=$(echo -e '\033[1;31m outdated\033[0m')
 			else
-	            CHECK_RESULT_PRINT=$(echo -e '\033[1;31m  wrong\033[0m')
+	            CHECK_RESULT_PRINT=$(echo -e '\033[1;31m  wrong\033[0m' >&2)
 	        fi
 		    printf "%-5s %-35s %12s %12s %12s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER_PRINT" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE" "$CHECK_RESULT_PRINT"
 		else

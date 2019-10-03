@@ -113,7 +113,7 @@ batch_run_all() {
 	
 	### finder favorites
 	printf "\n${bold_text}###\nfinder favorites...\n###\n${default_text}"
-	echo ''
+	#echo ''
 	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11g_finder_favorites.py
 	#echo ''
 	

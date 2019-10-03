@@ -133,6 +133,7 @@ u	~/Library/Application Support/Brackets/state.json
 # Bresink Software Updater
 echo Bresink Software Updater
 u	/Applications/BresinkSoftwareUpdater.app
+u	/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool
 
 # Brew Casks Update
 echo Brew Casks Update
@@ -325,8 +326,15 @@ u	~/Library/Preferences/com.DigiDNA.SharedPreferences.plist
 echo iStat Menus
 #u	/Applications/iStat Menus.app
 u	~/Library/Preferences/com.bjango.istatmenus.plist
-u	~/Library/Preferences/com.bjango.istatmenus5.extras.plist
-u	~/Library/Preferences/com.iSlayer.iStatMenusPreferences.plist
+u	~/Library/Preferences/com.bjango.istatmenus6.extras.plist
+#u	~/Library/Preferences/com.iSlayer.iStatMenusPreferences.plist
+u	~/Library/LaunchAgents/com.bjango.istatmenus.agent.plist
+u	~/Library/LaunchAgents/com.bjango.istatmenus.status.plist
+u	/Library/Application Support/iStat Menus 6
+u	/Library/PrivilegedHelperTools/com.bjango.istatmenus.installerhelper
+u	/Library/LaunchDaemons/com.bjango.istatmenus.fans.plist
+u	/Library/LaunchDaemons/com.bjango.istatmenus.daemon.plist
+u	/Library/LaunchDaemons/com.bjango.istatmenus.installerhelper.plist
 
 # iTerm
 echo iTerm

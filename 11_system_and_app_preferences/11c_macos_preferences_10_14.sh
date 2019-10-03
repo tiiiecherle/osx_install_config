@@ -85,7 +85,7 @@ PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
 uuid1=$(python  -c 'import uuid; print uuid.uuid1()')
 
 echo "user uuid is $uuid1"
-echo ''
+#echo ''
 
 
 ### displayid

@@ -205,6 +205,26 @@ backup_restore_permissions() {
         :
     fi
     
+    # istat menus
+    if [[ -e ""$PATH_TO_APPS"/iStat Menus.app" ]]
+    then
+        sudo chown -R root:wheel "/Library/Application Support/iStat Menus 6"
+    	sudo chown root:wheel "/Library/LaunchDaemons/com.bjango.istatmenus.fans.plist"
+    	sudo chown root:wheel "/Library/LaunchDaemons/com.bjango.istatmenus.daemon.plist"
+    	sudo chown root:wheel "/Library/LaunchDaemons/com.bjango.istatmenus.installerhelper.plist"
+    	sudo chown root:wheel "/Library/PrivilegedHelperTools/com.bjango.istatmenus.installerhelper"
+    else
+        :
+    fi
+    
+    # bresink software update helper
+    if [[ -e "/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool" ]]
+    then
+        sudo chown root:wheel "/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool"
+        sudo chmod 544 "/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool"
+    else
+        :
+    fi
     
     ### inside user folder
     echo "setting ownerships and permissions inside the user folder..."

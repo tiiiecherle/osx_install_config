@@ -1043,10 +1043,14 @@ backup_restore() {
             WAIT_PIDS=()
             WAIT_PIDS+=$(ps aux | grep brew_casks_update.app/Contents | grep -v grep | awk '{print $2;}')
             WAIT_PIDS+=$(ps aux | grep /brew_casks_update.sh | grep -v grep | awk '{print $2;}')
-            WAIT_PIDS+=$(ps aux | grep /hosts_file_generator.sh | grep -v grep | awk '{print $2;}')
             #echo "$WAIT_PIDS"
             #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
             while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"   
+            WAIT_PIDS=()
+            WAIT_PIDS+=$(ps aux | grep /hosts_file_generator.sh | grep -v grep | awk '{print $2;}')
+            #echo "$WAIT_PIDS"
+            #if [[ "$WAIT_PIDS" == "" ]]; then :; else sudo lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+            while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; sudo lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"
             
             #echo ''
             echo "updating hosts file, homebrew formulae and casks finished ;)"
@@ -1556,8 +1560,13 @@ backup_restore() {
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/QuotaManager"*
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/sql/"
                 #
-                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/"* 
-                osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/"*
+                if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+                then
+                    :
+                else
+                    osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+                fi
             else
                 :
             fi
@@ -1601,7 +1610,7 @@ backup_restore() {
             
             if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
             then
-                :
+                tput cuu 1
             else
                 echo '' 
                 osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot

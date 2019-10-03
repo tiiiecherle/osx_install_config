@@ -89,11 +89,14 @@ check_mas_apps() {
 	#echo $MAS_NUMBER
 	MAS_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
 	#echo $MAS_NAME
-	if [[ $(mas list | grep "$MAS_NUMBER") != "" ]]
+	#if [[ $(mas list | grep "$MAS_NUMBER") != "" ]]
+	# better results when batch installing from appstore as mas takes a while to register the app as installed in mas list
+	# checks if installed from appstore
+	if [[ $(find /Applications -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | grep "$MAS_NAME") != "" ]]
 	then
-		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$MAS_NAME";
+		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$MAS_NAME"
 	else 
-		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$MAS_NAME" >&2;
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$MAS_NAME" >&2
 	fi
 }
 
@@ -103,13 +106,14 @@ then
 	:
 else
     echo "checking mas appstore apps installation..."
+    sleep 1
     # updating index
-    mas list &> /dev/null
-    echo "waiting for mas index to get ready..."
-    while [[ $(mas list) == "" ]]
-    do
-        sleep 1
-    done
+    #mas list &> /dev/null
+    #echo "waiting for mas index to get ready..."
+    #while [[ $(mas list) == "" ]]
+    #do
+    #    sleep 1
+    #done
     if [[ "$INSTALLATION_METHOD" == "parallel" ]]
     then
         # by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
@@ -149,11 +153,11 @@ check_homebrew_formulae() {
 		:
 	fi
 	#if [[ $(brew info "$item" | grep "Not installed") == "" ]];
-	if [[ $(brew list | grep "^$i$") != "" ]]; 
+	if [[ $(brew list | grep "^$i$") != "" ]]
 	then 
-		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"; 
+		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"
 	else 
-		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$i" >&2; 
+		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$i" >&2
 	fi
 }
 
@@ -304,11 +308,11 @@ else
 		    if [[ "$line" == "" ]]; then continue; fi
             i="$line"
             i=$(echo "$i" | tr '[:upper:]' '[:lower:]')
-           	if [[ -e ""$PATH_TO_APPS"/"$i".app" ]]; 
+           	if [[ -e ""$PATH_TO_APPS"/"$i".app" ]]
 			then 
-				printf "%-50s\e[1;32mok\e[0m%-10s\n" ""$i""; 
+				printf "%-50s\e[1;32mok\e[0m%-10s\n" ""$i""
 			else 
-				printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" ""$i"" >&2; 
+				printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" ""$i"" >&2
 			fi
     	done <<< "$(printf "%s\n" "${finder_enhancements[@]}")"
     else

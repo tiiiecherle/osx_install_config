@@ -153,6 +153,18 @@ batch_run_all() {
 	RESTORE_FILES_OPTION="ask_for_restore_directories"
 	. "$SCRIPTS_FINAL_DIR"/06_manual_installations_restores/6b_restore_files.sh
 	unset RESTORE_FILES_OPTION
+	if [[ "$RESTORE_DIR_FILES" == "" ]]
+	then
+		echo "no directory for restoring files selected, respective scripts will be skipped..."
+	else
+		:
+	fi
+	if [[ "$RESTORE_DIR_VBOX" == "" ]]
+	then
+		echo "no directory for restoring vbox selected, respective scripts will be skipped..."
+	else
+		:
+	fi
 	echo ''
 	
 	
@@ -203,14 +215,19 @@ batch_run_all() {
 	"$SCRIPTS_FINAL_DIR"/02_preparations/symbolic_links_testvolume_macos_beta.sh
 	
 	
-	### archiving and restoring files
-	printf "\n${bold_text}###\nunarchiving and restoring files...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
-	time ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/06_manual_installations_restores/6b_restore_files.sh
-	unset RESTORE_FILES_OPTION
-	sleep 1
-	env_active_source_app
-	env_activating_keepingyouawake
+	### unarchiving and restoring files
+	if [[ "$RESTORE_DIR_FILES" == "" ]]
+	then
+		:
+	else
+		printf "\n${bold_text}###\nunarchiving and restoring files...\n###\n${default_text}"
+		create_tmp_batch_script_fifo
+		time ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/06_manual_installations_restores/6b_restore_files.sh
+		unset RESTORE_FILES_OPTION
+		sleep 1
+		env_active_source_app
+		env_activating_keepingyouawake
+	fi
 	
 	
 	### waiting for running processes to finish
@@ -256,19 +273,24 @@ batch_run_all() {
 	
 	
 	### restoring apps, settings and preferences
-	printf "\n${bold_text}###\nrestoring apps, settings and preferences...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
-	if [[ "$RESTORE_DIR_FILES" != "" ]]
+	if [[ "$RESTORE_DIR_FILES" == "" ]]
 	then
-	    echo ''
-		RESTOREUSERDIR=$(find "$RESTORE_DIR_FILES" -mindepth 1 -maxdepth 1 -type d -name "backup_"$USER"_*" | sort -n | tail -n 1)
-	else
 		:
+	else
+		printf "\n${bold_text}###\nrestoring apps, settings and preferences...\n###\n${default_text}"
+		create_tmp_batch_script_fifo
+		if [[ "$RESTORE_DIR_FILES" != "" ]]
+		then
+		    echo ''
+			RESTOREUSERDIR=$(find "$RESTORE_DIR_FILES" -mindepth 1 -maxdepth 1 -type d -name "backup_"$USER"_*" | sort -n | tail -n 1)
+		else
+			:
+		fi
+		echo "restoreuserdir is "$RESTOREUSERDIR"..."
+		RUN_SCRIPT="yes" RESTOREUSERDIR="$RESTOREUSERDIR" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/run_restore_script.command
+		sleep 0.5
+		#echo ''
 	fi
-	echo "restoreuserdir is "$RESTOREUSERDIR"..."
-	RUN_SCRIPT="yes" RESTOREUSERDIR="$RESTOREUSERDIR" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/run_restore_script.command
-	sleep 0.5
-	#echo ''
 	
 	### batch script one and two without reboot
 	if [[ "$BATCH_ONE_AND_TWO" =~ ^(yes|y)$ ]]
@@ -327,6 +349,7 @@ sed -i '' '/\[new tag\]/d' "$COMBINED_ERROR_LOG"
 sed -i '' '/\[new branch\]/d' "$COMBINED_ERROR_LOG"
 sed -i '' '/^script -q/d' "$COMBINED_ERROR_LOG"
 sed -i '' '/\[.*\].*\[=.*\].*\%.*ETA/d' "$COMBINED_ERROR_LOG"
+sed -i '' '/\[.*\].*\[=.*\].*100\%/d' "$COMBINED_ERROR_LOG"
 sed -i '' "/Already on 'master'/d" "$COMBINED_ERROR_LOG"
 sed -i '' '/reinstall.*brew reinstall/d' "$COMBINED_ERROR_LOG"
 sed -i '' '/Von https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
@@ -377,6 +400,12 @@ ask_for_reboot() {
 		:
 	fi
 }
+# reboot here to avoid problems with the restored keychain
+REBOOT_NOW="yes"
+# keep terminal(s) open (error logs are on the desktop)
+# reopen all windows after next login
+# false = disable, true = enable
+defaults write com.apple.loginwindow TALLogoutSavesState -bool true
 ask_for_reboot
 
 if [[ -e "/tmp/batch_script_in_progress" ]]; then rm -f "/tmp/batch_script_in_progress"; else :; fi

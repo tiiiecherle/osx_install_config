@@ -349,9 +349,13 @@ fi
 echo ''
 
 # waiting for apps to be registered correctly before checking success
-#sleep 10
+#sleep 1
 #mas reset
-WAITING_TIME=30
+#killall Finder
+
+# no longer waiting time needed
+# changed testing method in 7_formulae_casks_and_mas_install_check.sh
+WAITING_TIME=1
 NUM1=0
 echo ''
 while [[ "$NUM1" -le "$WAITING_TIME" ]]
@@ -371,15 +375,11 @@ done
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
-    :
+    echo ''
 else
     CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_CASKS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 fi
 
-
-###
-
-#echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

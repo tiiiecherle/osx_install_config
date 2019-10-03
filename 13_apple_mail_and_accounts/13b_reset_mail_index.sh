@@ -53,7 +53,13 @@ else
 	#echo "${bold_text}${blue_text}if this was the first run of this script after a restore please repair all needed mail rules...${default_text}"
     #echo ''
     # adding the port behind the mailbox criteria string seems to fix the broken mailrules when upgrading from 10.14 to 10.15
-    sed -i '' 's|@pop3.strato.de/|@pop3.strato.de:110/|' /Users/"$USER"/Library/Mail/V6/MailData/SyncedRules.plist
+    for i in $(find ~/Library/Mail/V*/MailData/ -type f -name "SyncedRules.plist")
+    do
+    	# v6 = 10.14
+    	# v7 = 10.15
+    	#sed -i '' 's|@pop3.strato.de/|@pop3.strato.de:110/|' /Users/"$USER"/Library/Mail/V6/MailData/SyncedRules.plist
+    	sed -i '' 's|@pop3.strato.de/|@pop3.strato.de:110/|' "$i"
+    done
 fi
 
 # opening mail and confirming rebuild

@@ -72,7 +72,7 @@ applications_to_set_values=(
 "/Applications/WhatsApp.app																335"
 "/Applications/Signal.app																335"
 "/Applications/pdf_200dpi_shrink.app/Contents/custom_files/pdf_shrink_done.app			335"
-"/Applications/Reminders.app															8535"
+"/Applications/Reminders.app															343"
 "/Applications/EagleFiler.app															335"
 "/Applications/VirusScannerPlus.app														335"
 )

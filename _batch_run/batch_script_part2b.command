@@ -152,9 +152,11 @@ batch_run_all() {
 		printf "\n${bold_text}###\nspecial autostart apps...\n###\n${default_text}"
 		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_signal.sh
 		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_whatsapp.sh
+		echo ''
 	elif [[ "$USER" == "bobby" ]]
 	then
 		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_whatsapp.sh
+		echo ''
 	else
 		:
 	fi

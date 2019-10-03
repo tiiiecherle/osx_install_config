@@ -50,7 +50,7 @@ fi
 ### totalfinder
 
 totalfinder_settings() {
-	if [[ -e "/Applications/TotalFinder.app" ]]
+	if [[ -e ""$PATH_TO_APPS"/TotalFinder.app" ]]
 	then
 		
 		echo ''
@@ -82,7 +82,7 @@ totalfinder_settings() {
 ### xtrafinder
 
 xtrafinder_settings() {
-	if [[ -e "/Applications/XtraFinder.app" ]]
+	if [[ -e ""$PATH_TO_APPS"/XtraFinder.app" ]]
 	then
 	
 		echo ''
@@ -126,7 +126,7 @@ xtrafinder_settings() {
 
 ### iterm 2                                                      
 
-if [[ -e "/Applications/iTerm.app" ]]
+if [[ -e ""$PATH_TO_APPS"/iTerm.app" ]]
 then
     
     echo ''
@@ -155,6 +155,44 @@ else
 fi
 
 
+### appcleaner                                                      
+if [[ -e ""$PATH_TO_APPS"/AppCleaner.app" ]]
+then
+    
+    echo ''
+    echo "appcleaner"
+    
+	defaults write net.freemacsoft.AppCleaner SUEnableAutomaticChecks -bool true
+	defaults write net.freemacsoft.AppCleaner SUSendProfileInfo -bool false
+	
+	# smartdelete is activated by adding the smartdelete app to autostart apps
+	# see autostart in script 11c_macos_preferences_"$MACOS_VERSION_MAJOR".sh
+
+else
+	:
+fi
+
+
+### istat menus                                                      
+if [[ -e ""$PATH_TO_APPS"/iStat Menus.app" ]]
+then
+    
+    echo ''
+    echo "istat menus"
+    
+	launchctl load -w "/Users/"$USER"/Library/LaunchAgents/com.bjango.istatmenus.agent.plist" 2>&1 | grep -v "service already loaded"
+	launchctl load -w "/Users/"$USER"/Library/LaunchAgents/com.bjango.istatmenus.status.plist" 2>&1 | grep -v "service already loaded"
+	sudo launchctl load -w "/Library/LaunchDaemons/com.bjango.istatmenus.fans.plist" 2>&1 | grep -v "service already loaded"
+	sudo launchctl load -w "/Library/LaunchDaemons/com.bjango.istatmenus.daemon.plist" 2>&1 | grep -v "service already loaded"
+	#sudo launchctl load -w "/Library/LaunchDaemons/com.bjango.istatmenus.installerhelper.plist"
+	
+	# permissions are set from restore script
+
+else
+	:
+fi
+
+
 ### GPGMail 2
 
 # disable signing emails by default
@@ -163,17 +201,17 @@ fi
 
 ### office 2019
 
-if [[ $(find "/Applications/" -mindepth 1 -maxdepth 1 -name "Microsoft *.app") != "" ]]
+if [[ $(find ""$PATH_TO_APPS"/" -mindepth 1 -maxdepth 1 -name "Microsoft *.app") != "" ]]
 then
     
     echo ''
     echo "office"
     
 	# uninstall/reinstall (testing only)
-	#cp -a "/Applications/Microsoft Excel.app" "/Users/"$USER"/Desktop/Microsoft Excel.app"
+	#cp -a ""$PATH_TO_APPS"/Microsoft Excel.app" "/Users/"$USER"/Desktop/Microsoft Excel.app"
 	#brew cask zap --force microsoft-office
-	#cp -a "/Users/"$USER"/Desktop/Microsoft Excel.app" "/Applications/Microsoft Excel.app"
-	#rm -rf "/Applications/Microsoft Excel.app"
+	#cp -a "/Users/"$USER"/Desktop/Microsoft Excel.app" ""$PATH_TO_APPS"/Microsoft Excel.app"
+	#rm -rf ""$PATH_TO_APPS"/Microsoft Excel.app"
 	
 	# cleaning old preferences
 	rm -f "/Users/"$USER"/Library/Preferences/com.microsoft.office.plist"
@@ -286,7 +324,7 @@ fi
 
 ### libreoffice
 
-if [[ -e "/Applications/LibreOffice.app" ]]
+if [[ -e ""$PATH_TO_APPS"/LibreOffice.app" ]]
 then
 
     echo ''
@@ -310,7 +348,7 @@ then
     # if checking content of config file after starting the app entries will be sorted alphabetically, not in the last lines
     
     # to set these preferences manually
-    # open /Applications/LibreOffice.app
+    # open "$PATH_TO_APPS"/LibreOffice.app
     # preferences - libreoffice - advanced - expert - search for settings name, e.g. RecentDocsThumbnail or PickListSize
     # set and apply
 
@@ -321,7 +359,7 @@ fi
 
 ### avast
 
-if [[ -e "/Applications/Avast.app" ]]
+if [[ -e ""$PATH_TO_APPS"/Avast.app" ]]
 then
 
     echo ''
@@ -393,7 +431,7 @@ EOF
     defaults write "$AVAST_HELPER_CONFIG" UpdatePopupDuration -int 5
 
     echo "restarting avast services to make the changes take effect..."
-    AVAST_BACKEND='/Applications/Avast.app/Contents/Backend/hub'
+    AVAST_BACKEND=""$PATH_TO_APPS"/Avast.app/Contents/Backend/hub"
     if [[ -e "$AVAST_BACKEND" ]]
     then
         echo "stopping avast services..."

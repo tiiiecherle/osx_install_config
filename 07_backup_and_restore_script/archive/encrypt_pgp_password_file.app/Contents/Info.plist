@@ -11,11 +11,11 @@
 	<key>CFBundleIconFile</key>
 	<string>applet</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.apple.ScriptEditor.id.encrypt-pgp-password-file-or-folder</string>
+	<string>com.apple.ScriptEditor.id.encrypt-pgp-password-file</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>encrypt_pgp_password_file_or_folder</string>
+	<string>encrypt_pgp_password_file</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -64,9 +64,9 @@
 		<key>name</key>
 		<string>ScriptWindowState</string>
 		<key>positionOfDivider</key>
-		<real>401</real>
+		<real>590</real>
 		<key>savedFrame</key>
-		<string>494 279 826 748 0 0 1680 1027 </string>
+		<string>20 138 1217 841 0 0 1680 1027 </string>
 		<key>selectedTab</key>
 		<string>result</string>
 	</dict>

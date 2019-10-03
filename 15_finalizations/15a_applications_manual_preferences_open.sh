@@ -17,7 +17,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### in addition to showing them in terminal write errors to logfile when run from batch script
 env_check_if_run_from_batch_script
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
-
+RUN_FROM_BATCH_SCRIPT=yes
 
 
 ###
@@ -49,31 +49,38 @@ echo ''
 echo "opening apps for applying preferences manually..."
 
 applications_to_open=(
-#"/Applications/Safari.app"
-#"/Applications/Firefox.app"
-#""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
-#""$PATH_TO_APPS"/Adobe Acrobat X Pro/Adobe Acrobat Pro.app"
-""$PATH_TO_APPS"/AppCleaner.app"
 ""$PATH_TO_SYSTEM_APPS"/FaceTime.app"
-""$PATH_TO_APPS"/iStat Menus.app"
+""$PATH_TO_SYSTEM_APPS"/Messages.app"
 ""$PATH_TO_SYSTEM_APPS"/Calendar.app"
 ""$PATH_TO_SYSTEM_APPS"/Contacts.app"
 ""$PATH_TO_SYSTEM_APPS"/Reminders.app"
-#""$PATH_TO_SYSTEM_APPS"/Mail.app"
-#""$PATH_TO_APPS"/Microsoft Word.app"
-""$PATH_TO_APPS"/Microsoft Excel.app"
-""$PATH_TO_SYSTEM_APPS"/Messages.app"
 ""$PATH_TO_APPS"/The Unarchiver.app"
-#"/Applications/Xcode.app"
-""$PATH_TO_APPS"/iMazing.app"
 ""$PATH_TO_APPS"/VirusScannerPlus.app"
-#""$PATH_TO_APPS"/Macs Fan Control.app"
-#""$PATH_TO_APPS"/Signal.app"
-#""$PATH_TO_APPS"/Keka.app"
 ""$PATH_TO_APPS"/Overflow 3.app"
 ""$PATH_TO_APPS"/BresinkSoftwareUpdater.app"
-#""$PATH_TO_APPS"/MacPass.app"
 ""$PATH_TO_APPS"/WireGuard.app"
+)
+
+for i in "${applications_to_open[@]}"
+do
+	if [[ -e "$i" ]]
+	then
+	    echo "opening $(basename "$i")"
+		open "$i" &
+		sleep 5
+	else
+		:
+	fi
+done
+
+# no longer needed, but kept for testing
+applications_to_open=(
+""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
+""$PATH_TO_APPS"/AppCleaner.app"
+""$PATH_TO_APPS"/iStat Menus.app"
+""$PATH_TO_APPS"/Microsoft Excel.app"
+""$PATH_TO_APPS"/iMazing.app"
+""$PATH_TO_APPS"/MacPass.app"
 )
 
 for i in "${applications_to_open[@]}"
@@ -97,9 +104,32 @@ then
     i="/Users/$USER/PVGuardClient/installer/pvdownload.jnlp"
     echo "opening $(basename "$i")"
 	open "$i" &
-	sleep 2
+	sleep 5
 else
     :
+fi
+
+# moved to manual install script so that auto reboot after batch_script1 and therefore restoring keychain works
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+	if [[ $(brew cask list | grep "^libreoffice-language-pack$") != "" ]] 
+	then
+	    # installung libreoffice language pack
+	    LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+	    PATH_TO_FIRST_RUN_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+	    env_set_open_on_first_run_permissions
+	    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
+	    env_set_open_on_first_run_permissions
+	    open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
+	    sleep 5
+	else
+		:
+	fi
+    
+    # hint for signal
+    osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+else
+	:
 fi
 
 # opening system preferences for the monitor

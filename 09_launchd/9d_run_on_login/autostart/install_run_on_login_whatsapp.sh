@@ -68,4 +68,4 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
 echo ''
 echo "done ;)"
-echo ''
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then :; else echo ''; fi

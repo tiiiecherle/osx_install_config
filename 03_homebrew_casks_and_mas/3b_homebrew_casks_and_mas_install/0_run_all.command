@@ -306,11 +306,12 @@ EOF
     ### checking success of installations
     #echo ''
     CHECK_IF_CASKS_INSTALLED="$CHECK_IF_CASKS_INSTALLED" CHECK_IF_MASAPPS_INSTALLED="$CHECK_IF_MASAPPS_INSTALLED" RUN_FROM_ALL_SCRIPT="yes" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
-
-    #echo ''
+    
+    sleep 0.5
+    echo ''
 }
 time ( run_all )
-sleep 1
+sleep 0.5
 
 echo ''
 echo "done ;)"
