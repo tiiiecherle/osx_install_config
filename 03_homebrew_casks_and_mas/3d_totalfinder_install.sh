@@ -52,7 +52,7 @@ install_finder_enhancement() {
 	    
 	    ### installation
 		# as "$APP_NAME" is no longer installable by cask let`s install it that way ;)
-	    if [[ "$RUN_FROM_CASKS_SCRIPT" == "yes" ]]; then :; else echo ''; fi
+	    #if [[ "$RUN_FROM_CASKS_SCRIPT" == "yes" ]]; then :; else echo ''; fi
 		echo "downloading "$APP_NAME_LOWERED"..."
 		curl https://downloads.binaryage.com/"$APP_NAME"-"$VERSION_NUMBER".dmg -o "$APP_INSTALLER" --progress-bar
 		echo "mounting image..."
