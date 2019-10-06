@@ -50,11 +50,12 @@ fi
 ### totalfinder
 
 totalfinder_settings() {
-	if [[ -e ""$PATH_TO_APPS"/TotalFinder.app" ]]
+	echo ''
+	APP_NAME_FOR_PREFERENCES="TotalFinder"
+	if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
 	then
-		
-		echo ''
-		echo "totalfinder"
+	
+		echo "$APP_NAME_FOR_PREFERENCES"
 		
 		# do not restore windows and tabs after reboot (does not exist in version 1.7.3 and above)
 		#defaults write com.apple.finder TotalFinderDontRestoreTabsState -bool yes
@@ -72,7 +73,7 @@ totalfinder_settings() {
 		#defaults write com.binaryage.totalfinder TotalFinderShowStatusItem -bool false
 		
 	else
-		:
+		echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 	fi
 }
 # moved to install script
@@ -82,11 +83,12 @@ totalfinder_settings() {
 ### xtrafinder
 
 xtrafinder_settings() {
-	if [[ -e ""$PATH_TO_APPS"/XtraFinder.app" ]]
+	echo ''
+	APP_NAME_FOR_PREFERENCES="XtraFinder"
+	if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
 	then
-	
-		echo ''
-	    echo "xtrafinder"
+		
+		echo "$APP_NAME_FOR_PREFERENCES"
 		
 		# automatically check for updates
 		defaults write com.apple.finder XFAutomaticChecksForUpdate -bool true
@@ -117,20 +119,20 @@ xtrafinder_settings() {
 		defaults write com.apple.finder XtraFinder_XFOpenInNewWindowPlugin -bool true
 	
 	else
-		:
+		echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 	fi
 }
 # moved to install script
 #xtrafinder_settings
 
 
-### iterm 2                                                      
-
-if [[ -e ""$PATH_TO_APPS"/iTerm.app" ]]
+### iterm 2
+echo ''                                                   
+APP_NAME_FOR_PREFERENCES="iTerm"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
 then
-    
-    echo ''
-    echo "iterm 2"
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
 
     # make terminal font sf mono available in other apps
     cp -a "$PATH_TO_SYSTEM_APPS"/Utilities/Terminal.app/Contents/Resources/Fonts/* /Users/"$USER"/Library/Fonts/
@@ -151,16 +153,17 @@ then
     # dealy in seconds between chunks when pasting normally			     0.01530456
 
 else
-	:
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 fi
 
 
-### appcleaner                                                      
-if [[ -e ""$PATH_TO_APPS"/AppCleaner.app" ]]
+### appcleaner
+echo ''
+APP_NAME_FOR_PREFERENCES="AppCleaner"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
 then
-    
-    echo ''
-    echo "appcleaner"
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
     
 	defaults write net.freemacsoft.AppCleaner SUEnableAutomaticChecks -bool true
 	defaults write net.freemacsoft.AppCleaner SUSendProfileInfo -bool false
@@ -169,16 +172,17 @@ then
 	# see autostart in script 11c_macos_preferences_"$MACOS_VERSION_MAJOR".sh
 
 else
-	:
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 fi
 
 
-### istat menus                                                      
-if [[ -e ""$PATH_TO_APPS"/iStat Menus.app" ]]
+### istat menus
+echo ''
+APP_NAME_FOR_PREFERENCES="iStat Menus"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
 then
-    
-    echo ''
-    echo "istat menus"
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
     
 	launchctl load -w "/Users/"$USER"/Library/LaunchAgents/com.bjango.istatmenus.agent.plist" 2>&1 | grep -v "service already loaded"
 	launchctl load -w "/Users/"$USER"/Library/LaunchAgents/com.bjango.istatmenus.status.plist" 2>&1 | grep -v "service already loaded"
@@ -189,8 +193,62 @@ then
 	# permissions are set from restore script
 
 else
-	:
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 fi
+
+
+### bresink software updater
+echo ''
+APP_NAME_FOR_PREFERENCES="BresinkSoftwareUpdater"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
+then
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
+	
+	sudo launchctl load -w "/Library/LaunchDaemons/BresinkSoftwareUpdater-PrivilegedTool.plist" 2>&1 | grep -v "service already loaded"
+	
+	# permissions are set from restore script
+
+else
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+fi
+
+
+### appcleaner
+echo ''
+APP_NAME_FOR_PREFERENCES="The Unarchiver"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
+then
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
+    
+	defaults write com.macpaw.site.theunarchiver userAgreedToNewTOSAndPrivacy -bool true
+	defaults write com.macpaw.site.theunarchiver SUEnableAutomaticChecks -bool true
+	defaults write com.macpaw.site.theunarchiver openExtractedFolder -bool true
+	
+else
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+fi
+
+
+### virus scanner plus
+echo ''
+APP_NAME_FOR_PREFERENCES="VirusScannerPlus"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
+then
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
+    
+	defaults write com.bitdefender.virusscannerplus continuous_run -bool true
+	defaults write com.bitdefender.virusscannerplus upd_automatic -bool true
+	defaults write com.bitdefender.virusscannerplus oas_scan -bool true
+	#defaults write com.bitdefender.virusscannerplus shouldShowTerms -bool false
+	#defaults write com.bitdefender.virusscannerplus termsOfUse -bool true
+	
+else
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+fi
+
 
 
 ### GPGMail 2
@@ -200,11 +258,10 @@ fi
 
 
 ### office 2019
-
+echo ''
 if [[ $(find ""$PATH_TO_APPS"/" -mindepth 1 -maxdepth 1 -name "Microsoft *.app") != "" ]]
 then
     
-    echo ''
     echo "office"
     
 	# uninstall/reinstall (testing only)
@@ -318,17 +375,17 @@ then
     done
     
 else
-    :
+	echo "no microsoft office apps found, skipping setting preferences..." >&2
 fi
 
 
 ### libreoffice
-
-if [[ -e ""$PATH_TO_APPS"/LibreOffice.app" ]]
+echo ''
+APP_NAME_FOR_PREFERENCES="LibreOffice"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
 then
-
-    echo ''
-    echo "libreoffice"
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
 
     LIBREOFFICE_CONFIG="/Users/$USER/Library/Application Support/LibreOffice/4/user/registrymodifications.xcu"
     
@@ -353,38 +410,39 @@ then
     # set and apply
 
 else
-	:
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 fi
 
 
-### avast
-
-if [[ -e ""$PATH_TO_APPS"/Avast.app" ]]
-then
-
-    echo ''
-    echo "avast"
-
-    #echo "setting preferences..."
-    AVAST_DAEMON_CONFIG='/Library/Application Support/Avast/config/com.avast.daemon.conf'
-    if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^STATISTICS*") == "" ]]
-    then
-        sudo "$SCRIPT_INTERPRETER" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
-        sudo "$SCRIPT_INTERPRETER" -c "echo 'STATISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
-    else
-        :
-    fi
-    if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^HEURISTICS*") == "" ]]
-    then
-        #sudo "$SCRIPT_INTERPRETER" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
-        sudo "$SCRIPT_INTERPRETER" -c "echo 'HEURISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
-    else
-        :
-    fi
-    
-    # files
-    AVAST_FILESHIELD_CONFIG='/Library/Application Support/Avast/config/com.avast.fileshield.conf'
-    sudo "$SCRIPT_INTERPRETER" -c "cat > '$AVAST_FILESHIELD_CONFIG' << 'EOF'
+avast_settings() {
+	### avast
+	echo ''
+	APP_NAME_FOR_PREFERENCES="Avast"
+	if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
+	then
+		
+		echo "$APP_NAME_FOR_PREFERENCES"
+	
+	    #echo "setting preferences..."
+	    AVAST_DAEMON_CONFIG='/Library/Application Support/Avast/config/com.avast.daemon.conf'
+	    if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^STATISTICS*") == "" ]]
+	    then
+	        sudo "$SCRIPT_INTERPRETER" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
+	        sudo "$SCRIPT_INTERPRETER" -c "echo 'STATISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
+	    else
+	        :
+	    fi
+	    if [[ $(cat "$AVAST_DAEMON_CONFIG" | grep "^HEURISTICS*") == "" ]]
+	    then
+	        #sudo "$SCRIPT_INTERPRETER" -c "echo '' >> '$AVAST_DAEMON_CONFIG'"
+	        sudo "$SCRIPT_INTERPRETER" -c "echo 'HEURISTICS = 0' >> '$AVAST_DAEMON_CONFIG'"
+	    else
+	        :
+	    fi
+	    
+	    # files
+	    AVAST_FILESHIELD_CONFIG='/Library/Application Support/Avast/config/com.avast.fileshield.conf'
+	    sudo "$SCRIPT_INTERPRETER" -c "cat > '$AVAST_FILESHIELD_CONFIG' << 'EOF'
 {
     \"fileshield\" : 
     {
@@ -393,13 +451,13 @@ then
         \"scanPup\" : true
     }
 }
-
+	
 EOF
 "
-
-    # mail and web
-    AVAST_PROXY_CONFIG='/Library/Application Support/Avast/config/com.avast.proxy.conf'
-    sudo "$SCRIPT_INTERPRETER" -c "cat > '$AVAST_PROXY_CONFIG' << 'EOF'
+	
+	    # mail and web
+	    AVAST_PROXY_CONFIG='/Library/Application Support/Avast/config/com.avast.proxy.conf'
+	    sudo "$SCRIPT_INTERPRETER" -c "cat > '$AVAST_PROXY_CONFIG' << 'EOF'
 {
     \"general\" : 
     {
@@ -424,39 +482,40 @@ EOF
 }
 EOF
 "
-
-    # notification durations
-    AVAST_HELPER_CONFIG='/Users/'$USER'/Library/Preferences/com.avast.helper.plist'  
-    defaults write "$AVAST_HELPER_CONFIG" InfoPopupDuration -int 5
-    defaults write "$AVAST_HELPER_CONFIG" UpdatePopupDuration -int 5
-
-    echo "restarting avast services to make the changes take effect..."
-    AVAST_BACKEND=""$PATH_TO_APPS"/Avast.app/Contents/Backend/hub"
-    if [[ -e "$AVAST_BACKEND" ]]
-    then
-        echo "stopping avast services..."
-        sh "$AVAST_BACKEND"/usermodules/010_helper.sh stop >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/010_daemon.sh stop >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/014_fileshield.sh stop >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/020_service.sh stop >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/030_proxy.sh stop >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/060_wifiguard.sh stop >/dev/null 2>&1
-        sleep 1
-        echo "starting avast services..."
-        sh "$AVAST_BACKEND"/usermodules/010_helper.sh start >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/010_daemon.sh start >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/014_fileshield.sh start >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/020_service.sh start >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/030_proxy.sh start >/dev/null 2>&1
-        sudo sh "$AVAST_BACKEND"/modules/060_wifiguard.sh start >/dev/null 2>&1
-    else
-        echo "avast services not found, skipping..."
-    fi
-
-else
-	:
-fi
-
+	
+	    # notification durations
+	    AVAST_HELPER_CONFIG='/Users/'$USER'/Library/Preferences/com.avast.helper.plist'  
+	    defaults write "$AVAST_HELPER_CONFIG" InfoPopupDuration -int 5
+	    defaults write "$AVAST_HELPER_CONFIG" UpdatePopupDuration -int 5
+	
+	    echo "restarting avast services to make the changes take effect..."
+	    AVAST_BACKEND=""$PATH_TO_APPS"/Avast.app/Contents/Backend/hub"
+	    if [[ -e "$AVAST_BACKEND" ]]
+	    then
+	        echo "stopping avast services..."
+	        sh "$AVAST_BACKEND"/usermodules/010_helper.sh stop >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/010_daemon.sh stop >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/014_fileshield.sh stop >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/020_service.sh stop >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/030_proxy.sh stop >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/060_wifiguard.sh stop >/dev/null 2>&1
+	        sleep 1
+	        echo "starting avast services..."
+	        sh "$AVAST_BACKEND"/usermodules/010_helper.sh start >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/010_daemon.sh start >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/014_fileshield.sh start >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/020_service.sh start >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/030_proxy.sh start >/dev/null 2>&1
+	        sudo sh "$AVAST_BACKEND"/modules/060_wifiguard.sh start >/dev/null 2>&1
+	    else
+	        echo "avast services not found, skipping..."
+	    fi
+	
+	else
+		echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+	fi
+}
+#avast_settings
 
 
 ### stopping the error output redirecting
