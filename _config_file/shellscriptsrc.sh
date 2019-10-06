@@ -1168,6 +1168,39 @@ env_get_current_command_line_tools_version() {
 }
 
 
+env_check_for_software_updates_gui() {
+    # getting ids of all system preferences panes
+    #osascript <<EOF
+    #tell application "System Preferences"
+    #	id of panes
+    #end tell
+#EOF
+    
+    # getting id of currently active system preference pane
+    #osascript <<EOF
+    #tell application "System Preferences"
+    #	set CurrentPane to the id of the current pane
+    #	display dialog CurrentPane
+    #end tell
+#EOF
+    
+    osascript <<EOF
+        tell application "System Preferences"
+        	# activate opens in foreground, run in background
+        	#activate
+        	run
+        	delay 1
+        	set current pane to pane "com.apple.preferences.softwareupdate"
+        end tell
+        #delay 5
+        #tell application "System Events"
+    	#    set visible of process "System Preferences" to false
+        #end tell
+        delay 30
+        tell application "System Preferences" to quit
+EOF
+}
+
 env_command_line_tools_install_shell() {
     # installing command line tools (command line)
     #if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ "$(ls -A "$(xcode-select -print-path)")" ]]
@@ -1188,6 +1221,32 @@ env_command_line_tools_install_shell() {
         if [[ -e "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress" ]]
         then
             sudo rm -f "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+            # closing software update notification
+            echo ''
+            # does not work on fresh batch install
+            #echo "closing software update notification..."
+            #sleep 1
+            #softwareupdate --list >/dev/null 2>&1
+            #sleep 1
+            #killall SoftwareUpdateNotificationManager
+            # works
+            env_check_for_software_updates_gui &
+            WAITING_TIME=32
+            NUM1=0
+            echo ''
+            while [[ "$NUM1" -le "$WAITING_TIME" ]]
+            do 
+            	NUM1=$((NUM1+1))
+            	if [[ "$NUM1" -le "$WAITING_TIME" ]]
+            	then
+            		#echo "$NUM1"
+            		sleep 1
+            		tput cuu 1 && tput el
+            		echo "waiting $((WAITING_TIME-NUM1)) seconds for closing software update notification..."
+            	else
+            		:
+            	fi
+            done
         else
             :
         fi
