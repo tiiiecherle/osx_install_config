@@ -231,16 +231,15 @@ EOF
     # becomes active after logout
     # defaults read -g | grep AppleInterfaceStyle
     # light
-    defaults delete -g AppleInterfaceStyle &> /dev/null
-    #defaults write -g AppleInterfaceStyle -string "Light"
-    defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
+    #defaults delete -g AppleInterfaceStyle &> /dev/null
+    #defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
     # dark
     #defaults delete -g AppleInterfaceStyle &> /dev/null
     #defaults write -g AppleInterfaceStyle -string "Dark"
     #defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
     # automatic
-    #defaults delete -g AppleInterfaceStyle &> /dev/null
-    #defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool true
+    defaults delete -g AppleInterfaceStyle &> /dev/null
+    defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool true
     
     # immediate change
     #osascript -e '
@@ -250,9 +249,6 @@ EOF
     #    end tell
     #end tell
     #'
-    
-    # automatically switch between light and dark mode (needs reboot)
-    defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
     
     # color (1=blue,8=graphit)
     ##
@@ -1009,19 +1005,20 @@ EOF
 	}
 	
     AUTOSTART_ITEMS=(
-    # name													                                                start hidden
-    ""$PATH_TO_APPS"/Bartender 3                                                                            false"
-    ""$PATH_TO_APPS"/AudioSwitcher                                                                          false"   
-    ""$PATH_TO_APPS"/KeepingYouAwake                                                                        false" 
-    ""$PATH_TO_APPS"/Alfred 4                                                                               false" 
-    ""$PATH_TO_APPS"/GeburtstagsChecker                                                                     false" 
-    ""$PATH_TO_APPS"/AppCleaner.app/Contents/Library/LoginItems/AppCleaner SmartDelete                      false" 
-    ""$PATH_TO_APPS"/TotalFinder                                                                            false" 
-    ""$PATH_TO_APPS"/XtraFinder                                                                             false" 
-    "/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon                     false" 
-    ""$PATH_TO_APPS"/Quicksilver                                                                            false" 
-    #""$PATH_TO_APPS"/Oversight                                                                              false" 
-    ""$PATH_TO_APPS"/Better                                                                                 false"                     
+    # name													                                                    start hidden
+    ""$PATH_TO_APPS"/Bartender 3                                                                                false"
+    ""$PATH_TO_APPS"/AudioSwitcher                                                                              false"   
+    ""$PATH_TO_APPS"/KeepingYouAwake                                                                            false" 
+    ""$PATH_TO_APPS"/Alfred 4                                                                                   false" 
+    ""$PATH_TO_APPS"/GeburtstagsChecker                                                                         false" 
+    ""$PATH_TO_APPS"/AppCleaner.app/Contents/Library/LoginItems/AppCleaner SmartDelete                          true" 
+    ""$PATH_TO_APPS"/TotalFinder                                                                                false" 
+    ""$PATH_TO_APPS"/XtraFinder                                                                                 false" 
+    "/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon                         false" 
+    ""$PATH_TO_APPS"/Quicksilver                                                                                false" 
+    #""$PATH_TO_APPS"/Oversight                                                                                  false" 
+    ""$PATH_TO_APPS"/Better                                                                                     false"
+    ""$PATH_TO_APPS"/VirusScannerPlus.app/Contents/Library/LoginItems/VirusScannerHelper                        false"                    
     # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
     )
     add_startup_items
@@ -1100,6 +1097,14 @@ EOF
                 then
                     PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/AppCleaner.app/Contents/Library/LoginItems/AppCleaner SmartDelete.app"
                     env_set_open_on_first_run_permissions
+                elif [[ "$line" == "VirusScannerHelper" ]]
+                then
+                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/VirusScannerPlus.app"
+                    env_set_open_on_first_run_permissions
+                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/VirusScannerPlus.app/Contents/Library/LoginItems/VirusScannerHelper.app"
+                    env_set_open_on_first_run_permissions
+                    # does not work as it resets the license agreement
+                    #autostartapp="VirusScannerPlus"
                 else
                     PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/"$autostartapp".app"
                     env_set_open_on_first_run_permissions
@@ -1119,7 +1124,10 @@ EOF
 EOF
                 env_active_source_app
                 else
-                    osascript -e "tell application \"$autostartapp\" to activate" &
+                    # foreground
+                    #timeout 10 osascript -e "tell application \"$autostartapp\" to activate" &
+                    # hidden
+                    timeout 10 osascript -e "tell application \"$autostartapp\" to run" &
                     sleep 1
                     #osascript -e "tell application \"$autostartapp\" to quit"
                 fi
