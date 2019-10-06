@@ -70,5 +70,5 @@ xnconvert
 
 # no longer installable by cask, installed with separate install script
 # correct name in uppercase and lowercase letters is needed
-XtraFinder
-#TotalFinder
+#XtraFinder
+TotalFinder
