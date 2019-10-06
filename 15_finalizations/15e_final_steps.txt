@@ -51,4 +51,5 @@ keychain (after batch_script1)
 enable safari extensions
 office license
 imazing (license has to be deactivated on old install before it can be re-used, otherwise contact support for license-reset)
+add scan permissions in virus scanner
 
