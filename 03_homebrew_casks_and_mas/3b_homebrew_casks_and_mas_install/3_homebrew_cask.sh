@@ -153,7 +153,7 @@ env_cleanup_all_homebrew
 echo ''
 echo "installing homebrew cask..."
 
-brew tap caskroom/cask
+brew tap homebrew/cask
 
 # installing keepingyouawake
 #if [[ -e /Applications/KeepingYouAwake.app ]]
