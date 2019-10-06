@@ -134,6 +134,7 @@ u	~/Library/Application Support/Brackets/state.json
 echo Bresink Software Updater
 u	/Applications/BresinkSoftwareUpdater.app
 u	/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool
+u	/Library/LaunchDaemons/BresinkSoftwareUpdater-PrivilegedTool.plist
 
 # Brew Casks Update
 echo Brew Casks Update
@@ -754,6 +755,7 @@ echo Virus Scanner Plus
 #u	~/Library/Preferences/com.bitdefender.virusscannerplus.plist
 u	~/Library/Containers/com.bitdefender.virusscannerplus/Data/Library/Preferences/com.bitdefender.virusscannerplus.plist
 u	~/Library/Containers/com.bitdefender.virusscannerplus/Data/Library/Application Support/Bitdefender Virus Scanner Plus/antivirus.bundle/exclusions.plist
+u	~/Library/Containers/com.bitdefender.virusscannerplus/Data/Documents/access_rights
 
 # VLC
 echo VLC
