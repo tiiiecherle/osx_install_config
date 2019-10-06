@@ -218,7 +218,7 @@ osascript -e "set Volume 5"
 SOUND_FILE="/System/Library/PrivateFrameworks/ToneLibrary.framework/Versions/A/Resources/AlertTones/Modern/Chord.m4r"
 afplay "$SOUND_FILE" && afplay "$SOUND_FILE"
 osascript -e "set Volume 3"
-
+sleep 1
 
 ### checking output and rebooting
 ask_for_reboot() {
@@ -240,8 +240,10 @@ ask_for_reboot() {
 		:
 	fi
 }
-#ask_for_reboot
+REBOOT_NOW="no"
+ask_for_reboot
 
 if [[ -e "/tmp/batch_script_in_progress" ]]; then rm -f "/tmp/batch_script_in_progress"; else :; fi
 
+exit &> /dev/null
 
