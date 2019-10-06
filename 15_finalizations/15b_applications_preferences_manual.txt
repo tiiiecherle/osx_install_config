@@ -1,15 +1,5 @@
 APPLICATIONS PREFERENCES
 
-AppCleaner
-	preferences - SmartDelete - activate
-	preferences - updates - activate
-
-Bitdefender Virus Scanner
-	activate system wide permissions - activate 'basic protection' - allow all three given directories
-	to make autostart work on boot:	preferences - start on boot - deactivate - yes - activate
-					preferences - start on boot - activate
-	enable permanent scan
-
 Facetime (ts & ws)
 	account log-in or log-out
 	only activate number for being reachable, deactivate email
@@ -18,25 +8,23 @@ Facetime (ts & ws)
 iMazing (ts)
 	open, attach iphone via usb and trust on both devices
 
-iStatMenues
-	install components at first start (disable for all users)
-	deactivate everything but 'Time'
-	sorting menu bar items: hold command to drag menu bar items - move it to the right (position it left to Notification Center)
-
 Calender
-	check calendar and test sync
-	if sync with local certificate does not work, use script 9b 2_cert_install_update
+	check and test sync
 
 Contacts
-	check contacts and test sync
+	check and test sync
 
 iMessage (ts & ws)
 	account log-in or log-out
 	receive messages for telephone number, not for mail address
 	enable text message forwarding on iphone
 
+Reminders
+	check and test sync
+
 Safari
 	check google consent
+	drag adguard icon out of toolbar (cmd + drag)
 	check if extensions are enabled
 
 Signal (ts)
@@ -44,7 +32,3 @@ Signal (ts)
 
 The Archive Browser
 	enter license
-
-The Unarchiver
-	accept licence
-	preferences - extract - open extracted folder
