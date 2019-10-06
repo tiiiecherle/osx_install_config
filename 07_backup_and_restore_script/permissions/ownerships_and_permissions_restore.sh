@@ -66,44 +66,53 @@ backup_restore_permissions() {
     echo "setting ownerships and permissions outside the user folder..."
 
     # color profiles
-    if [[ -e "/Library/ColorSync/Profiles/eci" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/Library/ColorSync/Profiles/eci"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]
     then
         sudo chmod 755 "/Library/ColorSync/Profiles/eci"
         sudo chown root:wheel "/Library/ColorSync/Profiles/eci"
         sudo find "/Library/ColorSync/Profiles/eci" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chmod 644
         sudo find "/Library/ColorSync/Profiles/eci" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chown root:wheel
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
 
     # display profiles
-    if [[ -e "/Library/ColorSync/Profiles/Displays" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/Library/ColorSync/Profiles/Displays"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]
     then
         sudo find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chmod 644 &
         sudo find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chown root:wheel &
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
 
     # google earth web plugin
-    if [[ -e "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin" ]]
-    then
-        sudo chmod 755 "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
-        sudo chown root:wheel "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
-    else
-        :
-    fi
+    #FILE_OR_FOLDER_TO_CHECK_FOR="/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
+    #if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]
+    #then
+    #    sudo chmod 755 "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
+    #    sudo chown root:wheel "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
+    #else
+    #    echo ''
+    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+    #fi
     
     # canon printer driver
-    if [[ -e "/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]
     then
         sudo chmod 644 "/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz"
         sudo chown root:admin "/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz"
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
-    
-    if [[ -e "/Library/Printers/Canon/CUPSPS2" ]]
+
+    FILE_OR_FOLDER_TO_CHECK_FOR="/Library/Printers/Canon/CUPSPS2"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]    
     then
         # do not use & for the -R lines
         sudo chown -R root:admin "/Library/Printers/Canon/CUPSPS2"
@@ -141,89 +150,113 @@ backup_restore_permissions() {
         # findung more 644 files 
         # find /Library/Printers/Canon -type f ! -name "*.nib" ! -name "*.DAT" ! -name "*.TBL" ! -name "*.icc" ! -name "*.icns" ! -name "*.plist" ! -name "*.strings" ! -name "*.png" ! -name "*.gif" ! -name "*.html" ! -name "*.js" ! -name "*.gif" ! -name "*.jpg" ! -name "*.css" ! -name "*.xib" ! -name "*.helpindex" ! -name "*.PRF" ! -name "CodeResources" ! -name "CodeDirectory" ! -name "CodeRequirements*" ! -name "CodeSignature" ! -name "PkgInfo" -perm 644
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
 
     # custom scripts
-    if [[ -e "/Library/Scripts/custom/" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/Library/Scripts/custom/"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]    
     then
         sudo chown -R root:wheel "/Library/Scripts/custom/"
         sudo chmod -R 755 "/Library/Scripts/custom/"
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
     
     # launchd hostsfile
-    if [[ -e "/Library/LaunchDaemons/com.hostsfile.install_update.plist" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/Library/LaunchDaemons/com.hostsfile.install_update.plist"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]  
     then
         sudo chown root:wheel "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
         sudo chmod 644 "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
     
     # mysides
-    if [[ -e "/usr/local/bin/mysides" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/usr/local/bin/mysides"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]  
     then
         sudo chown root:wheel "/usr/local/bin/mysides"
         sudo chmod 755 "/usr/local/bin/mysides"
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
     
     # cups printer
-    if [[ -e "/etc/cups/printers.conf" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/etc/cups/printers.conf"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]  
     then
         sudo chown root:_lp "/etc/cups/printers.conf"
         sudo chmod 600 "/etc/cups/printers.conf"
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
-    if [[ -e "/etc/cups/ppd/" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/etc/cups/ppd/"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]] 
     then
         sudo chown -R root:_lp "/etc/cups/ppd/"
         sudo find /etc/cups/ppd/ -type f -print0 | xargs -0 -n100 sudo chmod 644
     else
-        :
-    fi
-    if [[ -e "/Library/Application Support/AVGAntivirus/config" ]]
-    then
-        sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 -n100 sudo chmod 644
-        sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 -n100 sudo chown root:wheel
-        sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 -n100 sudo chmod 644
-        sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 -n100 sudo chown root:wheel
-    else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
     
+    # avg antivirus
+    #FILE_OR_FOLDER_TO_CHECK_FOR="/Library/Application Support/AVGAntivirus/config"
+    #if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]] 
+    #then
+    #    sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 -n100 sudo chmod 644
+    #    sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.conf" -print0 | xargs -0 -n100 sudo chown root:wheel
+    #    sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 -n100 sudo chmod 644
+    #    sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 -n100 sudo chown root:wheel
+    #else
+    #    echo ''
+    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+    #fi
+    
     # network / wireguard
-    if [[ -e "/Library/Preferences/SystemConfiguration/preferences.plist" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR="/Library/Preferences/SystemConfiguration/preferences.plist"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]] 
     then
         sudo chown root:wheel "/Library/Preferences/SystemConfiguration/preferences.plist"
         sudo chmod 644 "/Library/Preferences/SystemConfiguration/preferences.plist"
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
     
     # istat menus
-    if [[ -e ""$PATH_TO_APPS"/iStat Menus.app" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR=""$PATH_TO_APPS"/iStat Menus.app"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]] 
     then
+        #sudo chmod -R 755 "/Library/Application Support/iStat Menus 6"
         sudo chown -R root:wheel "/Library/Application Support/iStat Menus 6"
     	sudo chown root:wheel "/Library/LaunchDaemons/com.bjango.istatmenus.fans.plist"
     	sudo chown root:wheel "/Library/LaunchDaemons/com.bjango.istatmenus.daemon.plist"
     	sudo chown root:wheel "/Library/LaunchDaemons/com.bjango.istatmenus.installerhelper.plist"
     	sudo chown root:wheel "/Library/PrivilegedHelperTools/com.bjango.istatmenus.installerhelper"
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
     
     # bresink software update helper
-    if [[ -e "/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR=""$PATH_TO_APPS"/BresinkSoftwareUpdater.app"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]] 
     then
-        sudo chown root:wheel "/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool"
         sudo chmod 544 "/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool"
+        sudo chown root:wheel "/Library/PrivilegedHelperTools/BresinkSoftwareUpdater-PrivilegedTool"
+        sudo chmod 644 "/Library/LaunchDaemons/BresinkSoftwareUpdater-PrivilegedTool.plist"
+        sudo chown root:wheel "/Library/LaunchDaemons/BresinkSoftwareUpdater-PrivilegedTool.plist"
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
     
     ### inside user folder
@@ -342,13 +375,15 @@ backup_restore_permissions() {
         :
     fi
     # tunnelblick
-    if [[ -e """$HOMEFOLDER""/Library/Application Support/Tunnelblick/Configurations" ]]
+    FILE_OR_FOLDER_TO_CHECK_FOR=""$HOMEFOLDER"/Library/Application Support/Tunnelblick/Configurations"
+    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]] 
     then
-        sudo chown -R "$USER_ID":admin """$HOMEFOLDER""/Library/Application Support/Tunnelblick/Configurations"
+        sudo chown -R "$USER_ID":admin ""$HOMEFOLDER"/Library/Application Support/Tunnelblick/Configurations"
         sudo find ""$HOMEFOLDER"/Library/Application Support/Tunnelblick/Configurations" -name .tblk -print0 | xargs -0 -n100 sudo chmod 700
         sudo find ""$HOMEFOLDER"/Library/Application Support/Tunnelblick/Configurations" -type f -print0 | xargs -0 -n100 sudo chmod 600
     else
-        :
+        echo ''
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
     fi
     
     # homebrew permissions
@@ -365,17 +400,18 @@ backup_restore_permissions() {
     #fi
     
     # vbox_shared folder
-    VBOX_SHARED_FOLDER="/Users/"$USER"/Desktop/files/vbox_shared"
-    if [[ -e "$VBOX_SHARED_FOLDER" ]]
-    then
-        #rm -rf /Users/$USER/Desktop/files/vbox_shared
-        #mkdir -p /Users/$USER/Desktop/files/vbox_shared
-        sudo chown -R sharinguser:admin "$VBOX_SHARED_FOLDER"
-        sudo chmod 770 "$VBOX_SHARED_FOLDER"
-        sudo chmod -R +a "staff allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" "$VBOX_SHARED_FOLDER"
-    else
-        :
-    fi
+    #FILE_OR_FOLDER_TO_CHECK_FOR="/Users/"$USER"/Desktop/files/vbox_shared"
+    #if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]] 
+    #then
+    #    #rm -rf /Users/$USER/Desktop/files/vbox_shared
+    #    #mkdir -p /Users/$USER/Desktop/files/vbox_shared
+    #    sudo chown -R sharinguser:admin "$FILE_OR_FOLDER_TO_CHECK_FOR"
+    #    sudo chmod 770 "$FILE_OR_FOLDER_TO_CHECK_FOR"
+    #    sudo chmod -R +a "staff allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" "$FILE_OR_FOLDER_TO_CHECK_FOR"
+    #else
+    #    echo ''
+    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+    #fi
     
     # script finfished
         
