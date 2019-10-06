@@ -54,8 +54,6 @@ applications_to_open=(
 ""$PATH_TO_SYSTEM_APPS"/Calendar.app"
 ""$PATH_TO_SYSTEM_APPS"/Contacts.app"
 ""$PATH_TO_SYSTEM_APPS"/Reminders.app"
-""$PATH_TO_APPS"/The Unarchiver.app"
-""$PATH_TO_APPS"/VirusScannerPlus.app"
 ""$PATH_TO_APPS"/Overflow 3.app"
 ""$PATH_TO_APPS"/BresinkSoftwareUpdater.app"
 ""$PATH_TO_APPS"/WireGuard.app"
@@ -73,27 +71,32 @@ do
 	fi
 done
 
-# no longer needed, but kept for testing
-applications_to_open=(
-""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
-""$PATH_TO_APPS"/AppCleaner.app"
-""$PATH_TO_APPS"/iStat Menus.app"
-""$PATH_TO_APPS"/Microsoft Excel.app"
-""$PATH_TO_APPS"/iMazing.app"
-""$PATH_TO_APPS"/MacPass.app"
-)
-
-for i in "${applications_to_open[@]}"
-do
-	if [[ -e "$i" ]]
-	then
-	    echo "opening $(basename "$i")"
-		open "$i" &
-		sleep 5
-	else
-		:
-	fi
-done
+open_more_apps() {
+	# no longer needed, but kept for testing
+	applications_to_open=(
+	""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
+	""$PATH_TO_APPS"/AppCleaner.app"
+	""$PATH_TO_APPS"/VirusScannerPlus.app"
+	""$PATH_TO_APPS"/iStat Menus.app"
+	""$PATH_TO_APPS"/Microsoft Excel.app"
+	""$PATH_TO_APPS"/iMazing.app"
+	""$PATH_TO_APPS"/MacPass.app"
+	""$PATH_TO_APPS"/The Unarchiver.app"
+	)
+	
+	for i in "${applications_to_open[@]}"
+	do
+		if [[ -e "$i" ]]
+		then
+		    echo "opening $(basename "$i")"
+			open "$i" &
+			sleep 5
+		else
+			:
+		fi
+	done
+}
+#open_more_apps
 
 # google consent
 open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
