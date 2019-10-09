@@ -130,7 +130,8 @@ then
 	fi
     
     # hint for signal
-    osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+    osascript -e 'display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+
 else
 	:
 fi
