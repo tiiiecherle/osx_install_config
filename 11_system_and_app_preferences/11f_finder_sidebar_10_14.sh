@@ -55,8 +55,6 @@ AUTOMATION_APPS=(
 "$SOURCE_APP_NAME                           Finder		                                                1"
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
-echo ''
-
 
 
 ### sfltool
@@ -74,7 +72,12 @@ echo ''
 # newer version here
 # https://github.com/Tatsh/mysides
 MYSIDESVERSION="1.0.1"
-
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+then
+    :
+else
+    echo ''
+fi
 VARIABLE_TO_CHECK="$INSTALL_UPDATE_MYSIDES"
 QUESTION_TO_ASK="do you want to install / update to mysides "$MYSIDESVERSION"? (y/N) "
 env_ask_for_variable
@@ -98,7 +101,7 @@ else
 fi
 
 echo ''
-echo "clearing and setting finder sidebare items..."
+echo "clearing and setting finder sidebar items..."
 
 # clearing out settings and removes icloud
 #sfltool clear
@@ -141,7 +144,6 @@ then
 else
     echo ''
     echo "user specific sidebar customization script not found......"
-    :
 fi
 echo ''
 
@@ -351,6 +353,6 @@ sleep 5
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
 
-echo ''
+#echo ''
 echo "done ;)"
 echo ''

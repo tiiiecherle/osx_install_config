@@ -102,7 +102,7 @@ else
 fi
 
 echo ''
-echo "clearing and setting finder sidebare items..."
+echo "clearing and setting finder sidebar items..."
 
 # clearing out settings and removes icloud
 #sfltool clear
@@ -131,7 +131,7 @@ mysides add Pictures file:///Users/${USER}/Pictures
 mysides add ${USER} file:///Users/${USER}
 
 # user specific customization
-SCRIPT_NAME="finder_sidebar_$USER"
+SCRIPT_NAME="finder_sidebar_"$USER""
 SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
 SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
 if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
@@ -145,7 +145,6 @@ then
 else
     echo ''
     echo "user specific sidebar customization script not found......"
-    :
 fi
 echo ''
 
