@@ -203,20 +203,24 @@ set_vbox_network_device() {
     if sudo -H -u "$loggedInUser" command -v VBoxManage &> /dev/null
     then
         # installed
-        if [[ "$DEVICE_ID" =~ ^en[0-9]$ ]]
+        if [[ $(sudo -H -u "$loggedInUser" VBoxManage list vms) != "" ]]
         then
-            for VBOX in $(sudo -H -u "$loggedInUser" VBoxManage list vms | awk -F'"|"' '{print $2}')
-            do
-                echo "setting virtualbox network to "$DEVICE_ID" for vbox "$VBOX"..."
-                sudo -H -u "$loggedInUser" VBoxManage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$DEVICE_ID"
-            done
+            if [[ "$DEVICE_ID" =~ ^en[0-9]$ ]]
+            then
+                for VBOX in $(sudo -H -u "$loggedInUser" VBoxManage list vms | awk -F'"|"' '{print $2}')
+                do
+                    echo "setting virtualbox network to "$DEVICE_ID" for vbox "$VBOX"..."
+                    sudo -H -u "$loggedInUser" VBoxManage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$DEVICE_ID"
+                done
+            else
+                echo ""$DEVICE"_DEVICE_ID is empty or has a wrong format..."
+            fi
         else
-            echo ""$DEVICE"_DEVICE_ID is empty or has a wrong format..."
+            echo "no virtualbox vms found, skipping..."
         fi
     else
         # virtualbox is not installed
         echo "virtualbox is not installed..."
-        :
     fi
 }
 
