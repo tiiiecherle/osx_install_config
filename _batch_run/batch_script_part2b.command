@@ -263,6 +263,11 @@ if [[ "$RUN_FROM_BATCH_SCRIPT_ONE" == "yes" ]]
 then
 	:
 else
+	REBOOT_NOW="yes"
+	# keep terminal(s) open (error logs are on the desktop)
+	# reopen all windows after next login
+	# false = disable, true = enable
+	defaults write com.apple.loginwindow TALLogoutSavesState -bool true
 	ask_for_reboot
 fi
 
