@@ -1,0 +1,46 @@
+recovery settings
+
+### boot into recovery
+reboot with command + R pressed, release the keys when apple logo appears
+Open Utilities - Terminal
+
+
+
+### sip
+csrutil status
+
+# more options available, see readme on github
+# for these scripts to work (and for using xtrafinder or totalfinder) use
+csrutil enable --without debug --without fs
+
+# if you want to reset sip to factory defaults use 
+csrutil clear
+
+
+
+### more configurations
+# allow virtualbox installation
+spctl kext-consent add VB5E2TV963
+
+
+
+### allow usb boot
+# for all macs that have a t2 chip, e.g. macbook pro 2018, imac 2019
+# booting from usb is prevented by secure boot
+# to enable booting from an usb device, do...
+
+Open Utilities - Start-Up-Security-Utility
+Set Secure Boot to Full Protection.
+Set External Boot to allow booting from external usb devices.
+Reverse the external usb boot setting after finishing the installation.
+
+
+
+### set firmware password
+Open Utilities - Start-Up-Security-Utility
+set firmware password
+
+
+
+### reboot
+reboot

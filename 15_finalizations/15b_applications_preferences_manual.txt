@@ -32,3 +32,21 @@ Signal (ts)
 
 The Archive Browser
 	enter license
+
+Bresink Software Updater
+	update outdated apps
+
+Libreoffice Language Pack
+	Install
+
+Wireguard (ts)
+	Install profiles
+
+old (only check if needed)
+	Adobe Reader
+	The Unarchiver
+	AppCleaner
+	Virus Scanner Plus
+	iStat Menus
+	Office License & Privacy Settings
+	

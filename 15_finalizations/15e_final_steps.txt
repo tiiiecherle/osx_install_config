@@ -2,14 +2,8 @@
 
 reboot to recovery (cmd +R)
 
-	set secure boot in recovery (only on macs with a t2 processor)
-	- only allow signed sources
+	only on macs with a t2 processor
 	- do not allow boot from usb
-	- set recovery password
-
-	set SIP in recovery
-	csrutil enable --without fs --without debug
-
 	reboot
 
 open "mail" and keep open in background for indexing
@@ -18,15 +12,15 @@ virus scanner
 	check if virus scan is autostarted (symbol "B" in menu bar, eventually in bartender)
 	virus scan (menu bar) - open main window - "user-defined scan" - complete disk (macintosh_hd)
 
-print filevault_key
+print filevault_key from desktop file
 
 delete restore files on desktop and empty trash
 
-add card(s) to apple wallet (only possible with sip fully enabled)
+add card(s) to apple wallet (only possible with sip fully enabled) (ts)
 
-enable touch id
+enable touch id (ts)
 
-clear list of old devices in icloud acccount
+clear list of old devices in icloud acccount (ws & ts)
 
 
 ### iOS (ws & ts)
@@ -52,4 +46,5 @@ enable safari extensions
 office license
 imazing (license has to be deactivated on old install before it can be re-used, otherwise contact support for license-reset)
 add scan permissions in virus scanner
+macpass keys
 
