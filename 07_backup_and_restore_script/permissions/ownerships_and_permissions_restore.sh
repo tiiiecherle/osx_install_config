@@ -75,7 +75,7 @@ backup_restore_permissions() {
         sudo find "/Library/ColorSync/Profiles/eci" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chown root:wheel
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
 
     # display profiles
@@ -86,7 +86,7 @@ backup_restore_permissions() {
         sudo find "/Library/ColorSync/Profiles/Displays" -maxdepth 1 -type f -print0 | xargs -0 -n100 sudo chown root:wheel &
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
 
     # google earth web plugin
@@ -97,7 +97,7 @@ backup_restore_permissions() {
     #    sudo chown root:wheel "/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin"
     #else
     #    echo ''
-    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     #fi
     
     # canon printer driver
@@ -108,7 +108,7 @@ backup_restore_permissions() {
         sudo chown root:admin "/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz"
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
 
     FILE_OR_FOLDER_TO_CHECK_FOR="/Library/Printers/Canon/CUPSPS2"
@@ -151,7 +151,7 @@ backup_restore_permissions() {
         # find /Library/Printers/Canon -type f ! -name "*.nib" ! -name "*.DAT" ! -name "*.TBL" ! -name "*.icc" ! -name "*.icns" ! -name "*.plist" ! -name "*.strings" ! -name "*.png" ! -name "*.gif" ! -name "*.html" ! -name "*.js" ! -name "*.gif" ! -name "*.jpg" ! -name "*.css" ! -name "*.xib" ! -name "*.helpindex" ! -name "*.PRF" ! -name "CodeResources" ! -name "CodeDirectory" ! -name "CodeRequirements*" ! -name "CodeSignature" ! -name "PkgInfo" -perm 644
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
 
     # custom scripts
@@ -162,19 +162,19 @@ backup_restore_permissions() {
         sudo chmod -R 755 "/Library/Scripts/custom/"
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
     
     # launchd hostsfile
-    FILE_OR_FOLDER_TO_CHECK_FOR="/Library/LaunchDaemons/com.hostsfile.install_update.plist"
-    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]  
-    then
-        sudo chown root:wheel "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
-        sudo chmod 644 "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
-    else
-        echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
-    fi
+    #FILE_OR_FOLDER_TO_CHECK_FOR="/Library/LaunchDaemons/com.hostsfile.install_update.plist"
+    #if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]  
+    #then
+    #    sudo chown root:wheel "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
+    #    sudo chmod 644 "/Library/LaunchDaemons/com.hostsfile.install_update.plist"
+    #else
+    #    echo ''
+    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
+    #fi
     
     # mysides
     FILE_OR_FOLDER_TO_CHECK_FOR="/usr/local/bin/mysides"
@@ -184,7 +184,7 @@ backup_restore_permissions() {
         sudo chmod 755 "/usr/local/bin/mysides"
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
     
     # cups printer
@@ -195,7 +195,7 @@ backup_restore_permissions() {
         sudo chmod 600 "/etc/cups/printers.conf"
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
     FILE_OR_FOLDER_TO_CHECK_FOR="/etc/cups/ppd/"
     if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]] 
@@ -204,7 +204,7 @@ backup_restore_permissions() {
         sudo find /etc/cups/ppd/ -type f -print0 | xargs -0 -n100 sudo chmod 644
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
     
     # avg antivirus
@@ -217,7 +217,7 @@ backup_restore_permissions() {
     #    sudo find "/Library/Application Support/AVGAntivirus/config" -type f -name "*.whls" -print0 | xargs -0 -n100 sudo chown root:wheel
     #else
     #    echo ''
-    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     #fi
     
     # network / wireguard
@@ -228,7 +228,7 @@ backup_restore_permissions() {
         sudo chmod 644 "/Library/Preferences/SystemConfiguration/preferences.plist"
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
     
     # istat menus
@@ -243,7 +243,7 @@ backup_restore_permissions() {
     	sudo chown root:wheel "/Library/PrivilegedHelperTools/com.bjango.istatmenus.installerhelper"
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
     
     # bresink software update helper
@@ -256,7 +256,7 @@ backup_restore_permissions() {
         sudo chown root:wheel "/Library/LaunchDaemons/BresinkSoftwareUpdater-PrivilegedTool.plist"
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
     
     ### inside user folder
@@ -383,7 +383,7 @@ backup_restore_permissions() {
         sudo find ""$HOMEFOLDER"/Library/Application Support/Tunnelblick/Configurations" -type f -print0 | xargs -0 -n100 sudo chmod 600
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     fi
     
     # homebrew permissions
@@ -410,7 +410,7 @@ backup_restore_permissions() {
     #    sudo chmod -R +a "staff allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit" "$FILE_OR_FOLDER_TO_CHECK_FOR"
     #else
     #    echo ''
-    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping..." >&2
+    #    echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
     #fi
     
     # script finfished
