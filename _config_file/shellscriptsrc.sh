@@ -597,8 +597,10 @@ env_identify_terminal() {
         export SOURCE_APP_NAME="iTerm"
 	else
 		export SOURCE_APP=com.apple.Terminal
+		export SOURCE_APP_NAME="Terminal"
 		echo "terminal not identified, setting automating permissions to apple terminal..."
 	fi
+	export SOURCE_APP_NAME_FULL=""$SOURCE_APP_NAME".app"
 }
 
 
@@ -802,7 +804,7 @@ env_set_apps_automation_permissions() {
             #    :
             #fi
             
-            if [[ "$AUTOMATED_APP_ID" == "" ]]
+            if [[ "$SOURCE_APP_ID" == "" ]]
             then
                 # source app path
                 local NUM1=0
