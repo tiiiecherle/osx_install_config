@@ -790,6 +790,7 @@ u	 ~/Library/Widgets/Wetter.wdgt
 # Wireguard
 #echo Wireguard
 #u	/Library/Preferences/SystemConfiguration/preferences.plist
+#u	/Library/Preferences/com.apple.networkextension.plist
 
 # Witch
 echo Witch
