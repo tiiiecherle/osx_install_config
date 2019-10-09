@@ -182,8 +182,8 @@ give_apps_security_permissions() {
     # macos versions 10.14 and up
     # source app name							automated app name										allowed (1=yes, 0=no)
 	AUTOMATION_APPS=(
-	"Terminal									System Events                   						1"
-	"Terminal									Finder                   						        1"
+	"$SOURCE_APP_NAME						System Events                   						1"
+	"$SOURCE_APP_NAME						Finder                   						        1"
 	"gui_apps_backup							System Events                   						1"
 	"brew_casks_update							System Events                   						1"
 	"brew_casks_update							Terminal                   						        1"
