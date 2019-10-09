@@ -92,25 +92,95 @@ batch_run_all() {
 	### activating keepingyouawake
 	env_activating_keepingyouawake
 
+	### check if network volume is connected (needed for finder sidebar script)
+	# user specific customization
+	SCRIPT_NAME="finder_sidebar_"$USER""
+	SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
+	SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
+	NETWORK_VOLUME_DATA="/Volumes/office"
+	if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
+	then
+		if [[ $(cat "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh | grep "file://"$NETWORK_VOLUME_DATA"") != "" ]]
+		then
+			printf "\n${bold_text}###\nnetwork connection...\n###\n${default_text}"
+			CONNECTION_TIMEOUT=120
+			check_if_network_volume_data_is_mounted() {
+			    # checking if network volume is mounted
+			    #echo ''
+			    if mount | grep "$NETWORK_VOLUME_DATA" > /dev/null
+			    then
+			    	printf '\n'
+			        echo "network volume $NETWORK_VOLUME_DATA already mounted, continuing..."
+			    else
+			    	NUM1=0
+			    	printf '\n'
+			    	echo "connecting to network volume to add network finder sidebar items later..."
+			    	echo "network volume $NETWORK_VOLUME_DATA not mounted, mounting now..."
+			    	osascript -e 'tell application "Finder" to activate'
+			    	osascript -e 'tell application "System Events" to keystroke "k" using command down'
+			    	echo "waiting for network volume to be mounted..."
+			    	echo "please connect within "$CONNECTION_TIMEOUT" seconds..."
+			    	echo ''
+			    	while ! mount | grep "$NETWORK_VOLUME_DATA" > /dev/null
+			    	do 
+			    		NUM1=$((NUM1+1))
+			    		if [[ "$NUM1" -le "$CONNECTION_TIMEOUT" ]]
+			    		then
+			    			#echo "$NUM1"
+			    			sleep 1
+			    			if (( NUM1 % 1 == 0 ))
+			    			then
+			    				tput cuu 1 && tput el
+			    				echo "$((CONNECTION_TIMEOUT-NUM1)) seconds left to connect to network volume $NETWORK_VOLUME_DATA..."
+			    			else
+			    				:
+			    			fi
+			    		else
+			    		    printf '\n'
+			    			echo "network volume not mounted in "$NUM1" seconds, skipping network finder sidebar items..." >&2
+			    			printf '\n'
+			    		fi
+			    	done
+			    	echo "network volume mounted, continuing..."
+			    fi
+			    echo ''
+			}
+			check_if_network_volume_data_is_mounted
+		else
+			:
+		fi
+	else
+	    #echo ''
+	    #echo "user specific sidebar customization script not found......"
+	    :
+	fi
 
-	### spotlight
-	printf "\n${bold_text}###\nspotlight...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
-	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11d_system_preferences_spotlight.sh
-	env_active_source_app
-	
-		
+
 	### open with
 	printf "\n${bold_text}###\nopen with...\n###\n${default_text}"
 	CLEAN_SERVICES_CACHE="no" "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11e_defaults_open_with.sh
 	
 	
 	### finder sidebar
+	if mount | grep "$NETWORK_VOLUME_DATA" > /dev/null
+    then
+		NETWORK_CONNECTED="yes"
+	else
+		:
+	fi
 	printf "\n${bold_text}###\nfinder sidebar...\n###\n${default_text}"
-	INSTALL_UPDATE_MYSIDES="no" "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11f_finder_sidebar_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
+	NETWORK_CONNECTED="$NETWORK_CONNECTED" INSTALL_UPDATE_MYSIDES="no" "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11f_finder_sidebar_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
+	env_active_source_app
+
+
+	### spotlight
+	# moved spotlight index behind finder sidebar cus deleting spotlight index led to non working automation permissions until spotlight was reindexed 
+	printf "\n${bold_text}###\nspotlight...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11d_system_preferences_spotlight.sh
 	env_active_source_app
 	
-	
+
 	### finder favorites
 	printf "\n${bold_text}###\nfinder favorites...\n###\n${default_text}"
 	#echo ''
@@ -241,6 +311,9 @@ ask_for_reboot() {
 	fi
 }
 REBOOT_NOW="no"
+# reopen all windows after next login
+# false = disable, true = enable
+defaults write com.apple.loginwindow TALLogoutSavesState -bool false
 ask_for_reboot
 
 if [[ -e "/tmp/batch_script_in_progress" ]]; then rm -f "/tmp/batch_script_in_progress"; else :; fi
