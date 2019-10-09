@@ -106,6 +106,7 @@ applications_to_set_values=(
 ""$PATH_TO_APPS"/X-Lite.app																	41943375"
 ""$PATH_TO_APPS"/TotalFinder.app															41943375"
 ""$PATH_TO_APPS"/Firefox.app																41943375"
+""$PATH_TO_APPS"/iStat Menus.app															41943375"
 )
 
 
