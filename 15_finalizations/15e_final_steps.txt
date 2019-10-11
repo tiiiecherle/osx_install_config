@@ -14,6 +14,9 @@ virus scanner
 
 print filevault_key from desktop file
 
+if no icloud account is used and red dot notification is shown therefore on dock icon
+of system preferences, run script 15f_delete_dock_notifications.sh
+
 delete restore files on desktop and empty trash
 
 add card(s) to apple wallet (only possible with sip fully enabled) (ts)
