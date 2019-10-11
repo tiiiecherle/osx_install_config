@@ -1106,7 +1106,8 @@ EOF
                     # does not work as it resets the license agreement
                     #autostartapp="VirusScannerPlus"
                 else
-                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/"$autostartapp".app"
+                    PATH_TO_FIRST_RUN_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/"$autostartapp".app$" | sort -n | head -1)
+                    #PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/"$autostartapp".app"
                     env_set_open_on_first_run_permissions
                 fi
                 
