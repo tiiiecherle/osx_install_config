@@ -13,7 +13,8 @@ INSTALL ADDITIONAL APPS
 # needed for adobe cs5 installer
 pkill -9 SafariPlugInUpdateNotifier		
 pkill -9 SafariBookmarksSyncAgent
-pkill -9 SafariNotificationAgent		
+pkill -9 SafariNotificationAgent
+pkill -9 SafariLaunchAgent		
 
 
 # if the installer refuses to start when double clicking, run it from terminal
