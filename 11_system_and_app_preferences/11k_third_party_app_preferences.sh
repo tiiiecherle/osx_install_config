@@ -250,6 +250,29 @@ else
 fi
 
 
+### textmate
+echo ''
+APP_NAME_FOR_PREFERENCES="TextMate"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
+then
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
+    
+	# removing quicklook syntax highlight
+	if [[ -e "$PATH_TO_APPS"/TextMate.app/Contents/Library/QuickLook/TextMateQL.qlgenerator ]]
+	then
+		rm -rf "$PATH_TO_APPS"/TextMate.app/Contents/Library/QuickLook/TextMateQL.qlgenerator
+	else
+		:
+	fi
+	# reset quicklook and quicklook cache if neccessary
+	#qlmanage -r
+	#qlmanage -r cache
+	
+else
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+fi
+
 
 ### GPGMail 2
 
