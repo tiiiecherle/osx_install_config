@@ -694,7 +694,8 @@ then
 	if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh ]]
 	then
 		echo ''
-	    "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh
+	    JAVA_OPTION="i" 
+	    . "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh
 	else
 	    echo "script to install java8 not found..." >&2
 	fi
