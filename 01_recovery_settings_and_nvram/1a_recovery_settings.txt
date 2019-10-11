@@ -25,8 +25,8 @@ spctl kext-consent add VB5E2TV963
 
 
 ### allow usb boot
-# for all macs that have a t2 chip, e.g. macbook pro 2018, imac 2019
-# booting from usb is prevented by secure boot
+# for macs that have a t2 chip and secure boot options, e.g. new macbook pro models
+# booting from usb is by default prevented by secure boot
 # to enable booting from an usb device, do...
 
 Open Utilities - Start-Up-Security-Utility
@@ -43,4 +43,6 @@ set firmware password
 
 
 ### reboot
-reboot
+reboot to specified startup volume directly from recovery
+apple logo - startup volume
+select usb device (checks if booting to this volume is allowed)
