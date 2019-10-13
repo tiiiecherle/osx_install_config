@@ -403,6 +403,39 @@ APPS_SECURITY_ARRAY=$(printf "%s\n" "${SCREENCAPTUREAPPS[@]}")
 PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
+### privacy - full disk access
+
+echo ''
+tput bold; echo "full disk access..." ; tput sgr0
+
+sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where service='kTCCServiceSystemPolicyAllFiles';"
+
+FULL_DISK_ACCESS_APPS=(
+# app name									security service										    allowed (1=yes, 0=no)
+"Terminal                                   kTCCServiceSystemPolicyAllFiles                             1"
+"iTerm                                      kTCCServiceSystemPolicyAllFiles                             1"
+)
+
+APPS_SECURITY_ARRAY=$(printf "%s\n" "${FULL_DISK_ACCESS_APPS[@]}")
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
+
+
+### privacy - developer tools
+
+echo ''
+tput bold; echo "developer tools..." ; tput sgr0
+
+sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where service='kTCCServiceDeveloperTool';"
+
+DEVELOPER_TOOLS_APPS=(
+# app name									security service										    allowed (1=yes, 0=no)
+"Terminal                                   kTCCServiceDeveloperTool                                    0"
+#"iTerm                                      kTCCServiceDeveloperTool                                    1"
+)
+
+APPS_SECURITY_ARRAY=$(printf "%s\n" "${DEVELOPER_TOOLS_APPS[@]}")
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
+
 
 ### privacy - automation
 # does not show in system preferences window, but works

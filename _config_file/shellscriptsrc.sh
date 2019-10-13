@@ -389,7 +389,7 @@ MACOS_VERSION=$(sw_vers -productVersion)
 MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
 #MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | sed 's|\.|_|g')
 MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | tr '.' '_')
-MACOS_MARKETING_NAME=$(awk '/SOFTWARE LICENSE AGREEMENT FOR macOS/' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | awk -F 'macOS ' '{print $NF}')
+MACOS_MARKETING_NAME=$(awk '/SOFTWARE LICENSE AGREEMENT FOR macOS/' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | awk -F 'macOS ' '{print $NF}' | sed 's|\\$||g')
 if [[ "$MACOS_MARKETING_NAME" == "" ]]
 then
     if [[ "$MACOS_VERSION_MAJOR" == 10.14 ]]
@@ -698,7 +698,7 @@ env_set_apps_security_permissions() {
         #echo "$PERMISSION_GRANTED"
 
         # setting permissions
-        if [[ "$INPUT_SERVICE" == "kTCCServiceAccessibility" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceScreenCapture" ]]
+        if [[ "$INPUT_SERVICE" == "kTCCServiceAccessibility" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceScreenCapture" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceSystemPolicyAllFiles" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceDeveloperTool" ]]
         then
             # delete entry before resetting
             sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where (service='$INPUT_SERVICE' and client='$APP_ID');" 2>&1 | grep -v '^$'

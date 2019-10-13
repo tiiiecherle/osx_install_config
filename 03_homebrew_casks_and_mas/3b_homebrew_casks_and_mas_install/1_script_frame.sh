@@ -133,6 +133,7 @@ else
 	APPS_SECURITY_ARRAY=(
     # app name									security service										    allowed (1=yes, 0=no)
 	"$SOURCE_APP_NAME                           kTCCServiceAccessibility                             	    1"
+	"$SOURCE_APP_NAME                           kTCCServiceSystemPolicyAllFiles                             1"
 	)
 	PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
     
