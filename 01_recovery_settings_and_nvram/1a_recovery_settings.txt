@@ -19,7 +19,7 @@ csrutil clear
 
 
 ### more configurations
-# allow virtualbox installation
+# allow virtualbox testing or beta version installation
 spctl kext-consent add VB5E2TV963
 
 
