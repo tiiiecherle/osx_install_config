@@ -65,7 +65,8 @@ then
     	# v6 = 10.14
     	# v7 = 10.15
     	#sed -i '' 's|@pop3.strato.de/|@pop3.strato.de:110/|' /Users/"$USER"/Library/Mail/V6/MailData/SyncedRules.plist
-    	sed -i '' 's|@pop3.strato.de/|@pop3.strato.de:110/|' "$i"
+    	sed -i '' 's|@pop3.strato.de/|@pop3.strato.de:995/|' "$i"
+    	sed -i '' 's|@pop3.strato.de:110/|@pop3.strato.de:995/|' "$i"
     done
 else
 	:
