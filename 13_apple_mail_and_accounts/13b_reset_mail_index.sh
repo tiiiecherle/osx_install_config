@@ -33,23 +33,30 @@ sleep 2
 
 
 ### rebuilding mail index on next run
-echo ''
-echo "deleting files to rebuild the mailindex at next start of mail..."
-if ls ~/Library/Mail/V*/MailData/ &> /dev/null
-#if find ~/Library/Mail/V* -type d -name "MailData" -maxdepth 1 &> /dev/null
+if [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
 then
-	find ~/Library/Mail/V*/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm -f
-	find ~/Library/Mail/V*/MailData/ -type f -name "ExternalUpdates.*" -print0 | xargs -0 rm -f
-else
+	# macos 10.15 only
+	# do not delete the mail index on 10.15.0 as there seems to be bug that results in loosing mails
 	:
+else
+	echo ''
+	echo "deleting files to rebuild the mailindex at next start of mail..."
+	if ls ~/Library/Mail/V*/MailData/ &> /dev/null
+	#if find ~/Library/Mail/V* -type d -name "MailData" -maxdepth 1 &> /dev/null
+	then
+		find ~/Library/Mail/V*/MailData/ -type f -name "Envelope Index*" -print0 | xargs -0 rm -f
+		find ~/Library/Mail/V*/MailData/ -type f -name "ExternalUpdates.*" -print0 | xargs -0 rm -f
+	else
+		:
+	fi
 fi
 
-# macos 10.15 only
-if [[ "$MACOS_VERSION_MAJOR" != "10.15" ]]
+
+### updating rules
+if [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
 then
-	:
-else
-    #echo ''
+	# macos 10.15 only
+	#echo ''
 	#echo "${bold_text}${blue_text}if this was the first run of this script after a restore please repair all needed mail rules...${default_text}"
     #echo ''
     # adding the port behind the mailbox criteria string seems to fix the broken mailrules when upgrading from 10.14 to 10.15
@@ -60,6 +67,8 @@ else
     	#sed -i '' 's|@pop3.strato.de/|@pop3.strato.de:110/|' /Users/"$USER"/Library/Mail/V6/MailData/SyncedRules.plist
     	sed -i '' 's|@pop3.strato.de/|@pop3.strato.de:110/|' "$i"
     done
+else
+	:
 fi
 
 # opening mail and confirming rebuild
