@@ -448,7 +448,12 @@ EOF
     # monitors are using different spaces
     # false = yes, true = no
     ##
-    defaults write com.apple.spaces spans-displays -bool false
+    if [[ "$USER" == "wolfgang" ]]
+    then
+        defaults write com.apple.spaces spans-displays -bool true
+    else
+        defaults write com.apple.spaces spans-displays -bool false
+    fi
     
     # expose
     #
