@@ -1,5 +1,18 @@
 #!/bin/zsh
 
+### sourcing config file
+if [[ -f ~/.shellscriptsrc ]]
+then 
+    . ~/.shellscriptsrc
+    eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+    # user config profile
+    SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+    env_check_for_user_profile
+else
+    :
+fi
+
+
 ### shell specific script dir
 if [[ -n "$BASH_SOURCE" ]]
 then
@@ -15,15 +28,16 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
 SHELL_SCRIPTS_CONFIG_FILE="shellscriptsrc"
 SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH=~/."$SHELL_SCRIPTS_CONFIG_FILE"
 
+
 ### installation
-echo ''
+#echo ''
 if [[ -e "$SCRIPT_DIR"/"$SHELL_SCRIPTS_CONFIG_FILE".sh ]]
 then
     echo "installing config file from local directory..."
     #echo ''
     cp "$SCRIPT_DIR"/"$SHELL_SCRIPTS_CONFIG_FILE".sh "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
     if [[ $? -eq 0 ]]; then SUCCESSFULLY_INSTALLED="yes"; else SUCCESSFULLY_INSTALLED="no"; fi
-    if [[ "$USER" == "tom" ]]
+    if [[ "$ENABLE_SELF_UPDATE" == "no" ]]
     then
         # deactivating self-update
         sed -i '' '/env_config_file_self_update$/s/^#*/#/g' "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"

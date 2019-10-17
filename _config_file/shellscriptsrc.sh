@@ -1613,6 +1613,31 @@ env_stop_error_log() {
 }
 
 
+### user profiles
+env_check_for_user_profile() {
+    if [[ "$SCRIPTS_DIR_USER_PROFILES" == "" ]]
+    then
+        echo ''
+        echo "variable SCRIPTS_DIR_USER_PROFILES is empty, skipping user profile detection..."
+        echo ''
+    else
+        if [[ -e "$SCRIPTS_DIR_USER_PROFILES"/scripts_profile_"$loggedInUser".conf ]]
+        then
+            echo ''
+            echo "scripts profile found for $loggedInUser..."
+            SCRIPTS_USER_PROFILE="$SCRIPTS_DIR_USER_PROFILES"/scripts_profile_"$loggedInUser".conf
+            . "$SCRIPTS_USER_PROFILE"
+            echo ''
+        else
+            echo ''
+            echo "no scripts profile found for "$loggedInUser"..."
+            echo ''
+        fi
+    fi
+
+}
+
+
 ### testing
 if [[ "$TEST_SOURCING_AND_VARIABLES" == "yes" ]]
 then
