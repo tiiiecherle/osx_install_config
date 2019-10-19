@@ -14,6 +14,8 @@ virus scanner
 
 print filevault_key from desktop file
 
+check if email database and index are ok by importing all mails to a new eagle filer database
+
 if no icloud account is used and red dot notification is shown therefore on dock icon
 of system preferences, run script 15f_delete_dock_notifications.sh
 
