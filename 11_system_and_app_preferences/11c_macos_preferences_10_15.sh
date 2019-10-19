@@ -69,13 +69,20 @@ fi
 
 
 ###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
+###
 ### script
 ###
 
 
 ### security permissions
-
-echo ''    
 env_databases_apps_security_permissions
 env_identify_terminal
 
@@ -89,7 +96,7 @@ AUTOMATION_APPS=(
 "$SOURCE_APP_NAME                           System Preferences                                          1"
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
-#echo ''
+echo ''
 
 
 ### uuid
@@ -448,9 +455,9 @@ EOF
     # monitors are using different spaces
     # false = yes, true = no
     ##
-    if [[ "$USER" == "wolfgang" ]]
+    if [[ "$MONITORS_USE_DIFFERENT_SPACES" != "" ]]
     then
-        defaults write com.apple.spaces spans-displays -bool true
+        defaults write com.apple.spaces spans-displays -bool "$MONITORS_USE_DIFFERENT_SPACES"
     else
         defaults write com.apple.spaces spans-displays -bool false
     fi
@@ -1009,7 +1016,7 @@ EOF
 		done <<< "$(printf "%s\n" "${AUTOSTART_ITEMS[@]}")"
 	}
 	
-    AUTOSTART_ITEMS=(
+    AUTOSTART_ITEMS_ALL_USERS=(
     # name													                                                    start hidden
     ""$PATH_TO_APPS"/Bartender 3                                                                                false"
     ""$PATH_TO_APPS"/AudioSwitcher                                                                              false"   
@@ -1026,33 +1033,13 @@ EOF
     ""$PATH_TO_APPS"/VirusScannerPlus.app/Contents/Library/LoginItems/VirusScannerHelper                        false"                    
     # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
     )
+    AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_ALL_USERS[@]}")
     add_startup_items
     
-    # adding some more startup-items for specified user if script is run on multiple macs with different users
-    if [[ "$USER" == "tom" ]]
+    # adding some more user specific startup-items
+    if [[ "$AUTOSTART_ITEMS_USER_SPECIFIC" != "" ]]
     then
-        AUTOSTART_ITEMS=(
-        # name													                                                start hidden
-        ""$PATH_TO_APPS"/VirtualBox Menulet                                                                     false"
-        "/Users/"$USER"/Library/Scripts/run_on_login_signal                                                     false"   
-        "/Users/"$USER"/Library/Scripts/run_on_login_whatsapp                                                   false"                      
-        )
-        add_startup_items
-    elif [[ "$USER" == "bobby" ]]
-    then
-    	AUTOSTART_ITEMS=(
-        # name													                                                start hidden
-        "/Users/"$USER"/Library/Scripts/run_on_login_whatsapp                                                   false"                      
-        )
-        add_startup_items
-    elif [[ "$USER" == "wolfgang" ]]
-    then
-        AUTOSTART_ITEMS=(
-        # name													                                                start hidden
-        ""$PATH_TO_APPS"/Firefox                                                                                false"
-        ""$PATH_TO_SYSTEM_APPS"/Mail                                                                            false"   
-        "/Users/"$USER"/Library/Application Support/Oracle/Java/Deployment/cache/6.0/bundles/PVGuard            false"                      
-        )
+        AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_USER_SPECIFIC[@]}")
         add_startup_items
     else
         :
@@ -1110,6 +1097,12 @@ EOF
                     env_set_open_on_first_run_permissions
                     # does not work as it resets the license agreement
                     #autostartapp="VirusScannerPlus"
+                elif [[ "$line" == "Alfred 4" ]]
+                then
+                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/Alfred 4.app/Contents/Preferences/Alfred Preferences.app"
+                    env_set_open_on_first_run_permissions
+                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/Alfred 4.app"
+                    env_set_open_on_first_run_permissions
                 else
                     PATH_TO_FIRST_RUN_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/"$autostartapp".app$" | sort -n | head -1)
                     #PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/"$autostartapp".app"
@@ -1700,15 +1693,13 @@ EOF
     
     ### mouse
     
-    # secondary click:
+    # secondary mouse click
     # possible values: OneButton, TwoButton, TwoButtonSwapped
-    defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string OneButton
-        
-    if [[ "$USER" == "wolfgang" ]]
+    if [[ "$MOUSE_BUTTON_MODE" != "" ]]
     then
-        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string TwoButton
+        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string "$MOUSE_BUTTON_MODE"
     else
-        :
+        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string OneButton
     fi
     
     ### trackpad
@@ -1879,9 +1870,9 @@ EOF
     # 0 = integrated (less powerfull)
     # 1 = dedicated (separate graphics card)
     # 2 = auto switch (default)
-    if [[ "$USER" == "tom" ]]
+    if [[ "$GPU_SWITCH" != "" ]]
     then
-        sudo pmset -a gpuswitch 2
+        sudo pmset -a gpuswitch "$GPU_SWITCH"
     else
         :
     fi
@@ -2148,9 +2139,9 @@ EOF
     }
     
     ### separate user for smb sharing    
-    if [[ "$USER" == "tom" ]]
+    if [[ "$CREATE_SHARING_USER" == "yes" ]]
     then
-        #creating_sharing_user
+        creating_sharing_user
         :
     else
         :
@@ -2696,11 +2687,10 @@ EOF
     
     # set safari download path
     defaults write com.apple.Safari AlwaysPromptForDownloadFolder -bool false
-    if [[ "$loggedInUser" == "tom" ]]
+    if [[ "$SAFARI_DOWNLOADS_PATH" != "" ]]
     then
-        mkdir -p "/Users/"$loggedInUser"/Desktop/files"
-        defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
-        #defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
+        mkdir -p "$SAFARI_DOWNLOADS_PATH"
+        defaults write com.apple.Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
     else
         defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
     fi
@@ -3357,6 +3347,20 @@ EOF
     ###
     
     echo "contacts"
+    
+	echo "opening and quitting contacts in background..."
+	# without opening contacs first some settings could not be applied (e.g. ABDefaultAddressCountryCode)
+	osascript <<EOF
+	
+			try
+				tell application "Contacts"
+					run
+					delay 3
+					quit
+				end tell
+			end try
+				
+EOF
     
     # enable the debug menu in contacts
     #defaults write com.apple.addressbook ABShowDebugMenu -bool true

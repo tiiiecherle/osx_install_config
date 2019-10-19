@@ -2,7 +2,7 @@
 
 #FILESTARGZSAVEDIR=~/Desktop/"test test"
 #FILESAPPLESCRIPTDIR=~/Desktop/07_backup_and_restore_script
-#SELECTEDUSER="tom"
+#SELECTEDUSER="$USER"
 
     # compressing backup files
     # sleep 2

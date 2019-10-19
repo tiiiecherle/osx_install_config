@@ -131,7 +131,7 @@ run_cleaning2 () {
 reset_safari_download_location () {
 
     sudo -H -u "$loggedInUser" defaults write com.apple.Safari AlwaysPromptForDownloadFolder -bool false
-    if [[ "$loggedInUser" == "tom" ]]
+    if [[ -d "/Users/"$loggedInUser"/Desktop/files" ]]
     then
         #sudo -H -u "$loggedInUser" mkdir -p "/Users/"$loggedInUser"/Desktop/files"
         #mkdir -p "~/Desktop/files"

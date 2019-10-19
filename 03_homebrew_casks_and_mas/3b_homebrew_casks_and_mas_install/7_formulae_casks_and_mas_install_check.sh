@@ -47,6 +47,16 @@ fi
 
 
 
+
+###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_TWO_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
 ###
 ###
 ### homebrew
@@ -92,7 +102,8 @@ check_mas_apps() {
 	#if [[ $(mas list | grep "$MAS_NUMBER") != "" ]]
 	# better results when batch installing from appstore as mas takes a while to register the app as installed in mas list
 	# checks if installed from appstore
-	if [[ $(find /Applications -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | grep "$MAS_NAME") != "" ]]
+	#if [[ $(find /Applications -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | grep "$MAS_NAME") != "" ]]
+	if [[ $(find "$PATH_TO_APPS" -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print0 | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | xargs -0 basename | grep "$MAS_NAME") != "" ]]
 	then
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$MAS_NAME"
 	else 
@@ -244,7 +255,7 @@ else
     	# casks
     	if [[ "${casks[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "check_casks {}" ::: "${casks[@]}"; fi
     	# casks specific1
-    	if [[ "$USER" == "tom" ]]
+    	if [[ INSTALL_SPECIFIC_CASKS1 == "yes" ]]
     	then
     	    echo ''
     	    echo checking casks specific1 installation...
@@ -278,7 +289,7 @@ else
         else
             :
         fi
-        if [[ "$USER" == "tom" ]]
+        if [[ "$INSTALL_SPECIFIC_CASKS1" == "yes" ]]
     	then
             if [[ "${casks_specific1[@]}" != "" ]]
             then

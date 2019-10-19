@@ -38,6 +38,16 @@ fi
 
 
 ###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
+
+###
 ### set calendar and reminder alarms
 ###
 
@@ -160,7 +170,7 @@ EOF
 						#echo "enabling "$i"..."
 						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
 						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					elif [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$USER" == "wolfgang" ]]
+					elif [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$ENABLE_SERVICE_CALENDAR_NOTIFICATIONS" == "yes" ]]
 					then
 						#echo "$USER"
 						#echo "enabling "$i"..."

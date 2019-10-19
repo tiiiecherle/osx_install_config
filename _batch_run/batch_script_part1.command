@@ -151,7 +151,7 @@ batch_run_all() {
 	### asking for restore directories
 	printf "\n${bold_text}###\nasking restore directories for files...\n###\n${default_text}"
 	RESTORE_FILES_OPTION="ask_for_restore_directories"
-	. "$SCRIPTS_FINAL_DIR"/06_manual_installations_restores/6b_restore_files.sh
+	. "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
 	unset RESTORE_FILES_OPTION
 	if [[ "$RESTORE_DIR_FILES" == "" ]]
 	then
@@ -222,7 +222,7 @@ batch_run_all() {
 	else
 		printf "\n${bold_text}###\nunarchiving and restoring files...\n###\n${default_text}"
 		create_tmp_batch_script_fifo
-		time ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/06_manual_installations_restores/6b_restore_files.sh
+		time ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
 		unset RESTORE_FILES_OPTION
 		sleep 1
 		env_active_source_app
@@ -237,7 +237,7 @@ batch_run_all() {
 	sleep 3
 	WAIT_PIDS=()
 	WAIT_PIDS+=$(ps aux | grep /0_run_all.command | grep -v grep | awk '{print $2;}')
-	#WAIT_PIDS+=$(ps aux | grep /6b_restore_files.sh | grep -v grep | awk '{print $2;}')
+	#WAIT_PIDS+=$(ps aux | grep /restore_files.sh | grep -v grep | awk '{print $2;}')
 	#echo "$WAIT_PIDS"
 	#if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
 	while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"

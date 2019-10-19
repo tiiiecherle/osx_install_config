@@ -21,12 +21,21 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 
 
 ###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
+###
 ### firefox hardening
 ###
 
 ### variables
-FIREFOX_PROFILE_PATH=$(find "/Users/""$USER""/Library/Application Support/Firefox/" -name "*.default*")
-FIREFOX_PREFERENCES="/Users/""$USER""/Library/Application Support/Firefox"
+FIREFOX_PROFILE_PATH=$(find "/Users/"$USER"/Library/Application Support/Firefox/" -name "*.default*")
+FIREFOX_PREFERENCES="/Users/"$USER"/Library/Application Support/Firefox"
 
 
 ### functions
@@ -123,7 +132,7 @@ curl --silent https://raw.githubusercontent.com/pyllyukko/user.js/master/user.js
 chown "$USER":staff "$FIREFOX_PROFILE_PATH"/user.js
 chmod 644 "$FIREFOX_PROFILE_PATH"/user.js
 
-# custom options
+# custom options part 1
 echo '' >> "$FIREFOX_PROFILE_PATH"/user.js
 # start with default:blank
 echo "// more custom options" >> "$FIREFOX_PROFILE_PATH"/user.js
@@ -163,7 +172,8 @@ else
 	sed -i '' 's|^user_pref.*svg.disabled.*|user_pref("svg.disabled", false);|' "$FIREFOX_PROFILE_PATH"/user.js
 fi
 
-if [[ "$USER" == wolfgang ]]
+# custom options part 2
+if [[ "$FIREFOX_HARDENING_CUSTOM2" == "yes" ]]
 then
 	if [[ $(cat "$FIREFOX_PROFILE_PATH"/user.js | grep "^user_pref.*browser.startup.page.*") == "" ]]
 	then

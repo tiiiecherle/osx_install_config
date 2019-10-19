@@ -2,7 +2,7 @@
 
 #FILESTARGZSAVEDIR=/Users/"$USER"/Desktop/backup_test
 #FILESAPPLESCRIPTDIR=/Users/$USER/Desktop/backup_macos/defaults_write/_scripts_final/07_backup_and_restore_script
-#SELECTEDUSER="tom"
+#SELECTEDUSER="$USER"
 
     # compressing backup files
     # sleep 2

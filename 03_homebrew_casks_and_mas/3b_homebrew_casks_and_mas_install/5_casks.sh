@@ -39,6 +39,15 @@ fi
 
 
 ###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_TWO_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
+###
 ### password
 ###
 
@@ -68,7 +77,7 @@ env_sudo
 ### command line tools
 ###
 
-#echo ''
+echo ''
 env_command_line_tools_install_shell
 
 
@@ -616,7 +625,7 @@ else
 fi
 
 # installing user specific casks
-if [[ "$USER" == "tom" ]]
+if [[ "$INSTALL_SPECIFIC_CASKS1" == "yes" ]]
 then
     if [[ "$CONT2_BREW" == "y" || "$CONT2_BREW" == "yes" || "$CONT2_BREW" == "" ]]
     then
@@ -683,7 +692,7 @@ else
 fi
 
 # installing user specific casks
-if [[ "$USER" == "wolfgang" ]]
+if [[ "$INSTALL_JAVA8" == "yes" ]]
 then
     echo ''
     #env_use_password | brew cask uninstall java

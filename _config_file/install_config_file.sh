@@ -30,7 +30,7 @@ SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH=~/."$SHELL_SCRIPTS_CONFIG_FILE"
 
 
 ### installation
-#echo ''
+echo ''
 if [[ -e "$SCRIPT_DIR"/"$SHELL_SCRIPTS_CONFIG_FILE".sh ]]
 then
     echo "installing config file from local directory..."

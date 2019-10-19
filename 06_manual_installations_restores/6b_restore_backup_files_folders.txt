@@ -1,8 +1,12 @@
 1	copy /defaults_write/_scripts_final/07_backup_and_restore_script/unarchive/unarchive_tar_gz_perms_progress_all_in_folder.command
 	to backup folder containing .tar.gz.gpg backup files
-	# this is important or it will loose ownership and permissions
+	# will preserve ownership and permissions
 	double click unarchive_tar_gz_perms_progress_all_in_folder.command
 
-2	restore backup files to according location
-	# open user folder in finder from terminal if not yet visible in finder sidebar
-	open ~
+2	restore backup files to according location 
+	manually or using 07_backup_and_restore_script/files/restore_files.sh
+
+	
+### documentation
+# open user folder in finder from terminal if not yet visible in finder sidebar
+open ~

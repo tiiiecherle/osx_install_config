@@ -58,12 +58,26 @@ fi
 
 
 ###
+### user backup/restore profile
+###
+
+BACKUP_RESTORE_SCRIPTS_DIR="$SCRIPT_DIR_ONE_BACK"
+if [[ -e "$BACKUP_RESTORE_SCRIPTS_DIR"/profiles/backup_profile_"$loggedInUser".conf ]]
+then
+    . "$BACKUP_RESTORE_SCRIPTS_DIR"/profiles/backup_profile_"$loggedInUser".conf
+else
+    :
+fi
+
+
+
+###
 ### script
 ###
 
 
 ### checking for script dependencies
-echo ''
+#echo ''
 echo "checking for script dependencies..."
 if command -v parallel &> /dev/null
 then
@@ -128,59 +142,19 @@ else
 fi
 
 
+### backup/restore files and directories
+# can be set here or in user config file
+
+#BACKUPDIRS=(
+#"/Users/"$USER"/Pictures"
+#)
+
+
 ### user backup files/directories
-if [[ "$SELECTEDUSER" == "tom" ]] || [[ "$SELECTEDUSER" == "bobby" ]] || [[ "$SELECTEDUSER" == "wolfgang" ]];
+if [[ "$BACKUPDIRS" == "" ]]
 then
-    :
-else
-    echo "there is no valid files backup set for the selected user, exiting..."
+    echo "there is no valid files backup set for the selected user, exiting..." >&2
     exit
-fi
-
-if [[ "$SELECTEDUSER" == "tom" ]];
-then
-
-    BACKUPDIRS=(
-    #"/Users/$USER/Pictures"
-    "/Users/$USER/Music"
-    "/Users/$USER/Desktop/desktop"
-    "/Users/$USER/Desktop/backup"
-    "/Users/$USER/Desktop/macos"
-    "/Users/$USER/github"
-    "/Users/$USER/Desktop/files"
-    "/Users/$USER/Documents"
-    "/Users/$USER/Library/Application Support/MobileSync"
-    )
-
-else
-    :
-fi
-
-if [[ "$SELECTEDUSER" == "bobby" ]];
-then
-
-    BACKUPDIRS=(
-    "/Users/$USER/Pictures"
-    "/Users/$USER/Music"
-    "/Users/$USER/Desktop/desktop"
-    "/Users/$USER/_WS_IMAC"
-    "/Users/$USER/Eigene_Dateien_wsmac"
-    "/Users/$USER/Documents"
-    "/Users/$USER/Downloads"
-    "/Users/$USER/Library/Application Support/MobileSync"
-    )
-
-else
-    :
-fi
-
-if [[ "$SELECTEDUSER" == "wolfgang" ]];
-then
-
-    BACKUPDIRS=(
-    "/Users/$USER/Desktop/desktop"
-    )
-
 else
     :
 fi
@@ -320,8 +294,8 @@ check_files_parallel() {
     fi
 }
 
-#if [[ "$(cat "$FILESLOG")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(cat "$FILESLOG")"; fi
-if [[ "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')"; fi
+if [[ "$(cat "$FILESLOG")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(cat "$FILESLOG")"; fi
+#if [[ "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')"; fi
 wait
 
 echo ''

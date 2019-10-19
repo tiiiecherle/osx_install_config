@@ -20,6 +20,16 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 RUN_FROM_BATCH_SCRIPT=yes
 
 
+
+###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
 ###
 ### security permissions
 ###
@@ -45,45 +55,7 @@ PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 ### opening apps for applying manual preferences
 ###
 
-echo ''
-echo "opening apps for applying preferences manually..."
-
-applications_to_open=(
-""$PATH_TO_SYSTEM_APPS"/FaceTime.app"
-""$PATH_TO_SYSTEM_APPS"/Messages.app"
-""$PATH_TO_SYSTEM_APPS"/Calendar.app"
-""$PATH_TO_SYSTEM_APPS"/Contacts.app"
-""$PATH_TO_SYSTEM_APPS"/Reminders.app"
-""$PATH_TO_APPS"/Overflow 3.app"
-""$PATH_TO_APPS"/BresinkSoftwareUpdater.app"
-""$PATH_TO_APPS"/WireGuard.app"
-)
-
-for i in "${applications_to_open[@]}"
-do
-	if [[ -e "$i" ]]
-	then
-	    echo "opening $(basename "$i")"
-		open "$i" &
-		sleep 5
-	else
-		:
-	fi
-done
-
-open_more_apps() {
-	# no longer needed, but kept for testing
-	applications_to_open=(
-	""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
-	""$PATH_TO_APPS"/AppCleaner.app"
-	""$PATH_TO_APPS"/VirusScannerPlus.app"
-	""$PATH_TO_APPS"/iStat Menus.app"
-	""$PATH_TO_APPS"/Microsoft Excel.app"
-	""$PATH_TO_APPS"/iMazing.app"
-	""$PATH_TO_APPS"/MacPass.app"
-	""$PATH_TO_APPS"/The Unarchiver.app"
-	)
-	
+open_applications() {
 	for i in "${applications_to_open[@]}"
 	do
 		if [[ -e "$i" ]]
@@ -96,18 +68,47 @@ open_more_apps() {
 		fi
 	done
 }
+
+echo ''
+echo "opening apps for applying preferences manually..."
+
+applications_to_open=(
+""$PATH_TO_SYSTEM_APPS"/FaceTime.app"
+""$PATH_TO_SYSTEM_APPS"/Messages.app"
+""$PATH_TO_SYSTEM_APPS"/Calendar.app"
+""$PATH_TO_SYSTEM_APPS"/Contacts.app"
+""$PATH_TO_SYSTEM_APPS"/Reminders.app"
+""$PATH_TO_APPS"/Overflow 3.app"
+""$PATH_TO_APPS"/BresinkSoftwareUpdater.app"
+)
+open_applications
+
+open_more_apps() {
+	# no longer needed, but kept for testing
+	applications_to_open_test=(
+	""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
+	""$PATH_TO_APPS"/AppCleaner.app"
+	""$PATH_TO_APPS"/VirusScannerPlus.app"
+	""$PATH_TO_APPS"/iStat Menus.app"
+	""$PATH_TO_APPS"/Microsoft Excel.app"
+	""$PATH_TO_APPS"/iMazing.app"
+	""$PATH_TO_APPS"/MacPass.app"
+	""$PATH_TO_APPS"/The Unarchiver.app"
+	)
+	applications_to_open=$(printf "%s\n" "${applications_to_open_test[@]}")
+	open_applications
+}
 #open_more_apps
 
 # google consent
 open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 #open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a "/Applications/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 
-if [[ "$USER" == "wolfgang" ]]
+# open user specific apps
+if [[ "$APPLICATIONS_TO_OPEN_USER_SPECIFIC" != "" ]]
 then
-    i="/Users/$USER/PVGuardClient/installer/pvdownload.jnlp"
-    echo "opening $(basename "$i")"
-	open "$i" &
-	sleep 5
+    applications_to_open=$(printf "%s\n" "${APPLICATIONS_TO_OPEN_USER_SPECIFIC[@]}")
+    open_applications
 else
     :
 fi
@@ -129,8 +130,13 @@ then
 		:
 	fi
     
-    # hint for signal
-    osascript -e 'display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+    if [[ "$DISPLAY_SIGNAL_DIALOG" == "yes" ]]
+	then
+    	# hint for signal
+    	osascript -e 'display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+    else
+    	:
+    fi
 
 else
 	:

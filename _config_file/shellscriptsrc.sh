@@ -1619,7 +1619,7 @@ env_check_for_user_profile() {
     then
         echo ''
         echo "variable SCRIPTS_DIR_USER_PROFILES is empty, skipping user profile detection..."
-        echo ''
+        #echo ''
     else
         if [[ -e "$SCRIPTS_DIR_USER_PROFILES"/scripts_profile_"$loggedInUser".conf ]]
         then
@@ -1627,11 +1627,11 @@ env_check_for_user_profile() {
             echo "scripts profile found for $loggedInUser..."
             SCRIPTS_USER_PROFILE="$SCRIPTS_DIR_USER_PROFILES"/scripts_profile_"$loggedInUser".conf
             . "$SCRIPTS_USER_PROFILE"
-            echo ''
+            #echo ''
         else
             echo ''
             echo "no scripts profile found for "$loggedInUser"..."
-            echo ''
+            #echo ''
         fi
     fi
 

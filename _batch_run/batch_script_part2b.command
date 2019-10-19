@@ -62,6 +62,15 @@ env_identify_terminal
 
 
 ###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
+###
 ### trap
 ###
 
@@ -124,7 +133,7 @@ batch_run_all() {
 	
 	
 	### screen resolution	
-	if [[ "$USER" == "tom" ]]
+	if [[ "$INSTALL_SCREEN_RESOLUTION_LAUNCHD" == "yes" ]]
 	then
 		printf "\n${bold_text}###\nscreen resolution...\n###\n${default_text}"
 		"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/user/1_screen_resolution/install_screen_resolution_user_launchdservice.sh
@@ -147,15 +156,21 @@ batch_run_all() {
 	
 		
 	### special autostart apps	
-	if [[ "$USER" == "tom" ]]
+	if [[ "$INSTALL_RUN_ON_LOGIN_WHATSAPP" == "yes" ]] || [[ "$INSTALL_RUN_ON_LOGIN_SIGNAL" == "yes" ]]
 	then
 		printf "\n${bold_text}###\nspecial autostart apps...\n###\n${default_text}"
-		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_signal.sh
-		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_whatsapp.sh
-		echo ''
-	elif [[ "$USER" == "bobby" ]]
-	then
-		"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_whatsapp.sh
+		if [[ "$INSTALL_RUN_ON_LOGIN_WHATSAPP" == "yes" ]]
+		then
+			"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_whatsapp.sh
+		else
+			:
+		fi
+		if [[ "$INSTALL_RUN_ON_LOGIN_SIGNAL" == "yes" ]]
+		then
+			"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_signal.sh
+		else
+			:
+		fi		
 		echo ''
 	else
 		:

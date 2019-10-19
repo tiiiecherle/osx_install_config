@@ -55,13 +55,20 @@ fi
 
 
 ###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
+###
 ### script
 ###
 
 
 ### security permissions
-
-echo ''    
 env_databases_apps_security_permissions
 env_identify_terminal
 
@@ -75,7 +82,7 @@ AUTOMATION_APPS=(
 "$SOURCE_APP_NAME                           System Preferences                                          1"
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
-#echo ''
+echo ''
 
 
 ### uuid
@@ -456,11 +463,11 @@ EOF
     defaults write com.apple.dashboard db-enabled-state -int 1
     
     sleep 1
-    if [[ "$USER" == "wolfgang" ]]
+    if [[ "$ENABLE_DASHBOARD" != "" ]]
     then
-        defaults write com.apple.dashboard db-enabled-state -int 2
+        defaults write com.apple.dashboard db-enabled-state -int "$ENABLE_DASHBOARD"
     else
-        :
+        defaults write com.apple.dashboard db-enabled-state -int 2
     fi
     
     # disable dashboard completetly (must be reenabled on the command line, reboot and then enabled in the system preferences to work again)
@@ -1077,9 +1084,9 @@ EOF
     # 0 = integrated (less powerfull)
     # 1 = dedicated (separate graphics card)
     # 2 = auto switch (default)
-    if [[ "$USER" == "tom" ]]
+    if [[ "$GPU_SWITCH" != "" ]]
     then
-        sudo pmset -a gpuswitch 2
+        sudo pmset -a gpuswitch "$GPU_SWITCH"
     else
         :
     fi
@@ -1276,13 +1283,11 @@ EOF
     
     # secondary click:
     # possible values: OneButton, TwoButton, TwoButtonSwapped
-    defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string OneButton
-        
-    if [[ "$USER" == "wolfgang" ]]
+    if [[ "$MOUSE_BUTTON_MODE" != "" ]]
     then
-        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string TwoButton
+        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string "$MOUSE_BUTTON_MODE"
     else
-        :
+        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string OneButton
     fi
     
     ### trackpad
@@ -1673,9 +1678,9 @@ EOF
     }
     
     ### separate user for smb sharing    
-    if [[ "$USER" == "tom" ]]
+    if [[ "$CREATE_SHARING_USER" == "yes" ]]
     then
-        #creating_sharing_user
+        creating_sharing_user
         :
     else
         :
@@ -1829,51 +1834,64 @@ EOF
     fi
     
     # adding startup-items
-    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Bartender 3", path:"/Applications/Bartender 3.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"AudioSwitcher", path:"/Applications/AudioSwitcher.app", hidden:false}'
-    # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Overflow 3", path:"/Applications/Overflow 3.app", hidden:true}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"KeepingYouAwake", path:"/Applications/KeepingYouAwake.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Alfred 4", path:"/Applications/Alfred 4.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"GeburtstagsChecker", path:"/Applications/GeburtstagsChecker.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"AppCleaner Helper", path:"/Applications/AppCleaner Helper.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"SMARTReporter", path:"/Applications/SMARTReporter.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"TotalFinder", path:"/Applications/TotalFinder.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"XtraFinder", path:"/Applications/XtraFinder.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"iStat Menus", path:"/Applications/iStat Menus.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"witchdaemon", path:"/Users/'$USER'/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Quicksilver", path:"/Applications/Quicksilver.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Oversight", path:"/Applications/OverSight.app/Contents/Library/LoginItems/OverSight Helper.app", hidden:false}'
-    #osascript -e 'tell application "System Events" to make login item at end with properties {name:"Virus Scanner Plus", path:"/Applications/VirusScannerPlus.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"Better", path:"/Applications/Better.app", hidden:false}'
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"AdGuard for Safari", path:"/Applications/AdGuard for Safari.app", hidden:false}'
+    add_startup_items() {
+	    while IFS= read -r line || [[ -n "$line" ]] 
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+	        i="$line"
+	        local APP_PATH=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+	        #echo "APP_PATH is "$APP_PATH"..."
+	        local APP_NAME=$(basename "$APP_PATH")
+	       	#echo "APP_NAME is "$APP_NAME"..."
+			local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	       	#echo "START_HIDDEN is "$START_HIDDEN"..."
+			if [[ -e "$APP_PATH".app ]]
+			then
+			    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
+	            osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$APP_PATH.app'", hidden:"'$START_HIDDEN'"}'
+	        else
+	        	echo ""$APP_PATH".app not found, skipping..."
+	        fi
+		done <<< "$(printf "%s\n" "${AUTOSTART_ITEMS[@]}")"
+	}
+	
+    AUTOSTART_ITEMS_ALL_USERS=(
+    # name													                                                    start hidden
+    ""$PATH_TO_APPS"/Bartender 3                                                                                false"
+    ""$PATH_TO_APPS"/AudioSwitcher                                                                              false"   
+    ""$PATH_TO_APPS"/KeepingYouAwake                                                                            false" 
+    ""$PATH_TO_APPS"/Alfred 4                                                                                   false" 
+    ""$PATH_TO_APPS"/GeburtstagsChecker                                                                         false" 
+    ""$PATH_TO_APPS"/AppCleaner.app/Contents/Library/LoginItems/AppCleaner SmartDelete                          true" 
+    ""$PATH_TO_APPS"/TotalFinder                                                                                false" 
+    ""$PATH_TO_APPS"/XtraFinder                                                                                 false" 
+    "/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon                         false" 
+    ""$PATH_TO_APPS"/Quicksilver                                                                                false" 
+    #""$PATH_TO_APPS"/Oversight                                                                                  false" 
+    ""$PATH_TO_APPS"/Better                                                                                     false"
+    ""$PATH_TO_APPS"/VirusScannerPlus.app/Contents/Library/LoginItems/VirusScannerHelper                        false"                    
+    # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
+    )
+    AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_ALL_USERS[@]}")
+    add_startup_items
     
-    # adding some more startup-items for specified user if script is run on multiple macs with different users
-    if [[ "$USER" == "tom" ]]
+    # adding some more user specific startup-items
+    if [[ "$AUTOSTART_ITEMS_USER_SPECIFIC" != "" ]]
     then
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"VirtualBox Menulet", path:"/Applications/VirtualBox Menulet.app", hidden:false}'
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_signal", path:"/Users/'$USER'/Library/Scripts/run_on_login_signal.app", hidden:false}'
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_login_whatsapp", path:"/Users/'$USER'/Library/Scripts/run_on_login_whatsapp.app", hidden:false}'
-    	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"Unified Remote", path:"/Applications/Unified Remote.app", hidden:false}'
-    	#osascript -e 'tell application "System Events" to make login item at end with properties {name:"run_on_network_change_login", path:"/Users/'$USER'/Library/Scripts/run_on_network_change_login.app", hidden:true}'
+        AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_USER_SPECIFIC[@]}")
+        add_startup_items
     else
-    	:
-    fi
-    
-    if [[ "$USER" == "wolfgang" ]]
-    then
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Firefox", path:"/Applications/Firefox.app", hidden:false}'
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Mail", path:"/Applications/Mail.app", hidden:true}'
-        osascript -e 'tell application "System Events" to make login item at end with properties {name:"PV Guard", path:"/Users/$USER/Library/Application Support/Oracle/Java/Deployment/cache/6.0/bundles/PVGuard.app", hidden:true}'
-    else
-    	:
+        :
     fi
     
     if [[ $(sysctl hw.model | grep "iMac11,2") != "" || $(sysctl hw.model | grep "iMac12,1") != "" ]] && [[ $(system_profiler SPStorageDataType | grep "Medium Type" | grep SSD) != "" ]]
     #if [[ $(system_profiler SPHardwareDataType | grep "Model Identifier" | grep "iMac11,2") != "" ]]
     then
-    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"Macs Fan Control", path:"//Applications/Macs Fan Control.app", hidden:false}'
+        AUTOSTART_ITEMS=(
+        # name													                                                start hidden
+        ""$PATH_TO_APPS"/Macs Fan Control                                                                       false"                     
+        )
+        add_startup_items
     else
     	:
     fi
@@ -2477,13 +2495,12 @@ EOF
     
     # set safari download path
     defaults write com.apple.Safari AlwaysPromptForDownloadFolder -bool false
-    if [[ "$loggedInUser" == "tom" ]]
+    if [[ "$SAFARI_DOWNLOADS_PATH" != "" ]]
     then
-        mkdir -p "/Users/$loggedInUser/Desktop/files"
-        defaults write com.apple.Safari DownloadsPath -string "/Users/$loggedInUser/Desktop/files"
-        #defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
+        mkdir -p "$SAFARI_DOWNLOADS_PATH"
+        defaults write com.apple.Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
     else
-        defaults write com.apple.Safari DownloadsPath -string "/Users/$loggedInUser/Downloads"
+        defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
     fi
     
     # remove downloads list items

@@ -510,6 +510,7 @@ backup_restore() {
                 while IFS= read -r line || [[ -n "$line" ]]
 				do
 				    if [[ "$line" == "" ]]; then continue; fi
+				    #if [[ $(echo "$line" | grep '.*=".*"') == "" ]]; then continue; fi
 				    VERSION_TO_CHECK_AGAINST=10.15
                     if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
                     then
@@ -525,7 +526,7 @@ backup_restore() {
                         VARIABLE_VALUE=$(echo "$line" | cut -d= -f 2 | tr -d '"')
                         printf "%-25s %-10s\n" "$PROFILE_VARIABLE" "$VARIABLE_VALUE"
                     fi
-                done <<< "$(cat ""$WORKING_DIR"/profiles/backup_profile_"$loggedInUser".conf")"
+                done <<< "$(cat ""$WORKING_DIR"/profiles/backup_profile_"$loggedInUser".conf" | sed '/^[[:space:]]*$/q')"
                 
                 echo ''
                 VARIABLE_TO_CHECK="$RUN_WITH_PROFILE"
@@ -732,7 +733,7 @@ backup_restore() {
                     FILESAPPLESCRIPTDIR="$APPLESCRIPTDIR"
                     if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running local files backup..."; fi
                     create_tmp_backup_script_fifo1
-                    . "$WORKING_DIR"/files/run_files_backup.sh
+                    . "$WORKING_DIR"/files/backup_files_run_script.sh
                 else
                     :
                 fi

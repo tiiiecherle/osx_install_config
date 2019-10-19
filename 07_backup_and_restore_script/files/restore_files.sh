@@ -8,12 +8,26 @@ if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
+
+###
+### user backup/restore profile
+###
+
+BACKUP_RESTORE_SCRIPTS_DIR="$SCRIPT_DIR_ONE_BACK"
+if [[ -e "$BACKUP_RESTORE_SCRIPTS_DIR"/profiles/backup_profile_"$loggedInUser".conf ]]
+then
+    . "$BACKUP_RESTORE_SCRIPTS_DIR"/profiles/backup_profile_"$loggedInUser".conf
+else
+    :
+fi
+
+
+
 ###
 ### functions
 ###
 
 ### variables
-SCRIPTS_FINAL_DIR="$SCRIPT_DIR_ONE_BACK"
 env_identify_terminal
 
 ask_for_restore_dir_files() {
@@ -21,7 +35,7 @@ ask_for_restore_dir_files() {
     then
         echo ''
         echo "please select restore directory for files..."
-        RESTORE_DIR_FILES=$(sudo -H -u "$loggedInUser" osascript "$SCRIPT_DIR"/ask_restore_dir_files.scpt 2> /dev/null | sed s'/\/$//')
+        RESTORE_DIR_FILES=$(sudo -H -u "$loggedInUser" osascript "$SCRIPT_DIR"/restore_ask_dir_files.scpt 2> /dev/null | sed s'/\/$//')
         sleep 0.5
         osascript -e "tell application \"$SOURCE_APP_NAME\" to activate"
         #osascript -e "tell application \"$SOURCE_APP_NAME.app\" to activate"
@@ -34,15 +48,15 @@ ask_for_restore_dir_files() {
 ask_for_restore_dir_vbox() {
     if [[ $(echo "$RESTORE_DIR_VBOX") == "" ]] && [[ "$ASK_FOR_RESTORE_DIRS" != "no" ]]
     then
-        if [[ "$USER" == "tom" ]] || [[ "$USER" == "wolfgang" ]]
+        if [[ "$RESTORE_VBOX_FILES" == "yes" ]]
         then
             echo "please select restore directory for virtualbox..."
-            RESTORE_DIR_VBOX=$(sudo -H -u "$loggedInUser" osascript "$SCRIPT_DIR"/ask_restore_dir_vbox.scpt 2> /dev/null | sed s'/\/$//')
+            RESTORE_DIR_VBOX=$(sudo -H -u "$loggedInUser" osascript "$SCRIPT_DIR"/restore_ask_dir_vbox.scpt 2> /dev/null | sed s'/\/$//')
             sleep 0.5
             osascript -e "tell application \"$SOURCE_APP_NAME\" to activate"
             #osascript -e "tell application \"$SOURCE_APP_NAME.app\" to activate"
             sleep 0.5
-            RESTORE_VBOX="yes"
+            if [[ "$RESTORE_DIR_VBOX" != "" ]]; then RESTORE_VBOX="yes"; else :; fi
         else
             :
         fi
@@ -74,18 +88,21 @@ fi
 
 if [[ "$RESTORE_FILES_OPTION" == "unarchive" ]]
 then
-    cp "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/unarchive/unarchive_tar_gz_gpg_perms_progress_all_in_folder.command "$RESTORE_DIR_FILES"/
+    cp "$BACKUP_RESTORE_SCRIPTS_DIR"/unarchive/unarchive_tar_gz_gpg_perms_progress_all_in_folder.command "$RESTORE_DIR_FILES"/
     #"$RESTORE_DIR_FILES"/unarchive_tar_gz_gpg_perms_progress_all_in_folder.command &
     open ""$RESTORE_DIR_FILES"/unarchive_tar_gz_gpg_perms_progress_all_in_folder.command"
     sleep 3
     if [[ "$RESTORE_DIR_VBOX" != "" ]]
     then
-        cp "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/unarchive/unarchive_tar_gz_progress_all_in_folder.command "$RESTORE_DIR_VBOX"/
+        cp "$BACKUP_RESTORE_SCRIPTS_DIR"/unarchive/unarchive_tar_gz_progress_all_in_folder.command "$RESTORE_DIR_VBOX"/
         #"$RESTORE_DIR_VBOX"/unarchive_tar_gz_progress_all_in_folder.command &
         open ""$RESTORE_DIR_VBOX"/unarchive_tar_gz_progress_all_in_folder.command"
     else
         :
     fi
+    
+    echo ''
+    echo "waiting for unarchiving to finish..."
     sleep 3
     WAIT_PIDS=()
     WAIT_PIDS+=$(ps aux | grep /unarchive_tar_gz_gpg_perms_progress_all_in_folder.command | grep -v grep | awk '{print $2;}')
@@ -116,58 +133,20 @@ fi
 
 env_activating_keepingyouawake
 
-if [[ "$USER" == "tom" ]]
-then
 
-    BACKUPDIRS=(
-    #"/Users/$USER/Pictures"
-    "/Users/$USER/Music"
-    "/Users/$USER/Desktop/desktop"
-    "/Users/$USER/Desktop/backup"
-    "/Users/$USER/github"
-    "/Users/$USER/Desktop/files"
-    "/Users/$USER/Documents"
-    "/Users/$USER/Library/Application Support/MobileSync"
-    )
+### backup/restore files and directories
+# can be set here or in user config file
+
+#BACKUPDIRS=(
+#"/Users/"$USER"/Pictures"
+#)
     
-    BACKUPDIR_VBOX=(
-    "/Users/$USER/virtualbox/arch_64"
-    "/Users/$USER/virtualbox/win10_64"
-    )
+#BACKUPDIR_VBOX=(
+#"/Users/"$USER"/vbox_dir_name/vbox_name"
+#)
 
-else
-    :
-fi
 
-if [[ "$USER" == "bobby" ]]
-then
-
-    BACKUPDIRS=(
-    "/Users/$USER/Pictures"
-    "/Users/$USER/Music"
-    "/Users/$USER/Desktop/desktop"
-    "/Users/$USER/_WS_IMAC"
-    "/Users/$USER/Eigene_Dateien_wsmac"
-    "/Users/$USER/Documents"
-    "/Users/$USER/Downloads"
-    "/Users/$USER/Library/Application Support/MobileSync"
-    )
-
-else
-    :
-fi
-
-if [[ "$USER" == "wolfgang" ]]
-then
-
-    BACKUPDIR_VBOX=(
-    "/Users/$USER/virtualbox/win10_64"
-    )
-
-else
-    :
-fi
-
+### restore files function
 restore_files() {
     while IFS= read -r line || [[ -n "$line" ]]
     do
@@ -187,7 +166,7 @@ restore_files() {
         else
         	# not a symlink
         	mkdir -p "$line"
-        	if [[ -e "$line" ]] && [[ -e "$RESTORE_DIR"/"$BASENAME_LINE" ]]
+        	if [[ -e "$line" ]] && [[ -e "$RESTORE_TO_DIR"/"$BASENAME_LINE" ]]
         	then
         		echo "restoring "$line"..."
         		if find "$line" -mindepth 1 -maxdepth 1 ! -name ".localized" ! -name ".DS_Store" | read
@@ -198,22 +177,22 @@ restore_files() {
                     # empty
                     :
                 fi
-        		mv -f /"$RESTORE_DIR"/"$BASENAME_LINE"/* "$line"/
-        		#cp -a /"$RESTORE_DIR"/"$BASENAME_LINE"/* "$line"/
+        		mv -f /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
+        		#cp -a /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
         	else
         		echo "source or destination does not exist, skipping..."
         	fi
         fi
     	# cleaning up
-        if [[ -e "$RESTORE_DIR"/"$BASENAME_LINE" ]]
+        if [[ -e "$RESTORE_TO_DIR"/"$BASENAME_LINE" ]]
     	then
-    	    echo "cleaning up "$RESTORE_DIR"/"$BASENAME_LINE"..."
-    	    rm -rf "$RESTORE_DIR"/"$BASENAME_LINE"
+    	    echo "cleaning up "$RESTORE_TO_DIR"/"$BASENAME_LINE"..."
+    	    rm -rf "$RESTORE_TO_DIR"/"$BASENAME_LINE"
     	else
     	    :
     	fi
         echo ''
-    done <<< "$(printf "%s\n" "${BACKUP_DIRS[@]}")"
+    done <<< "$(printf "%s\n" "${RESTORE_DIRS[@]}")"
 }
 
 
@@ -228,9 +207,11 @@ else
     echo 'restoredir for files restore is '"$RESTORE_DIR_FILES"''
     echo ''
     
-    RESTORE_DIR="$RESTORE_DIR_FILES"
-    BACKUP_DIRS="$(printf "%s\n" "${BACKUPDIRS[@]}")"
-    if [[ "$BACKUP_DIRS" != "" ]]
+    RESTORE_TO_DIR="$RESTORE_DIR_FILES"
+    unset RESTORE_DIRS
+    # do not restore macos to desktop as it could already be there and this script could be run from there on a (batch) restore
+    RESTORE_DIRS="$(printf "%s\n" "${BACKUPDIRS[@]}" | grep -v 'Desktop/macos')"
+    if [[ "$RESTORE_DIRS" != "" ]]
     then
         restore_files
     else
@@ -251,17 +232,18 @@ then
         else
             if [[ $(echo "$RESTORE_DIR_VBOX") == "" ]]
             then
-                echo ''
+                #echo ''
                 echo "restoredir for virtualbox restore is empty, skipping..."
                 echo ''
             else
-                echo ''
+                #echo ''
                 echo "restoredir for virtualbox restore is "$RESTORE_DIR_VBOX"..."
                 echo ''
                 
-                RESTORE_DIR="$RESTORE_DIR_VBOX"
-                BACKUP_DIRS="$(printf "%s\n" "${BACKUPDIR_VBOX[@]}")"
-                if [[ "$BACKUP_DIRS" != "" ]]
+                RESTORE_TO_DIR="$RESTORE_DIR_VBOX"
+                unset RESTORE_DIRS
+                RESTORE_DIRS="$(printf "%s\n" "${BACKUPDIR_VBOX[@]}")"
+                if [[ "$RESTORE_DIRS" != "" ]]
                 then
                     restore_files
                 else
