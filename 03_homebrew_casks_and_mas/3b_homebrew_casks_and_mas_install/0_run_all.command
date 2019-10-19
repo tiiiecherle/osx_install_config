@@ -265,7 +265,7 @@ EOF
         	end if
         	#delay 2
         	#
-        	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export CONT_CASKROOM=\"$CONT_CASKROOM\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; echo ''; (time \"$SCRIPT_DIR/5_casks.sh\"; echo '')" in runWindow
+        	do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export CONT_CASKROOM=\"$CONT_CASKROOM\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; (time \"$SCRIPT_DIR/5_casks.sh\"; echo '')" in runWindow
         	#
         	delay 10
             set frontmost of Window1 to true
