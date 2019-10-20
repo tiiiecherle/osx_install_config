@@ -284,8 +284,13 @@ install_mas_apps() {
 	#echo $MAS_NUMBER
 	MAS_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
 	#echo $MAS_NAME
-	echo installing app "$MAS_NAME"...
-	mas install "$MAS_NUMBER" | grep "Installed"       
+    if [[ $(find "$PATH_TO_APPS" -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print0 | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | xargs -0 basename | grep "$MAS_NAME") == "" ]]
+    then
+        echo installing app "$MAS_NAME"...
+        mas install --force "$MAS_NUMBER" | grep "Installed"
+    else
+        echo ""$MAS_NAME" already installed..."
+    fi
 }
 
 
