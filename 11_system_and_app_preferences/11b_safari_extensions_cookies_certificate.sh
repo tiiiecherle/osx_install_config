@@ -87,7 +87,7 @@ else
 fi
 
 # on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
-"$PATH_TO_APPS"/Safari.app
+#"$PATH_TO_APPS"/Safari.app
 open -a "$PATH_TO_APPS"/Safari.app https://"$SERVER_IP"
 echo "safari has to be quit before continuing..."
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
