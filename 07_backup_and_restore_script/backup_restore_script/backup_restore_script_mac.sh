@@ -1208,7 +1208,7 @@ backup_restore() {
             ### paths to applications
             MACOS_VERSION_MAJOR_BACKUP_SYSTEM=$(cat "$RESTOREUSERDIR"/_backup_macos_version.txt | cut -f1,2 -d'.')
             VERSION_TO_CHECK_AGAINST=10.14
-            if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR_BACKUP_SYSTEM") -le $(env_convert_version_comparable "$MACOS_VERSION_MAJOR_BACKUP_SYSTEM") ]]
+            if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR_BACKUP_SYSTEM") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
             then
                 # macos versions until and including 10.14
                 PATH_TO_APPS_BACKUP_SYSTEM="/Applications"
