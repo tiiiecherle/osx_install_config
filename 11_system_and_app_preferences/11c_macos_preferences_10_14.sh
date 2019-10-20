@@ -2462,7 +2462,24 @@ EOF
     
     echo "safari & webkit"
     
+    
+    ### preparations
+    echo "opening and quitting safari in background..."
+    # on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
+	osascript <<EOF
+
+		try
+			tell application "Safari"
+				run
+				delay 4
+				quit
+			end tell
+		end try
+			
+EOF
+    
     SAFARI_PREFERENCES_FILE="/Users/$USER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist"
+    
     
     ### safari general
     

@@ -1114,7 +1114,7 @@ EOF
         			osascript <<EOF
         			tell application "System Events"
         				tell application "XtraFinder" to activate
-        				delay 2
+        				delay 3
         				tell application "System Events"
         					keystroke "w" using command down
         				end tell
@@ -2654,7 +2654,24 @@ EOF
     
     echo "safari & webkit"
     
+    
+    ### preparations
+    echo "opening and quitting safari in background..."
+    # on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
+	osascript <<EOF
+
+		try
+			tell application "Safari"
+				run
+				delay 4
+				quit
+			end tell
+		end try
+			
+EOF
+
     SAFARI_PREFERENCES_FILE="/Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist"
+    
     
     ### safari general
     
@@ -3355,7 +3372,7 @@ EOF
 			try
 				tell application "Contacts"
 					run
-					delay 3
+					delay 4
 					quit
 				end tell
 			end try
