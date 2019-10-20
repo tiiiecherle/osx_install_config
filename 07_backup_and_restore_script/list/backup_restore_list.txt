@@ -278,7 +278,7 @@ u	~/Library/Preferences/com.github.GitHub.plist
 # Google Earth Pro
 echo Google Earth Pro
 #u	"$PATH_TO_APPS"/Google Earth Pro.app
-u	/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin
+#u	/Library/Internet Plug-Ins/Google Earth Web Plug-in.plugin
 u	~/Library/Application Support/Google Earth
 u	~/Library/Preferences/com.Google.GECommonSettings.plist
 u	~/Library/Preferences/com.Google.GoogleEarthPro.plist
@@ -620,7 +620,7 @@ u	~/Library/Application Support/Signal
 
 # Sky Go
 echo Sky Go
-u	~"$PATH_TO_APPS"/Sky Go.app
+u	~/Applications/Sky Go.app
 u	~/Library/Application Support/Sky Go
 u	~/Library/Preferences/com.bskyb.skygoplayer.helper.plist
 u	~/Library/Preferences/com.bskyb.skygoplayer.plist
@@ -780,8 +780,8 @@ u	~/Library/Application Support/WhatsApp
 u	~/Library/Preferences/WhatsApp.plist
 
 # Widgets
-echo Widgets
-u	 ~/Library/Widgets/Wetter.wdgt
+#echo Widgets
+#u	 ~/Library/Widgets/Wetter.wdgt
 
 # Winston
 #echo Winston
