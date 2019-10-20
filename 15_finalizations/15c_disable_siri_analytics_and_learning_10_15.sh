@@ -88,7 +88,7 @@ while IFS= read -r line || [[ -n "$line" ]]
 do
     if [[ "$line" == "" ]]; then continue; fi
     APP_NAME="$line"
-	PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+	PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/$APP_NAME.app$" | sort -n | head -1)
 	APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist")
 	if [[ "$APP_ID" == "" ]];then echo "APP_ID of "$APP_NAME" is empty, skipping entry..." && continue; fi
 	echo ""$APP_ID"..."

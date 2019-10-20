@@ -67,16 +67,16 @@ then
     echo "installing display manager..."
 
     # creating installation directory
-    mkdir -p /Applications/display_manager
-    chown "$USER":admin /Applications/display_manager
-    chmod 755 /Applications/display_manager
+    mkdir -p "$PATH_TO_APPS"/display_manager
+    chown "$USER":admin "$PATH_TO_APPS"/display_manager
+    chmod 755 "$PATH_TO_APPS"/display_manager
 
     # downloading display manager from git repository
     # display manager
     # https://github.com/univ-of-utah-marriott-library-apple/display_manager
     echo ''
     echo "downloading display manager..."
-    git clone --depth 1 https://github.com/univ-of-utah-marriott-library-apple/display_manager.git /Applications/display_manager/
+    git clone --depth 1 https://github.com/univ-of-utah-marriott-library-apple/display_manager.git "$PATH_TO_APPS"/display_manager/
         
     # python2 deprecated 2020-01, checking if python3 and pip3 are installed
     echo ''

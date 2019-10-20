@@ -44,12 +44,12 @@ DATABASE_USER="/Users/"$USER"/Library/Application Support/com.apple.TCC/TCC.db"
 #echo "$DATABASE_USER"
 
 # getting application identifier
-# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/enterapplicaitonnamehere.app/Contents/Info.plist
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APPS"/enterapplicaitonnamehere.app/Contents/Info.plist
 # example
-# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/Overflow.app/Contents/Info.plist
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APPS"/Overflow.app/Contents/Info.plist
 # com.stuntsoftware.Overflow
 # example2
-# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "/Applications/System Preferences.app/Contents/Info.plist"
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APPS"/System Preferences.app/Contents/Info.plist"
 # com.apple.systempreferences
 
 

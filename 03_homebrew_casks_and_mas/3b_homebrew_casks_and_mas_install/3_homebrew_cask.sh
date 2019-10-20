@@ -156,7 +156,7 @@ echo "installing homebrew cask..."
 brew tap homebrew/cask
 
 # installing keepingyouawake
-#if [[ -e /Applications/KeepingYouAwake.app ]]
+#if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
 if [[ $(brew cask list | grep "^keepingyouawake$") != "" ]]
 then
     :

@@ -103,50 +103,50 @@ install_update_dependency_apps() {
     #echo ''
     echo "updating gui backup app..."    
     APP_TO_INSTALL="gui_apps_backup"
-    if [[ -e /Applications/"$APP_TO_INSTALL".app ]]
+    if [[ -e "$PATH_TO_APPS"/"$APP_TO_INSTALL".app ]]
     then
-    	rm -rf /Applications/"$APP_TO_INSTALL".app
+    	rm -rf "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     else
     	:
     fi
-    cp -a "$WORKING_DIR"/gui_apps/"$APP_TO_INSTALL".app /Applications/
-    chown 501:admin /Applications/"$APP_TO_INSTALL".app
-    chmod 755 /Applications/"$APP_TO_INSTALL".app
-    #xattr -dr com.apple.quarantine /Applications/"$APP_TO_INSTALL".app
+    cp -a "$WORKING_DIR"/gui_apps/"$APP_TO_INSTALL".app "$PATH_TO_APPS"/
+    chown 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     
     ### vbox backup app
     #echo ''
     echo "updating vbox backup app..."    
     APP_TO_INSTALL="virtualbox_backup"
-    if [[ -e /Applications/"$APP_TO_INSTALL".app ]]
+    if [[ -e "$PATH_TO_APPS"/"$APP_TO_INSTALL".app ]]
     then
-    	rm -rf /Applications/"$APP_TO_INSTALL".app
+    	rm -rf "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     else
     	:
     fi
-    cp -a "$WORKING_DIR"/vbox_backup/"$APP_TO_INSTALL".app /Applications/
-    chown 501:admin /Applications/"$APP_TO_INSTALL".app
-    chown -R 501:admin /Applications/"$APP_TO_INSTALL".app/Contents/custom_files/
-    chmod 755 /Applications/"$APP_TO_INSTALL".app
-    chmod 770 /Applications/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
-    #xattr -dr com.apple.quarantine /Applications/"$APP_TO_INSTALL".app  
+    cp -a "$WORKING_DIR"/vbox_backup/"$APP_TO_INSTALL".app "$PATH_TO_APPS"/
+    chown 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chown -R 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
+    chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chmod 770 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
+    #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app  
     
     ### installing / updating homebrew update script
     #echo ''
     echo "updating homebrew formulae and casks app..."
 	APP_TO_INSTALL="brew_casks_update"
-    if [[ -e /Applications/"$APP_TO_INSTALL".app ]]
+    if [[ -e "$PATH_TO_APPS"/"$APP_TO_INSTALL".app ]]
     then
-    	rm -rf /Applications/"$APP_TO_INSTALL".app
+    	rm -rf "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     else
     	:
     fi
-    cp -a "$WORKING_DIR"/update_homebrew/"$APP_TO_INSTALL".app /Applications/
-    chown 501:admin /Applications/"$APP_TO_INSTALL".app
-    chown -R 501:admin /Applications/"$APP_TO_INSTALL".app/Contents/custom_files/
-    chmod 755 /Applications/"$APP_TO_INSTALL".app
-    chmod 770 /Applications/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
-    #xattr -dr com.apple.quarantine /Applications/"$APP_TO_INSTALL".app
+    cp -a "$WORKING_DIR"/update_homebrew/"$APP_TO_INSTALL".app "$PATH_TO_APPS"/
+    chown 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chown -R 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
+    chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chmod 770 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
+    #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     
     ### updating hosts script
 	if [[ -e "$WORKING_DIR"/update_hosts/hosts_file_generator.sh ]]
@@ -646,7 +646,7 @@ backup_restore() {
                     GUI_APP_TO_BACKUP=Reminders
                     export GUI_APP_TO_BACKUP
                     #open "$WORKING_DIR"/gui_apps/gui_apps_backup.app
-                    open /Applications/gui_apps_backup.app
+                    open "$PATH_TO_APPS"/gui_apps_backup.app
                     sleep 2
                     # waiting for the process to finish
                     #while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
@@ -678,7 +678,7 @@ backup_restore() {
                     GUI_APP_TO_BACKUP=Contacts
                     export GUI_APP_TO_BACKUP
                     #open "$WORKING_DIR"/gui_apps/gui_apps_backup.app
-                    open /Applications/gui_apps_backup.app
+                    open "$PATH_TO_APPS"/gui_apps_backup.app
                     sleep 2
                     # waiting for the process to finish
                     #while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
@@ -709,7 +709,7 @@ backup_restore() {
                     GUI_APP_TO_BACKUP=Calendar
                     export GUI_APP_TO_BACKUP
                     #open "$WORKING_DIR"/gui_apps/gui_apps_backup.app
-                    open /Applications/gui_apps_backup.app
+                    open "$PATH_TO_APPS"/gui_apps_backup.app
                     sleep 2
                     # waiting for the process to finish
                     #while ps aux | grep gui_apps_backup.app/Contents | grep -v grep > /dev/null; do sleep 1; done
@@ -746,7 +746,7 @@ backup_restore() {
                     if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running virtualbox backup..."; fi
                     export VBOXSAVEDIR
                     #open "$WORKING_DIR"/vbox_backup/virtualbox_backup.app
-                    open /Applications/virtualbox_backup.app
+                    open "$PATH_TO_APPS"/virtualbox_backup.app
                 else
                     :
                 fi
@@ -822,7 +822,7 @@ backup_restore() {
             	# if starting with m and space / tab or with u and space / tab
             	if [[ "$line" =~ ^m[[:blank:]] ]] || [[ "$line" =~ ^u[[:blank:]] ]]
             	then
-                    ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed -e 's/[ /]\{2,\}/\//')
+                    ENTRY=$(echo "$line" | cut -f2 | sed 's|~|'"$HOMEFOLDER"'|' | sed 's|"$PATH_TO_APPS"|'"$PATH_TO_APPS"'|' | sed -e 's/[ /]\{2,\}/\//')
                     #echo "$ENTRY"
                     DIRNAME_ENTRY=$(dirname "$ENTRY")
                     #echo DIRNAME_ENTRY is "$DIRNAME_ENTRY"
@@ -1019,7 +1019,7 @@ backup_restore() {
             ### running homebrew update script
             create_tmp_backup_script_fifo2
             echo "updating homebrew formulae and casks..."
-        	open /Applications/brew_casks_update.app
+        	open "$PATH_TO_APPS"/brew_casks_update.app
         	sleep 2
         	
 
@@ -1101,7 +1101,7 @@ backup_restore() {
             fi
             
             # deactivating keepingyouawake
-            if [[ -e /Applications/KeepingYouAwake.app ]]
+            if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
             then
                 echo "deactivating keepingyouawake..."
                 open -g keepingyouawake:///deactivate
@@ -1205,6 +1205,20 @@ backup_restore() {
             TERMINALWIDTH=$(stty cbreak -echo size | awk '{print $2}')
             LINENUMBER=0
             
+            ### paths to applications
+            MACOS_VERSION_MAJOR_BACKUP_SYSTEM=$(cat "$RESTOREUSERDIR"/_backup_macos_version.txt | cut -f1,2 -d'.')
+            VERSION_TO_CHECK_AGAINST=10.14
+            if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR_BACKUP_SYSTEM") -le $(env_convert_version_comparable "$MACOS_VERSION_MAJOR_BACKUP_SYSTEM") ]]
+            then
+                # macos versions until and including 10.14
+                PATH_TO_APPS_BACKUP_SYSTEM="/Applications"
+            else
+                # macos versions 10.15 and up
+                PATH_TO_APPS_BACKUP_SYSTEM="/System/Volumes/Data/Applications"
+            fi
+            #echo "PATH_TO_APPS_BACKUP_SYSTEM is "$PATH_TO_APPS_BACKUP_SYSTEM""
+            #echo "PATH_TO_APPS is "$PATH_TO_APPS""
+                        
             restore_data() {
                 
                 if [[ "$USE_PARALLELS" == "yes" ]]
@@ -1281,7 +1295,7 @@ backup_restore() {
 			        #if [[ $(echo "$ENTRY" | grep '[*]') != "" ]]		# working
                     then
                         ENTRY_WITH_ASTERISK="$ENTRY"
-                        ENTRY_FROM=$(echo "$ENTRY" | sed 's|~|'"/Users/$SECTIONUSER"'|')
+                        ENTRY_FROM=$(echo "$ENTRY" | sed 's|~|'"/Users/$SECTIONUSER"'|' | sed 's|"$PATH_TO_APPS"|'"$PATH_TO_APPS_BACKUP_SYSTEM"'|')
                         RESTORE_FROM=$(echo "$RESTORESECTIONDIR$ENTRY_FROM")
                         DIRNAME_RESTORE_FROM=$(dirname "$RESTORE_FROM")
                         #echo DIRNAME_RESTORE_FROM is "$DIRNAME_RESTORE_FROM"
@@ -1303,7 +1317,7 @@ backup_restore() {
                         else
                             :
                         fi
-                        ENTRY=$(echo "$ENTRY_RESTORE_FROM" | sed 's|'"^$RESTORESECTIONDIR"'||' | sed 's|'"^/Users/$SECTIONUSER"'|~|')
+                        ENTRY=$(echo "$ENTRY_RESTORE_FROM" | sed 's|'"^$RESTORESECTIONDIR"'||' | sed 's|'"^/Users/$SECTIONUSER"'|~|' | sed 's|"$PATH_TO_APPS"|'"$PATH_TO_APPS"'|')
                         if [[ "$ENTRY" == "" ]]
                         then
                             ENTRY="$ENTRY_WITH_ASTERISK"
@@ -1315,8 +1329,8 @@ backup_restore() {
                     fi
                     #echo ENTRY is "$ENTRY"
                     #
-                    ENTRY_FROM=$(echo "$ENTRY" | sed 's|~|'"/Users/$SECTIONUSER"'|')
-                    ENTRY_TO=$(echo "$ENTRY" | sed 's|~|'"$HOMEFOLDER"'|')
+                    ENTRY_FROM=$(echo "$ENTRY" | sed 's|~|'"/Users/$SECTIONUSER"'|' | sed 's|"$PATH_TO_APPS"|'"$PATH_TO_APPS_BACKUP_SYSTEM"'|')
+                    ENTRY_TO=$(echo "$ENTRY" | sed 's|~|'"$HOMEFOLDER"'|' | sed 's|"$PATH_TO_APPS"|'"$PATH_TO_APPS"'|')
                     #
                     RESTORE_FROM=$(echo "$RESTORESECTIONDIR$ENTRY_FROM")
                     RESTORE_TO=$(echo "$RESTORETODIR$ENTRY_TO")

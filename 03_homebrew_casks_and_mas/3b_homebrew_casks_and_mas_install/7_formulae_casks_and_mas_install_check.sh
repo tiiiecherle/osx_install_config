@@ -102,7 +102,7 @@ check_mas_apps() {
 	#if [[ $(mas list | grep "$MAS_NUMBER") != "" ]]
 	# better results when batch installing from appstore as mas takes a while to register the app as installed in mas list
 	# checks if installed from appstore
-	#if [[ $(find /Applications -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | grep "$MAS_NAME") != "" ]]
+	#if [[ $(find "$PATH_TO_APPS" -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | grep "$MAS_NAME") != "" ]]
 	if [[ $(find "$PATH_TO_APPS" -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print0 | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | xargs -0 basename | grep "$MAS_NAME") != "" ]]
 	then
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$MAS_NAME"

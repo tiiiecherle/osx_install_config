@@ -74,13 +74,13 @@ echo "installing some apps and updating preferences..."
     fi
         
     # installing own gpg apps
-    cp -a "$SCRIPT_DIR_BACKUP"/unarchive/unarchive_finder_input/decrypt_finder_input_gpg_progress.app /Applications/decrypt_finder_input_gpg_progress.app
-    chmod 755 /Applications/decrypt_finder_input_gpg_progress.app
-    chown 501:admin /Applications/decrypt_finder_input_gpg_progress.app
+    cp -a "$SCRIPT_DIR_BACKUP"/unarchive/unarchive_finder_input/decrypt_finder_input_gpg_progress.app "$PATH_TO_APPS"/decrypt_finder_input_gpg_progress.app
+    chmod 755 "$PATH_TO_APPS"/decrypt_finder_input_gpg_progress.app
+    chown 501:admin "$PATH_TO_APPS"/decrypt_finder_input_gpg_progress.app
     
-    cp -a "$SCRIPT_DIR_BACKUP"/unarchive/unarchive_finder_input/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app /Applications/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
-    chmod 755 /Applications/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
-    chown 501:admin /Applications/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
+    cp -a "$SCRIPT_DIR_BACKUP"/unarchive/unarchive_finder_input/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app "$PATH_TO_APPS"/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
+    chmod 755 "$PATH_TO_APPS"/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
+    chown 501:admin "$PATH_TO_APPS"/unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress.app
     
     # updating defaults open with
     if [ -e "$HOME/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist" ]

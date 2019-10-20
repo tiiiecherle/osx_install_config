@@ -209,7 +209,7 @@ then
     sudo find /private/var/folders/ -name com.apple.dock.iconcache -exec rm -rf {} \; 2>/dev/null
     sudo find /private/var/folders/ -name com.apple.iconservices -exec rm -rf {} \; 2>/dev/null
     sleep 3
-    #sudo touch /Applications/*
+    #sudo touch "$PATH_TO_APPS"/*
     #sleep 3
     killall Dock
     #killall Finder

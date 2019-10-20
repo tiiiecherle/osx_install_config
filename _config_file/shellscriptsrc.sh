@@ -648,7 +648,7 @@ env_set_apps_security_permissions() {
             # app path
             local NUM1=0
             local FIND_APP_PATH_TIMEOUT=2
-            local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+            local PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/$APP_NAME.app$" | sort -n | head -1)
             while [[ "$PATH_TO_APP" == "" ]]
             do
                 # bash builtin printf can not print floating numbers

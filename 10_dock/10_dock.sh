@@ -222,7 +222,7 @@ set_dock_from_profile
 
 # folder on right dock side
 #ENTRY_POSITION="persistent-others"
-#FOLDER_PATH="/Applications/Utilities"
+#FOLDER_PATH=""$PATH_TO_APPS"/Utilities"
 #PREFERRED_ITEM_SIZE=1
 #VIEWAS=2
 #add_entry_folder

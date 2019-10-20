@@ -1,5 +1,25 @@
 #!/bin/zsh
 
+### path to applications
+MACOS_VERSION=$(sw_vers -productVersion)
+MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
+env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
+
+
+### paths to applications
+VERSION_TO_CHECK_AGAINST=10.14
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos versions until and including 10.14
+    PATH_TO_SYSTEM_APPS="/Applications"
+    PATH_TO_APPS="/Applications"
+else
+    # macos versions 10.15 and up
+    PATH_TO_SYSTEM_APPS="/System/Applications"
+    PATH_TO_APPS="/System/Volumes/Data/Applications"
+fi
+
+
 ### variables
 SERVICE_NAME=com.screen_resolution.set
 SCRIPT_INSTALL_NAME=screen_resolution
@@ -208,7 +228,7 @@ screen_resolution() {
     #DISPLAY_RESOLUTION=$(echo "$SYSTEM_PROFILER_DISPLAY_DATA" | awk -F'>|<' '/_spdisplays_resolution/{getline; print $3}')
     #echo "$DISPLAY_RESOLUTION"
     WANTED_RESOLUTION="2304"
-    DISPLAY_MANAGER_INSTALL_PATH="/Applications/display_manager"
+    DISPLAY_MANAGER_INSTALL_PATH=""$PATH_TO_APPS"/display_manager"
     DISPLAY_MANAGER_RESOLUTION='2304 1296 60 only-hidpi'
     
     # display manager

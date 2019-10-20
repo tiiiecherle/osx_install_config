@@ -1104,7 +1104,7 @@ EOF
                     PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/Alfred 4.app"
                     env_set_open_on_first_run_permissions
                 else
-                    PATH_TO_FIRST_RUN_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/"$autostartapp".app$" | sort -n | head -1)
+                    PATH_TO_FIRST_RUN_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/"$autostartapp".app$" | sort -n | head -1)
                     #PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/"$autostartapp".app"
                     env_set_open_on_first_run_permissions
                 fi
@@ -1223,7 +1223,7 @@ EOF
     sudo spctl --enable
     
     # using a gatekeeper whitelist
-    #sudo spctl --add --label "GitHub" /Applications/GitHub.app
+    #sudo spctl --add --label "GitHub" "$PATH_TO_APPS"/GitHub.app
     #spctl --enable --label "GitHub"
     #spctl --disable --label "GitHub"
     
@@ -2128,11 +2128,11 @@ EOF
         # enabling sharing
         #echo enabling macos smb sharing...
         #sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.smbd.plist
-        # use /Applications/smb_enable.app
+        # use "$PATH_TO_APPS"/smb_enable.app
         
         # disabling sharing
         #sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.smbd.plist
-        # use /Applications/smb_disable.app
+        # use "$PATH_TO_APPS"/smb_disable.app
             
         unset sharinguser_password
         unset sharinguser_password2
@@ -2619,7 +2619,7 @@ EOF
     #ls -la@e ~/
     
     # remove dropbox‚ set green checkmark icons in finder
-    #file=/Applications/Dropbox.app/Contents/Resources/emblem-dropbox-uptodate.icns
+    #file="$PATH_TO_APPS"/Dropbox.app/Contents/Resources/emblem-dropbox-uptodate.icns
     #[ -e "${file}" ] && mv -f "${file}" "${file}.bak"
     
     # expand the following file info panes (cmd + i)
@@ -2644,7 +2644,7 @@ EOF
     #find "${HOME}/Library/Application Support/Dock" -name "*-*.db" -maxdepth 1 -delete
     
     # add ios simulator to launchpad
-    #sudo ln -sf "/Applications/Xcode.app/Contents/Developer/Applications/iOS Simulator.app" "/Applications/iOS Simulator.app"
+    #sudo ln -sf ""$PATH_TO_APPS"/Xcode.app/Contents/Developer/Applications/iOS Simulator.app" ""$PATH_TO_APPS"/iOS Simulator.app"
     
     
     
@@ -3708,7 +3708,7 @@ EOF
     ### links to core service utilities
     ###
     
-    # lining core service utilities to /Applications/Utilities
+    # lining core service utilities to "$PATH_TO_APPS"/Utilities
     
     echo "creating links from core service apps..."
     
@@ -3716,24 +3716,24 @@ EOF
     do
         CORE_SERVICE_APP=$(basename -- "$CORE_SERVICE_APP_PATH")
         #echo "$CORE_SERVICE_APP"
-        if [[ ! -e /Applications/Utilities/"$CORE_SERVICE_APP" ]]
+        if [[ ! -e "$PATH_TO_APPS"/Utilities/"$CORE_SERVICE_APP" ]]
         then
-            sudo ln -s /System/Library/CoreServices/Applications/"$CORE_SERVICE_APP" /Applications/Utilities/"$CORE_SERVICE_APP"
+            sudo ln -s /System/Library/CoreServices/Applications/"$CORE_SERVICE_APP" "$PATH_TO_APPS"/Utilities/"$CORE_SERVICE_APP"
         else
             :
         fi
         #echo ''
     done
     
-    if [[ ! -e "/Applications/Finder.app" ]] && [[ -e "/System/Library/CoreServices/Finder.app" ]]
+    if [[ ! -e ""$PATH_TO_APPS"/Finder.app" ]] && [[ -e "/System/Library/CoreServices/Finder.app" ]]
     then
-        ln -s "/System/Library/CoreServices/Finder.app" "/Applications/Finder.app"
+        ln -s "/System/Library/CoreServices/Finder.app" ""$PATH_TO_APPS"/Finder.app"
     else
         :
     fi
     
     # ios simulator
-    #sudo ln -s "/Applications/Xcode.app/Contents/Applications/iPhone Simulator.app" "/Applications/iOS Simulator.app"    
+    #sudo ln -s ""$PATH_TO_APPS"/Xcode.app/Contents/Applications/iPhone Simulator.app" ""$PATH_TO_APPS"/iOS Simulator.app"    
     
     
     

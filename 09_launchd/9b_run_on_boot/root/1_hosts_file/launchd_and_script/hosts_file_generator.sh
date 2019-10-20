@@ -3,6 +3,24 @@
 ### config file
 # this script will not source the config file as it runs as root and does not ask for a password after installation
 
+MACOS_VERSION=$(sw_vers -productVersion)
+MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
+env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
+
+
+### paths to applications
+VERSION_TO_CHECK_AGAINST=10.14
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos versions until and including 10.14
+    PATH_TO_SYSTEM_APPS="/Applications"
+    PATH_TO_APPS="/Applications"
+else
+    # macos versions 10.15 and up
+    PATH_TO_SYSTEM_APPS="/System/Applications"
+    PATH_TO_APPS="/System/Volumes/Data/Applications"
+fi
+
 
 ### checking root
 if [[ $(id -u) -ne 0 ]]
@@ -212,16 +230,16 @@ hosts_file_install_update() {
         #echo "we are online, updating hosts file..."
     
         # creating installation directory
-        mkdir -p "/Applications/hosts_file_generator/"
+        mkdir -p ""$PATH_TO_APPS"/hosts_file_generator/"
     
         # downloading / updating hosts file creator from git repository
-        if [[ -d "/Applications/hosts_file_generator/.git" ]]
+        if [[ -d ""$PATH_TO_APPS"/hosts_file_generator/.git" ]]
         then
             # updating
             echo "updating hosts file generator..."
-            if [[ -d "/Applications/hosts_file_generator/" ]]
+            if [[ -d ""$PATH_TO_APPS"/hosts_file_generator/" ]]
             then
-                cd "/Applications/hosts_file_generator/"
+                cd ""$PATH_TO_APPS"/hosts_file_generator/"
                 sudo git fetch --all
                 sudo git reset --hard origin/master
                 sudo git pull origin master
@@ -232,11 +250,11 @@ hosts_file_install_update() {
         else
             # installing
             echo "downloading hosts file generator..."
-            if [[ -d "/Applications/hosts_file_generator/" ]]
+            if [[ -d ""$PATH_TO_APPS"/hosts_file_generator/" ]]
             then
-                sudo rm -rf "/Applications/hosts_file_generator/"
-                mkdir -p "/Applications/hosts_file_generator/"
-                git clone --depth 5 https://github.com/StevenBlack/hosts.git "/Applications/hosts_file_generator/"
+                sudo rm -rf ""$PATH_TO_APPS"/hosts_file_generator/"
+                mkdir -p ""$PATH_TO_APPS"/hosts_file_generator/"
+                git clone --depth 5 https://github.com/StevenBlack/hosts.git ""$PATH_TO_APPS"/hosts_file_generator/"
             else
                 :
             fi
@@ -344,9 +362,9 @@ hosts_file_install_update() {
         
         # version of dependencies
         change_dependencies_versions() {
-            if [[ $(cat /Applications/hosts_file_generator/requirements.txt | grep "beautifulsoup4==4.6.1") != "" ]]
+            if [[ $(cat "$PATH_TO_APPS"/hosts_file_generator/requirements.txt | grep "beautifulsoup4==4.6.1") != "" ]]
             then
-                sed -i '' "s|beautifulsoup4.*|beautifulsoup4>=4.6.1|" /Applications/hosts_file_generator/requirements.txt
+                sed -i '' "s|beautifulsoup4.*|beautifulsoup4>=4.6.1|" "$PATH_TO_APPS"/hosts_file_generator/requirements.txt
             else
                 :
             fi
@@ -364,8 +382,8 @@ hosts_file_install_update() {
             :
             
             # installing dependencies
-            #sudo pip install -r /Applications/hosts_file_generator/requirements.txt
-            sudo -H pip install --user -r /Applications/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+            #sudo pip install -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt
+            sudo -H pip install --user -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
         else
             # updating pip itself
             sudo -H -u "$loggedInUser" "${PIP_VERSION}" install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
@@ -374,7 +392,7 @@ hosts_file_install_update() {
             "${PIP_VERSION}" freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -U 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
             
             # installing dependencies
-            sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -r /Applications/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+            sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
         fi
         
         # backing up original hosts file
@@ -389,7 +407,7 @@ hosts_file_install_update() {
         # updating / creating hostsfile
         echo ''
         echo "updating hosts file..."
-        cd "/Applications/hosts_file_generator/"
+        cd ""$PATH_TO_APPS"/hosts_file_generator/"
 
         # as the script is run as root from a launchd some env variables are not set, e.g. all locales
         # setting LC_ALL for root solves
@@ -445,7 +463,7 @@ hosts_file_install_update() {
         # open respective website in browser
         # deactivate adblocker for the website
         # open /etc/hosts in gas mask and add / delete entries
-        #sudo killall -HUP mDNSResponder && sleep 2 && open -a /Applications/Firefox.app && sleep 2 && open -a /Applications/Firefox.app http://www.wimbledon.com/en_GB/video/highlights.html
+        #sudo killall -HUP mDNSResponder && sleep 2 && open -a "$PATH_TO_APPS"/Firefox.app && sleep 2 && open -a "$PATH_TO_APPS"/Firefox.app http://www.wimbledon.com/en_GB/video/highlights.html
 
 
         ### activating hosts file

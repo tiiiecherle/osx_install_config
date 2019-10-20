@@ -121,17 +121,17 @@ install_casks_parallel() {
         if [[ "$i" == "avg-antivirus" ]]
         then 
         	sleep 2
-        	osascript -e "tell app \"/Applications/AVGAntivirus.app\" to quit" >/dev/null 2>&1
+        	osascript -e "tell app \""$PATH_TO_APPS"/AVGAntivirus.app\" to quit" >/dev/null 2>&1
         fi
         if [[ "$i" == "avast-security" ]]
         then 
         	sleep 2
-        	osascript -e "tell app \"/Applications/Avast.app\" to quit" >/dev/null 2>&1
+        	osascript -e "tell app \""$PATH_TO_APPS"/Avast.app\" to quit" >/dev/null 2>&1
         fi
         if [[ "$i" == "teamviewer" ]]
         then 
         	sleep 2
-        	osascript -e "tell app \"/Applications/TeamViewer.app\" to quit" >/dev/null 2>&1
+        	osascript -e "tell app \""$PATH_TO_APPS"/TeamViewer.app\" to quit" >/dev/null 2>&1
         	sleep 2
             env_active_source_app
         fi
@@ -157,7 +157,7 @@ install_casks_parallel() {
         if [[ "$i" == "textmate" ]]
         then
             # removing quicklook syntax highlight
-            #rm -r /Applications/TextMate.app/Contents/Library/QuickLook/TextMateQL.qlgenerator
+            #rm -r "$PATH_TO_APPS"/TextMate.app/Contents/Library/QuickLook/TextMateQL.qlgenerator
             :
         fi
         if [[ "$i" == "nextcloud" ]]
@@ -319,7 +319,7 @@ then
     	if [[ $(brew cask list | grep "^libreoffice$") == "" ]] || [[ $(brew cask list | grep "^libreoffice-language-pack$") == "" ]]
         then
             echo ''
-        	if [[ -e "/Applications/LibreOffice.app" ]]
+        	if [[ -e ""$PATH_TO_APPS"/LibreOffice.app" ]]
         	then
         	    env_use_password | brew cask uninstall --force libreoffice
         	    env_use_password | brew cask uninstall --force libreoffice-language-pack
@@ -335,7 +335,7 @@ then
     	#if [[ $(brew cask info adobe-acrobat-reader | grep "Not installed") != "" ]]
     	if [[ $(brew cask list | grep "^adobe-acrobat-reader$") == "" ]]
         then
-        	if [[ -e "/Applications/Adobe Acrobat Reader DC.app" ]]
+        	if [[ -e ""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app" ]]
         	then
         	    echo ''
     	        if [[ -e /Library/Preferences/com.adobe.reader.DC.WebResource.plist ]]
@@ -365,7 +365,7 @@ then
         	if [[ $(brew cask list | grep "^avg-antivirus$") == "" ]]
             then
             	# making sure avg-antivirus gets installed on reinstall
-            	if [[ $(printf '%s\n' "${casks[@]}" | grep "^avg-antivirus$") != "" ]] && [[ -e "/Applications/AVGAntivirus.app" ]]
+            	if [[ $(printf '%s\n' "${casks[@]}" | grep "^avg-antivirus$") != "" ]] && [[ -e ""$PATH_TO_APPS"/AVGAntivirus.app" ]]
             	then
                     avg_config_files=(
                     "/Users/$USER/Library/Preferences/com.avg.Antivirus.plist"
@@ -391,7 +391,7 @@ then
                     env_use_password | brew cask zap --force avg-antivirus
                     env_use_password | brew cask install --force avg-antivirus
                     sleep 2
-                    osascript -e "tell app \"/Applications/AVGAntivirus.app\" to quit" >/dev/null 2>&1
+                    osascript -e "tell app \""$PATH_TO_APPS"/AVGAntivirus.app\" to quit" >/dev/null 2>&1
                     sleep 2
                     for i in "${avg_config_files[@]}"
                     do
@@ -421,7 +421,7 @@ then
         	if [[ $(brew cask list | grep "^avast-security$") == "" ]]
             then
             	# making sure avast-security gets installed on reinstall
-            	if [[ $(printf '%s\n' "${casks[@]}" | grep "^avast-security$") != "" ]] && [[ -e "/Applications/Avast.app" ]]
+            	if [[ $(printf '%s\n' "${casks[@]}" | grep "^avast-security$") != "" ]] && [[ -e ""$PATH_TO_APPS"/Avast.app" ]]
             	then
                     avast_config_files=(
                     "/Users/$USER/Library/Preferences/com.avast.helper.plist"
@@ -443,7 +443,7 @@ then
                     env_use_password | brew cask zap --force avast-security
                     env_use_password | brew cask install --force avast-security
                     sleep 2
-                    osascript -e "tell app \"/Applications/Avast.app\" to quit" >/dev/null 2>&1
+                    osascript -e "tell app \""$PATH_TO_APPS"/Avast.app\" to quit" >/dev/null 2>&1
                     sleep 2
                     for i in "${avast_config_files[@]}"
                     do
@@ -459,7 +459,7 @@ then
                     done
                     # restarting avast services to make the changes take effect
                     echo "restarting avast services to make the changes take effect..."
-                    AVAST_BACKEND='/Applications/Avast.app/Contents/Backend/hub'
+                    AVAST_BACKEND='"$PATH_TO_APPS"/Avast.app/Contents/Backend/hub'
                     if [[ -e "$AVAST_BACKEND" ]]
                     then
                         echo "stopping avast services..."

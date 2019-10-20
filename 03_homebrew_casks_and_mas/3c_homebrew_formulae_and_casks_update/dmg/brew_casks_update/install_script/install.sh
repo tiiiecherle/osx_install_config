@@ -18,20 +18,20 @@ APP_NAME="brew_casks_update"
 DMG_DIR="$SCRIPT_DIR_ONE_BACK"
 
 # remove old installed version
-if [[ -e /Applications/"$APP_NAME".app ]]
+if [[ -e "$PATH_TO_APPS"/"$APP_NAME".app ]]
 then
-	rm -rf /Applications/"$APP_NAME".app
+	rm -rf "$PATH_TO_APPS"/"$APP_NAME".app
 else
 	:
 fi
 
 # ownership and permissions
-cp -a "$DMG_DIR"/app/"$APP_NAME".app /Applications/
-if [[ -e /Applications/"$APP_NAME".app/Contents/custom_files/"$APP_NAME".sh ]]
+cp -a "$DMG_DIR"/app/"$APP_NAME".app "$PATH_TO_APPS"/
+if [[ -e "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$APP_NAME".sh ]]
 then
 	SCRIPT_NAME="$APP_NAME"
 else
-	SCRIPT_NAME=$(find /Applications/"$APP_NAME".app/Contents/custom_files -maxdepth 1 -mindepth 1 -type f -name "*.sh")
+	SCRIPT_NAME=$(find "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files -maxdepth 1 -mindepth 1 -type f -name "*.sh")
 	if [[ $(echo "$SCRIPT_NAME" | wc -l | awk '{print $1}') != "1" ]]
 	then
 		echo "SCRIPT_NAME is not set correctly, exiting..."
@@ -40,11 +40,11 @@ else
 		SCRIPT_NAME=$(basename "$SCRIPT_NAME" .sh)
 	fi
 fi
-chown 501:admin /Applications/"$APP_NAME".app
-chown -R 501:admin /Applications/"$APP_NAME".app/Contents/custom_files/
-chmod 755 /Applications/"$APP_NAME".app
-chmod 770 /Applications/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
-xattr -dr com.apple.quarantine /Applications/"$APP_NAME".app
+chown 501:admin "$PATH_TO_APPS"/"$APP_NAME".app
+chown -R 501:admin "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/
+chmod 755 "$PATH_TO_APPS"/"$APP_NAME".app
+chmod 770 "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
+xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
 
 
 ### security permissions
@@ -64,4 +64,4 @@ AUTOMATION_APPS=(
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
 
-#open /Applications/"$APP_NAME".app
+#open "$PATH_TO_APPS"/"$APP_NAME".app

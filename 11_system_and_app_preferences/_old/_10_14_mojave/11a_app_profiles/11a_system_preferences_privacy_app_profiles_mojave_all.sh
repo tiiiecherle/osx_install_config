@@ -23,7 +23,7 @@ APP_LIST=(
 # keep "BL Banking Launcher" and brew_casks_update after "System Events" at the beginning in this order for the clicks to work
 "System Events"
 "BL Banking Launcher"
-"brew_casks_update															/Applications/brew_casks_update.app"
+"brew_casks_update															"$PATH_TO_APPS"/brew_casks_update.app"
 iTerm
 Terminal
 Finder

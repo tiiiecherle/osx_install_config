@@ -60,7 +60,7 @@ install_finder_enhancement() {
 		sleep 5
 		# uninstall
 		#echo "uninstalling application..."
-		#open "/Applications/TotalFinder.app/Contents/Resources/TotalFinder.bundle/Contents/Resources/TotalFinder Uninstaller.app"
+		#open ""$PATH_TO_APPS"/TotalFinder.app/Contents/Resources/TotalFinder.bundle/Contents/Resources/TotalFinder Uninstaller.app"
 		#sleep 10
 		echo "installing application..."
 		#env_use_password | sudo installer -pkg /Volumes/"$APP_NAME"/"$APP_NAME".pkg -target / 1>/dev/null

@@ -64,9 +64,9 @@ fi
 
 
 ### uninstalling hosts file generator
-if [[ -d /Applications/hosts_file_generator ]]
+if [[ -d "$PATH_TO_APPS"/hosts_file_generator ]]
 then
-    sudo rm -rf /Applications/hosts_file_generator
+    sudo rm -rf "$PATH_TO_APPS"/hosts_file_generator
 else
     :
 fi

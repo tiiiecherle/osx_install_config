@@ -102,7 +102,7 @@ open_more_apps() {
 
 # google consent
 open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
-#open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a "/Applications/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
+#open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a ""$PATH_TO_APPS"/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 
 # open user specific apps
 if [[ "$APPLICATIONS_TO_OPEN_USER_SPECIFIC" != "" ]]

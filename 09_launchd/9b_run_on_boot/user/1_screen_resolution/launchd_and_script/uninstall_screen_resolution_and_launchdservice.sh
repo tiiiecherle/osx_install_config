@@ -17,18 +17,18 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 UNINSTALL_SCRIPT_DIR="$SCRIPT_DIR"
 
 SERVICE_NAME=com.screen_resolution.set
-SERVICE_INSTALL_PATH=/Users/$USER/Library/LaunchAgents
+SERVICE_INSTALL_PATH=/Users/"$USER"/Library/LaunchAgents
 SCRIPT_INSTALL_NAME=screen_resolution
-SCRIPT_INSTALL_PATH=/Users/$USER/Library/Scripts
+SCRIPT_INSTALL_PATH=/Users/"$USER"/Library/Scripts
 
 LOGDIR=/Users/"$loggedInUser"/Library/Logs
 LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 
 ### deleting display manager
-if [[ -e /Applications/display_manager ]]
+if [[ -e "$PATH_TO_APPS"/display_manager ]]
 then
-    rm -rf /Applications/display_manager
+    rm -rf "$PATH_TO_APPS"/display_manager
 else
     :
 fi

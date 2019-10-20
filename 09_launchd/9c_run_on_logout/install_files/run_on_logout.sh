@@ -75,8 +75,8 @@ run_cleaning1 () {
 	fi
 	
 	# cleaning progressive downloader
-	PSD_INSTALLATION="/Applications/Progressive Downloader.app"
-	if [[ -e "$PSD_INSTALLATION" ]]
+	PSD_INSTALLATION=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/Progressive Downloader.app$")
+	if [[ "$PSD_INSTALLATION" != "" ]] && [[ -e "$PSD_INSTALLATION" ]]
 	then
 		sudo -H -u "$loggedInUser" rm -rf "/Users/"$loggedInUser"/Library/Application Support/Progressive Downloader Data"
 		# has to be run as user (sudo -H -u "$loggedInUser") or permissions would change and file would no longer work

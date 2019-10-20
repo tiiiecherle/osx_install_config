@@ -175,17 +175,17 @@ env_databases_apps_security_permissions
 # sqlite3 "$DATABASE_USER" "select * from access where (service='kTCCServiceAppleEvents' and client='com.apple.Terminal' and indirect_object_identifier='com.apple.finder' and allowed='1');"
 
 ### getting application identifier
-# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/enterapplicaitonnamehere.app/Contents/Info.plist
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APPS"/enterapplicaitonnamehere.app/Contents/Info.plist
 # example
-# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "/Applications/Overflow 3.app/Contents/Info.plist"
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APPS"/Overflow 3.app/Contents/Info.plist"
 # com.stuntsoftware.Overflow3
 # example2
-# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "/Applications/System Preferences.app/Contents/Info.plist"
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APPS"/System Preferences.app/Contents/Info.plist"
 # com.apple.systempreferences
 # or        
 # osascript -e "id of app \"Overflow 3\""
 # or
-# PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/Overflow 3.app$" | head -1)
+# PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/Overflow 3.app$" | head -1)
 # /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist"
 # or
 # APP_NAME="Overflow 3"; APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | head -n1)"
@@ -201,7 +201,7 @@ env_databases_apps_security_permissions
 #ARRAY_NAME="$APP_NAME""_DATA"[@]
 
 ### getting identifier
-# APP_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/"$APP_NAME".app/Contents/Info.plist)
+# APP_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APPS"/"$APP_NAME".app/Contents/Info.plist)
 #APP_IDENTIFIER=$(printf '%s\n' "${!ARRAY_NAME}" | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
 #echo $APP_IDENTIFIER
 #CSREQ_BLOB=$(printf '%s\n' "${!ARRAY_NAME}" | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')

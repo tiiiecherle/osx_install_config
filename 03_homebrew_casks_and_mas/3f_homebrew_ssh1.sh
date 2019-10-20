@@ -14,11 +14,11 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ###
 
 env_activating_keepingyouawake() {
-    if [[ -e /Applications/KeepingYouAwake.app ]]
+    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
     then
     	echo "activating keepingyouawake..."
         #echo ''
-    	open -g /Applications/KeepingYouAwake.app
+    	open -g "$PATH_TO_APPS"/KeepingYouAwake.app
         open -g keepingyouawake:///activate
     else
             :
@@ -26,10 +26,10 @@ env_activating_keepingyouawake() {
 }
 
 env_deactivating_keepingyouawake() {
-    if [[ -e /Applications/KeepingYouAwake.app ]]
+    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
     then
         echo "deactivating keepingyouawake..."
-        open -g /Applications/KeepingYouAwake.app
+        open -g "$PATH_TO_APPS"/KeepingYouAwake.app
         open -g keepingyouawake:///deactivate
     else
         :
@@ -61,7 +61,7 @@ then
         # https://apple.stackexchange.com/questions/255621/how-to-enable-ssh-v1-in-macos-sierra
                 
         # activating keepingyouawake
-        if [[ -e /Applications/KeepingYouAwake.app ]]
+        if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
         then
             :
         else

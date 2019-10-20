@@ -75,7 +75,7 @@ do
 	xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
 	
 	echo copying app to dmg...
-	#cp -a "$BUILD_DIR"/app/"$APP_NAME".app /Applications/
+	#cp -a "$BUILD_DIR"/app/"$APP_NAME".app "$PATH_TO_APPS"/
 	mkdir -p "$BUILD_DIR"/dmg/"$APP_NAME"/
 	if [[ -e "$BUILD_DIR"/dmg/"$APP_NAME"/app/"$APP_NAME".app ]]
 	then

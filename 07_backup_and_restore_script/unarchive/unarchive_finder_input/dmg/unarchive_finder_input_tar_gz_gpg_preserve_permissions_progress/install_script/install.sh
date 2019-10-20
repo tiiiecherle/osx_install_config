@@ -18,18 +18,18 @@ APP_NAME="unarchive_finder_input_tar_gz_gpg_preserve_permissions_progress"
 DMG_DIR="$SCRIPT_DIR_ONE_BACK"
 
 # remove old installed version
-if [[ -e /Applications/"$APP_NAME".app ]]
+if [[ -e "$PATH_TO_APPS"/"$APP_NAME".app ]]
 then
-	rm -rf /Applications/"$APP_NAME".app
+	rm -rf "$PATH_TO_APPS"/"$APP_NAME".app
 else
 	:
 fi
 
 # ownership and permissions
-cp -a "$DMG_DIR"/app/"$APP_NAME".app /Applications/
-chown 501:admin /Applications/"$APP_NAME".app
-chmod 755 /Applications/"$APP_NAME".app
-xattr -dr com.apple.quarantine /Applications/"$APP_NAME".app
+cp -a "$DMG_DIR"/app/"$APP_NAME".app "$PATH_TO_APPS"/
+chown 501:admin "$PATH_TO_APPS"/"$APP_NAME".app
+chmod 755 "$PATH_TO_APPS"/"$APP_NAME".app
+xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
 
 
 ### security permissions
@@ -50,4 +50,4 @@ AUTOMATION_APPS=(
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
 
 
-#open /Applications/"$APP_NAME".app
+#open "$PATH_TO_APPS"/"$APP_NAME".app

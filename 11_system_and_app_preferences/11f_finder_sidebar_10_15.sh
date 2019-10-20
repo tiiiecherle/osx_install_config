@@ -121,14 +121,14 @@ echo "clearing and setting finder sidebar items..."
 #mysides remove iCloud
 #mysides add domain-AirDrop nwnode://domain-AirDrop
 mysides remove domain-AirDrop >/dev/null 2>&1
-mysides add Applications file:///Applications
-mysides add Desktop file:///Users/${USER}/Desktop
-mysides add Documents file:///Users/${USER}/Documents
-mysides add Downloads file:///Users/${USER}/Downloads
-mysides add Movies file:///Users/${USER}/Movies
-mysides add Music file:///Users/${USER}/Music
-mysides add Pictures file:///Users/${USER}/Pictures
-mysides add ${USER} file:///Users/${USER}
+mysides add Applications file://"$PATH_TO_APPS"
+mysides add Desktop file:///Users/"$USER"/Desktop
+mysides add Documents file:///Users/"$USER"/Documents
+mysides add Downloads file:///Users/"$USER"/Downloads
+mysides add Movies file:///Users/"$USER"/Movies
+mysides add Music file:///Users/"$USER"/Music
+mysides add Pictures file:///Users/"$USER"/Pictures
+mysides add "$USER" file:///Users/"$USER"
 
 # user specific customization
 SCRIPT_NAME="finder_sidebar_"$USER""

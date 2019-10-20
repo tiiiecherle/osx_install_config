@@ -69,12 +69,12 @@ echo "setting flags..."
 
 # attributes
 applications_to_set_values=(
-"/Applications/WhatsApp.app																335"
-"/Applications/Signal.app																335"
-"/Applications/pdf_200dpi_shrink.app/Contents/custom_files/pdf_shrink_done.app			335"
-"/Applications/Reminders.app															343"
-"/Applications/EagleFiler.app															335"
-"/Applications/VirusScannerPlus.app														335"
+""$PATH_TO_APPS"/WhatsApp.app																335"
+""$PATH_TO_APPS"/Signal.app																	335"
+""$PATH_TO_APPS"/pdf_200dpi_shrink.app/Contents/custom_files/pdf_shrink_done.app			335"
+""$PATH_TO_SYSTEM_APPS"/Reminders.app														343"
+""$PATH_TO_APPS"/EagleFiler.app																335"
+""$PATH_TO_APPS"/VirusScannerPlus.app														335"
 )
 
 

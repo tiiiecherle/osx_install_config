@@ -56,11 +56,11 @@ backup_restore_permissions() {
     echo "USER_ID of ""$SELECTEDUSER"" is ""$USER_ID"
     
     # app permissions in applications folder
-    echo "setting ownerships and permissions in /Applications..."
-    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" ! -type l -print0 | xargs -0 -n100 sudo chmod 755 &
-    find "/Applications" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" ! -type l -print0 | xargs -0 -n100 sudo chown "$USER_ID":admin
-    if [[ -e /Applications/VirtualBox.app ]]; then sudo chown root:admin /Applications/VirtualBox.app; else :; fi
-    #sudo chmod 644 "/Applications/.DS_Store"
+    echo "setting ownerships and permissions in "$PATH_TO_APPS"..."
+    find ""$PATH_TO_APPS"" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" ! -type l -print0 | xargs -0 -n100 sudo chmod 755 &
+    find ""$PATH_TO_APPS"" -mindepth 1 ! -group wheel ! -path "*/*.app/*" -name "*.app" ! -type l -print0 | xargs -0 -n100 sudo chown "$USER_ID":admin
+    if [[ -e "$PATH_TO_APPS"/VirtualBox.app ]]; then sudo chown root:admin "$PATH_TO_APPS"/VirtualBox.app; else :; fi
+    #sudo chmod 644 ""$PATH_TO_APPS"/.DS_Store"
 
     ### outside user folder
     echo "setting ownerships and permissions outside the user folder..."

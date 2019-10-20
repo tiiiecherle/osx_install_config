@@ -146,17 +146,17 @@ then
 
     echo ''
     ### path to macos installer
-    #INSTALLERPATH="/Applications/Install macOS High Sierra.app"
-    #INSTALLERPATH="/Applications/Install macOS Mojave.app"
-    #INSTALLERPATH="/Applications/Install macOS Catalina Beta.app"
+    #INSTALLERPATH=""$PATH_TO_APPS"/Install macOS High Sierra.app"
+    #INSTALLERPATH=""$PATH_TO_APPS"/Install macOS Mojave.app"
+    #INSTALLERPATH=""$PATH_TO_APPS"/Install macOS Catalina Beta.app"
     get_installer_path() {
-        NUMBER_OF_AVAILABLE_INSTALLERS=$(find /Applications -mindepth 1 -maxdepth 1 -name "Install*macOS*" | wc -l | awk '{print $1}')
+        NUMBER_OF_AVAILABLE_INSTALLERS=$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 1 -name "Install*macOS*" | wc -l | awk '{print $1}')
         if [[ "$NUMBER_OF_AVAILABLE_INSTALLERS" -le "1" ]]
         then
-            INSTALLERPATH="$(find /Applications -mindepth 1 -maxdepth 1 -name "Install*macOS*")"
+            INSTALLERPATH="$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 1 -name "Install*macOS*")"
         else
             installer=()
-            while IFS= read -r line; do installer+=("$line"); done <<< "$(find /Applications -mindepth 1 -maxdepth 1 -name "Install*macOS*")"
+            while IFS= read -r line; do installer+=("$line"); done <<< "$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 1 -name "Install*macOS*")"
             COLUMNS_DEFAULT="$COLUMNS"
             COLUMNS=1 PS3="Please select installer to use for calculating needed usb diskspace: "
             select INSTALLERPATH in "${installer[@]}"
