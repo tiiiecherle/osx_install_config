@@ -143,6 +143,20 @@ certificate_variable_check() {
 
 install_update_certificate() {
 
+    VERSION_TO_CHECK_AGAINST=10.14
+    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+    then
+        # macos versions until and including 10.14
+        :
+    else
+        # macos versions 10.15 and up
+        # in 10.15 /System default gets mounted read-only
+        # can only be mounted read/write with according SIP settings
+        sudo mount -uw /
+        # stays mounted rw until next reboot
+        sleep 0.5
+    fi
+
     # deleting old installed certificate
     if [[ $(security find-certificate -a -c "$CERTIFICATE_NAME" "$KEYCHAIN") != "" ]]
     then
@@ -170,22 +184,7 @@ install_update_certificate() {
     #sudo security add-trusted-cert -r trustAsRoot -k "$KEYCHAIN" "/Users/$USER/Desktop/cacert.pem"
     
     # add certificate to keychain and trust ssl
-    VERSION_TO_CHECK_AGAINST=10.14
-    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
-    then
-        # macos versions until and including 10.14
-        sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
-    else
-        # macos versions 10.15 and up
-        # in 10.15 /System default gets mounted read-only
-        # can only be mounted read/write with according SIP settings
-        sudo mount -uw /
-        # stays mounted rw until next reboot
-        sleep 0.5
-        sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
-        #sudo mount -ur /
-        #sleep 0.5
-    fi
+    sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
     
     # checking that certificate is installed, not untrusted and matches the domain
     # exporting certificate
