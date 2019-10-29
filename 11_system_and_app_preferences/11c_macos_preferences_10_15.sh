@@ -2587,9 +2587,16 @@ EOF
     # Four-letter codes for the view modes: `icnv`, `clmv`, `Flwv`, "Nlsv"
     defaults write com.apple.finder FXPreferredViewStyle -string "clmv"
     
+    ### airdrop
     # enable airdrop over ethernet and on unsupported macs
     #defaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true
     
+    # set airport discoverable mode 
+    # Off 
+    # Contacts Only
+    # Everyone
+    defaults write com.apple.sharingd DiscoverableMode -string "Off"
+
     ### show the ~/Library folder
     # show extended attributes
     #ls -la@e ~/
