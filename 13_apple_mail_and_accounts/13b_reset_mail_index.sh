@@ -60,7 +60,7 @@ then
 	# if "automatically manage connection settings" in the account settings (inside mail preferences - accounts - server) is used mail decides (not the provider or mail service) which port to use
 	# for pop3 accounts mail sometimes switches between port 110 and 995 tls/ssl without any notification - if this happens the respective mail rules do not work any more
 	# solution
-	# do not use "automatically manage connection settings", set ports manually for each account
+	# do not use "automatically manage connection settings", set ports manually for each account (inside mail preferences - accounts - server)
     # and add the corresponding port to the mail rules config file or re-set the account inside the rules in mail
     for i in $(find ~/Library/Mail/V*/MailData/ -type f -name "SyncedRules.plist")
     do
