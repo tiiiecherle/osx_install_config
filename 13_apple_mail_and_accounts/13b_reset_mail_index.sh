@@ -36,7 +36,7 @@ sleep 2
 if [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
 then
 	# macos 10.15 only
-	# do not delete the mail index on 10.15.0 as there seems to be bug that results in loosing mails
+	# do not delete the mail index on 10.15.0/10.15.1 as there seems to be bug that results in loosing mails
 	:
 else
 	echo ''
@@ -56,10 +56,12 @@ fi
 if [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
 then
 	# macos 10.15 only
-	#echo ''
-	#echo "${bold_text}${blue_text}if this was the first run of this script after a restore please repair all needed mail rules...${default_text}"
-    #echo ''
-    # adding the port behind the mailbox criteria string seems to fix the broken mailrules when upgrading from 10.14 to 10.15
+	# in 10.15 when using mail rules that include "account" as a criterion the port of this account is added in the rules config file
+	# if "automatically manage connection settings" in the account settings (inside mail preferences - accounts - server) is used mail decides (not the provider or mail service) which port to use
+	# for pop3 accounts mail sometimes switches between port 110 and 995 tls/ssl without any notification - if this happens the respective mail rules do not work any more
+	# solution
+	# do not use "automatically manage connection settings", set ports manually for each account
+    # and add the corresponding port to the mail rules config file or re-set the account inside the rules in mail
     for i in $(find ~/Library/Mail/V*/MailData/ -type f -name "SyncedRules.plist")
     do
     	# v6 = 10.14
