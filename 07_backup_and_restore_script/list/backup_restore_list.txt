@@ -248,6 +248,7 @@ u	~/Library/Preferences/de.filezilla.plist
 # Firefox
 echo Firefox
 #u	"$PATH_TO_APPS"/Firefox.app
+u	"$PATH_TO_APPS"/Firefox_ESR.app
 u	~/Library/Application Support/Firefox
 u	~/Library/Preferences/org.mozilla.firefox.plist
 
