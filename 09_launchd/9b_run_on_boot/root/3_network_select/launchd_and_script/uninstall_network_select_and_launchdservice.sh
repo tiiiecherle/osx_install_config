@@ -48,7 +48,7 @@ fi
 ### unloading and disabling (-w) launchd service
 if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]]
 then
-    sudo launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+    sudo launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist &>/dev/null
     sudo launchctl disable system/"$SERVICE_NAME"
     sudo launchctl remove "$SERVICE_NAME"
 else

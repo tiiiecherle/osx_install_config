@@ -29,35 +29,37 @@ launchd_services=(
 "$SERVICE_NAME"
 )
 
-echo ''
 
-
-### waiting for logged in user
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-NUM=0
-MAX_NUM=15
-SLEEP_TIME=3
-# waiting for loggedInUser to be available
-while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
-do
-    sleep "$SLEEP_TIME"
-    NUM=$((NUM+1))
+### functions
+wait_for_loggedinuser() {
+    ### waiting for logged in user
     loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-done
-#echo ''
-#echo "NUM is $NUM..."
-#echo "loggedInUser is $loggedInUser..."
-if [[ "$loggedInUser" == "" ]]
-then
-    WAIT_TIME=$((MAX_NUM*SLEEP_TIME))
-    echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
-    exit
-else
-    :
-fi
+    NUM=0
+    MAX_NUM=30
+    SLEEP_TIME=3
+    # waiting for loggedInUser to be available
+    while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+    do
+        sleep "$SLEEP_TIME"
+        NUM=$((NUM+1))
+        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+    done
+    #echo ''
+    #echo "NUM is $NUM..."
+    echo "it took "$NUM"s for the loggedInUser to be available..."
+    #echo "loggedInUser is $loggedInUser..."
+    if [[ "$loggedInUser" == "" ]]
+    then
+        WAIT_TIME=$((MAX_NUM*SLEEP_TIME))
+        echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
+        exit
+    else
+        :
+    fi
+}
 
 
-### in addition to showing them in terminal write errors to logfile when run from batch script
+# in addition to showing them in terminal write errors to logfile when run from batch script
 env_check_if_run_from_batch_script() {
     BATCH_PIDS=()
     BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
@@ -91,42 +93,39 @@ env_stop_error_log() {
     exec 2>&1
 }
 
-env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
-
-
-### logfile
-EXECTIME=$(date '+%Y-%m-%d %T')
-LOGDIR=/var/log
-LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
-
-if [[ -f "$LOGFILE" ]]
-then
-    # only macos takes care of creation time, linux doesn`t because it is not part of POSIX
-    LOGFILEAGEINSECONDS="$(( $(date +"%s") - $(stat -f "%B" $LOGFILE) ))"
-    MAXLOGFILEAGE=$(echo "30*24*60*60" | bc)
-    #echo $LOGFILEAGEINSECONDS
-    #echo $MAXLOGFILEAGE
-    # deleting logfile after 30 days
-    if [ "$LOGFILEAGEINSECONDS" -lt "$MAXLOGFILEAGE" ];
+create_logfile() {
+    ### logfile
+    EXECTIME=$(date '+%Y-%m-%d %T')
+    LOGDIR=/var/log
+    LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
+    
+    if [[ -f "$LOGFILE" ]]
     then
-        echo "logfile not older than 30 days..."
+        # only macos takes care of creation time, linux doesn`t because it is not part of POSIX
+        LOGFILEAGEINSECONDS="$(( $(date +"%s") - $(stat -f "%B" $LOGFILE) ))"
+        MAXLOGFILEAGE=$(echo "30*24*60*60" | bc)
+        #echo $LOGFILEAGEINSECONDS
+        #echo $MAXLOGFILEAGE
+        # deleting logfile after 30 days
+        if [[ "$LOGFILEAGEINSECONDS" -lt "$MAXLOGFILEAGE" ]]
+        then
+            echo "logfile not older than 30 days..."
+        else
+            # deleting logfile
+            echo "deleting logfile..."
+            sudo rm "$LOGFILE"
+            sudo touch "$LOGFILE"
+            sudo chmod 644 "$LOGFILE"
+        fi
     else
-        # deleting logfile
-        echo "deleting logfile..."
-        sudo rm "$LOGFILE"
         sudo touch "$LOGFILE"
         sudo chmod 644 "$LOGFILE"
     fi
-else
-    sudo touch "$LOGFILE"
-    sudo chmod 644 "$LOGFILE"
-fi
+    
+    sudo echo "" >> "$LOGFILE"
+    sudo echo "$EXECTIME" >> "$LOGFILE"
+}
 
-sudo echo "" >> "$LOGFILE"
-sudo echo $EXECTIME >> "$LOGFILE"
-
-### functions
 getting_network_device_ids() {
     # sourcing profile variables
     NETWORK_DEVICES_CONFIG_FILE=/Users/"$loggedInUser"/Library/Preferences/network_devices.conf
@@ -242,8 +241,6 @@ setting_config() {
         export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
     fi
 }
-# run before main function, e.g. for time format
-setting_config &> /dev/null
 
 check_if_ethernet_is_active() {
     echo ''
@@ -277,7 +274,15 @@ check_if_ethernet_is_active() {
     #echo ''
 }
 
-### network select
+
+### script
+create_logfile
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+wait_for_loggedinuser >> "$LOGFILE"
+# run before main function, e.g. for time format
+setting_config &> /dev/null
+
 network_select() {
     
     ### loggedInUser
