@@ -617,6 +617,31 @@ casks_install_updates() {
             env_use_password | brew cask install "$CASK" --force
             echo ''
             
+            if [[ "$CASK" == "teamviewer" ]]
+            then 
+            	sleep 2
+            	osascript -e "tell app \""$PATH_TO_APPS"/TeamViewer.app\" to quit" >/dev/null 2>&1
+            	sleep 2
+                env_active_source_app
+            fi
+            if [[ "$CASK" == "libreoffice" ]]
+            then
+                PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
+                env_set_open_on_first_run_permissions
+            else
+                :
+            fi
+            if [[ "$CASK" == "libreoffice-language-pack" ]]
+            then
+                LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+                PATH_TO_FIRST_RUN_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+                env_set_open_on_first_run_permissions
+                PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
+                env_set_open_on_first_run_permissions
+            else
+                :
+            fi
+            
             # cleanup entries
             local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
             local NUMBER_OF_INSTALLED_VERSIONS=$(printf '%s\n' "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
@@ -765,6 +790,8 @@ if [[ "$ONLINE_STATUS" == "online" ]]
 then
     # online
     echo ''
+    
+    env_identify_terminal
     
     env_start_sudo
 
