@@ -183,7 +183,7 @@ brew install vitorgalvao/tiny-scripts/cask-repair
 # sudo gem uninstall -ax rubocop rubocop-cask
 # brew cask style
 # if this is not working remove the version of gem which brew cask style complains about, e.g.
-# rm -rf /Users/"$USER"/.gem/ruby/2.3.0/
+# rm -rf /Users/"$USER"/.gem/ruby/2.6.0/
 # brew cask style
 
 # installing parallel as dependency for the other scripts
