@@ -694,21 +694,29 @@ fi
 # installing user specific casks
 if [[ "$INSTALL_JAVA8" == "yes" ]]
 then
+    
     echo ''
-    #env_use_password | brew cask uninstall java
-    #env_use_password | brew cask uninstall adoptopenjdk
+    
+    brew tap AdoptOpenJDK/openjdk
+    env_use_password | brew cask install adoptopenjdk8
     #env_use_password | brew cask install caskroom/versions/java8
     #env_use_password | brew cask install AdoptOpenJDK/openjdk/adoptopenjdk8
-	SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_THREE_BACK"
-	if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh ]]
-	then
-		echo ''
-	    JAVA_OPTION="i" 
-	    . "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh
-	else
-	    echo "script to install java8 not found..." >&2
-	fi
+    
+    java8_install_script() {
+    	SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_THREE_BACK"
+    	if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh ]]
+    	then
+    		echo ''
+    	    JAVA_OPTION="i" 
+    	    . "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/java8_install.sh
+    	else
+    	    echo "script to install java8 not found..." >&2
+    	fi
+	}
+	#java8_install_script
+    
     echo ''
+    
 else
     :
 fi
