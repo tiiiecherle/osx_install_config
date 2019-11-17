@@ -21,7 +21,7 @@ wait_for_loggedinuser() {
     done
     #echo ''
     #echo "NUM is $NUM..."
-    echo "it took "$NUM"s for the loggedInUser to be available..."
+    echo "it took "$NUM"s for the loggedInUser "$loggedInUser" to be available..."
     #echo "loggedInUser is $loggedInUser..."
     if [[ "$loggedInUser" == "" ]]
     then
@@ -36,9 +36,14 @@ wait_for_loggedinuser() {
 
 # in addition to showing them in terminal write errors to logfile when run from batch script
 env_check_if_run_from_batch_script() {
-    BATCH_PIDS=()
-    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
-    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    # using ps aux here sometime causes the script to hang when started from a launchd
+    # if ps aux is necessary here use
+    # timeout 3 env_check_if_run_from_batch_script
+    # to run this function
+    #BATCH_PIDS=()
+    #BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    #if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    if [[ -e "/tmp/batch_script_in_progress" ]]
     then
         RUN_FROM_BATCH_SCRIPT="yes"
     else
@@ -67,6 +72,13 @@ env_stop_error_log() {
     exec 2<&-
     exec 2>&1
 }
+
+start_log() {
+    # prints stdout and stderr to terminal and to logfile
+    exec > >(tee -ia "$LOGFILE")
+}
+
+timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
 
 create_logfile() {
     ### logfile
@@ -123,9 +135,10 @@ setting_config() {
 
 ### script
 create_logfile
+#timeout 3 env_check_if_run_from_batch_script
 env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
-wait_for_loggedinuser >> "$LOGFILE"
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else start_log; fi
+wait_for_loggedinuser
 # run before main function, e.g. for time format
 setting_config &> /dev/null
 
@@ -146,12 +159,12 @@ example_function() {
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    (time ( example_function )) | tee -a "$LOGFILE"
+    time ( example_function )
 else
-    (time ( example_function )) 2>&1 | tee -a "$LOGFILE"
+    time ( example_function )
 fi
 
-echo '' >> "$LOGFILE"
+echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

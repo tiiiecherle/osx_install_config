@@ -35,7 +35,7 @@ wait_for_loggedinuser() {
     done
     #echo ''
     #echo "NUM is $NUM..."
-    echo "it took "$NUM"s for the loggedInUser to be available..."
+    echo "it took "$NUM"s for the loggedInUser "$loggedInUser" to be available..."
     #echo "loggedInUser is $loggedInUser..."
     if [[ "$loggedInUser" == "" ]]
     then
@@ -49,9 +49,14 @@ wait_for_loggedinuser() {
 
 # in addition to showing them in terminal write errors to logfile when run from batch script
 env_check_if_run_from_batch_script() {
-    BATCH_PIDS=()
-    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
-    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    # using ps aux here sometime causes the script to hang when started from a launchd
+    # if ps aux is necessary here use
+    # timeout 3 env_check_if_run_from_batch_script
+    # to run this function
+    #BATCH_PIDS=()
+    #BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    #if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    if [[ -e "/tmp/batch_script_in_progress" ]]
     then
         RUN_FROM_BATCH_SCRIPT="yes"
     else
@@ -80,6 +85,13 @@ env_stop_error_log() {
     exec 2<&-
     exec 2>&1
 }
+
+start_log() {
+    # prints stdout and stderr to terminal and to logfile
+    exec > >(tee -ia "$LOGFILE")
+}
+
+timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
 
 create_logfile() {
     ### logfile
@@ -112,6 +124,34 @@ create_logfile() {
     
     sudo echo "" >> "$LOGFILE"
     sudo echo "$EXECTIME" >> "$LOGFILE"
+}
+
+wait_for_network_select() {
+    ### waiting for network select script
+    if [[ $(sudo launchctl list | grep com.network.select) != "" ]]
+    then
+        # as the script start at launch on boot give network select time to create the tmp file
+        sleep 3
+        if [[ -e /tmp/network_select_in_progress ]]
+        then
+            NUM=1
+            MAX_NUM=30
+            SLEEP_TIME=3
+            # waiting for network select script
+            while [[ -e /tmp/network_select_in_progress ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+            do
+                sleep "$SLEEP_TIME"
+                NUM=$((NUM+1))
+            done
+            #echo ''
+            WAIT_TIME=$((NUM*SLEEP_TIME))
+            echo "waited "$WAIT_TIME"s for network select to finish..."
+        else
+            echo "network select not running, continuing..."
+        fi
+    else
+        echo "network select not installed, continuing..."
+    fi
 }
 
 certificate_variable_check() {
@@ -229,9 +269,11 @@ setting_config() {
 
 ### script
 create_logfile
+#timeout 3 env_check_if_run_from_batch_script
 env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
-wait_for_loggedinuser >> "$LOGFILE"
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else start_log; fi
+wait_for_loggedinuser
+wait_for_network_select
 # run before main function, e.g. for time format
 setting_config &> /dev/null
 
@@ -285,12 +327,12 @@ cert_check() {
     
     # giving the network some time
     ping -c5 "$SERVER_IP" >/dev/null 2>&1
-    if [ "$?" = 0 ]
+    if [[ "$?" = 0 ]]
     then
         :
     else
-        echo "server not found, waiting 60s for next try..."
-        sleep 60
+        echo "server not found, waiting 30s for next try..."
+        sleep 30
     fi
  
     # checking if online
@@ -366,24 +408,27 @@ cert_check() {
             
         else
             echo "certificate could not be loaded from server, exiting script..."
+            echo ''
             exit
         fi      
         
     else
         echo "server not found, exiting script..."
+        echo ''
         exit
     fi
-	
+    
+    echo ''
 }
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    (time ( cert_check )) | tee -a "$LOGFILE"
+    time ( cert_check )
 else
-    (time ( cert_check )) 2>&1 | tee -a "$LOGFILE"
+    time ( cert_check )
 fi
 
-echo '' >> "$LOGFILE"
+echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
