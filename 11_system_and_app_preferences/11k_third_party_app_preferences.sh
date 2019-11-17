@@ -21,6 +21,15 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 
 
 ###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
+###
 ### asking password upfront
 ###
 
@@ -271,6 +280,28 @@ then
 	
 else
 	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+fi
+
+
+### pvguard
+if [[ "$CHECK_FOR_PVGUARD" == "yes" ]]
+then
+	echo ''
+	APP_NAME_FOR_PREFERENCES="PVGuard"
+	if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".jar" ]]
+	then
+		
+		echo "$APP_NAME_FOR_PREFERENCES"
+	    
+	    # symlink to desktop
+	    if [[ -e /Users/"$USER"/Desktop/PVGuard ]]; then rm -f /Users/"$USER"/Desktop/PVGuard; else :; fi
+	    ln -s "$PATH_TO_APPS"/PVGuard.jar /Users/"$USER"/Desktop/PVGuard
+	
+	else
+		echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+	fi
+else
+	:
 fi
 
 
