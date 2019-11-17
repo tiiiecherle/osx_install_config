@@ -48,6 +48,7 @@ onyx
 photosync
 prefs-editor
 progressive-downloader
+quickhash
 quicksilver
 sejda-pdf
 signal
