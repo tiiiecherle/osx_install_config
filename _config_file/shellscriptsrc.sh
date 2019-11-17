@@ -1577,9 +1577,14 @@ env_set_open_on_first_run_permissions() {
 
 ### checking if run from batch script and error logs
 env_check_if_run_from_batch_script() {
-    BATCH_PIDS=()
-    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
-    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    # using ps aux here sometime causes the script to hang when started from a launchd
+    # if ps aux is necessary here use
+    # timeout 3 env_check_if_run_from_batch_script
+    # to run this function
+    #BATCH_PIDS=()
+    #BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    #if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    if [[ -e "/tmp/batch_script_in_progress" ]]
     then
         RUN_FROM_BATCH_SCRIPT="yes"
     else
