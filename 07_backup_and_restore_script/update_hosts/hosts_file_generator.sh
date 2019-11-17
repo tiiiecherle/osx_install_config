@@ -53,7 +53,7 @@ wait_for_loggedinuser() {
     done
     #echo ''
     #echo "NUM is $NUM..."
-    echo "it took "$NUM"s for the loggedInUser to be available..."
+    echo "it took "$NUM"s for the loggedInUser "$loggedInUser" to be available..."
     #echo "loggedInUser is $loggedInUser..."
     if [[ "$loggedInUser" == "" ]]
     then
@@ -67,9 +67,14 @@ wait_for_loggedinuser() {
 
 # in addition to showing them in terminal write errors to logfile when run from batch script
 env_check_if_run_from_batch_script() {
-    BATCH_PIDS=()
-    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
-    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    # using ps aux here sometime causes the script to hang when started from a launchd
+    # if ps aux is necessary here use
+    # timeout 3 env_check_if_run_from_batch_script
+    # to run this function
+    #BATCH_PIDS=()
+    #BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    #if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    if [[ -e "/tmp/batch_script_in_progress" ]]
     then
         RUN_FROM_BATCH_SCRIPT="yes"
     else
@@ -99,9 +104,12 @@ env_stop_error_log() {
     exec 2>&1
 }
 
-env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+start_log() {
+    # prints stdout and stderr to terminal and to logfile
+    exec > >(tee -ia "$LOGFILE")
+}
 
+timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
 
 create_logfile() {
     ### logfile
@@ -136,8 +144,6 @@ create_logfile() {
     sudo echo "$EXECTIME" >> "$LOGFILE"
 }
 
-timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
-
 check_if_online() {
     PINGTARGET1=google.com
     PINGTARGET2=duckduckgo.com
@@ -166,6 +172,144 @@ check_if_online() {
     fi
 }
 
+wait_for_getting_online() {
+    ### waiting for getting online
+    echo "checking internet connection..."
+    NUM=0
+    MAX_NUM=6
+    SLEEP_TIME=6
+    # waiting for getting online
+    # around 4s for check_if_online + 6s = 10s per try
+    check_if_online &>/dev/null
+    while [[ "$ONLINE_STATUS" != "online" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+    do
+        sleep "$SLEEP_TIME"
+        check_if_online &>/dev/null
+        NUM=$((NUM+1))
+    done
+    #echo ''
+    WAIT_TIME=$((NUM*SLEEP_TIME))
+    echo "waited "$WAIT_TIME"s for getting online..."
+    if [[ "$ONLINE_STATUS" != "online" ]]
+    then
+        WAIT_TIME=$((MAX_NUM*SLEEP_TIME))
+        echo "not online after "$WAIT_TIME"s, exiting..."
+        exit
+    else
+        echo "we are online..."
+    fi
+}
+
+wait_for_network_select() {
+    ### waiting for network select script
+    if [[ $(sudo launchctl list | grep com.network.select) != "" ]]
+    then
+        # as the script start at launch on boot give network select time to create the tmp file
+        sleep 3
+        if [[ -e /tmp/network_select_in_progress ]]
+        then
+            NUM=1
+            MAX_NUM=30
+            SLEEP_TIME=3
+            # waiting for network select script
+            echo "waiting for network select..."
+            while [[ -e /tmp/network_select_in_progress ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+            do
+                sleep "$SLEEP_TIME"
+                NUM=$((NUM+1))
+            done
+            #echo ''
+            WAIT_TIME=$((NUM*SLEEP_TIME))
+            echo "waited "$WAIT_TIME"s for network select to finish..."
+        else
+            echo "network select not running, continuing..."
+        fi
+    else
+        echo "network select not installed, continuing..."
+    fi
+}
+
+check_homebrew_and_python_versions() {
+    # homebrew
+    if sudo -H -u "$loggedInUser" command -v brew &> /dev/null
+    then
+	    # installed
+        echo ''
+        echo "homebrew is installed..."
+        # do not autoupdate homebrew
+        export HOMEBREW_NO_AUTO_UPDATE=1
+    else
+        # not installed
+        echo ''
+        echo "homebrew is not installed, exiting..."
+        exit
+    fi
+    
+    # homebrew python versions
+    # homebrew python2
+    #if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python@2$") == '' ]]
+    if sudo -H -u "$loggedInUser" command -v python2 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
+    then
+        echo "python2 is installed via homebrew..."
+        PYTHON2_HOMEBREW_INSTALLED="yes"
+    else
+        echo "python2 is not installed via homebrew..."
+        PYTHON2_HOMEBREW_INSTALLED="no"
+    fi
+    # homebrew python3
+    #if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python$") == '' ]]
+    if sudo -H -u "$loggedInUser" command -v python3 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
+    then
+        echo "python3 is installed via homebrew..."
+        PYTHON3_HOMEBREW_INSTALLED="yes"
+    else
+        echo "python3 is not installed via homebrew..."
+        PYTHON3_HOMEBREW_INSTALLED="no"
+    fi
+
+    # listing installed python versions
+    echo ''
+    echo "installed python versions..."
+    APPLE_PYTHON_VERSION=$(python --version 2>&1)
+    printf "%-15s %-20s %-15s\n" "python" "$APPLE_PYTHON_VERSION" "apple"
+    if [[ $PYTHON2_HOMEBREW_INSTALLED == "yes" ]]
+    then
+        PYTHON2_VERSION=$(python2 --version 2>&1)
+        printf "%-15s %-20s %-15s\n" "python2" "$PYTHON2_VERSION" "homebrew"
+    else
+        :
+    fi
+    if [[ $PYTHON3_HOMEBREW_INSTALLED == "yes" ]]
+    then
+        PYTHON3_VERSION=$(python3 --version 2>&1)
+        printf "%-15s %-20s %-15s\n" "python3" "$PYTHON3_VERSION" "homebrew"
+    else
+        :
+    fi
+    
+    # the project is python3 only (from 2018-09), so make sure python3 is used
+    # python2 deprecated 2020-01, only use python3
+    # macos sip limits installing pip and installing/updating python modules - as a consequence only support homebrew python3
+    echo ''
+    if [[ "$PYTHON3_HOMEBREW_INSTALLED" == "yes" ]]
+    then
+        # installed
+        # should be enough to use python3 here as $PYTHON3_INSTALLED checks if it is installed via homebrew
+        PYTHON_VERSION='python3'
+        PIP_VERSION='pip3'
+        #PYTHON_VERSION="$(sudo -H -u "$loggedInUser" brew --prefix)/bin/python3"
+        #PIP_VERSION="$(sudo -H -u "$loggedInUser" brew --prefix)/bin/pip3"
+    else
+        # not installed
+        echo "only python3 via homebrew is supported, exiting..."
+        exit
+    fi
+    
+    #echo ''
+    printf "%-36s %-15s\n" "python used in script" "$PYTHON_VERSION"
+    printf "%-36s %-15s\n" "pip used in script" "$PIP_VERSION"
+}
+
 setting_config() {
     ### sourcing .$SHELLrc or setting PATH
     # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
@@ -188,48 +332,37 @@ setting_config() {
 
 ### script
 create_logfile
+#timeout 3 env_check_if_run_from_batch_script
 env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
-wait_for_loggedinuser >> "$LOGFILE"
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else start_log; fi
+wait_for_loggedinuser
+echo ''
+wait_for_network_select
+echo ''
+wait_for_getting_online
 # run before main function, e.g. for time format
 setting_config &> /dev/null
 
 hosts_file_install_update() {
     
     ### loggedInUser
+    echo ''
     echo "loggedInUser is $loggedInUser..."
-    
-    ### sourcing .$SHELLrc or setting PATH
-    #setting_config
-
+    echo ''
 
     ### script
 	# checking modification date of /etc/hosts
     UPDATEEACHDAYS=4
     if [[ "$(find /etc/* -name 'hosts' -maxdepth 0 -type f -mtime +"$UPDATEEACHDAYS"d | grep -x '/etc/hosts')" == "" ]]
     then
-        echo "/etc/hosts was already updated in the last "$UPDATEEACHDAYS" days, no need to update..."
-        echo "exiting script..."
+        echo "/etc/hosts was already updated in the last "$UPDATEEACHDAYS" days, no need to update, exiting..."
+        echo ''
         exit
     else
         echo "/etc/hosts is older than "$UPDATEEACHDAYS" days, updating..."
     fi
-    
-    # giving the online check some time if run on laptop to switch to correct network profile on boot
-    check_if_online
-    if [[ "$ONLINE_STATUS" == "online" ]]
-    then
-        # online
-        :
-    else
-        # offline
-        #echo "not online, waiting 120s for next try..."
-        echo "waiting 120s for next try..."
-        sleep 120
-    fi
  
     # checking if online
-    check_if_online
     if [[ "$ONLINE_STATUS" == "online" ]]
     then
         # online
@@ -267,103 +400,12 @@ hosts_file_install_update() {
         fi
             
                    
-        ### python version
-        if sudo -H -u "$loggedInUser" command -v brew &> /dev/null
-        then
-    	    # installed
-            echo ''
-            echo "homebrew is installed..."
-            # do not autoupdate homebrew
-            export HOMEBREW_NO_AUTO_UPDATE=1
-            # checking installed python versions
-            if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python@2$") == '' ]]
-            then
-                echo "python2 is not installed via homebrew..."
-                PYTHON2_INSTALLED="no"
-            else
-                echo "python2 is installed via homebrew..."
-                PYTHON2_INSTALLED="yes"
-                #sudo -H -u "$loggedInUser" brew uninstall --ignore-dependencies python@2
-            fi
-            if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python$") == '' ]]
-            then
-                # the project drops python2 support, so make sure python3 is installed
-                echo "python3 is not installed via homebrew..."
-                PYTHON3_INSTALLED="no"
-                #sudo -H -u "$loggedInUser" brew install python
-            else
-                echo "python3 is installed via homebrew..."
-                PYTHON3_INSTALLED="yes"
-                #sudo -H -u "$loggedInUser" brew uninstall --ignore-dependencies python@3
-            fi
-        else
-            # not installed
-            echo ''
-            echo "homebrew is not installed..."
-        fi
-        
-        # listing installed python versions
-        echo ''
-        echo "installed python versions..."
-        APPLE_PYTHON_VERSION=$(python --version 2>&1)
-        printf "%-25s %-25s\n" "apple python" "$APPLE_PYTHON_VERSION"
-        if [[ $PYTHON2_INSTALLED == "yes" ]]
-        then
-            PYTHON2_VERSION=$(python2 --version 2>&1)
-            printf "%-25s %-25s\n" "python2" "$PYTHON2_VERSION"
-        else
-            :
-        fi
-        if [[ $PYTHON3_INSTALLED == "yes" ]]
-        then
-            PYTHON3_VERSION=$(python3 --version 2>&1)
-            printf "%-25s %-25s\n" "python3" "$PYTHON3_VERSION"
-        else
-            :
-        fi
-        
-        # the project is python3 only (from 2018-09), so make sure python3 is used
-        echo ''
-        if sudo -H -u "$loggedInUser" command -v python3 &> /dev/null && sudo -H -u "$loggedInUser" command -v pip3 &> /dev/null
-        then
-            # installed
-            echo "python3 is installed..."
-            PYTHON_VERSION='python3'
-            PIP_VERSION='pip3'
-        else
-            # not installed
-            echo "python3 is not installed, trying apple python..."
-            
-            # checking if pip is installed
-            if sudo -H -u "$loggedInUser" command -v pip &> /dev/null
-            then
-                # installed
-                echo "pip is installed..."
-            else
-                # not installed
-                echo "pip is not installed, installing..."
-                sudo -H python -m ensurepip
-                sudo -H easy_install pip
-            fi
-            
-            # checking version of default apple python
-            if sudo -H -u "$loggedInUser" command -v python &> /dev/null && sudo -H -u "$loggedInUser" command -v pip &> /dev/null && [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) == "3" ]] && [[ $(pip --version 2>&1 | grep "python 3") != "" ]]
-            then
-                PYTHON_VERSION='python'
-                PIP_VERSION='pip'
-            else
-                echo "python3 or pip3 are not installed, exiting..."
-                echo ''
-                exit
-            fi
-        fi
-        
-        echo ''
-        echo "python version used in script is $PYTHON_VERSION with $PIP_VERSION..."
-        echo ''
+        ### homebrew and python versions
+        check_homebrew_and_python_versions
 
 
         ### updating
+        echo ''
         echo "updating pip and script dependencies..."
         
         # version of dependencies
@@ -377,29 +419,15 @@ hosts_file_install_update() {
         }
         change_dependencies_versions
         
-        # updating
-        if [[ "$PYTHON_VERSION" == 'python' ]] && [[ "$PIP_VERSION" == 'pip' ]]
-        then
-            # updating pip itself
-            sudo -H pip install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
-            
-            # updating all pip modules
-            # do not update internal apple site-packages to ensure compatibility
-            :
-            
-            # installing dependencies
-            #sudo pip install -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt
-            sudo -H pip install --user -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
-        else
-            # updating pip itself
-            sudo -H -u "$loggedInUser" "${PIP_VERSION}" install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
-            
-            # updating all pip modules
-            "${PIP_VERSION}" freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -U 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
-            
-            # installing dependencies
-            sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
-        fi
+        ### updating
+        # updating pip itself
+        sudo -H -u "$loggedInUser" "${PIP_VERSION}" install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+        
+        # updating all pip modules
+        "${PIP_VERSION}" freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -U 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+        
+        # installing dependencies
+        sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
         
         # backing up original hosts file
         if [[ ! -f "/etc/hosts.orig" ]]
@@ -482,22 +510,22 @@ hosts_file_install_update() {
         # done
         echo ''
         echo 'done ;)'
-        echo ''
     else
         # offline
         echo "we are not not online, skipping update of hosts file, exiting script..."
     fi
-	
+    
+	echo ''
 }
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    (time ( hosts_file_install_update )) | tee -a "$LOGFILE"
+    time ( hosts_file_install_update )
 else
-    (time ( hosts_file_install_update )) 2>&1 | tee -a "$LOGFILE"
+    time ( hosts_file_install_update )
 fi
 
-echo '' >> "$LOGFILE"
+echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

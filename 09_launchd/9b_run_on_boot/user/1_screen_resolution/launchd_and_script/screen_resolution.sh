@@ -41,7 +41,7 @@ wait_for_loggedinuser() {
     done
     #echo ''
     #echo "NUM is $NUM..."
-    echo "it took "$NUM"s for the loggedInUser to be available..."
+    echo "it took "$NUM"s for the loggedInUser "$loggedInUser" to be available..."
     #echo "loggedInUser is $loggedInUser..."
     if [[ "$loggedInUser" == "" ]]
     then
@@ -55,9 +55,14 @@ wait_for_loggedinuser() {
 
 # in addition to showing them in terminal write errors to logfile when run from batch script
 env_check_if_run_from_batch_script() {
-    BATCH_PIDS=()
-    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
-    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    # using ps aux here sometime causes the script to hang when started from a launchd
+    # if ps aux is necessary here use
+    # timeout 3 env_check_if_run_from_batch_script
+    # to run this function
+    #BATCH_PIDS=()
+    #BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    #if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    if [[ -e "/tmp/batch_script_in_progress" ]]
     then
         RUN_FROM_BATCH_SCRIPT="yes"
     else
@@ -86,6 +91,13 @@ env_stop_error_log() {
     exec 2<&-
     exec 2>&1
 }
+
+start_log() {
+    # prints stdout and stderr to terminal and to logfile
+    exec > >(tee -ia "$LOGFILE")
+}
+
+timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
 
 create_logfile() {
     ### logfile
@@ -120,6 +132,87 @@ create_logfile() {
     echo $EXECTIME >> "$LOGFILE"
 }
 
+check_homebrew_and_python_versions() {
+    # homebrew
+    if sudo -H -u "$loggedInUser" command -v brew &> /dev/null
+    then
+	    # installed
+        echo ''
+        echo "homebrew is installed..."
+        # do not autoupdate homebrew
+        export HOMEBREW_NO_AUTO_UPDATE=1
+    else
+        # not installed
+        echo ''
+        echo "homebrew is not installed, exiting..."
+        exit
+    fi
+    
+    # homebrew python versions
+    # homebrew python2
+    #if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python@2$") == '' ]]
+    if sudo -H -u "$loggedInUser" command -v python2 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
+    then
+        echo "python2 is installed via homebrew..."
+        PYTHON2_HOMEBREW_INSTALLED="yes"
+    else
+        echo "python2 is not installed via homebrew..."
+        PYTHON2_HOMEBREW_INSTALLED="no"
+    fi
+    # homebrew python3
+    #if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python$") == '' ]]
+    if sudo -H -u "$loggedInUser" command -v python3 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
+    then
+        echo "python3 is installed via homebrew..."
+        PYTHON3_HOMEBREW_INSTALLED="yes"
+    else
+        echo "python3 is not installed via homebrew..."
+        PYTHON3_HOMEBREW_INSTALLED="no"
+    fi
+
+    # listing installed python versions
+    echo ''
+    echo "installed python versions..."
+    APPLE_PYTHON_VERSION=$(python --version 2>&1)
+    printf "%-15s %-20s %-15s\n" "python" "$APPLE_PYTHON_VERSION" "apple"
+    if [[ $PYTHON2_HOMEBREW_INSTALLED == "yes" ]]
+    then
+        PYTHON2_VERSION=$(python2 --version 2>&1)
+        printf "%-15s %-20s %-15s\n" "python2" "$PYTHON2_VERSION" "homebrew"
+    else
+        :
+    fi
+    if [[ $PYTHON3_HOMEBREW_INSTALLED == "yes" ]]
+    then
+        PYTHON3_VERSION=$(python3 --version 2>&1)
+        printf "%-15s %-20s %-15s\n" "python3" "$PYTHON3_VERSION" "homebrew"
+    else
+        :
+    fi
+    
+    # the project is python3 only (from 2018-09), so make sure python3 is used
+    # python2 deprecated 2020-01, only use python3
+    # macos sip limits installing pip and installing/updating python modules - as a consequence only support homebrew python3
+    echo ''
+    if [[ "$PYTHON3_HOMEBREW_INSTALLED" == "yes" ]]
+    then
+        # installed
+        # should be enough to use python3 here as $PYTHON3_INSTALLED checks if it is installed via homebrew
+        PYTHON_VERSION='python3'
+        PIP_VERSION='pip3'
+        #PYTHON_VERSION="$(sudo -H -u "$loggedInUser" brew --prefix)/bin/python3"
+        #PIP_VERSION="$(sudo -H -u "$loggedInUser" brew --prefix)/bin/pip3"
+    else
+        # not installed
+        echo "only python3 via homebrew is supported, exiting..."
+        exit
+    fi
+    
+    #echo ''
+    printf "%-36s %-15s\n" "python used in script" "$PYTHON_VERSION"
+    printf "%-36s %-15s\n" "pip used in script" "$PIP_VERSION"
+}
+
 setting_config() {
     ### sourcing .$SHELLrc or setting PATH
     # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
@@ -142,9 +235,10 @@ setting_config() {
 
 ### script
 create_logfile
+#timeout 3 env_check_if_run_from_batch_script
 env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
-wait_for_loggedinuser >> "$LOGFILE"
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else start_log; fi
+wait_for_loggedinuser
 # run before main function, e.g. for time format
 setting_config &> /dev/null
 
@@ -157,44 +251,12 @@ screen_resolution() {
     ### sourcing .$SHELLrc or setting PATH
     #setting_config
     
-     
-    ### script
-    # python2 deprecated 2020-01, checking if python3 and pip3 are installed
-    echo ''
-    if sudo -H -u "$loggedInUser" command -v python3 &> /dev/null && sudo -H -u "$loggedInUser" command -v pip3 &> /dev/null
-    then
-        # installed
-        echo "python3 is installed..."
-        PYTHON_VERSION='python3'
-        PIP_VERSION='pip3'
-    else
-        # not installed
-        echo "python3 is not installed, trying apple python..."
-        
-        # checking if pip is installed
-        if sudo -H -u "$loggedInUser" command -v pip &> /dev/null
-        then
-            # installed
-            echo "pip is installed..."
-        else
-            # not installed
-            echo "pip is not installed, installing..."
-            sudo -H python -m ensurepip
-            sudo -H easy_install pip
-        fi
-        
-        # checking version of default apple python
-        if sudo -H -u "$loggedInUser" command -v python &> /dev/null && sudo -H -u "$loggedInUser" command -v pip &> /dev/null && [[ $(python --version 2>&1 | awk '{print $NF}' | cut -d'.' -f1) == "3" ]] && [[ $(pip --version 2>&1 | grep "python 3") != "" ]]
-        then
-            PYTHON_VERSION='python'
-            PIP_VERSION='pip'
-        else
-            echo "python3 or pip3 are not installed, exiting..."
-            echo ''
-            exit
-        fi
-    fi
+
+    ### homebrew and python versions
+    check_homebrew_and_python_versions
     
+    
+    ### python modules  
     echo ''
     echo "checking python modules..."
     for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
@@ -214,11 +276,8 @@ screen_resolution() {
         fi
     done
     
-    echo ''
-    echo "python version used in script is $PYTHON_VERSION with $PIP_VERSION..."
-    #echo ''
     
-    # variables
+    ### variables
     DISPLAY_TO_SET="EV2785"
     SYSTEM_PROFILER_DISPLAY_DATA=$(system_profiler SPDisplaysDataType -xml)
     #DISPLAYS=$(system_profiler SPDisplaysDataType -xml | grep -A2 "</data>" | awk -F'>|<' '/_name/{getline; print $3}')
@@ -233,7 +292,8 @@ screen_resolution() {
     DISPLAY_MANAGER_INSTALL_PATH=""$PATH_TO_APPS"/display_manager"
     DISPLAY_MANAGER_RESOLUTION='2304 1296 60 only-hidpi'
     
-    # display manager
+    
+    ### display manager
     # https://github.com/univ-of-utah-marriott-library-apple/display_manager
     
     if [[ -e "$DISPLAY_MANAGER_INSTALL_PATH"/display_manager.py ]]
@@ -275,18 +335,21 @@ screen_resolution() {
     else
         echo ''
         echo "display manager not installed, exiting..."
+        echo ''
         exit
     fi
+    
+    echo ''
 }
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    (time ( screen_resolution )) | tee -a "$LOGFILE"
+    time ( screen_resolution )
 else
-    (time ( screen_resolution )) 2>&1 | tee -a "$LOGFILE"
+    time ( screen_resolution )
 fi
 
-echo '' >> "$LOGFILE"
+echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
