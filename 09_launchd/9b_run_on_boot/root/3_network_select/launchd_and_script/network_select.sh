@@ -14,14 +14,22 @@ else
 fi
 
 
+### trap and tmp file
+# make it easier for other services and scripts to check if script has finished
+trap "rm -f /tmp/network_select_in_progress" EXIT
+touch "/tmp/network_select_in_progress"
+
+
 ### variables
 SERVICE_NAME=com.network.select
 SCRIPT_INSTALL_NAME=network_select
 
 # other launchd services
+# no longer needed as all other services are enabled independetly and check for
+# /tmp/network_select_in_progress to determine if network-select is still running
 other_launchd_services=(
-com.hostsfile.install_update
-com.cert.install_update
+#com.hostsfile.install_update
+#com.cert.install_update
 )
 
 launchd_services=(
@@ -46,7 +54,7 @@ wait_for_loggedinuser() {
     done
     #echo ''
     #echo "NUM is $NUM..."
-    echo "it took "$NUM"s for the loggedInUser to be available..."
+    echo "it took "$NUM"s for the loggedInUser "$loggedInUser" to be available..."
     #echo "loggedInUser is $loggedInUser..."
     if [[ "$loggedInUser" == "" ]]
     then
@@ -61,9 +69,14 @@ wait_for_loggedinuser() {
 
 # in addition to showing them in terminal write errors to logfile when run from batch script
 env_check_if_run_from_batch_script() {
-    BATCH_PIDS=()
-    BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
-    if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    # using ps aux here sometime causes the script to hang when started from a launchd
+    # if ps aux is necessary here use
+    # timeout 3 env_check_if_run_from_batch_script
+    # to run this function
+    #BATCH_PIDS=()
+    #BATCH_PIDS+=$(ps aux | grep "/batch_script_part.*.command" | grep -v grep | awk '{print $2;}')
+    #if [[ "$BATCH_PIDS" != "" ]] && [[ -e "/tmp/batch_script_in_progress" ]]
+    if [[ -e "/tmp/batch_script_in_progress" ]]
     then
         RUN_FROM_BATCH_SCRIPT="yes"
     else
@@ -92,6 +105,13 @@ env_stop_error_log() {
     exec 2<&-
     exec 2>&1
 }
+
+start_log() {
+    # prints stdout and stderr to terminal and to logfile
+    exec > >(tee -ia "$LOGFILE")
+}
+
+timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
 
 create_logfile() {
     ### logfile
@@ -277,9 +297,10 @@ check_if_ethernet_is_active() {
 
 ### script
 create_logfile
+#timeout 3 env_check_if_run_from_batch_script
 env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
-wait_for_loggedinuser >> "$LOGFILE"
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else start_log; fi
+wait_for_loggedinuser
 # run before main function, e.g. for time format
 setting_config &> /dev/null
 
@@ -342,83 +363,91 @@ network_select() {
     fi
     
     # changing to wlan profile if lan is not connected
-    if [[ $(networksetup -listlocations | grep "$WLAN_LOCATION") != "" ]]
+    if [[ "$ETHERNET_CONNECTED" == "TRUE" ]]
     then
-        if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") == "" ]] || [[ "$ETHERNET_CONNECTED" != "TRUE" ]]
-        then    
-            if [[ $(networksetup -getcurrentlocation | grep "$WLAN_LOCATION") != "" ]]
-            then
-                echo "location "$WLAN_LOCATION" already enabled..."
-                enable_wlan_device
-                DEVICE="WLAN"
-                DEVICE_ID="$WLAN_DEVICE_ID"
-                set_vbox_network_device
+        :
+    else
+        if [[ $(networksetup -listlocations | grep "$WLAN_LOCATION") != "" ]]
+        then
+            if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") == "" ]] || [[ "$ETHERNET_CONNECTED" != "TRUE" ]]
+            then    
+                if [[ $(networksetup -getcurrentlocation | grep "$WLAN_LOCATION") != "" ]]
+                then
+                    echo "location "$WLAN_LOCATION" already enabled..."
+                    enable_wlan_device
+                    DEVICE="WLAN"
+                    DEVICE_ID="$WLAN_DEVICE_ID"
+                    set_vbox_network_device
+                else
+                    echo "changing to location "$WLAN_LOCATION"..."
+                    sudo networksetup -switchtolocation "$WLAN_LOCATION"
+                    enable_wlan_device
+                    printf '\n\n'
+                    sleep 6
+                    DEVICE="WLAN"
+                    DEVICE_ID="$WLAN_DEVICE_ID"
+                    set_vbox_network_device
+                fi
             else
-                echo "changing to location "$WLAN_LOCATION"..."
-                sudo networksetup -switchtolocation "$WLAN_LOCATION"
-                enable_wlan_device
-                printf '\n\n'
-                sleep 6
-                DEVICE="WLAN"
-                DEVICE_ID="$WLAN_DEVICE_ID"
-                set_vbox_network_device
+                :
             fi
         else
-            :
+            echo "wlan location not found, skipping..."
+            echo ''
         fi
-    else
-        echo "wlan location not found, exiting..."
-        echo ''
-        exit
     fi
         
     # loading and disabling other launchd services
-    for i in "${other_launchd_services[@]}"
-    do
-        echo ''
-        echo "checking "$i"..."
-        if [[ -e /Library/LaunchDaemons/"$i".plist ]]
-        then
-            #echo "$i is installed..."
-            if [[ $(sudo launchctl list | grep "$i") != "" ]]
+    # no longer needed as all other services are enabled independetly and check for
+    # /tmp/network_select_in_progress to determine if network-select is still running
+    configure_other_launchd_services() {
+        for i in "${other_launchd_services[@]}"
+        do
+            echo ''
+            echo "checking "$i"..."
+            if [[ -e /Library/LaunchDaemons/"$i".plist ]]
             then
-                echo "$i is already loaded..."
-                :
+                #echo "$i is installed..."
+                if [[ $(sudo launchctl list | grep "$i") != "" ]]
+                then
+                    echo "$i is already loaded..."
+                    :
+                else
+                    #echo "$i is not running..."
+                    echo "loading "$i"..."
+                    # starting service and ignoring the disabled status, will not be enabled after boot
+                    sudo launchctl load -F /Library/LaunchDaemons/"$i".plist
+                fi
+                #
+                #sudo launchctl print-disabled system | grep "$i"
+                #
+                if [[ $(sudo launchctl print-disabled system | grep "$i" | grep false) != "" ]]
+                then
+                    #echo "$i is enabled..."
+                    echo "disabling "$i"..."
+                    sudo launchctl disable system/"$i"
+                else
+                   echo "$i is already disabled..."
+                   :
+                fi
+                #
             else
-                #echo "$i is not running..."
-                echo "loading "$i"..."
-                # starting service and ignoring the disabled status, will not be enabled after boot
-                sudo launchctl load -F /Library/LaunchDaemons/"$i".plist
+               echo "$i is not installed..."
             fi
-            #
-            #sudo launchctl print-disabled system | grep "$i"
-            #
-            if [[ $(sudo launchctl print-disabled system | grep "$i" | grep false) != "" ]]
-            then
-                #echo "$i is enabled..."
-                echo "disabling "$i"..."
-                sudo launchctl disable system/"$i"
-            else
-               echo "$i is already disabled..."
-               :
-            fi
-            #
-        else
-           echo "$i is not installed..."
-        fi
-    done
+        done
+    }
+    #configure_other_launchd_services
     
 	echo ''
 }
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    (time ( network_select )) | tee -a "$LOGFILE"
+    time ( network_select )
 else
-    (time ( network_select )) 2>&1 | tee -a "$LOGFILE"
+    time ( network_select )
 fi
 
-echo '' >> "$LOGFILE"
 echo ''
 
 ### stopping the error output redirecting

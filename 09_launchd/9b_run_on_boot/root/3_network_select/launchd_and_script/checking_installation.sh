@@ -33,15 +33,15 @@ LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 # logfiles
 logfiles_to_open=(
-"$LOGDIR"/hosts_file_generator.log
-"$LOGDIR"/cert_install_update.log
+#"$LOGDIR"/hosts_file_generator.log
+#"$LOGDIR"/cert_install_update.log
 "$LOGFILE"
 )
 
 # other launchd services
 other_launchd_services=(
-com.hostsfile.install_update
-com.cert.install_update
+#com.hostsfile.install_update
+#com.cert.install_update
 )
 
 launchd_services=(

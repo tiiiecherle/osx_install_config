@@ -56,9 +56,11 @@ LOGDIR=/var/log
 LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 # other launchd services
+# no longer needed as all other services are enabled independetly and check for
+# /tmp/network_select_in_progress to determine if network-select is still running
 other_launchd_services=(
-com.hostsfile.install_update
-com.cert.install_update
+#com.hostsfile.install_update
+#com.cert.install_update
 )
 
 launchd_services=(
@@ -105,32 +107,36 @@ wait
 
 ### unloading and disabling launchd services launched by network_select
 #echo ''
-echo "unloading other launchd services..."
-for i in "${other_launchd_services[@]}"
-do
-    if [[ $(sudo launchctl list | grep "$i") != "" ]];
-    then
-        echo "unloading "$i"..."
-        sudo launchctl unload /Library/LaunchDaemons/"$i".plist 2>&1 | grep -v "in progress"
-    else
-        :
-    fi
-done
-
-
-echo ''
-echo "disabling other launchd services..."
-for i in "${other_launchd_services[@]}"
-do
-    if [[ $(sudo launchctl print-disabled system | grep "$i" | grep false) != "" ]];
-    then
-        echo "disabling "$i"..."
-        sudo launchctl disable system/"$i"
-    else
-        :
-    fi
-done
-
+configure_other_launchd_services() {
+    echo "unloading other launchd services..."
+    for i in "${other_launchd_services[@]}"
+    do
+        if [[ $(sudo launchctl list | grep "$i") != "" ]];
+        then
+            echo "unloading "$i"..."
+            sudo launchctl unload /Library/LaunchDaemons/"$i".plist 2>&1 | grep -v "in progress"
+        else
+            :
+        fi
+    done
+    
+    
+    echo ''
+    echo "disabling other launchd services..."
+    for i in "${other_launchd_services[@]}"
+    do
+        if [[ $(sudo launchctl print-disabled system | grep "$i" | grep false) != "" ]];
+        then
+            echo "disabling "$i"..."
+            sudo launchctl disable system/"$i"
+        else
+            :
+        fi
+    done
+}
+# no longer needed as all other services are enabled independetly and check for
+# /tmp/network_select_in_progress to determine if network-select is still running
+#configure_other_launchd_services
 
 ### launchd service
 echo ''
