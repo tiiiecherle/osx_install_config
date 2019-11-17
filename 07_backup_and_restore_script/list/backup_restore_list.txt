@@ -554,6 +554,7 @@ u	~/Library/Preferences/com.PS.PSD.plist
 # PVGuard
 echo PVGuard
 u	~/PVGuardClient
+u	"$PATH_TO_APPS"/PVGuard.jar
 
 # Quicksilver
 echo Quicksilver
