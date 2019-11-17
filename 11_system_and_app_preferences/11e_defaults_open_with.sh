@@ -90,11 +90,11 @@ default_open_with=(
 "LSHandlerURLScheme             https                                       com.apple.safari"
 "LSHandlerContentType           public.html                                 com.apple.safari"
 "LSHandlerContentType           public.xhtml                                com.apple.safari"
-"LSHandlerContentType           public.comma-separated-values-text          org.libreoffice.script"        # .csv
-"LSHandlerContentType           org.oasis-open.opendocument.text            org.libreoffice.script"        # .odt
+"LSHandlerContentType           public.comma-separated-values-text          org.libreoffice.script"         # .csv
+"LSHandlerContentType           org.oasis-open.opendocument.text            org.libreoffice.script"         # .odt
 "LSHandlerContentType           public.shell-script                         com.coteditor.coteditor"        # .sh
 "LSHandlerContentType           public.php-script                           com.coteditor.coteditor"        # .php
-"LSHandlerContentType           public.css                                 com.coteditor.coteditor"        # .css
+"LSHandlerContentType           public.css                                  com.coteditor.coteditor"        # .css
 "LSHandlerContentTagClass       public.filename-extension                   com.coteditor.coteditor LSHandlerContentTag     conf"       # .conf
 "LSHandlerContentType           com.adobe.pdf                               com.apple.preview"              # .pdf
 "LSHandlerContentType           public.zip-archive                          cx.c3.theunarchiver"            # .zip
@@ -103,8 +103,9 @@ default_open_with=(
 "LSHandlerContentType           public.tar-archive                          cx.c3.theunarchiver"            # .tar
 "LSHandlerContentType           net.daringfireball.markdown                 com.uranusjr.macdown"           # .md
 "LSHandlerContentTagClass       public.filename-extension                   com.apple.automator.unarchive_finder_input_gpg_progress     LSHandlerContentTag    gpg" # .gpg
-"LSHandlerContentType           com.apple.property-list                     org.tempel.prefseditor"           # .plist
-"LSHandlerContentType           public.mpeg-4                               com.colliderli.iina"           # .mp4
+"LSHandlerContentType           com.apple.property-list                     org.tempel.prefseditor"         # .plist
+"LSHandlerContentType           public.mpeg-4                               com.colliderli.iina"            # .mp4
+"LSHandlerContentType           com.sun.java-web-start                      com.install4j.9615-4721-3936-4657.313"            # .jnlp
 )
 
 # libreoffice
