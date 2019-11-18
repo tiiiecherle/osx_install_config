@@ -45,6 +45,7 @@ namechanger
 nextcloud
 ondesoft-audiobook-converter
 onyx
+openwebstart
 photosync
 prefs-editor
 progressive-downloader
