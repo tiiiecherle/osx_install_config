@@ -340,6 +340,8 @@ screen_resolution() {
     fi
     
     echo ''
+    echo "done ;)"
+    echo ''
 }
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]

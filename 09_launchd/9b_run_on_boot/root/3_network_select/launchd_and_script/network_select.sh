@@ -340,12 +340,14 @@ network_select() {
             if [[ $(networksetup -getcurrentlocation | grep "$ETHERNET_LOCATION") != "" ]]
             then
                 echo "location "$ETHERNET_LOCATION" already enabled..."
+                echo ''
                 disable_wlan_device
                 DEVICE="ETHERNET"
                 DEVICE_ID="$ETHERNET_DEVICE_ID"
                 set_vbox_network_device
             else
-                echo "changing to location "$ETHERNET_LOCATION"..." 
+                echo "changing to location "$ETHERNET_LOCATION"..."
+                echo '' 
                 sudo networksetup -switchtolocation "$ETHERNET_LOCATION"
                 disable_wlan_device
                 printf '\n\n'
@@ -360,6 +362,7 @@ network_select() {
         check_if_ethernet_is_active
     else
         echo "ethernet location not found, skipping..."
+        echo ''
     fi
     
     # changing to wlan profile if lan is not connected
@@ -374,12 +377,14 @@ network_select() {
                 if [[ $(networksetup -getcurrentlocation | grep "$WLAN_LOCATION") != "" ]]
                 then
                     echo "location "$WLAN_LOCATION" already enabled..."
+                    echo ''
                     enable_wlan_device
                     DEVICE="WLAN"
                     DEVICE_ID="$WLAN_DEVICE_ID"
                     set_vbox_network_device
                 else
                     echo "changing to location "$WLAN_LOCATION"..."
+                    echo ''
                     sudo networksetup -switchtolocation "$WLAN_LOCATION"
                     enable_wlan_device
                     printf '\n\n'
@@ -438,7 +443,9 @@ network_select() {
     }
     #configure_other_launchd_services
     
-	echo ''
+    echo ''
+    echo "done ;)"
+    echo ''
 }
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
@@ -449,6 +456,7 @@ else
 fi
 
 echo ''
+
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

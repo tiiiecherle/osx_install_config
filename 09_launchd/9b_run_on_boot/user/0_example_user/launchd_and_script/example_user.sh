@@ -155,6 +155,9 @@ example_function() {
     ### script
     echo "running as user ;)"
     
+    echo "done ;)"
+    echo ''
+    
 }
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]

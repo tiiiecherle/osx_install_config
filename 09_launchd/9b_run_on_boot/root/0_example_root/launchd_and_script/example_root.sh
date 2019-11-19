@@ -256,6 +256,9 @@ example_function() {
     ### script
 	echo "running as root ;)"
 	
+	echo "done ;)"
+	echo ''
+	
 }
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
@@ -266,6 +269,7 @@ else
 fi
 
 echo ''
+
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
