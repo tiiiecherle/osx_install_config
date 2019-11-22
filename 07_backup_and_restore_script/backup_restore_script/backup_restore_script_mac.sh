@@ -1029,7 +1029,7 @@ backup_restore() {
         	then
                 # forcing update on next run by setting last modification time of /etc/hosts earlier
                 sudo touch -mt 201512010000 /etc/hosts
-                sudo /Library/Scripts/custom/hosts_file_generator.sh | grep 'updating hosts file SUCCESSFULL\|FAILED...' &
+                sudo /Library/Scripts/custom/hosts_file_generator.sh 2>&1 | grep 'updating hosts file SUCCESSFULL\|FAILED...' &
             else
                 echo "/Library/Scripts/custom/hosts_file_generator.sh not found, skipping updating hosts script..."
             fi
