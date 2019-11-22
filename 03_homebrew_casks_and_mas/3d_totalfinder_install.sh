@@ -32,7 +32,10 @@ install_finder_enhancement() {
 	    
 	    
 	    ### variables
-	    local VERSION_NUMBER="1.12.0"
+	    #local VERSION_NUMBER="1.12.2"
+	    #local VERSION_NUMBER=$(curl -s https://totalfinder.binaryage.com/ | grep -o "TotalFinder.*.dmg" | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
+	    #local VERSION_NUMBER=$(curl -s https://totalfinder.binaryage.com/changelog-beta.txt | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | head -n1)
+	    local VERSION_NUMBER=$(curl -s https://totalfinder.binaryage.com/changelog.txt | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | head -n1)
 		local APP_NAME="TotalFinder"
 		local APP_NAME_LOWERED=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]')
 		local AUTOMATION_APP_NAME="$APP_NAME".app
