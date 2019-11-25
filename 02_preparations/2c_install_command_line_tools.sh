@@ -25,7 +25,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ###
 
 ### trap
-trap_function_exit_middle() { unset SUDOPASSWORD; unset USE_PASSWORD; env_stop_sudo; }
+trap_function_exit_middle() { env_stop_sudo; unset SUDOPASSWORD; unset USE_PASSWORD; }
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
 
