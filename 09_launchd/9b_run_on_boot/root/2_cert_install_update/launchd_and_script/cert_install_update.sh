@@ -298,7 +298,7 @@ cert_check() {
     	# installed
         echo "homebrew is installed..."
         # checking for missing dependencies
-        for formula in openssl
+        for formula in openssl@1.1
         #for formula in 123
         do
         	if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^$formula$") == '' ]]
