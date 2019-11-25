@@ -1154,6 +1154,56 @@ env_stop_sudo() {
 
 
 ### homebrew
+# including homebrew commands in PATH
+PATH_TO_SET='/usr/local/bin:/usr/local/sbin:/usr/local/opt/openssl@1.1/bin:$PATH'
+
+env_set_default_paths() { 
+    echo "setting default paths in /etc/paths/..."   
+    sudo sh -c "cat > /etc/paths << 'EOF'
+/usr/bin
+/bin
+/usr/sbin
+/sbin
+EOF
+"
+}
+
+env_add_path_to_shell() {
+    echo "# homebrew PATH" >> "$SHELL_CONFIG"
+    echo 'export PATH="'"$PATH_TO_SET"'"' >> "$SHELL_CONFIG"
+}
+
+env_set_path_for_shell() {
+	if command -v "$SHELL_TO_CHECK" &> /dev/null
+	then
+    	# installed
+	    echo "setting path for $SHELL_TO_CHECK..."
+        if [[ ! -e "$SHELL_CONFIG" ]]
+        then
+            touch "$SHELL_CONFIG"
+            chown 501:staff "$SHELL_CONFIG"
+            chmod 600 "$SHELL_CONFIG"
+            env_add_path_to_shell
+        elif [[ $(cat "$SHELL_CONFIG" | grep "^export PATH=") != "" ]]
+        then
+            sed -i '' 's|^export PATH=.*|export PATH="'"$PATH_TO_SET"'"|' "$SHELL_CONFIG"
+        else
+            echo '' >> "$SHELL_CONFIG"
+            env_add_path_to_shell
+        fi
+        # sourcing changes for currently used shell
+        if [[ $(echo "$SHELL") == "$SHELL_TO_CHECK" ]]
+        then
+        	source "$SHELL_CONFIG"
+        else
+            :
+        fi
+	else
+		# not installed
+		echo "$SHELL_TO_CHECK is not installed, skipping to set path..."
+	fi
+}
+	
 env_get_current_command_line_tools_version() {
     CURRENT_COMMANDLINETOOLVERSION=""
     VERSION_TO_CHECK_AGAINST=10.14
@@ -1168,7 +1218,6 @@ env_get_current_command_line_tools_version() {
         :
     fi   
 }
-
 
 env_check_for_software_updates_gui() {
     # getting ids of all system preferences panes

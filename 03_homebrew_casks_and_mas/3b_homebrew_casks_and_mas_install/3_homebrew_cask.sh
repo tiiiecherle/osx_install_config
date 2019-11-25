@@ -49,7 +49,8 @@ env_command_line_tools_install_shell
 ### starting sudo
 env_start_sudo
 
-# installing homebrew without pressing enter or entering the password again
+
+### installing homebrew without pressing enter or entering the password again
 echo ''
 if command -v brew &> /dev/null
 then
@@ -64,7 +65,8 @@ else
     #env_stop_sudo
 fi
 
-# homebrew permissions
+
+### homebrew permissions
 # homebrew cache
 #sudo chown -R "$USER":staff $(brew --cache)
 sudo chown -R "$USER" $(brew --cache)
@@ -81,54 +83,43 @@ sudo chown -R "$USER" $(brew --cache)
 #	:
 #fi
 
+#echo ''
+
+
+### including homebrew commands in PATH
+# path documentation
+# see 2d_login_shell_customization.sh
+
+# setting path
 echo ''
+echo "setting PATH..."
 
-# including homebrew commands in PATH
-add_path_to_shell() {
-    echo "# homebrew PATH" >> "$SHELL_CONFIG"
-    echo 'export PATH="/usr/local/bin:/usr/local/sbin:$PATH"' >> "$SHELL_CONFIG"
-}
+# default value of variable is set in .shellscriptsrc, can be overwritten here, e.g.
+# PATH_TO_SET='/usr/local/bin:$PATH'
 
-set_path_for_shell() {
-  	if command -v "$SHELL_TO_CHECK" &> /dev/null
-    then
-        # installed
-	    echo "setting path for $SHELL_TO_CHECK..."
-        if [[ ! -e "$SHELL_CONFIG" ]]
-        then
-            touch "$SHELL_CONFIG"
-            chown 501:staff "$SHELL_CONFIG"
-            chmod 600 "$SHELL_CONFIG"
-            add_path_to_shell
-        elif [[ $(cat "$SHELL_CONFIG" | grep "^export PATH=") != "" ]]
-        then
-            sed -i '' 's|^export PATH=.*|export PATH="/usr/local/bin:/usr/local/sbin:$PATH"|' "$SHELL_CONFIG"
-        else
-            echo '' >> "$SHELL_CONFIG"
-            add_path_to_shell
-        fi
-        # sourcing changes for currently used shell
-        if [[ $(echo "$SHELL") == "$SHELL_TO_CHECK" ]]
-        then
-	        #"$SHELL" -c "source "$SHELL_CONFIG""
-	        source "$SHELL_CONFIG"
-        else
-            :
-        fi
-    else
-        # not installed
-	    echo "$SHELL_TO_CHECK is not installed, skipping to set path..."
-	fi
-}
+# setting default paths in /etc/paths
+#env_start_sudo			# already started above
+env_set_default_paths
+#env_stop_sudo			# done in trap
 
+# setting paths for bash
 SHELL_TO_CHECK="/bin/bash"
 SHELL_CONFIG="/Users/$(logname)/.bashrc"
-set_path_for_shell
+env_set_path_for_shell
 
+# setting paths for zsh
 SHELL_TO_CHECK="/bin/zsh"
 SHELL_CONFIG="/Users/$(logname)/.zshrc"
-set_path_for_shell
+env_set_path_for_shell
 
+# setting/unsetting path via launchctl
+#env_start_sudo			# already started above
+sudo launchctl config user path ''
+sudo launchctl config system path ''
+#env_stop_sudo			# done in trap
+
+
+### updating homebrew
 echo ''
 echo "updating and checking homebrew..."
 # checking installation and updating homebrew
@@ -142,20 +133,22 @@ brew upgrade
 brew cleanup 1> /dev/null
 brew doctor
 
-# cleaning up
+
+### cleaning up
 echo ''
 echo "cleaning up..."
 
 env_cleanup_all_homebrew
 
 
-# installing homebrew cask
+### installing homebrew cask
 echo ''
 echo "installing homebrew cask..."
 
 brew tap homebrew/cask
 
-# installing keepingyouawake
+
+### installing keepingyouawake
 #if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
 if [[ $(brew cask list | grep "^keepingyouawake$") != "" ]]
 then
@@ -167,10 +160,12 @@ else
     sleep 1
 fi
 
-# activating keepingyouawake
+
+### activating keepingyouawake
 env_activating_keepingyouawake
 
-# installing cask repair to contribute to homebrew casks
+
+### installing cask repair to contribute to homebrew casks
 #echo ''
 echo "installing cask-repair..."
 brew install vitorgalvao/tiny-scripts/cask-repair
@@ -186,7 +181,8 @@ brew install vitorgalvao/tiny-scripts/cask-repair
 # rm -rf /Users/"$USER"/.gem/ruby/2.6.0/
 # brew cask style
 
-# installing parallel as dependency for the other scripts
+
+### installing parallel as dependency for the other scripts
 if command -v parallel &> /dev/null
 then
     # installed
@@ -199,7 +195,8 @@ else
     #echo ''
 fi
 
-# cleaning up
+
+### cleaning up
 echo ''
 echo "cleaning up..."
 
