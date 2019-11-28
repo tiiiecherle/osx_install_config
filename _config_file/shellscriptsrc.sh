@@ -1210,10 +1210,10 @@ env_get_current_command_line_tools_version() {
     if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]    
     then
         #COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo "$MACOS_VERSION_MAJOR" | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
-        CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | awk -F'*' '/^ +\\*/ {print $2}' | grep "$MACOS_VERSION_MAJOR" | sed 's/^ *//' | tail -n1)  
+        CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | awk -F'*' '/^ +\\*/ {print $2}' | grep "$MACOS_VERSION_MAJOR" | sed 's/^ *//' | sort -n | tail -n 1)  
     elif [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
     then
-        CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | tail -n 1)
+        CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | sort -n | tail -n 1)
     else
         :
     fi   
