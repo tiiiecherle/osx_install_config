@@ -476,8 +476,8 @@ AUTOMATION_APPS=(
 "XtraFinder                                                                 Finder                      1"
 "TotalFinder.app                                                            Finder                      1"
 "Ondesoft AudioBook Converter                                               iTunes                      1"
-"EagleFiler                                                                 Mail                        1"
-"EagleFiler                                                                 Finder                      1"
+"EagleFiler                                                                 Mail.app                    1"
+"EagleFiler                                                                 Finder.app                  1"
 "witchdaemon                                                                Mail                        0"
 )
         
