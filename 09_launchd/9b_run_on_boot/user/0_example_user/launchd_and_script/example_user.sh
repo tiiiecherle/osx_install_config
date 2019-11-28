@@ -52,7 +52,7 @@ env_check_if_run_from_batch_script() {
 }
 
 env_start_error_log() {
-    local ERROR_LOG_DIR=/Users/"$loggedInUser"/Desktop/batch_error_logs
+    local ERROR_LOG_DIR=/Users/"$USER"/Desktop/batch_error_logs
     if [[ ! -e "$ERROR_LOG_DIR" ]]
     then
         local ERROR_LOG_NUM=1
