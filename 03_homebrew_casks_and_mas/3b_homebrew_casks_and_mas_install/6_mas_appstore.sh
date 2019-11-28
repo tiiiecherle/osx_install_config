@@ -232,7 +232,7 @@ mas_login_applescript() {
         
         tell application "App Store"
             try
-                delay 10
+                delay 15
         	    quit
         	end try
         end tell
