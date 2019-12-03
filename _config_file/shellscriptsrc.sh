@@ -1206,17 +1206,9 @@ env_set_path_for_shell() {
 	
 env_get_current_command_line_tools_version() {
     CURRENT_COMMANDLINETOOLVERSION=""
-    VERSION_TO_CHECK_AGAINST=10.14
-    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]    
-    then
-        #COMMANDLINETOOLVERSION=$(softwareupdate --list | grep "^[[:space:]]\{1,\}\*[[:space:]]\{1,\}Command Line Tools" | grep $(echo "$MACOS_VERSION_MAJOR" | cut -f1,2 -d'.' | sed -e 's/^[ \t]*//' | sed 's/^*//' | sed -e 's/^[ \t]*//'))
-        CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | awk -F'*' '/^ +\\*/ {print $2}' | grep "$MACOS_VERSION_MAJOR" | sed 's/^ *//' | sort -n | tail -n 1)  
-    elif [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
-    then
-        CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line (Developer|Tools)' | grep '* Label:' | awk -F':' '{print $2}' | sed 's/^ *//' | sort -n | tail -n 1)
-    else
-        :
-    fi   
+    # https://github.com/Homebrew/install/blob/master/install
+    CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line Tools' | awk -F'*' '/^ *\\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n 1)
+    #CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line Tools' | awk -F'*' '{print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n 1)
 }
 
 env_check_for_software_updates_gui() {
