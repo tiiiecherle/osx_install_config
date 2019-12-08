@@ -79,8 +79,7 @@ echo "checking if certificate is installed correctly by opening the website..."
 SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
 if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh ]]
 then
-    SERVER_IP=$(cat "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh | grep "^SERVER_IP" | awk -F '"' '{print $2}')
-    #echo "SERVER_IP_VARIABLE is $SERVER_IP_VARIABLE..."
+	. "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh
 else
     echo "script with variables not found, exiting..."
     exit
@@ -88,7 +87,7 @@ fi
 
 # on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
 #"$PATH_TO_APPS"/Safari.app
-open -a "$PATH_TO_APPS"/Safari.app https://"$SERVER_IP"
+open -a "$PATH_TO_APPS"/Safari.app https://"$DAV_SERVER"
 echo "safari has to be quit before continuing..."
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
