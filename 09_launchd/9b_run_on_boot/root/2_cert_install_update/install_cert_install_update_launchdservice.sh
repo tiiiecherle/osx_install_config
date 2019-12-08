@@ -75,10 +75,10 @@ fi
 # checking if all script dependencies are installed
 #echo ''
 echo "checking for script dependencies..."
-if [[ $(brew list | grep "^openssl$") == '' ]]
+if [[ $(brew list | grep "^openssl@1.1$") == '' ]]
 then
     echo "not all script dependencies installed, installing..."
-    env_use_password | brew install openssl
+    env_use_password | brew install openssl@1.1
 else
     echo "all script dependencies installed..."
 fi
@@ -89,10 +89,11 @@ SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_FIVE_BACK"
 if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh ]]
 then
     #"$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh
-    CERTIFICATE_NAME_VARIABLE=$(cat "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh | grep "^CERTIFICATE_NAME")
+    #CERTIFICATE_NAME_VARIABLE=$(cat "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh | grep "^CERTIFICATE_NAME")
     #echo "CERTIFICATE_NAME_VARIABLE is $CERTIFICATE_NAME_VARIABLE..."
-    SERVER_IP_VARIABLE=$(cat "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh | grep "^SERVER_IP")
+    #SERVER_IP_VARIABLE=$(cat "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh | grep "^SERVER_IP")
     #echo "SERVER_IP_VARIABLE is $SERVER_IP_VARIABLE..."
+    . "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh
 else
     echo ''
     echo "script with variables not found, exiting..."
@@ -115,8 +116,16 @@ sudo cp "$SCRIPT_DIR"/launchd_and_script/"$SCRIPT_INSTALL_NAME".sh "$SCRIPT_INST
 sudo chown -R root:wheel "$SCRIPT_INSTALL_PATH"/
 sudo chmod -R 755 "$SCRIPT_INSTALL_PATH"/
 # setting certificate variables
-sudo sed -i '' 's/CERTIFICATE_NAME=.*/'"$CERTIFICATE_NAME_VARIABLE"'/' /Library/Scripts/custom/cert_install_update.sh
-sudo sed -i '' 's/SERVER_IP=.*/'"$SERVER_IP_VARIABLE"'/' /Library/Scripts/custom/cert_install_update.sh
+sudo sed -i '' '/CERTIFICATES_TO_INSTALL=(/,/)$/{//!d;}' "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh
+for i in "${CERTIFICATES_TO_INSTALL[@]}"
+do
+    SERVER_LOCAL=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+    SERVER_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+    CERTIFICATE_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
+    #echo "LOCAL_SERVER is "$LOCAL_SERVER""
+    #echo "CERTIFICATE_NAME is "$CERTIFICATE_NAME""
+    sudo sed -i '' -e '/CERTIFICATES_TO_INSTALL=(/a\'$'\n\\\ \t"'"$(printf "%-30s %-40s %-40s\n" \"$SERVER_LOCAL\" \"$SERVER_NAME\" \"$CERTIFICATE_NAME\"\")"'' "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh
+done
 
 
 ### launchd service file

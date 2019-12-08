@@ -162,19 +162,15 @@ certificate_variable_check() {
     env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
 
     # keychain
-    KEYCHAIN="/System/Library/Keychains/SystemRootCertificates.keychain"
+    KEYCHAIN_SYSTEM="/System/Library/Keychains/SystemRootCertificates.keychain"
+    KEYCHAIN_USER="/Users/"$loggedInUser"/Library/Keychains/login.keychain"
     
     # variable for search/replace by install script
-    CERTIFICATE_NAME="FILL_IN_NAME_HERE"
-    SERVER_IP="FILL_IN_IP_HERE"
-    
-    if [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]] || [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]]
-    then
-        echo "at least one variable not set correctly, exiting..."
-        exit
-    else
-        :
-    fi
+    CERTIFICATES_TO_INSTALL=(
+    # SERVER-IP or domain				server name								certificate name						
+    ""FILL_IN_SERVER1_HERE"             "FILL_IN_SERVER_NAME1_HERE"             "FILL_IN_CERT_NAME1_HERE""
+    ""FILL_IN_SERVER2_HERE"             "FILL_IN_SERVER_NAME2_HERE"             "FILL_IN_CERT_NAME2_HERE""                 
+    )
 
 }
 
@@ -211,8 +207,7 @@ install_update_certificate() {
     else
         :
     fi
-    #echo quit | openssl s_client -showcerts -servername "$SERVER_IP" -connect "$SERVER_IP":443 2>/dev/null > /tmp/"$CERTIFICATE_NAME".crt
-    echo quit | openssl s_client -showcerts -connect "$SERVER_IP":443 2>/dev/null > /tmp/"$CERTIFICATE_NAME".crt
+    echo quit | openssl s_client -showcerts -servername "$SERVER_NAME" -connect "$SERVER_LOCAL":443 2>/dev/null > /tmp/"$CERTIFICATE_NAME".crt
 
     # add certificate to keychain and trust all
     #sudo security add-trusted-cert -d -r trustAsRoot -k "$KEYCHAIN" "/Users/$USER/Desktop/cacert.pem"
@@ -221,16 +216,27 @@ install_update_certificate() {
     #sudo security add-trusted-cert -r trustAsRoot -k "$KEYCHAIN" "/Users/$USER/Desktop/cacert.pem"
     
     # add certificate to keychain and trust ssl
-    sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
+    if [[ "$KEYCHAIN" == "$KEYCHAIN_SYSTEM" ]]
+    then
+        # needed for generally trusting the certificate and connecting via ip
+        sudo security add-trusted-cert -d -r trustAsRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN" /tmp/"$CERTIFICATE_NAME".crt
+    elif [[ "$KEYCHAIN" == "$KEYCHAIN_USER" ]]
+    then
+        # needed for connecting via name.local
+        # this seems to be just a warning: SecTrustSettingsSetTrustSettings: One or more parameters passed to a function were not valid.
+        sudo security add-trusted-cert -d -r trustRoot -p ssl -e hostnameMismatch -k "$KEYCHAIN_USER" /tmp/"$CERTIFICATE_NAME".crt 2>&1 | grep -v "parameters passed to a function"
+    else
+        :
+    fi
     
     # checking that certificate is installed, not untrusted and matches the domain
     # exporting certificate
     security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN" > /tmp/local_"$CERTIFICATE_NAME".pem
     if [[ $(security verify-cert -r /tmp/local_"$CERTIFICATE_NAME".pem -p ssl -s "$CERTIFICATE_NAME" | grep "successful") != "" ]]
     then
-        echo "the certificate is installed, trusted and working..."
+        printf '%-15s %-40s\n' "check" "the certificate is installed, trusted and working..."       
     else
-        echo "there seems to be a problem with the installation of the certificate..."
+        printf '%-15s %-40s\n' "check"  "there seems to be a problem with the installation of the certificate..."      
     fi
 
 }
@@ -325,22 +331,49 @@ cert_check() {
         exit
     fi
     
-    # giving the network some time
-    ping -c5 "$SERVER_IP" >/dev/null 2>&1
-    if [[ "$?" = 0 ]]
-    then
-        :
-    else
-        echo "server not found, waiting 30s for next try..."
-        sleep 30
-    fi
- 
-    # checking if online
-    ping -c5 "$SERVER_IP" >/dev/null 2>&1
-    if [[ "$?" = 0 ]]
-    then
-        echo "server found, checking certificates..."
+      
+    for i in "${CERTIFICATES_TO_INSTALL[@]}"
+    do
+    
+        SERVER_LOCAL=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+        SERVER_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+        CERTIFICATE_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
+        #echo "LOCAL_SERVER is "$SERVER_LOCAL""
+        #echo "CERTIFICATE_NAME is "$CERTIFICATE_NAME""
         
+        echo ''
+        #echo "checking"
+        printf '%-15s %-40s\n' "server" "$SERVER_LOCAL"
+        printf '%-15s %-40s\n' "servername" "$SERVER_NAME"
+        printf '%-15s %-40s\n' "certificate" "$CERTIFICATE_NAME"
+        
+        if [[ $(echo "$SERVER_NAME" | grep "^FILL_IN_*") != "" ]] || [[ $(echo "$SERVER_LOCAL" | grep "^FILL_IN_*") != "" ]] || [[ $(echo "$CERTIFICATE_NAME" | grep "^FILL_IN_*") != "" ]]
+        then
+            echo "at least one variable is not set correctly, skipping..."
+            continue
+        else
+            :
+        fi
+    
+        # checking if online
+        ping -c5 "$SERVER_LOCAL" >/dev/null 2>&1
+        if [[ "$?" = 0 ]]
+        then
+            printf '%-15s %-40s\n' "availability" "server found, checking certificates..."
+        else
+            printf '%-15s %-40s\n' "availability" "server not found, waiting 10s for next try..."
+            sleep 10
+            ping -c5 "$SERVER_LOCAL" >/dev/null 2>&1
+            if [[ "$?" = 0 ]]
+            then
+                printf '%-15s %-40s\n' "availability" "server found, checking certificates..."
+            else
+                printf '%-15s %-40s\n' "availability" "server not found, skipping..."
+                #echo ''
+                continue
+            fi
+        fi
+
         # server cert in pem format
         if [[ -e /tmp/server_"$CERTIFICATE_NAME".pem ]]
         then
@@ -348,43 +381,44 @@ cert_check() {
         else
             :
         fi
-        SERVER_CERT_PEM=$(echo quit | openssl s_client -connect "$SERVER_IP":443 2>/dev/null | openssl x509) &> /dev/null
+        
+        SERVER_CERT_PEM=$(echo quit | openssl s_client -servername "$SERVER_NAME" -connect "$SERVER_LOCAL":443 2>/dev/null | openssl x509) &> /dev/null
         if [[ "$?" -eq 0 ]]
         then
         
-            #echo quit | openssl s_client -connect "$SERVER_IP":443 2>/dev/null | openssl x509 > /tmp/server_"$CERTIFICATE_NAME".pem
-            #SERVER_CERT_PEM=$(cat /tmp/server_"$CERTIFICATE_NAME".pem)
-            # or
-            #true | openssl s_client -connect services.greenenergypeak.de:443 2>/dev/null | openssl x509
-            
-            # checking if certificate is installed
-            if [[ $(security find-certificate -a -c "$CERTIFICATE_NAME" "$KEYCHAIN") == "" ]]
-            then
-                echo "certificate $CERTIFICATE_NAME not found, installing..."
-                install_update_certificate
-            else
-                :
-            fi
-            
-            # local cert in pem format
-            if [[ -e /tmp/local_"$CERTIFICATE_NAME".pem ]]
-            then
-                rm -f /tmp/local_"$CERTIFICATE_NAME".pem
-            else
-                :
-            fi
-            LOCAL_CERT_PEM=$(security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN")
-            #security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN" > /tmp/local_"$CERTIFICATE_NAME".pem
-            #LOCAL_CERT_PEM=$(cat /tmp/local_"$CERTIFICATE_NAME".pem)
-    
-            # checking if update needed
-            if [[ "$SERVER_CERT_PEM" == "$LOCAL_CERT_PEM" ]]
-            then
-                echo "server certificate matches local certificate, no need to update..."
-            else
-                echo "server certificate does not match local certificate, updating..."
-                install_update_certificate
-            fi
+            for KEYCHAIN in "$KEYCHAIN_SYSTEM" "$KEYCHAIN_USER"
+            do
+                printf '%-15s %-40s\n' "keychain" "$KEYCHAIN"
+                
+                # checking if certificate is installed
+                if [[ $(security find-certificate -a -c "$CERTIFICATE_NAME" "$KEYCHAIN") == "" ]]
+                then
+                    printf '%-15s %-40s\n' "status" "certificate not found, installing..."
+                    install_update_certificate
+                else
+                    :
+                fi
+                
+                # local cert in pem format
+                if [[ -e /tmp/local_"$CERTIFICATE_NAME".pem ]]
+                then
+                    rm -f /tmp/local_"$CERTIFICATE_NAME".pem
+                else
+                    :
+                fi
+                LOCAL_CERT_PEM=$(security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN")
+                #security find-certificate -a -p -c "$CERTIFICATE_NAME" "$KEYCHAIN" > /tmp/local_"$CERTIFICATE_NAME".pem
+                #LOCAL_CERT_PEM=$(cat /tmp/local_"$CERTIFICATE_NAME".pem)
+        
+                # checking if update needed
+                if [[ "$SERVER_CERT_PEM" == "$LOCAL_CERT_PEM" ]]
+                then
+                    printf '%-15s %-40s\n' "update" "server and local certificate match, no need to update..."
+                else
+                    printf '%-15s %-40s\n' "update" "server and local certificate do not match, updating..."
+                    install_update_certificate
+                fi
+            done
             
             # cleaning up
             if [[ -e /tmp/"$CERTIFICATE_NAME".crt ]]
@@ -404,20 +438,13 @@ cert_check() {
                 rm -f /tmp/local_"$CERTIFICATE_NAME".pem
             else
                 :
-            fi  
-            
+            fi
         else
-            echo "certificate could not be loaded from server, exiting script..."
-            echo ''
-            exit
-        fi      
-        
-    else
-        echo "server not found, exiting script..."
-        echo ''
-        exit
-    fi
+            printf '%-15s %-40s\n' "status" "certificate could not be loaded from server, skipping..."
+        fi
+    done
     
+    echo ''
     echo "done ;)"
     echo ''
     
