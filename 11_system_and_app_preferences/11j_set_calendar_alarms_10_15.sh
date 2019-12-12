@@ -122,173 +122,132 @@ EOF
 	sleep 5
 	
 	
-	### identify caldav directory
-	# holiday calendar
-	CALDAV_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/ | grep ".*.caldav$")"
-	#echo "$CALDAV_DIRS"
-	for CALENDAR_TO_LOOK_FOR in gep_radicale "$USER"_icloud
+	### calendar notifications
+	echo ''
+	echo "setting calendar notifications..."
+	
+	#CALDAV_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/ | grep ".*.caldav$")"
+	CALENDAR_DIRS=$(find "$PATH_TO_CALENDARS" -name "*.calendar")
+	
+	while IFS= read -r line || [[ -n "$line" ]]
 	do
-		unset CALDAV_CALENDAR
-		while IFS= read -r line || [[ -n "$line" ]]
-		do
-		    if [[ "$line" == "" ]]; then continue; fi
-		    i="$line"
-			#echo $i
-			if [[ -e "$PATH_TO_CALENDARS"/"$i"/Info.plist ]]
+	    if [[ "$line" == "" ]]; then continue; fi
+	    i="$line"
+		#echo $i
+		if [[ -e "$i"/Info.plist ]]
+		then
+
+			ACCOUNT_DIR=$(dirname "$i")
+			#echo "ACCOUNT_DIR is "$ACCOUNT_DIR""
+			if [[ $(echo "$ACCOUNT_DIR" | grep ".*.caldav$") != "" ]]
 			then
-				if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$i"/Info.plist 2> /dev/null) != "$CALENDAR_TO_LOOK_FOR" ]]
+				if [[ -e "$ACCOUNT_DIR"/Info.plist ]]
 				then
-					:
+					ACCOUNT_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$ACCOUNT_DIR"/Info.plist 2> /dev/null)
 				else
-					CALDAV_CALENDAR="$i"
+					:
 				fi
 			else
 				:
 			fi
-		done <<< "$(printf "%s\n" "${CALDAV_DIRS[@]}")"
-		
-		if [[ "$CALDAV_CALENDAR" != "" ]]
-		then
-			echo ''
-			echo "expected caldav is ""$CALDAV_CALENDAR"""
-			CALENDAR_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/ | grep ".*.calendar$")"
-			while IFS= read -r line || [[ -n "$line" ]]
-			do
-			    if [[ "$line" == "" ]]; then continue; fi
-			    i="$line"
-				#echo $i
-				#ls "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/
-				if [[ -e "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist ]]
-				then
-					#echo $i
-					CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist 2> /dev/null)
-					#echo "$CALENDAR_TITLE"
-					
-					# calender notifications
-					if [[ "$CALENDAR_TITLE" == "$USER" ]] || [[ "$CALENDAR_TITLE" == "allgemein" ]] || [[ "$CALENDAR_TITLE" == ""$USER"_privat" ]]
-					then
-						#echo "enabling "$i"..."
-						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					elif [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$ENABLE_SERVICE_CALENDAR_NOTIFICATIONS" == "yes" ]]
-					then
-						#echo "$USER"
-						#echo "enabling "$i"..."
-						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					else
-						#echo "disabling "$i"..."
-						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					fi
-					# activating entry
-					#sleep 0.5
-					#defaults read "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist &> /dev/null
-					#sleep 0.5
-					sleep 0.1
-					
-					# enable all reminder notifications
-					IS_REMINDER=$(/usr/libexec/PlistBuddy -c 'Print TaskContainer' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
-					#echo $IS_REMINDER
-					if [[ "$IS_REMINDER" == "true" ]]
-					then
-						#echo "$CALENDAR_TITLE is a reminder..."
-						#ENTRY_TYPE="reminder"
-						ENTRY_TYPE="tasks"
-						/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-						/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist
-					else
-						#echo "$CALENDAR_TITLE is a calendar..."
-						ENTRY_TYPE="calendar"
-					fi
-					
-					sleep 0.1
-					
-					# results
-					ALARM_SET_TO_OFF=$(/usr/libexec/PlistBuddy -c "Print :AlarmsDisabled" "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
-					if [[ $ALARM_SET_TO_OFF == "true" ]]
-					then
-						NOTIFICATION_STATUS="disabled"
-					else
-						NOTIFICATION_STATUS="enabled"
-					fi
-					
-					printf "%-30s %-15s %-15s\n" "$CALENDAR_TITLE" "$ENTRY_TYPE" "$NOTIFICATION_STATUS"
+			#echo $i
+			CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$i"/Info.plist 2> /dev/null)
+			#echo "CALENDAR_TITLE is "$CALENDAR_TITLE""
+			
+			# calender notifications
+			#if [[ "$CALENDAR_TITLE" == "$USER" ]] || [[ "$CALENDAR_TITLE" == "allgemein" ]] || [[ "$CALENDAR_TITLE" == ""$USER"_privat" ]] || [[ "$CALENDAR_TITLE" == "Feiertage" ]]
+			if [[ "$CALENDAR_TITLE" == ("$USER"|"allgemein"|""$USER"_privat"|"Feiertage"|"Geburtstage") ]]
+			then
+				#echo "enabling "$i"..."
+				/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$i"/Info.plist
+				/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$i"/Info.plist
+			elif [[ "$CALENDAR_TITLE" == "service" ]] && [[ "$ENABLE_SERVICE_CALENDAR_NOTIFICATIONS" == "yes" ]]
+			then
+				#echo "$USER"
+				#echo "enabling "$i"..."
+				/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$i"/Info.plist
+				/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$i"/Info.plist
+			else
+				#echo "disabling "$i"..."
+				/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$i"/Info.plist
+				/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool true" "$i"/Info.plist
+			fi
+			# activating entry
+			#sleep 0.5
+			#defaults read "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist &> /dev/null
+			#sleep 0.5
+			sleep 0.1
+			
+			# enable all reminder notifications
+			IS_REMINDER=$(/usr/libexec/PlistBuddy -c 'Print TaskContainer' "$i"/Info.plist)
+			#echo $IS_REMINDER
+			if [[ "$IS_REMINDER" == "true" ]]
+			then
+				#echo "$CALENDAR_TITLE is a reminder..."
+				#ENTRY_TYPE="reminder"
+				ENTRY_TYPE="tasks"
+				/usr/libexec/PlistBuddy -c "Delete :AlarmsDisabled" "$i"/Info.plist
+				/usr/libexec/PlistBuddy -c "Add :AlarmsDisabled bool false" "$i"/Info.plist
+			else
+				#echo "$CALENDAR_TITLE is a calendar..."
+				ENTRY_TYPE="calendar"
+			fi
+			
+			sleep 0.1
+			
+			# results
+			ALARM_SET_TO_OFF=$(/usr/libexec/PlistBuddy -c "Print :AlarmsDisabled" "$i"/Info.plist)
+			if [[ $ALARM_SET_TO_OFF == "true" ]]
+			then
+				NOTIFICATION_STATUS="disabled"
+			else
+				NOTIFICATION_STATUS="enabled"
+			fi
+			
+			CALENDAR_TITLE_PRINT=$(printf '%s\n' "$CALENDAR_TITLE" | awk -v len=23 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+			printf "%-24s %-24s %-14s %-14s\n" "$CALENDAR_TITLE_PRINT" "$ACCOUNT_TITLE" "$ENTRY_TYPE" "$NOTIFICATION_STATUS"
 	
-					#echo ''
-				else
-					:
-				fi
-			done <<< "$(printf "%s\n" "${CALENDAR_DIRS[@]}")"
 		else
 			:
 		fi
-	done
+	done <<< "$(printf "%s\n" "${CALENDAR_DIRS[@]}")"
 	
 	
 	### disabling calendars
 	echo ''
-	for CALENDAR_TO_LOOK_FOR in "$USER"_icloud
+	#echo "disabling calendars..."
+	while IFS= read -r line || [[ -n "$line" ]]
 	do
-		unset CALDAV_CALENDAR
-		while IFS= read -r line || [[ -n "$line" ]]
-		do
-		    if [[ "$line" == "" ]]; then continue; fi
-		    i="$line"
+	    if [[ "$line" == "" ]]; then continue; fi
+	    i="$line"
+		#echo $i
+		if [[ -e "$i"/Info.plist ]]
+		then
+		
 			#echo $i
-			if [[ -e "$PATH_TO_CALENDARS"/"$i"/Info.plist ]]
+			CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$i"/Info.plist 2> /dev/null)
+			#echo "CALENDAR_TITLE is "$CALENDAR_TITLE""
+
+			# disable calendar add-on
+			if [[ "$CALENDAR_TITLE" == "add-on" ]]
 			then
-				if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$i"/Info.plist 2> /dev/null) != "$CALENDAR_TO_LOOK_FOR" ]]
-				then
-					:
-				else
-					CALDAV_CALENDAR="$i"
-				fi
+				CALENDAR_TO_DISABLE=$(/usr/libexec/PlistBuddy -c 'Print Key' "$i"/Info.plist)
+				#echo "disabling calendar "$CALENDAR_TO_DISABLE"..."
+				echo "disabling calendar "$CALENDAR_TITLE"..."
+				/usr/libexec/PlistBuddy -c "Add :DisabledCalendars dict" /Users/"$USER"/Library/Preferences/com.apple.iCal.plist 2> /dev/null 
+				/usr/libexec/PlistBuddy -c "Add :DisabledCalendars:MainWindow array" /Users/"$USER"/Library/Preferences/com.apple.iCal.plist 2> /dev/null
+				/usr/libexec/PlistBuddy -c "Add :DisabledCalendars:MainWindow:'Item 0' string "$CALENDAR_TO_DISABLE"" /Users/"$USER"/Library/Preferences/com.apple.iCal.plist
+				# activating entry
+				defaults read /Users/"$USER"/Library/Preferences/com.apple.iCal.plist &> /dev/null
+				#/usr/libexec/PlistBuddy -c "Set :DisabledCalendars:MainWindow:0 string "$CALENDAR_TO_DISABLE"" /Users/"$USER"/Library/Preferences/com.apple.iCal.plist
 			else
 				:
 			fi
-		done <<< "$(printf "%s\n" "${CALDAV_DIRS[@]}")"
-		
-		if [[ "$CALDAV_CALENDAR" != "" ]]
-		then
-			#echo ''
-			#echo "expected caldav is ""$CALDAV_CALENDAR"""
-			CALENDAR_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/ | grep ".*.calendar$")"
 			
-			while IFS= read -r line || [[ -n "$line" ]]
-			do
-			    if [[ "$line" == "" ]]; then continue; fi
-			    i="$line"
-				#echo $i
-				#ls "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/
-				if [[ -e "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist ]]
-				then
-					
-					CALENDAR_TITLE=$(/usr/libexec/PlistBuddy -c 'Print Title' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist 2> /dev/null)
-					
-					# disable calendar add-on
-					if [[ "$CALENDAR_TITLE" == "add-on" ]]
-					then
-						CALENDAR_TO_DISABLE=$(/usr/libexec/PlistBuddy -c 'Print Key' "$PATH_TO_CALENDARS"/"$CALDAV_CALENDAR"/"$i"/Info.plist)
-						echo "disabling calendar "$CALENDAR_TO_DISABLE"..."
-						/usr/libexec/PlistBuddy -c "Add :DisabledCalendars dict" /Users/"$USER"/Library/Preferences/com.apple.iCal.plist 2> /dev/null 
-						/usr/libexec/PlistBuddy -c "Add :DisabledCalendars:MainWindow array" /Users/"$USER"/Library/Preferences/com.apple.iCal.plist 2> /dev/null
-						/usr/libexec/PlistBuddy -c "Add :DisabledCalendars:MainWindow:'Item 0' string "$CALENDAR_TO_DISABLE"" /Users/"$USER"/Library/Preferences/com.apple.iCal.plist
-						# activating entry
-						defaults read /Users/"$USER"/Library/Preferences/com.apple.iCal.plist &> /dev/null
-						#/usr/libexec/PlistBuddy -c "Set :DisabledCalendars:MainWindow:0 string "$CALENDAR_TO_DISABLE"" /Users/"$USER"/Library/Preferences/com.apple.iCal.plist
-					else
-						:
-					fi
-
-				else
-					:
-				fi
-			done <<< "$(printf "%s\n" "${CALENDAR_DIRS[@]}")"
 		else
 			:
 		fi
-	done
+	done <<< "$(printf "%s\n" "${CALENDAR_DIRS[@]}")"	
 	
 	
 	### deleting cache
