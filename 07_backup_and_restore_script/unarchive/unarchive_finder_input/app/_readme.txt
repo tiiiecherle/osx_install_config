@@ -1,0 +1,1 @@
+open with /Applications/Automator.app

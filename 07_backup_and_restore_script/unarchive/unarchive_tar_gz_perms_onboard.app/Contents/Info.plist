@@ -5,7 +5,7 @@
 	<key>CFBundleAllowMixedLocalizations</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
+	<string>en</string>
 	<key>CFBundleExecutable</key>
 	<string>applet</string>
 	<key>CFBundleIconFile</key>
@@ -64,9 +64,9 @@
 		<key>name</key>
 		<string>ScriptWindowState</string>
 		<key>positionOfDivider</key>
-		<real>372</real>
+		<real>528</real>
 		<key>savedFrame</key>
-		<string>20 307 700 671 0 0 1680 1027 </string>
+		<string>20 194 842 855 0 0 1792 1097 </string>
 		<key>selectedTab</key>
 		<string>description</string>
 	</dict>

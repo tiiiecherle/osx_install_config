@@ -7,7 +7,7 @@
 	<key>AMStayOpen</key>
 	<false/>
 	<key>BuildMachineOSBuild</key>
-	<string>17A405001</string>
+	<string>18A391019</string>
 	<key>CFBundleAllowMixedLocalizations</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -17,10 +17,8 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>gpg</string>
+				<string>*</string>
 			</array>
-			<key>CFBundleTypeIconFile</key>
-			<string>document.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Automator workflow file</string>
 			<key>CFBundleTypeOSTypes</key>
@@ -54,23 +52,23 @@
 	<key>CFBundleURLTypes</key>
 	<array/>
 	<key>CFBundleVersion</key>
-	<string>444.42</string>
+	<string>492</string>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>
-	<string>10P70r</string>
+	<string>11M392v</string>
 	<key>DTPlatformName</key>
 	<string>macosx</string>
 	<key>DTPlatformVersion</key>
-	<string>10.14</string>
+	<string>10.15</string>
 	<key>DTSDKBuild</key>
-	<string>18F82</string>
+	<string>19C38</string>
 	<key>DTSDKName</key>
-	<string>macosx10.14internal</string>
+	<string>macosx10.15internal</string>
 	<key>DTXcode</key>
-	<string>1020</string>
+	<string>1100</string>
 	<key>DTXcodeBuild</key>
-	<string>10P70r</string>
+	<string>11M392v</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.6</string>
 	<key>LSUIElement</key>
