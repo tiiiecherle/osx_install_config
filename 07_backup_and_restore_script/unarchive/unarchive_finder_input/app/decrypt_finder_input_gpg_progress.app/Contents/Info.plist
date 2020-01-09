@@ -17,8 +17,10 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>*</string>
+				<string>gpg</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Automator workflow file</string>
 			<key>CFBundleTypeOSTypes</key>
