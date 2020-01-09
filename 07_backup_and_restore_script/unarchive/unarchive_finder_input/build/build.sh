@@ -73,7 +73,14 @@ do
 	
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html
 	xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
-	
+	# setting icon for files
+	/usr/libexec/PlistBuddy "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Info.plist -c 'Add CFBundleDocumentTypes:0:CFBundleTypeIconFile string document.icns'
+	# associating with open with dialog
+	/usr/libexec/PlistBuddy "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Info.plist -c 'Set CFBundleDocumentTypes:0:CFBundleTypeExtensions:0 gpg'
+	# bundle identifier
+	#NEW_IDENTIFIER=$(/usr/libexec/PlistBuddy "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Info.plist -c 'Print CFBundleIdentifier' | rev | cut -f1 -d. | rev)
+	#/usr/libexec/PlistBuddy "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Info.plist -c 'Set CFBundleIdentifier '"$NEW_IDENTIFIER"''
+		
 	echo copying app to dmg...
 	#cp -a "$BUILD_DIR"/app/"$APP_NAME".app "$PATH_TO_APPS"/
 	mkdir -p "$BUILD_DIR"/dmg/"$APP_NAME"/
