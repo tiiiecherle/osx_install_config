@@ -22,6 +22,12 @@ csrutil clear
 # allow virtualbox testing or beta version installation
 spctl kext-consent add VB5E2TV963
 
+# check entries
+spctl kext-consent list
+
+# remove entry
+#spctl kext-consent remove VB5E2TV963
+
 
 
 ### allow usb boot
