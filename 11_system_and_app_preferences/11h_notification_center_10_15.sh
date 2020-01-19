@@ -73,7 +73,7 @@ applications_to_set_values=(
 ""$PATH_TO_APPS"/Signal.app																	41943375"
 ""$PATH_TO_APPS"/pdf_200dpi_shrink.app/Contents/custom_files/pdf_shrink_done.app			41943375"
 ""$PATH_TO_SYSTEM_APPS"/Reminders.app														41943383"
-""$PATH_TO_SYSTEM_APPS"/Calendar.app														41943375"
+""$PATH_TO_SYSTEM_APPS"/Calendar.app														41943383"
 ""$PATH_TO_SYSTEM_APPS"/Notes.app															41943375"
 ""$PATH_TO_SYSTEM_APPS"/Photos.app															41943375"
 ""$PATH_TO_APPS"/EagleFiler.app																41943375"
