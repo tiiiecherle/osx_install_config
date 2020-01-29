@@ -40,11 +40,11 @@ fi
 
 ###
 
-reset_safari_download_location () {
+reset_safari_download_location() {
 
     sudo -H -u "$loggedInUser" defaults write com.apple.Safari AlwaysPromptForDownloadFolder -bool false
 
-    if [[  -d "/Users/"$loggedInUser"/Desktop/files" ]]
+    if [[ -d "/Users/"$loggedInUser"/Desktop/files" ]]
     then
         #sudo -H -u "$loggedInUser" mkdir -p "/Users/$loggedInUser/Desktop/files"
         #mkdir -p "~/Desktop/files"
@@ -58,7 +58,7 @@ reset_safari_download_location () {
     #echo "$loggedInUser" > /Users/"$loggedInUser"/Desktop/login_script.txt
         
 }
-#reset_safari_download_location
+reset_safari_download_location
 
 
 # workaround for macos bug that prevents /etc/fstab entries to work for encrypted apfs volumes
