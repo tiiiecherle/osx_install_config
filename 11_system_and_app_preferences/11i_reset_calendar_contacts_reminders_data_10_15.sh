@@ -245,7 +245,7 @@ EOF
 		
 		
 		### deleting cache
-		deleting_cache() {
+		delete_cache() {
 			echo ''
 			echo "cleaning calendar cache..."
 			# without this the changes will not take effect
@@ -260,21 +260,24 @@ EOF
 	
 		
 		### making sure changes take effect
-		echo ''
-		echo "stopping calendar agent..."
-		#osascript -e 'tell application "System Events" to log out'
-		killall Calendar &> /dev/null
-		#killall CalendarAgent
-		#killall remindd
-		# launchctl list
-		launchctl unload /System/Library/LaunchAgents/com.apple.CalendarAgent.plist 2>&1 | grep -v "in progress"
-		sleep 2
-		#deleting_cache
-		sleep 2
-		echo ''
-		echo "starting calendar agent..."
-		launchctl load /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
-		sleep 2
+		restart_service() {
+			echo ''
+			echo "stopping calendar agent..."
+			#osascript -e 'tell application "System Events" to log out'
+			killall Calendar &> /dev/null
+			#killall CalendarAgent
+			#killall remindd
+			# launchctl list
+			launchctl unload /System/Library/LaunchAgents/com.apple.CalendarAgent.plist 2>&1 | grep -v "in progress"
+			sleep 2
+			#delete_cache
+			sleep 2
+			echo ''
+			echo "starting calendar agent..."
+			launchctl load /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
+			sleep 2
+		}
+		restart_service
 		
 		# this time has to be long enough to download the needed data or some preferences (e.g. setting notifications) will not work in the next script
 		WAITING_TIME=90
@@ -293,6 +296,74 @@ EOF
 				:
 			fi
 		done
+		
+		
+		### enabling delegates
+		enable_delegates() {
+			# cache cleaning and restarting service has to be run after this to work
+			echo ''
+			echo "enabling delegates..."
+			INFO_PLISTS=$(find "$PATH_TO_CALENDARS" -name "Info.plist" -mindepth 2 -maxdepth 2)
+			# leaving DELEGATES_TO_ENABLE empty enables all delegates
+			DELEGATES_TO_ENABLE=(
+			""
+			)
+			while IFS= read -r line || [[ -n "$line" ]]
+			do
+		    	if [[ "$line" == "" ]]; then continue; fi
+		    	i="$line"
+				#echo $i
+				if [[ $(/usr/libexec/PlistBuddy -c 'Print Delegate' "$i" 2> /dev/null) == "true" ]]
+				then
+					#echo "yes"
+					DELEGATE_IN_PLIST=$(/usr/libexec/PlistBuddy -c 'Print Title' "$i")
+					if [[ "$DELEGATES_TO_ENABLE" == "" ]]
+					then
+						# enable all delegates
+						/usr/libexec/PlistBuddy -c "Set :Enabled true" "$i"
+						echo "enabled delegate "$DELEGATE_IN_PLIST"..."
+					else
+						# enable only specified delegates
+						while IFS= read -r line || [[ -n "$line" ]]
+						do
+		    				if [[ "$line" == "" ]]; then continue; fi
+		    				DELEGATE="$line"
+							#echo $i	
+							if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$i" 2> /dev/null) == "$DELEGATE" ]]
+							then
+								/usr/libexec/PlistBuddy -c "Set :Enabled true" "$i"
+								echo "enabled delegate "$DELEGATE_IN_PLIST"..."
+							else
+								echo "disabled delegate "$DELEGATE_IN_PLIST"..."
+							fi
+						done <<< "$(printf "%s\n" "${DELEGATES_TO_ENABLE[@]}")"
+					fi
+				else
+					#echo "no"
+				fi
+			done <<< "$(printf "%s\n" "${INFO_PLISTS[@]}")"
+			delete_cache
+			restart_service
+			
+			# waiting for delegates to be loaded
+			WAITING_TIME=30
+			NUM1=0
+			echo '' && echo ''
+			while [[ "$NUM1" -le "$WAITING_TIME" ]]
+			do 
+				NUM1=$((NUM1+1))
+				if [[ "$NUM1" -le "$WAITING_TIME" ]]
+				then
+					#echo "$NUM1"
+					sleep 1
+					tput cuu 1 && tput el
+					echo "waiting $((WAITING_TIME-NUM1)) seconds for the delegates to get loaded..."
+				else
+					:
+				fi
+			done
+		}
+		enable_delegates
 		
 		
 		### enabling KWs and holiday calendar in preferences
@@ -321,6 +392,27 @@ EOF
 		
 		# disable siri analytics, suggestions and learning
 		# done in macos_preferences and separate script
+		
+		opening_calendar() {
+		echo ''
+		echo "opening calendar..."
+		osascript <<EOF	
+				tell application "Calendar"
+					launch
+					#delay 3
+					#activate
+					#delay 3
+				end tell
+				
+				delay 3
+				
+				tell application "Calendar"
+					activate
+				end tell
+				
+EOF
+		} 
+		#opening_calendar
 
 		echo ''
 		echo "done ;)"
