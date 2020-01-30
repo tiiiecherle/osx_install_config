@@ -266,21 +266,24 @@ EOF
 	
 	
 	### making sure changes take effect
-	echo ''
-	echo "stopping calendar agent..."
-	#osascript -e 'tell application "System Events" to log out'
-	killall Calendar &> /dev/null
-	#killall CalendarAgent
-	#killall remindd
-	# launchctl list
-	launchctl unload /System/Library/LaunchAgents/com.apple.CalendarAgent.plist 2>&1 | grep -v "in progress"
-	sleep 2
-	deleting_cache
-	sleep 2
-	echo ''
-	echo "starting calendar agent..."
-	launchctl load /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
-	sleep 2
+	restart_service() {
+		echo ''
+		echo "stopping calendar agent..."
+		#osascript -e 'tell application "System Events" to log out'
+		killall Calendar &> /dev/null
+		#killall CalendarAgent
+		#killall remindd
+		# launchctl list
+		launchctl unload /System/Library/LaunchAgents/com.apple.CalendarAgent.plist 2>&1 | grep -v "in progress"
+		sleep 2
+		#delete_cache
+		sleep 2
+		echo ''
+		echo "starting calendar agent..."
+		launchctl load /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
+		sleep 2
+	}
+	restart_service
 	
 	echo ''
 	echo "color for holiday and week number calendar is #CAABE4"
