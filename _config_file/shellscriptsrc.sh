@@ -1462,91 +1462,64 @@ env_rename_files_and_directories() {
         
             if [[ -d "$RENAME_DIR" ]]
             then
-        
-                RENAMINGS=(
+                
                 # ä, Ä, ö, Ö, ü, Ü, ß first
                 # https://www.utf8-zeichentabelle.de/unicode-utf8-table.pl?start=64&number=1024&names=-&utf8=string-literal
-                "export SUBSTITUTIONCHARACTERS='ä'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --force 's/ä/ae/g;s/ö/oe/g;s/ü/ue/g;s/Ä/Ae/g;s/Ö/Oe/g;s/Ü/Ue/g;s/ß/ss/g;s/\x61\xcc\x88/ae/g;s/\x6f\xcc\x88/oe/g;s/\x75\xcc\x88/ue/g;s/\x41\xcc\x88/AE/g;s/\x4f\xcc\x88/OE/g;s/\x55\xcc\x88/UE/g;'"
+                find "$RENAME_DIR" -print0 | xargs -0 rename --force 's/ä/ae/g;s/ö/oe/g;s/ü/ue/g;s/Ä/Ae/g;s/Ö/Oe/g;s/Ü/Ue/g;s/ß/ss/g;s/\x61\xcc\x88/ae/g;s/\x6f\xcc\x88/oe/g;s/\x75\xcc\x88/ue/g;s/\x41\xcc\x88/AE/g;s/\x4f\xcc\x88/OE/g;s/\x55\xcc\x88/UE/g;'
+                
                 # sanitizing (problematic if whitespace in path to file or folder)
-                #"export SUBSTITUTIONCHARACTERS='sanitize'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --sanitize --keep-extension"
-                # all ocurrences of é
-                "export SUBSTITUTIONCHARACTERS='é'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all 'é' 'e'"
-                # all ocurrences of commas
-                "export SUBSTITUTIONCHARACTERS=','; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ',' '_'"
-                # all ocurrences of \
-                "export SUBSTITUTIONCHARACTERS='\'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '\' '_'"
-                # all ocurrences of »
-                "export SUBSTITUTIONCHARACTERS='»'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '»' '_'"
-                # all ocurrences of «
-                "export SUBSTITUTIONCHARACTERS='«'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '«' '_'"
-                # all ocurrences of [
-                "export SUBSTITUTIONCHARACTERS='['; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '[' '_'"
-                # all ocurrences of ]
-                "export SUBSTITUTIONCHARACTERS=']'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ']' '_'"
-                # all ocurrences of (
-                "export SUBSTITUTIONCHARACTERS='('; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '(' '_'"
-                # all ocurrences of )
-                "export SUBSTITUTIONCHARACTERS=')'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ')' '_'"
-                # all ocurrences of +
-                "export SUBSTITUTIONCHARACTERS='+'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '+' '_'"
-                # all ocurrences of %
-                "export SUBSTITUTIONCHARACTERS='%'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '%' '_'"
-                # all ocurrences of @
-                "export SUBSTITUTIONCHARACTERS='@'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '@' '_'"
-                # all ocurrences of #
-                "export SUBSTITUTIONCHARACTERS='#'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '#' '_'"
-                # all ocurrences of ®
-                "export SUBSTITUTIONCHARACTERS='®'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '®' '_'"
-                # all ocurrences of ø
-                "export SUBSTITUTIONCHARACTERS='ø'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all 'ø' '_'"
-                # all ocurrences of ~
-                "export SUBSTITUTIONCHARACTERS='~'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '~' '_'"
-                # all ocurrences of ·
-                "export SUBSTITUTIONCHARACTERS='·'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '·' '_'"
-                # all ocurrences of •
-                "export SUBSTITUTIONCHARACTERS='•'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '•' '_'"
-                # all ocurrences of |
-                "export SUBSTITUTIONCHARACTERS='|'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '|' '_'"
-                # all ocurrences of ï
-                "export SUBSTITUTIONCHARACTERS='ï'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all 'ï' '_'"
-                # all ocurrences of ›
-                "export SUBSTITUTIONCHARACTERS='›'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '›' '_'"
-                # all ocurrences of …
-                "export SUBSTITUTIONCHARACTERS='…'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '…' '_'"
-                # all ocurrences of –
-                "export SUBSTITUTIONCHARACTERS='–'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '–' '_'"
-                # all ocurrences of — # is not the same - than before
-                "export SUBSTITUTIONCHARACTERS='—'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '—' '_'"
-                # all ocurrences of ’
-                "export SUBSTITUTIONCHARACTERS='’'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '’' '_'"
-                # all ocurrences of ‘
-                "export SUBSTITUTIONCHARACTERS='‘'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '‘' '_'"
-                # all ocurrences of ?
-                "export SUBSTITUTIONCHARACTERS='?'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '?' '_'"
-                # all ocurrences of “
-                "export SUBSTITUTIONCHARACTERS='“'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '“' '_'"
-                # all ocurrences of ”
-                "export SUBSTITUTIONCHARACTERS='”'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '”' '_'"
-                # all ocurrences of '
-                "export SUBSTITUTIONCHARACTERS=''\'''; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ''\''' '_'"
-                # all ocurrences of whitespaces
-                "export SUBSTITUTIONCHARACTERS=' '; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all ' ' '_'"
-                # all ocurrences of two or more __ substituted to a single _
-                "export SUBSTITUTIONCHARACTERS='__'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '__' '_'"
-                # all ocurrences of _.
-                "export SUBSTITUTIONCHARACTERS='_.'; find "'"$RENAME_DIR"'" -print0 | xargs -0 rename --subst-all '_.' '.'"
-                )
-        
-                for i in "${RENAMINGS[@]}"; do
+                #find "$RENAME_DIR" -print0 | xargs -0 rename --sanitize --keep-extension"
+                
+                for RENAME_VAR in , » « '(' ')' '\[' '\]' + % @ ® ø · • › … – — ’ ‘ “ ” é ï Ì € Ë â Â ¬ ° ¹ º š Œ ¶ ¼ Æ ƒ ˆ † '\=' '\!' '\|' '\#' '\\~' '\"' '\?' '\¸' '\' '\&' '\§' '\$' '\%' ' ' '\\' ''\''' __
+                do
                     NUM1=0
-                    NUM1=$((NUM1+1))
-                    while [[ $(eval $i 2>&1 | tee) != "" ]]
+                    #
+                    if [[ "$RENAME_VAR" == '\\' ]]
+                    then
+                        RENAME_VAR1="$RENAME_VAR"
+                        RENAME_VAR1=\'"$RENAME_VAR1"\'
+                    elif [[ "$RENAME_VAR" == ''\''' ]]
+                    then
+                        RENAME_VAR1="$RENAME_VAR"
+                        RENAME_VAR1=\'\'\\"$RENAME_VAR1"\'\'
+                    else
+                        RENAME_VAR1=$(echo "$RENAME_VAR" | sed s/\\\\//)
+                        RENAME_VAR1=\'"$RENAME_VAR1"\'
+                    fi
+                    RENAME_VAR1=$(eval echo "$RENAME_VAR1")
+                    #
+                    while [[ $(find "$RENAME_DIR" -regex ".*$RENAME_VAR.*") != "" ]]
                     do
                         NUM1=$((NUM1+1))
-                        eval $i 2>&1 | tee
+                        find "$RENAME_DIR" -print0 | xargs -0 rename --subst-all "$RENAME_VAR1" '_'
                     done
-                    eval $i
-                    echo "finished renaming $SUBSTITUTIONCHARACTERS with $NUM1 run(s) ;)"
+                    if [[ "$NUM1" == 0 ]]
+                    then
+                        :
+                    else
+                        echo "finished renaming $RENAME_VAR1 with $NUM1 run(s) ;)"
+                    fi                
+                done
+                
+                for RENAME_VAR in '\.\.\.' '\.\.' '\_\.'
+                do
+                    NUM1=0
+                    #
+                    RENAME_VAR1=$(echo "$RENAME_VAR" | sed s/\\\\//g)
+                    RENAME_VAR1=\'"$RENAME_VAR1"\'
+                    RENAME_VAR1=$(eval echo "$RENAME_VAR1")
+                    #
+                    while [[ $(find "$RENAME_DIR" -regex ".*$RENAME_VAR.*") != "" ]]
+                    do
+                        NUM1=$((NUM1+1))
+                        find "$RENAME_DIR" -print0 | xargs -0 rename --subst-all "$RENAME_VAR1" '.'
+                    done
+                    if [[ "$NUM1" == 0 ]]
+                    then
+                        :
+                    else
+                        echo "finished renaming $RENAME_VAR1 with $NUM1 run(s) ;)"
+                    fi
                 done
         
             else
