@@ -1470,55 +1470,55 @@ env_rename_files_and_directories() {
                 # sanitizing (problematic if whitespace in path to file or folder)
                 #find "$RENAME_DIR" -print0 | xargs -0 rename --sanitize --keep-extension"
                 
-                for RENAME_VAR in , » « '(' ')' '\[' '\]' + % @ ® ø · • › … – — ’ ‘ “ ” é ï Ì € Ë â Â ¬ ° ¹ º š Œ ¶ ¼ Æ ƒ ˆ † '\=' '\!' '\|' '\#' '\\~' '\"' '\?' '\¸' '\' '\&' '\§' '\$' '\%' ' ' '\\' ''\''' __
+                for RENAME_VAR_REGEX in , » « '(' ')' '\[' '\]' + % @ ® ø · • › … – — ’ ‘ “ ” é ï Ì € Ë â Â ¬ ° ¹ º š Œ ¶ ¼ Æ ƒ ˆ † '\=' '\!' '\|' '\#' '\\~' '\"' '\?' '\¸' '\' '\&' '\§' '\$' '\%' ' ' '\\' ''\''' __
                 do
                     NUM1=0
                     #
-                    if [[ "$RENAME_VAR" == '\\' ]]
+                    if [[ "$RENAME_VAR_REGEX" == '\\' ]]
                     then
-                        RENAME_VAR1="$RENAME_VAR"
-                        RENAME_VAR1=\'"$RENAME_VAR1"\'
-                    elif [[ "$RENAME_VAR" == ''\''' ]]
+                        RENAME_VAR="$RENAME_VAR_REGEX"
+                        RENAME_VAR=\'"$RENAME_VAR"\'
+                    elif [[ "$RENAME_VAR_REGEX" == ''\''' ]]
                     then
-                        RENAME_VAR1="$RENAME_VAR"
-                        RENAME_VAR1=\'\'\\"$RENAME_VAR1"\'\'
+                        RENAME_VAR="$RENAME_VAR_REGEX"
+                        RENAME_VAR=\'\'\\"$RENAME_VAR"\'\'
                     else
-                        RENAME_VAR1=$(echo "$RENAME_VAR" | sed s/\\\\//)
-                        RENAME_VAR1=\'"$RENAME_VAR1"\'
+                        RENAME_VAR=$(echo "$RENAME_VAR_REGEX" | sed s/\\\\//)
+                        RENAME_VAR=\'"$RENAME_VAR"\'
                     fi
-                    RENAME_VAR1=$(eval echo "$RENAME_VAR1")
+                    RENAME_VAR=$(eval echo "$RENAME_VAR")
                     #
-                    while [[ $(find "$RENAME_DIR" -regex ".*$RENAME_VAR.*") != "" ]]
+                    while [[ $(find "$RENAME_DIR" -regex ".*$RENAME_VAR_REGEX.*") != "" ]]
                     do
                         NUM1=$((NUM1+1))
-                        find "$RENAME_DIR" -print0 | xargs -0 rename --subst-all "$RENAME_VAR1" '_'
+                        find "$RENAME_DIR" -print0 | xargs -0 rename --subst-all "$RENAME_VAR" '_'
                     done
                     if [[ "$NUM1" == 0 ]]
                     then
                         :
                     else
-                        echo "finished renaming $RENAME_VAR1 with $NUM1 run(s) ;)"
+                        echo "finished renaming $RENAME_VAR with $NUM1 run(s) ;)"
                     fi                
                 done
                 
-                for RENAME_VAR in '\.\.\.' '\.\.' '\_\.'
+                for RENAME_VAR_REGEX in '\.\.\.' '\.\.' '\_\.'
                 do
                     NUM1=0
                     #
-                    RENAME_VAR1=$(echo "$RENAME_VAR" | sed s/\\\\//g)
-                    RENAME_VAR1=\'"$RENAME_VAR1"\'
-                    RENAME_VAR1=$(eval echo "$RENAME_VAR1")
+                    RENAME_VAR=$(echo "$RENAME_VAR_REGEX" | sed s/\\\\//g)
+                    RENAME_VAR=\'"$RENAME_VAR"\'
+                    RENAME_VAR=$(eval echo "$RENAME_VAR")
                     #
-                    while [[ $(find "$RENAME_DIR" -regex ".*$RENAME_VAR.*") != "" ]]
+                    while [[ $(find "$RENAME_DIR" -regex ".*$RENAME_VAR_REGEX.*") != "" ]]
                     do
                         NUM1=$((NUM1+1))
-                        find "$RENAME_DIR" -print0 | xargs -0 rename --subst-all "$RENAME_VAR1" '.'
+                        find "$RENAME_DIR" -print0 | xargs -0 rename --subst-all "$RENAME_VAR" '.'
                     done
                     if [[ "$NUM1" == 0 ]]
                     then
                         :
                     else
-                        echo "finished renaming $RENAME_VAR1 with $NUM1 run(s) ;)"
+                        echo "finished renaming $RENAME_VAR with $NUM1 run(s) ;)"
                     fi
                 done
         
