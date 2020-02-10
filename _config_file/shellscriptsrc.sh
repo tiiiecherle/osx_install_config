@@ -1470,7 +1470,7 @@ env_rename_files_and_directories() {
                 # sanitizing (problematic if whitespace in path to file or folder)
                 #find "$RENAME_DIR" -print0 | xargs -0 rename --sanitize --keep-extension"
                 
-                for RENAME_VAR_REGEX in , » « '(' ')' '\[' '\]' + % @ ® ø · • › … – — ’ ‘ “ ” é ï Ì € Ë â Â ¬ ° ¹ º š Œ ¶ ¼ Æ ƒ ˆ † '\=' '\!' '\|' '\#' '\\~' '\"' '\?' '\¸' '\' '\&' '\§' '\$' '\%' ' ' '\\' ''\''' __
+                for RENAME_VAR_REGEX in , '<' '>' » « '(' ')' '\[' '\]' + % @ ® ø · • › … – — ’ ‘ “ ” é ï Ì € Ë â Â ¬ ° ¹ º š Œ ¶ ¼ Æ ƒ ˆ † '\=' '\!' '\|' '\#' '\\~' '\"' '\?' '\¸' '\' '\&' '\§' '\$' '\%' ' ' '\\' ''\''' __
                 do
                     NUM1=0
                     #
@@ -1501,7 +1501,7 @@ env_rename_files_and_directories() {
                     fi                
                 done
                 
-                for RENAME_VAR_REGEX in '\.\.\.' '\.\.' '\_\.'
+                for RENAME_VAR_REGEX in '\.\.\.' '\_\.' '\.\.'
                 do
                     NUM1=0
                     #
