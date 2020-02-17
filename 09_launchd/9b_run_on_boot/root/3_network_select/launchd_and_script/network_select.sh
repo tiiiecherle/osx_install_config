@@ -229,7 +229,20 @@ set_vbox_network_device() {
                 for VBOX in $(sudo -H -u "$loggedInUser" VBoxManage list vms | awk -F'"|"' '{print $2}')
                 do
                     echo "setting virtualbox network to "$DEVICE_ID" for vbox "$VBOX"..."
+                    
                     sudo -H -u "$loggedInUser" VBoxManage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$DEVICE_ID"
+                    sleep 1
+                    
+                    if [[ $(sudo -H -u "$loggedInUser" VBoxManage showvminfo "$VBOX" --machinereadable | grep bridgeadapter1 | grep "$DEVICE_ID") == "" ]]
+                    then
+                        echo "setting virtualbox network to "$DEVICE_ID" for vbox "$VBOX"..."
+                        DEVICE_ID=$(sudo -H -u "$loggedInUser" VBoxManage list bridgedifs | grep "^Name:" | grep "$DEVICE_ID" | cut -d':' -f2- | sed -e 's/^[ \t]*//')
+                        sudo -H -u "$loggedInUser" VBoxManage modifyvm "$VBOX" --nic1 bridged --bridgeadapter1 "$DEVICE_ID"
+                        sleep 1
+                    else
+                        :
+                    fi
+                        
                 done
             else
                 echo ""$DEVICE"_DEVICE_ID is empty or has a wrong format..."
@@ -342,20 +355,17 @@ network_select() {
                 echo "location "$ETHERNET_LOCATION" already enabled..."
                 echo ''
                 disable_wlan_device
-                DEVICE="ETHERNET"
-                DEVICE_ID="$ETHERNET_DEVICE_ID"
-                set_vbox_network_device
             else
                 echo "changing to location "$ETHERNET_LOCATION"..."
                 echo '' 
                 sudo networksetup -switchtolocation "$ETHERNET_LOCATION"
                 disable_wlan_device
                 printf '\n\n'
-                sleep 6
-                DEVICE="ETHERNET"
-                DEVICE_ID="$ETHERNET_DEVICE_ID"
-                set_vbox_network_device
+                sleep 10
             fi
+            DEVICE="ETHERNET"
+            DEVICE_ID="$ETHERNET_DEVICE_ID"
+            set_vbox_network_device
         else
             :
         fi
@@ -379,20 +389,17 @@ network_select() {
                     echo "location "$WLAN_LOCATION" already enabled..."
                     echo ''
                     enable_wlan_device
-                    DEVICE="WLAN"
-                    DEVICE_ID="$WLAN_DEVICE_ID"
-                    set_vbox_network_device
                 else
                     echo "changing to location "$WLAN_LOCATION"..."
                     echo ''
                     sudo networksetup -switchtolocation "$WLAN_LOCATION"
                     enable_wlan_device
                     printf '\n\n'
-                    sleep 6
-                    DEVICE="WLAN"
-                    DEVICE_ID="$WLAN_DEVICE_ID"
-                    set_vbox_network_device
+                    sleep 10
                 fi
+                DEVICE="WLAN"
+                DEVICE_ID="$WLAN_DEVICE_ID"
+                set_vbox_network_device
             else
                 :
             fi
