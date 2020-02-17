@@ -56,8 +56,8 @@ echo "setting security and automation permissions..."
 # macos versions 10.14 and up
 AUTOMATION_APPS=(
 # source app name							automated app name										    allowed (1=yes, 0=no)
-"$SOURCE_APP_NAME                           System Preferences                                         	1"
-"$SOURCE_APP_NAME                           System Events                                           	1"
+"$SOURCE_APP_NAME   	                    System Preferences                                         	1"
+"$SOURCE_APP_NAME	                       	System Events                                           	1"
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 #echo ''
@@ -131,7 +131,7 @@ end tell
 EOF
 
 # waiting for the applescript settings to be applied to the preferences file to make the script work
-sleep 10
+sleep 5
 
 }
 # only use the function if the spotlight preferences shall be reset completely
@@ -199,34 +199,7 @@ sleep 1
 defaults read ~/Library/Preferences/com.apple.Spotlight.plist &> /dev/null
 sleep 1
 
-# another way of stopping indexing AND searching for a volume (very helpful for network volumes) is putting an empty file ".metadata_never_index"
-# in the root directory of the volume and run "mdutil -E /Volumes/*" afterwards, check if it worked with sudo mdutil -s /Volumes/*
-# to turn indexing back on delete ".metadata_never_index" on the volume run mdutil -i followed by mdutil -E for that volume
-#sudo touch /Volumes/VOLUMENAME/.metadata_never_index
-
-# stop indexing before rebuilding the index
-#killall mds &> /dev/null
-
-# listing spotlight folder content
-#sudo ls -a -l /.Spotlight-V100
-
-# deleting spotlight indexes folder
-echo ''
-echo "removing the Spotlight index files..."
-#if [[ -e /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/.Spotlight-V100 ]]
-#then
-#	echo ''
-#	echo "cleaning spotlight index..."
-#	sudo find /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/.Spotlight-V100 -mindepth 1 -maxdepth 1 -name "Store*" -print0 | xargs -0 sudo rm -rf
-#	#sudo rm -rf /private/var/db/Spotlight-V100/Volumes/*
-#else
-#	:
-#fi
-# using /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/ with -X does not work
-sudo mdutil -X /
-echo ''
-
-# stop indexing for some volumes which will not be indexed again
+# mounting system as read/write until next reboot
 VERSION_TO_CHECK_AGAINST=10.14
 if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
 then
@@ -237,7 +210,81 @@ else
 	env_use_password | sudo mount -uw /
 	sleep 1
 fi
-sudo defaults write /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes/office" "/Volumes/extra" "/Volumes/scripts"
+
+# another way of stopping indexing AND searching for a volume (very helpful for network volumes) is putting an empty file ".metadata_never_index"
+# in the root directory of the volume and run "mdutil -E /VOLUMENAME" afterwards, check if it worked with sudo mdutil -s /VOLUMENAME
+# to turn indexing back on delete ".metadata_never_index" on the volume run mdutil -i followed by mdutil -E for that volume
+#sudo touch /VOLUMENAME/.metadata_never_index
+
+SPOTLIGHT_FOLDER_CONFIG="/Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/System/Volumes/Data/.Spotlight-V100"
+SPOTLIGHT_FOLDER="/private/var/db/Spotlight-V100"
+SPOTLIGHT_INDEX_FOLDERS=(
+"$SPOTLIGHT_FOLDER_CONFIG"
+"$SPOTLIGHT_FOLDER"
+)
+SPOTLIGHT_VOLUMES=$(df -Hl | tail -n +2 | awk '{print $NF}' | grep -v "var\/vm" | grep -v "\/Volumes\/macintosh_hd*")
+run_spotlight_command() {
+	if [[ "$SPOTLIGHT_COMMAND" == "" ]]
+	then
+		echo "SPOTLIGHT_COMMAND is empty, skipping..."
+	else
+		while IFS= read -r line || [[ -n "$line" ]]
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+		    SPOTLIGHT_VOLUME="$line"
+		    #echo "$SPOTLIGHT_VOLUME"
+		    #eval sudo "${COMMAND1}" "$SPOTLIGHT_VOLUME"
+			"$SHELL" -c ""${SPOTLIGHT_COMMAND}" /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME""$SPOTLIGHT_VOLUME""
+		done <<< "$(printf "%s\n" "${SPOTLIGHT_VOLUMES[@]}")"
+	fi
+}
+
+# stop indexing before rebuilding the index
+#killall mds &> /dev/null
+
+# turning indexing off
+#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
+# currently booted volume
+echo ''
+echo "disabling indexing..."
+SPOTLIGHT_COMMAND='sudo mdutil -i off'
+run_spotlight_command
+
+# listing spotlight folder content
+#sudo ls -a -l "$SPOTLIGHT_FOLDER"
+
+# getting size of spotlight folder
+#sudo du -hs "$SPOTLIGHT_FOLDER"
+
+# deleting spotlight indexes folder
+echo ''
+echo "removing the Spotlight index files..."
+while IFS= read -r line || [[ -n "$line" ]]
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    SPOTLIGHT_INDEX_FOLDER="$line"
+    #echo "$SPOTLIGHT_FOLDER"
+	if [[ -e "$SPOTLIGHT_INDEX_FOLDER" ]]
+	then
+		sudo du -hs "$SPOTLIGHT_INDEX_FOLDER"
+		sudo rm -rf "$SPOTLIGHT_INDEX_FOLDER"
+	else
+		echo ""$SPOTLIGHT_INDEX_FOLDER" does not exist, skipping..."
+	fi
+done <<< "$(printf "%s\n" "${SPOTLIGHT_INDEX_FOLDERS[@]}")"
+
+# this does the same as sudo rm -rf "$SPOTLIGHT_FOLDER"
+#SPOTLIGHT_COMMAND='sudo mdutil -X'
+#run_spotlight_command
+
+# stop indexing for some volumes which will not be indexed again
+# only shows in system preferences if connected
+sudo defaults write "$SPOTLIGHT_FOLDER_CONFIG"/VolumeConfiguration Exclusions -array "/Volumes/office" "/Volumes/extra" "/Volumes/scripts"
+# activating changes in system preferences
+sudo killall mds
+
+# waiting for volume information to be available after deleting the indexes and killing mds
+sleep 5
 
 # disable spotlight indexing for any volume that gets mounted and has not yet been indexed before.
 #sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
@@ -245,50 +292,26 @@ sudo defaults write /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/.Spotlight-V100/Vo
 # check entries
 #sudo defaults read /.Spotlight-V100/VolumeConfiguration Exclusions
 
-# deleting and reindexing volumes
-# all turned on volumes (mdutil -i)
-#sudo mdutil -E /Volumes/*
-# currently booted volume
-#sudo mdutil -E /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"
-sudo mdutil -E /
-
-# turning indexing off
-#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
-# all volumes
-#sudo mdutil -i off /Volumes/*
-# currently booted volume
-echo ''
-echo "disabling indexing..."
-#sudo mdutil -i off /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"
-sudo mdutil -i off /
-
-# turning indexing on for all volumes
-#sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
-#sudo mdutil -i on /Volumes/*
-
 # turn on indexing
-# all volumes
-#sudo mdutil -i on /Volumes/*
+#sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 # currently booted volume
 echo ''
 echo "enabling indexing..."
-#sudo mdutil -i on -E /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"
-sudo mdutil -i on /
+SPOTLIGHT_COMMAND='sudo mdutil -i on'
+run_spotlight_command
 
-# turning on indexing for all volumes named macintosh*
-#MACINTOSH_VOLUMES=$(ls -1 /Volumes | grep macintosh | grep -v "Daten$")
-#while IFS= read -r line || [[ -n "$line" ]]
-#do
-#    if [[ "$line" == "" ]]; then continue; fi
-#    i="$line"
-#    #echo $i
-#    sudo mdutil -i on -E /Volumes/"$i"
-#done <<< "$(printf "%s\n" "${MACINTOSH_VOLUMES[@]}")"
+# deleting and reindexing volumes
+# all turned on volumes (mdutil -i)
+echo ''
+echo "reindexing volumes..."
+SPOTLIGHT_COMMAND='sudo mdutil -E'
+run_spotlight_command
 
 # checking status of volumes
 echo ''
 echo "checking status of volumes..."
-sudo mdutil -s /Volumes/*
+SPOTLIGHT_COMMAND='sudo mdutil -s'
+run_spotlight_command
 
 # disabling lookup / spotlight suggestions
 #/usr/libexec/PlistBuddy -c "Set lookupEnabled:suggestionsEnabled bool false" ~/Library/Preferences/com.apple.lookup.plist
@@ -296,7 +319,6 @@ defaults write com.apple.lookup.shared LookupSuggestionsDisabled -bool true
 
 # spotlight menu bar icon
 # hide or move with bartender
-
 
 ### removing security permissions
 #remove_apps_security_permissions_stop
@@ -312,19 +334,6 @@ echo "restarting affected apps..."
 apps_to_kill=(
 "cfprefsd"
 "System Preferences"
-#"Activity Monitor"
-#"Address Book"
-#"Calendar"
-#"Contacts"
-#"cfprefsd"
-#"Dock"
-#"Finder"
-#"Mail"
-#"Messages"
-#"System Preferences"
-#"Safari"
-#"SystemUIServer"
-#"TextEdit"
 )
 
 while IFS= read -r line || [[ -n "$line" ]]
