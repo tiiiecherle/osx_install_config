@@ -2925,8 +2925,10 @@ EOF
     fi
     # per site preferences
     sqlite3 "$WEBSITE_SAFARI_DATABASE" "delete from preference_values WHERE preference='PerSitePreferencesAutoplay';"
-    sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into preference_values (domain, preference, preference_value) values ('nba.com', 'PerSitePreferencesAutoplay', '0');"
-    sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into preference_values (domain, preference, preference_value) values ('watch.nba.com', 'PerSitePreferencesAutoplay', '0');"
+    for WEBSITE in "nba.com" "watch.nba.com"
+    do
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into preference_values (domain, preference, preference_value) values ('$WEBSITE', 'PerSitePreferencesAutoplay', '0');"
+    done
     
     # default page zoom
     # 1 = 100%, 1.25 = 125%, etc.
