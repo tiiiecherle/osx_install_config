@@ -86,7 +86,7 @@ else
 	:
 fi
 
-sleep 2
+sleep 5
 
 #osascript 2>/dev/null <<EOF
 osascript <<EOF
@@ -131,7 +131,7 @@ end tell
 EOF
 
 # waiting for the applescript settings to be applied to the preferences file to make the script work
-sleep 5
+sleep 10
 
 }
 # only use the function if the spotlight preferences shall be reset completely
@@ -242,6 +242,22 @@ run_spotlight_command() {
 # stop indexing before rebuilding the index
 #killall mds &> /dev/null
 
+# sizes of spotlight folders
+echo ''
+echo "sizes of spotlight folders..."
+while IFS= read -r line || [[ -n "$line" ]]
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    SPOTLIGHT_INDEX_FOLDER="$line"
+    #echo "$SPOTLIGHT_FOLDER"
+	if [[ -e "$SPOTLIGHT_INDEX_FOLDER" ]]
+	then
+		sudo du -hs "$SPOTLIGHT_INDEX_FOLDER"
+	else
+		echo ""$SPOTLIGHT_INDEX_FOLDER" does not exist, skipping..."
+	fi
+done <<< "$(printf "%s\n" "${SPOTLIGHT_INDEX_FOLDERS[@]}")"
+
 # turning indexing off
 #sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 # currently booted volume
@@ -266,7 +282,6 @@ do
     #echo "$SPOTLIGHT_FOLDER"
 	if [[ -e "$SPOTLIGHT_INDEX_FOLDER" ]]
 	then
-		sudo du -hs "$SPOTLIGHT_INDEX_FOLDER"
 		sudo rm -rf "$SPOTLIGHT_INDEX_FOLDER"
 	else
 		echo ""$SPOTLIGHT_INDEX_FOLDER" does not exist, skipping..."
@@ -280,20 +295,14 @@ done <<< "$(printf "%s\n" "${SPOTLIGHT_INDEX_FOLDERS[@]}")"
 # stop indexing for some volumes which will not be indexed again
 # only shows in system preferences if connected
 sudo defaults write "$SPOTLIGHT_FOLDER_CONFIG"/VolumeConfiguration Exclusions -array "/Volumes/office" "/Volumes/extra" "/Volumes/scripts"
+# check entries
+#sudo defaults read /.Spotlight-V100/VolumeConfiguration Exclusions
 # activating changes in system preferences
-sudo killall mds
+#sudo killall mds		# done in restarting affected apps
 
 # waiting for volume information to be available after deleting the indexes and killing mds
 sleep 5
 
-# disable spotlight indexing for any volume that gets mounted and has not yet been indexed before.
-#sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
-
-# check entries
-#sudo defaults read /.Spotlight-V100/VolumeConfiguration Exclusions
-
-# turn on indexing
-#sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 # currently booted volume
 echo ''
 echo "enabling indexing..."
@@ -331,9 +340,14 @@ defaults write com.apple.lookup.shared LookupSuggestionsDisabled -bool true
 echo ''
 echo "restarting affected apps..."
 
+#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
+#sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
+
 apps_to_kill=(
 "cfprefsd"
 "System Preferences"
+"mds"
+"mds_stores"
 )
 
 while IFS= read -r line || [[ -n "$line" ]]
