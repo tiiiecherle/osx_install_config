@@ -37,8 +37,9 @@ install_finder_enhancement() {
 		local APP_NAME_LOWERED=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]')
 		local AUTOMATION_APP_NAME="$APP_NAME".app
 		local APP_INSTALLER="/Users/"$USER"/Desktop/"$APP_NAME".dmg"
-		local MANUAL_INSTALL_SOURCE="/Volumes/"$APP_NAME"/For OS X 10.13 - 10.6"
-		local BUNDLE_PATH_SOURCE="/Volumes/"$APP_NAME"/For OS X "$MACOS_VERSION_MAJOR" "$MACOS_MARKETING_NAME"/"$APP_NAME"Plugins.bundle"
+		#local MANUAL_INSTALL_SOURCE="/Volumes/"$APP_NAME"/For OS X 10.13 - 10.6"
+		local MANUAL_INSTALL_SOURCE="/Volumes/"$APP_NAME"/For OS X "$MACOS_VERSION_MAJOR" "$MACOS_MARKETING_NAME"/Manual Installation"
+		local BUNDLE_PATH_SOURCE=""$MANUAL_INSTALL_SOURCE"/"$APP_NAME"Plugins.bundle"
 		local BUNDLE_PATH_DESTINATION="/System/Library/PrivateFrameworks/FileProvider.framework/OverrideBundles/"$APP_NAME"Plugins.bundle"
 		
 		### registering "$APP_NAME"
@@ -57,7 +58,10 @@ install_finder_enhancement() {
 		if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
 		then
 		    # macos versions until and including 10.14
-			:
+			echo ''
+		    echo "this script is only compatible with macos 10.15 and newer, exiting..."
+		    echo ''
+		    exit
 		else
 		    # macos versions 10.15 and up
 			env_use_password | sudo mount -uw /
@@ -102,10 +106,8 @@ install_finder_enhancement() {
 		echo "installing..."
 		env_use_password | sudo cp -a "$BUNDLE_PATH_SOURCE" "$BUNDLE_PATH_DESTINATION"
 		env_use_password | sudo chown -R root:wheel "$BUNDLE_PATH_DESTINATION"
-		env_use_password | sudo cp -a ""$MANUAL_INSTALL_SOURCE"/Manual Installation/"$APP_NAME".app" ""$PATH_TO_APPS"/"$APP_NAME".app"
+		env_use_password | sudo cp -a ""$MANUAL_INSTALL_SOURCE"/"$APP_NAME"Loader.app" ""$PATH_TO_APPS"/"$APP_NAME".app"
 		env_use_password | sudo chown -R root:admin ""$PATH_TO_APPS"/"$APP_NAME".app"
-		env_use_password | sudo cp -a ""$MANUAL_INSTALL_SOURCE"/Manual Installation/"$APP_NAME"Injector.osax" /System/Library/ScriptingAdditions/"$APP_NAME"Injector.osax
-		env_use_password | sudo chown -R root:wheel /System/Library/ScriptingAdditions/"$APP_NAME"Injector.osax
 		sleep 1
 		echo "unmounting and removing installer..."
 		hdiutil detach /Volumes/"$APP_NAME" -quiet
