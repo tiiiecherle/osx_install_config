@@ -1012,6 +1012,151 @@ env_remove_apps_security_permissions_stop() {
 }
 
 
+### apps notifications
+NOTIFICATIONS_PLIST_FILE="/Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist"
+
+env_get_needed_notification_apps_entry() {
+
+	NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print apps" "$NOTIFICATIONS_PLIST_FILE" | awk '/^[[:blank:]]*bundle-id =/' | wc -l)
+	# -1 because counting of items starts with 0, not with 1
+	NUMBER_OF_ENTRIES_TO_LIST=$((NUMBER_OF_ENTRIES-1))
+	
+	NEEDED_ENTRY=""
+	for i in $(seq 0 "$NUMBER_OF_ENTRIES_TO_LIST")
+	do 
+	   	(/usr/libexec/PlistBuddy -c "Print apps:"$i"" "$NOTIFICATIONS_PLIST_FILE" | grep "$BUNDLE_IDENTIFIER") >/dev/null 2>&1
+	   	if [[ "$?" -eq 0 ]]
+	    then
+	        # checked entry is needed entry
+	        NEEDED_ENTRY="$i"
+	    else
+	    	# checked entry is NOT needed entry
+	        :
+	    fi
+	done
+	
+}
+
+env_set_check_apps_notifications() {
+
+	### setting flags
+	echo ''
+	if [[ "$SET_APPS_NOTIFICATIONS" == "yes" ]]
+	then
+		echo "${bold_text}setting app notifications...${default_text}"
+	elif [[ "$CHECK_APPS_NOTIFICATIONS" == "yes" ]]
+	then
+		echo "${bold_text}checking app notifications...${default_text}"
+	fi
+	
+	### setting apps notifications
+	for NOTIFICATION_APP in "${APPLICATIONS_TO_SET_NOTIFICATIONS[@]}"
+	do
+	
+		APP_PATH=$(echo "$NOTIFICATION_APP" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+	    FLAGS_VALUE=$(echo "$NOTIFICATION_APP" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	    
+	    if [[ -e "$APP_PATH" ]]
+	    then
+			BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP_PATH"/Contents/Info.plist)
+			
+			env_get_needed_notification_apps_entry
+			
+			if [[ "$NEEDED_ENTRY" != "" ]]
+			then
+				# entry exists
+				ACTIVE_FLAG_VALUE=$(/usr/libexec/PlistBuddy -c "Print apps:"$NEEDED_ENTRY":flags" "$NOTIFICATIONS_PLIST_FILE")
+				
+			    if [[ "$SET_APPS_NOTIFICATIONS" == "yes" ]]
+			    then
+			    	if [[ "$FLAGS_VALUE" == "$ACTIVE_FLAG_VALUE" ]]
+			    	then
+			    		echo "flags for $BUNDLE_IDENTIFIER already set correctly..."
+			    	else    
+			    		echo "setting flags for $BUNDLE_IDENTIFIER..."
+			    		/usr/libexec/PlistBuddy -c "Set apps:"$NEEDED_ENTRY":flags "$FLAGS_VALUE"" "$NOTIFICATIONS_PLIST_FILE"
+			    		RESTART_NOTIFICATION_CENTER="yes"
+			    	fi
+			    elif [[ "$CHECK_APPS_NOTIFICATIONS" == "yes" ]]
+			    then
+				    if [[ "$FLAGS_VALUE" == "$ACTIVE_FLAG_VALUE" ]]
+			        then
+			            CHECK_RESULT_PRINT=$(echo -e '\033[1;32m    ok\033[0m')
+					else
+			            CHECK_RESULT_PRINT=$(echo -e '\033[1;31m  wrong\033[0m' >&2)
+			        fi
+			        BUNDLE_IDENTIFIER_PRINT=$(printf '%s\n' "$BUNDLE_IDENTIFIER" | awk -v len=35 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+				    printf "%-5s %-35s %12s %12s %12s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER_PRINT" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE" "$CHECK_RESULT_PRINT"
+				fi 
+				
+			else
+				# entry does not exist
+				if [[ "$SET_APPS_NOTIFICATIONS" == "yes" ]]
+			    then
+					echo "entry for $BUNDLE_IDENTIFIER does not exist, creating it..."
+			    	NEW_ITEM=$(echo \'Item "$NUMBER_OF_ENTRIES"\')   	
+			   		/usr/libexec/PlistBuddy -c "Add apps:"$NEW_ITEM":bundle-id string "$BUNDLE_IDENTIFIER"" "$NOTIFICATIONS_PLIST_FILE"
+					env_get_needed_notification_apps_entry
+					/usr/libexec/PlistBuddy -c "Add apps:"$NEEDED_ENTRY":flags integer "$FLAGS_VALUE"" "$NOTIFICATIONS_PLIST_FILE"
+					RESTART_NOTIFICATION_CENTER="yes"
+				elif [[ "$CHECK_APPS_NOTIFICATIONS" == "yes" ]]
+			    then
+			    	echo "entry for $BUNDLE_IDENTIFIER does not exist..."
+			    fi
+			    
+			fi
+			
+		else
+			echo """$APP_PATH"" does not exist..."
+		fi
+	
+	done
+
+	if [[ "$RESTART_NOTIFICATION_CENTER" == "yes" ]]
+	then
+		### restarting notification center
+		echo ''
+		echo "restarting notification center..."
+		#launchctl load -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
+		#open /System/Library/CoreServices/NotificationCenter.app
+		# applying changes without having to logout
+		#sudo killall usernoted
+		#sudo killall NotificationCenter
+		#killall sighup usernoted
+		#killall sighup NotificationCenter
+		killall usernoted
+		killall NotificationCenter
+		sleep 2
+		defaults read "$NOTIFICATIONS_PLIST_FILE" &> /dev/null
+		echo ''
+		
+		echo ''
+		SLEEP_TIME=10
+		NUM1=0
+		#echo ''
+		while [[ "$NUM1" -le "$SLEEP_TIME" ]]
+		do 
+			NUM1=$((NUM1+1))
+			if [[ "$NUM1" -le "$SLEEP_TIME" ]]
+			then
+				#echo "$NUM1"
+				sleep 1
+				tput cuu 1 && tput el
+				echo "waiting $((SLEEP_TIME-NUM1)) seconds for the changes to take effect..."
+			else
+				:
+			fi
+		done
+	else
+		:
+	fi
+	
+	unset SET_APPS_NOTIFICATIONS
+	unset CHECK_APPS_NOTIFICATIONS
+	unset RESTART_NOTIFICATION_CENTER
+	unset NOTIFICATION_APP
+}
+
 
 ### sudo password upfront
 env_enter_sudo_password() {
