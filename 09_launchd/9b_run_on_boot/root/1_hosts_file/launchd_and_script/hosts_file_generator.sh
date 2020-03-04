@@ -493,6 +493,10 @@ hosts_file_install_update() {
         #    sudo sed -i '' "/$i/s/^/#/g" /etc/hosts
         #done
         
+        #sudo sed -i '' '/spiegel-de.spiegel.de/s/^/#/g' /etc/hosts
+        # solved in
+        # https://github.com/StevenBlack/hosts/issues/1155#issuecomment-589870171
+        
         # testing
         # open respective website in browser
         # deactivate adblocker for the website
