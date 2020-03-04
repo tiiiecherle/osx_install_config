@@ -42,20 +42,41 @@ fi
 
 reset_safari_download_location() {
 
-    sudo -H -u "$loggedInUser" defaults write com.apple.Safari AlwaysPromptForDownloadFolder -bool false
+    if sudo -H -u "$loggedInUser" defaults read -app Safari AlwaysPromptForDownloadFolder &>/dev/null
+    then
+        sudo -H -u "$loggedInUser" defaults delete -app Safari AlwaysPromptForDownloadFolder
+    else
+        #sudo -H -u "$loggedInUser" defaults write -app Safari AlwaysPromptForDownloadFolder -bool false
+        :
+    fi
 
     if [[ -d "/Users/"$loggedInUser"/Desktop/files" ]]
     then
-        #sudo -H -u "$loggedInUser" mkdir -p "/Users/$loggedInUser/Desktop/files"
-        #mkdir -p "~/Desktop/files"
-        sudo -H -u "$loggedInUser" defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
-        #defaults write com.apple.Safari DownloadsPath -string "~/Desktop/files"
+        if [[ $(sudo -H -u "$loggedInUser" defaults read -app Safari DownloadsPath) != "~/Desktop/files" ]]
+        then
+            #sudo -H -u "$loggedInUser" mkdir -p "/Users/$loggedInUser/Desktop/files"
+            #mkdir -p "~/Desktop/files"
+            sudo -H -u "$loggedInUser" defaults write -app Safari DownloadsPath -string "~/Desktop/files"
+            #sudo -H -u "$loggedInUser" defaults write -app Safari DownloadsPath -string "~/Desktop/files"
+            #sudo -H -u "$loggedInUser" defaults write /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist DownloadsPath -string "~/Desktop/files"
+            #/usr/libexec/PlistBuddy -c 'Set DownloadsPath "~/Desktop/files"' /Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist
+        else
+            :
+        fi
     else
-        sudo -H -u "$loggedInUser" defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
+        if [[ $(sudo -H -u "$loggedInUser" defaults read -app Safari DownloadsPath) != "~/Downloads" ]]
+        then
+            sudo -H -u "$loggedInUser" defaults write -app Safari DownloadsPath -string "~/Downloads"
+        else
+            :
+        fi
     fi
     
     # testing
     #echo "$loggedInUser" > /Users/"$loggedInUser"/Desktop/login_script.txt
+    
+    # activating changes
+    #sudo -H -u "$loggedInUser" defaults read com.apple.Safari &>/dev/null
         
 }
 reset_safari_download_location

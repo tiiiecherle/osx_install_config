@@ -2710,13 +2710,29 @@ EOF
     defaults write com.apple.Safari TopSitesGridArrangement -int 0
     
     # set safari download path
-    defaults write com.apple.Safari AlwaysPromptForDownloadFolder -bool false
+    if defaults read -app Safari AlwaysPromptForDownloadFolder &>/dev/null
+    then
+        defaults delete -app Safari AlwaysPromptForDownloadFolder
+    else
+        #defaults write -app Safari AlwaysPromptForDownloadFolder -bool false
+        :
+    fi
     if [[ "$SAFARI_DOWNLOADS_PATH" != "" ]]
     then
         mkdir -p "$SAFARI_DOWNLOADS_PATH"
-        defaults write com.apple.Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
+        if [[ $(defaults read -app Safari DownloadsPath) != "$SAFARI_DOWNLOADS_PATH" ]]
+        then
+            defaults write com.apple.Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
+        else
+            :
+        fi
     else
-        defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
+        if [[ $(defaults read -app Safari DownloadsPath) != "~/Downloads" ]]
+        then
+            defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
+        else
+            :
+        fi
     fi
     
     # remove downloads list items
