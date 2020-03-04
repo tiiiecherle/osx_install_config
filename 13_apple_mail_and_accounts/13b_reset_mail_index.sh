@@ -33,10 +33,11 @@ sleep 2
 
 
 ### rebuilding mail index on next run
-if [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
+if [[ "$MACOS_VERSION" =~ "10.15.(0|1|2)" ]]
 then
-	# macos 10.15 only
-	# do not delete the mail index on 10.15.0/10.15.1 as there seems to be bug that results in loosing mails
+	# macos 10.15.(0|1|2) only
+	# do not delete the mail index on 10.15.(0|1|2) as there seems to be bug that results in loosing mails
+	# seems to be fixed in 10.15.3
 	:
 else
 	echo ''
