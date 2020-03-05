@@ -373,3 +373,7 @@ echo ''
 #osascript -e 'tell app "loginwindow" to «event aevtrlgo»'       # logout
 
 
+### documentation
+# add a folder to the Spotlight index
+#mdimport -i /FOLDER_TO_ADD
+
