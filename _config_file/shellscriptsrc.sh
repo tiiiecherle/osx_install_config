@@ -885,7 +885,6 @@ env_set_apps_automation_permissions() {
             local PERMISSION_GRANTED=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
             #echo "$PERMISSION_GRANTED"
             
-            
             ### setting permissions
             # working, but does not show in gui of system preferences, use csreq for the entry to make it work and show
             #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,0,'$AUTOMATED_APP_ID',?,NULL,?);"
@@ -899,7 +898,6 @@ env_set_apps_automation_permissions() {
             sleep 0.1
             # working and showing in gui of system preferences if csreq is not '?'
             sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
-            
             
             ### print line
             local SOURCE_APP_NAME_PRINT=$(echo "$SOURCE_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
@@ -991,7 +989,7 @@ env_set_check_apps_notifications() {
         env_get_app_id
         local BUNDLE_IDENTIFIER="$APP_ID"
 	    
-	    if [[ -e "$PATH_TO_APP" ]]
+	    if [[ "$BUNDLE_IDENTIFIER" != "" ]]
 	    then
 	    			
 			env_get_needed_notification_apps_entry
@@ -1041,7 +1039,7 @@ env_set_check_apps_notifications() {
 			fi
 			
 		else
-			echo """$PATH_TO_APP"" does not exist..."
+			echo "BUNDLE_IDENTIFIER is empty, skipping..."
 		fi
 	
 	done
