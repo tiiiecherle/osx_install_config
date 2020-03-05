@@ -628,10 +628,14 @@ env_get_app_id() {
     local NUM1=0
     local FIND_APP_PATH_TIMEOUT=3
     unset PATH_TO_APP
-    PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+    PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
     if [[ "$PATH_TO_APP" == "" ]]
     then
-        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+    fi
+    if [[ "$PATH_TO_APP" == "" ]]
+    then
+        PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 2 -name ""$APP_NAME".app" | sort -n | head -1)
     fi
     while [[ "$PATH_TO_APP" == "" ]]
     do
@@ -645,7 +649,7 @@ env_get_app_id() {
     		#perl -e 'printf "%.2f\n",'$NUM1''
 	        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
     		sleep 0.5
-            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/$APP_NAME.app$" | sort -n | head -1)
     	else
     	    #printf '\n'
     		break
