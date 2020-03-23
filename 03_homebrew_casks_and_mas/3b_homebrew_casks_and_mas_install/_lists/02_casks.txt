@@ -37,6 +37,7 @@ istat-menus
 iterm2
 keepingyouawake
 keka
+linphone
 liteicon
 macdown
 macpass
@@ -48,6 +49,7 @@ onyx
 openwebstart
 photosync
 prefs-editor
+profilecreator
 progressive-downloader
 quickhash
 quicksilver
@@ -67,7 +69,6 @@ vnc-viewer
 vox			# alternative: tiny-player
 whatsapp
 witch
-x-lite
 xnconvert
 
 # no longer installable by cask, installed with separate install script
