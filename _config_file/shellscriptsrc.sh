@@ -633,6 +633,7 @@ env_get_app_id() {
     then
         PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
     fi
+    # find apps in other apps
     if [[ "$PATH_TO_APP" == "" ]]
     then
         PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 2 -name ""$APP_NAME".app" | sort -n | head -1)
