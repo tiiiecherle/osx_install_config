@@ -159,6 +159,10 @@ echo Chromium
 #u	"$PATH_TO_APPS"/chromium
 #u	~/Library/Application Support/Chromium
 
+# clamav scan
+echo clamav scan
+u	"$PATH_TO_APPS"/clamav_scan.app
+
 # Clover Configurator Pro
 #u	"$PATH_TO_APPS"/Clover Configurator Pro.app
 #u	~/Library/Preferences/com.m79softwares.Clover-Configurator-Pro.plist
@@ -182,6 +186,11 @@ echo CotEditor
 #u	"$PATH_TO_APPS"/CotEditor.app
 u	~/Library/Containers/com.coteditor.CotEditor/Data/Library/Application Support/CotEditor
 u	~/Library/Containers/com.coteditor.CotEditor/Data/Library/Preferences/com.coteditor.CotEditor.plist
+
+# cubeSQLAdmin
+echo cubeSQLAdmin
+u	"$PATH_TO_APPS"/cubeSQLAdmin.app
+u	~/Library/Preferences/CubeSQLServerAdmin.prefs
 
 # Cyberduck
 echo Cyberduck
@@ -388,6 +397,13 @@ u	~/Library/Keychains
 echo LibreOffice
 #u	"$PATH_TO_APPS"/LibreOffice.app
 u	~/Library/Application Support/LibreOffice/4/user/registrymodifications.xcu
+
+# Linphone
+echo Linphone
+#u	"$PATH_TO_APPS"/Linphone.app
+u	~/Library/Preferences/org.linphone.linphone.linphone.plist
+u	~/Library/Preferences/linphone/linphonerc
+u	~/Library/Application Support/linphone
 
 # LiteIcon
 echo LiteIcon
