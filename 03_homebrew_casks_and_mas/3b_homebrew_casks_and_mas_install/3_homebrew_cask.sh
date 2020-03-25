@@ -99,7 +99,7 @@ echo "setting PATH..."
 
 # setting default paths in /etc/paths
 #env_start_sudo			# already started above
-env_set_default_paths
+#env_set_default_paths
 #env_stop_sudo			# done in trap
 
 # setting paths for bash
