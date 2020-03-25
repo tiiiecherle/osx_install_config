@@ -362,6 +362,7 @@ sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceCamera';"
 CAMERAAPPS=(
 # app name									security service										    allowed (1=yes, 0=no)
 "Microsoft Remote Desktop                   kTCCServiceCamera                                           0"
+"Linphone                                   kTCCServiceCamera                                           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CAMERAAPPS[@]}")
@@ -380,6 +381,7 @@ MICROPHONEAPPS=(
 "VirtualBox                                 kTCCServiceMicrophone                                       1"
 "VirtualBox Menulet                         kTCCServiceMicrophone                                       1"
 "Microsoft Remote Desktop                   kTCCServiceMicrophone                                       0"
+"Linphone                                   kTCCServiceMicrophone                                       1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${MICROPHONEAPPS[@]}")
