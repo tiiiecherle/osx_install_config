@@ -1156,8 +1156,10 @@ env_enter_sudo_password() {
             then 
                 break
             else
-                echo "Sorry, try again."
+                #echo "Sorry, try again."
                 SUDOPASSWORD_CORRECT="no"
+                unset SUDOPASSWORD
+                unset USE_PASSWORD
             fi
         else
             echo ""$MAX_TRIES" incorrect password attempts"
@@ -1620,6 +1622,15 @@ env_delete_tmp_batch_script_fifo() {
     if [[ -e "/tmp/tmp_batch_script_fifo" ]]
     then
         rm -f "/tmp/tmp_batch_script_fifo"
+    else
+        :
+    fi
+}
+
+env_delete_tmp_batch_script_gpg_fifo() {
+    if [[ -e "/tmp/tmp_batch_script_gpg_fifo" ]]
+    then
+        rm -f "/tmp/tmp_batch_script_gpg_fifo"
     else
         :
     fi
