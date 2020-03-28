@@ -95,7 +95,9 @@ default_open_with=(
 "LSHandlerContentType           public.shell-script                         com.coteditor.coteditor"        # .sh
 "LSHandlerContentType           public.php-script                           com.coteditor.coteditor"        # .php
 "LSHandlerContentType           public.css                                  com.coteditor.coteditor"        # .css
+"LSHandlerContentType           public.yaml                                 com.coteditor.coteditor"        # .css
 "LSHandlerContentTagClass       public.filename-extension                   com.coteditor.coteditor LSHandlerContentTag     conf"       # .conf
+"LSHandlerContentTagClass       public.filename-extension                   com.coteditor.coteditor LSHandlerContentTag     env"       # .conf
 "LSHandlerContentType           com.adobe.pdf                               com.apple.preview"              # .pdf
 "LSHandlerContentType           public.zip-archive                          cx.c3.theunarchiver"            # .zip
 "LSHandlerContentType           org.gnu.gnu-zip-archive                     cx.c3.theunarchiver"            # .tar.gz
