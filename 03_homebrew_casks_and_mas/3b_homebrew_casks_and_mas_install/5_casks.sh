@@ -102,13 +102,24 @@ install_casks_parallel() {
     if [[ $(brew cask list | grep "^$i$") == "" ]]
     then
         echo "installing cask "$i"..."
-        env_use_password | env_timeout 300 brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
+        env_use_password | env_timeout 400 brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
         if [[ $? -eq 0 ]]
         then
             # successfull
             :
         else
             # failed
+            # try a second time at the end of the script
+            if [[ "$SECOND_TRY" == "yes" ]]
+            then
+                # do nothing if it already is the second try
+                :
+            else
+                if [[ -e /tmp/casks_second_try.txt ]]; then :; else touch /tmp/casks_second_try.txt; fi
+                echo "installing cask $i failed, noting for a second try..." >&2
+                #echo "installing cask $i failed, noting for a second try..."
+                echo "$i" >> /tmp/casks_second_try.txt
+            fi
             # making sure install check recognizes the failed install when using brew cask list | grep "$i"
             if [[ -e "$BREW_CASKS_PATH"/"$i" ]]
             then
@@ -654,6 +665,37 @@ then
 		fi
     else
         :
+    fi
+else
+    :
+fi
+
+# second try for casks that failed the first time
+if [[ -e /tmp/casks_second_try.txt ]]
+then
+    SECOND_TRY="yes"
+    echo ''
+    echo "second try for casks that failed the first time..."
+    casks_second_try=$(cat /tmp/casks_second_try.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+    if [[ "$casks_second_try" == "" ]]
+    then
+    	:
+    else
+        if [[ "$INSTALLATION_METHOD" == "parallel" ]]
+        then
+        	# by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
+            # it is not neccessary to export variables or functions when using env_parallel
+            # zsh does not support exporting functions, thats why parallels is prefered over xargs (bash only)
+            if [[ "${casks_second_try[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "install_casks_parallel {}" ::: "${casks_second_try[@]}"; fi
+        else
+        	while IFS= read -r line || [[ -n "$line" ]]
+    		do
+    		    if [[ "$line" == "" ]]; then continue; fi
+                caskstoinstall_second_try="$line"
+        	    echo "installing cask $caskstoinstall_second_try"...
+        		env_use_password | brew cask install --force "$caskstoinstall_second_try"
+        	done <<< "$(printf "%s\n" "${casks_second_try[@]}")"
+        fi
     fi
 else
     :
