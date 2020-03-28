@@ -391,9 +391,10 @@ then
 	    echo ''
 	fi
 	# re-linking MicrosoftRegistrationDB.reg
-    if [[ -e "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg" ]]
+    if [[ -e "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg" ]] || [[ -L "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg" ]]
     then
     	rm -f "/Users/"$USER"/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg"
+    	sleep 0.5
     else
     	:
     fi
