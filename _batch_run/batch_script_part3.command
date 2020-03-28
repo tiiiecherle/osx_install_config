@@ -242,6 +242,11 @@ batch_run_all() {
 	CONT1="no" "$SCRIPTS_FINAL_DIR"/15_finalizations/15d_firefox_hardening.sh
 	
 	
+	### apple id dock notification
+	printf "\n${bold_text}###\napple id dock notification...\n###\n${default_text}"
+	CONT1="no" "$SCRIPTS_FINAL_DIR"/15_finalizations/15f_remove_dock_notifications.sh
+	
+	
 	### batch script done
 	printf "\n${bold_text}###\nbatch script done...\n###\n${default_text}"
 	echo ''
