@@ -127,6 +127,10 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/mas
 WAIT_PID=$!
 wait "$WAIT_PID"
 
+# avoiding [oh-my-zsh] Insecure completion-dependent directories detected
+sudo chmod 755 /usr/local/share/zsh
+sudo chmod 755 /usr/local/share/zsh/site-functions
+
 # making sure config file exists
 if [[ ! -e ~/.zshrc ]]
 then
