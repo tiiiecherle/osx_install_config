@@ -61,7 +61,10 @@ else
     echo "installing homebrew..."
     # homebrew installation
     #env_start_sudo
-    yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    # ruby homebrew installer is deprecated
+    #yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    # rewritten in bash
+    yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     #env_stop_sudo
 fi
 
