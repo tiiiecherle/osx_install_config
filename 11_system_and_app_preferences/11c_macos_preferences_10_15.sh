@@ -2216,52 +2216,82 @@ EOF
         # sourcing variables
         . "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer_data.sh
         
+        # backing up printer config
+        if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
+        then
+        	#echo ''
+        	echo "backing up printer preferences for "$PRINTER_NAME"..."
+        	cp -a "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" "/tmp/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist"
+        else
+        	:
+        fi
+        
+        # deleting old printer/config
+        if lpstat -p &>/dev/null
+        then
+        	if [[ $(lpstat -p | grep "$PRINTER_NAME") != "" ]]
+        	then
+        		#echo ''
+        		echo "deleting old printer "$PRINTER_NAME"..."
+        		lpadmin -x "$PRINTER_NAME"
+        		sleep 1
+        	else
+        		:
+        	fi
+        else
+        	:
+        fi
+        
+        # restoring printer config if needed
+        if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
+        then
+        	:
+        else
+        	#echo ''
+        	echo "restoring printer preferences for "$PRINTER_NAME"..."
+        	cp -a "/tmp/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist"
+        fi
+        
+        # adding printer printer/config
+        #echo ''
+        echo "adding printer "$PRINTER_NAME"..."
+        # more options can be set via -o
+        # -P option will be deprecated in a future cups release
+        # lpadmin: Printer drivers are deprecated and will stop working in a future version of CUPS. 
+        # man lpadmin on a macos >=10.15 for more details
+        # recommends to use -m everywhere instead
+        # -p seems to set the printer name in cups file, but does not show the correct name in system preferences
+        # adding -D for setting printer info in cups file sets the correct printer name in system preferences
+        # lpinfo -v
+        # lpinfo -m
+        # lpinfo --make-and-model "PART_OF_PRINTER_NAME" -m
+        
         if [[ "$PRINTER_PPD" != "" ]] && [[ -e "$PRINTER_PPD" ]]
         then
-            #echo ''
-            #echo "$PRINTER_NAME"
-            
-            # backing up printer config
-            if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
-            then
-            	#echo ''
-            	echo "backing up printer preferences for "$PRINTER_NAME"..."
-            	cp -a "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" "/tmp/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist"
-            else
-            	:
-            fi
-            
-            # deleting old printer/config
-            if [[ $(lpstat -p | grep "$PRINTER_NAME") != "" ]]
-            then
-            	#echo ''
-            	echo "deleting old printer "$PRINTER_NAME"..."
-            	lpadmin -x "$PRINTER_NAME"
-            	sleep 1
-            else
-            	:
-            fi
-            
-            # restoring printer config if needed
-            if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
-            then
-            	:
-            else
-            	#echo ''
-            	echo "restoring printer preferences for "$PRINTER_NAME"..."
-            	cp -a "/tmp/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist"
-            fi
-            
-            # adding printer printer/config
-            #echo ''
-            echo "adding printer "$PRINTER_NAME"..."
-            # more options can be set via -o
-            lpadmin -E -p "$PRINTER_NAME" -v "$PRINTER_URL" -P "$PRINTER_PPD" -o printer-is-shared=false
-            cupsenable "$PRINTER_NAME"
-            cupsaccept "$PRINTER_NAME"
-            
+        	echo ''
+        	echo "checking last change of printer driver..."
+        	ls -la "$PRINTER_PPD"
+        	echo ''
+        	lpadmin -E -p "$PRINTER_NAME" -v "$PRINTER_URL" -P "$PRINTER_PPD" -o printer-is-shared=false
         else
-	        echo "PPD file "$PRINTER_PPD" empty or not found, skipping..."
+        	# only works if the printer is available via the given ipp address
+        	lpadmin -E -p "$PRINTER_NAME" -D "$PRINTER_NAME" -v "$PRINTER_URL" -m everywhere -o printer-is-shared=false &>/dev/null
+        	if [[ $? -eq 0 ]]
+        	then
+            	# successful
+            	echo "printer "$PRINTER_NAME" added successfully..."
+            	cupsenable "$PRINTER_NAME"
+        		cupsaccept "$PRINTER_NAME"
+        	else
+            	# failed
+            	if [[ "$PRINTER_INSTALL_SCRIPT_PATH" != "" ]]
+            	then
+            		echo "adding "$PRINTER_NAME" printer failed, please check if the printer is available on the network an run..." >&2
+            		echo "$PRINTER_INSTALL_SCRIPT_PATH" >&2
+            	else
+            	    echo "adding "$PRINTER_NAME" printer failed, please check if the printer is available on the network..." >&2
+            	fi
+        	fi
         fi
 
     else
@@ -2720,16 +2750,24 @@ EOF
     if [[ "$SAFARI_DOWNLOADS_PATH" != "" ]]
     then
         mkdir -p "$SAFARI_DOWNLOADS_PATH"
-        if [[ $(defaults read -app Safari DownloadsPath) != "$SAFARI_DOWNLOADS_PATH" ]]
+        if [[ $(defaults read -app Safari | grep DownloadsPath) == "" ]]
         then
-            defaults write com.apple.Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
+            defaults write -app Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
+        elif [[ $(defaults read -app Safari DownloadsPath) != "$SAFARI_DOWNLOADS_PATH" ]]
+        then
+            #defaults write com.apple.Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
+            defaults write -app Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
         else
             :
         fi
     else
-        if [[ $(defaults read -app Safari DownloadsPath) != "~/Downloads" ]]
+        if [[ $(defaults read -app Safari | grep DownloadsPath) == "" ]]
         then
-            defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
+            defaults write -app Safari DownloadsPath -string "~/Downloads"
+        elif [[ $(defaults read -app Safari DownloadsPath) != "~/Downloads" ]]
+        then
+            #defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
+            defaults write -app Safari DownloadsPath -string "~/Downloads"
         else
             :
         fi
