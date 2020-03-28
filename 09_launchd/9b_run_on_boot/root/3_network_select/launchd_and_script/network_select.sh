@@ -457,7 +457,7 @@ network_select() {
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    time ( network_select )
+    ( network_select )
 else
     time ( network_select )
 fi

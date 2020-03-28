@@ -452,7 +452,7 @@ cert_check() {
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    time ( cert_check )
+    ( cert_check )
 else
     time ( cert_check )
 fi

@@ -310,7 +310,7 @@ EOF
     sleep 0.5
     echo ''
 }
-time ( run_all )
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then ( run_all ); else time ( run_all ); fi
 sleep 0.5
 
 echo ''

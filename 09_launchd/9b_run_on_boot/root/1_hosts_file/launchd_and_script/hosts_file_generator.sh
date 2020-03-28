@@ -424,7 +424,7 @@ hosts_file_install_update() {
         sudo -H -u "$loggedInUser" "${PIP_VERSION}" install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
         
         # updating all pip modules
-        "${PIP_VERSION}" freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -U 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+        sudo -H -u "$loggedInUser" "${PIP_VERSION}" freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -U 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
         
         # installing dependencies
         sudo -H -u "$loggedInUser" "${PIP_VERSION}" install -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
@@ -524,7 +524,7 @@ hosts_file_install_update() {
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    time ( hosts_file_install_update )
+    ( hosts_file_install_update )
 else
     time ( hosts_file_install_update )
 fi
