@@ -152,8 +152,12 @@ open_system_prefs_spotlight
 # 	MENU_OTHER
 
 echo "settings spotlight system preferences options..."
-
-/usr/libexec/PlistBuddy -c 'Delete orderedItems' ~/Library/Preferences/com.apple.Spotlight.plist
+if [[ -z $(/usr/libexec/PlistBuddy -c "Print :orderedItems" ~/Library/Preferences/com.apple.Spotlight.plist) ]] > /dev/null 2>&1
+then
+	:
+else
+	/usr/libexec/PlistBuddy -c 'Delete orderedItems' ~/Library/Preferences/com.apple.Spotlight.plist
+fi
 /usr/libexec/PlistBuddy -c 'Add orderedItems array' ~/Library/Preferences/com.apple.Spotlight.plist
 
 spotlightconfig=(
