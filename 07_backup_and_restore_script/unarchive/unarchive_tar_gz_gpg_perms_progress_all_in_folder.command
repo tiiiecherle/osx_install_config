@@ -31,7 +31,6 @@ then
         unset SUDOPASSWORD
         SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
         USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-        GPG_PASSWORD="$SUDOPASSWORD"
         env_delete_tmp_batch_script_fifo
     else
         env_enter_sudo_password
@@ -124,19 +123,19 @@ fi
 # gpg password
 if [[ "$GPG_PASSWORD" == "" ]]
 then
-    echo ''
-    echo 'please enter decryption password...'
-    stty -echo
-    #trap 'stty echo' EXIT
-    printf 'gpg decryption password: '
-    read -r $@ GPG_PASSWORD
-    echo ''
-    stty echo
-    #trap - EXIT
-    echo ''
+    if [[ -e /tmp/tmp_batch_script_gpg_fifo ]]
+    then
+        unset GPG_PASSWORD
+        GPG_PASSWORD=$(cat "/tmp/tmp_batch_script_gpg_fifo" | head -n 1)
+        USE_GPG_PASSWORD='builtin printf '"$GPG_PASSWORD\n"''
+        env_delete_tmp_batch_script_gpg_fifo
+    else
+        while [[ $GPG_PASSWORD != $GPG_PASSWORD2 ]] || [[ $GPG_PASSWORD == "" ]]; do stty -echo && printf "gpg decryption password: " && read -r "$@" GPG_PASSWORD && printf "\n" && printf "re-enter gpg decryption password: " && read -r "$@" GPG_PASSWORD2 && stty echo && printf "\n" && USE_GPG_PASSWORD='builtin printf '"$GPG_PASSWORD\n"''; done
+    fi
 else
     :
 fi
+
 
 NUMBER_OF_CORES=$(parallel --number-of-cores)
 NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)

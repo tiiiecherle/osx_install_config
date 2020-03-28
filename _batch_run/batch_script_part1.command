@@ -43,10 +43,13 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### asking password upfront
 ###
 
+printf "\n${bold_text}###\nsudo password...\n###\n${default_text}"
+echo ''
+echo "please enter sudo password..."
 env_enter_sudo_password
 #env_start_sudo
 
-# env_delete_tmp_batch_script_fifo is part of config file
+# env_delete_tmp_batch_script_fifo and env_delete_tmp_batch_script_gpg_fifo are part of config file
 
 
 
@@ -61,13 +64,20 @@ create_tmp_batch_script_fifo() {
     #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
 }
 
+create_tmp_batch_script_gpg_fifo() {
+    env_delete_tmp_batch_script_gpg_fifo
+    mkfifo -m 600 "/tmp/tmp_batch_script_gpg_fifo"
+    builtin printf "$GPG_PASSWORD\n" > "/tmp/tmp_batch_script_gpg_fifo" &
+    #echo "$GPG_PASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
+}
+
 
 
 ###
 ### trap
 ###
 
-trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_keepingyouawake; rm -f "/tmp/batch_script_in_progress" }
+trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; env_delete_tmp_batch_script_gpg_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_keepingyouawake; rm -f "/tmp/batch_script_in_progress" }
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
 
@@ -157,7 +167,18 @@ batch_run_all() {
 	then
 		echo "no directory for restoring files selected, respective scripts will be skipped..."
 	else
-		:
+		echo ''
+		VARIABLE_TO_CHECK="$GPG_SUDO_PASSWORD"
+	    QUESTION_TO_ASK="is your sudo password identical to the backup decryption password? (Y/n)? "
+	    env_ask_for_variable
+	    GPG_SUDO_PASSWORD="$VARIABLE_TO_CHECK"
+	    echo ''
+	    if [[ "$GPG_SUDO_PASSWORD" =~ ^(yes|y)$ ]]
+	    then
+	    	GPG_PASSWORD="$SUDOPASSWORD"
+	    else
+	    	while [[ $GPG_PASSWORD != $GPG_PASSWORD2 ]] || [[ $GPG_PASSWORD == "" ]]; do stty -echo && printf "gpg decryption password: " && read -r "$@" GPG_PASSWORD && printf "\n" && printf "re-enter gpg decryption password: " && read -r "$@" GPG_PASSWORD2 && stty echo && printf "\n" && USE_GPG_PASSWORD='builtin printf '"$GPG_PASSWORD\n"''; done
+	    fi
 	fi
 	if [[ "$RESTORE_DIR_VBOX" == "" ]]
 	then
@@ -222,7 +243,9 @@ batch_run_all() {
 	else
 		printf "\n${bold_text}###\nunarchiving and restoring files...\n###\n${default_text}"
 		create_tmp_batch_script_fifo
-		time ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
+		create_tmp_batch_script_gpg_fifo
+		#time ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
+		ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
 		unset RESTORE_FILES_OPTION
 		sleep 1
 		env_active_source_app
@@ -282,7 +305,7 @@ batch_run_all() {
 		if [[ "$RESTORE_DIR_FILES" != "" ]]
 		then
 		    echo ''
-			RESTOREUSERDIR=$(find "$RESTORE_DIR_FILES" -mindepth 1 -maxdepth 1 -type d -name "backup_"$USER"_*" | sort -n | tail -n 1)
+			RESTOREUSERDIR=$(find "$RESTORE_DIR_FILES" -mindepth 1 -maxdepth 1 -type d -name "backup_*_[[:digit:]][[:digit:]][[:digit:]][[:digit:]]-[[:digit:]][[:digit:]]-[[:digit:]][[:digit:]]" | sort -n | tail -n 1)
 		else
 			:
 		fi
