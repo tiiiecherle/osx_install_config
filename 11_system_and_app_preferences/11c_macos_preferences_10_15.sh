@@ -2205,7 +2205,7 @@ EOF
     echo "preferences printer"
     
     DEFAULTS_WRITE_DIR="$SCRIPT_DIR_TWO_BACK"
-    if [[ -e "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer_data.sh ]]
+    if [[ -e "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer/printer_data.sh ]]
     then
     
         # variables
@@ -2214,7 +2214,7 @@ EOF
         #PRINTER_PPD="PATH_TO_PPD_GZ_FILE_HERE"
         
         # sourcing variables
-        . "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer_data.sh
+        . "$DEFAULTS_WRITE_DIR"/_scripts_input_keep/printer/printer_data.sh
         
         # backing up printer config
         if [[ -e "/Users/"$USER"/Library/Preferences/com.apple.print.custompresets.forprinter."$PRINTER_NAME".plist" ]]
@@ -2284,18 +2284,19 @@ EOF
         		cupsaccept "$PRINTER_NAME"
         	else
             	# failed
-            	if [[ "$PRINTER_INSTALL_SCRIPT_PATH" != "" ]]
+            	echo "adding "$PRINTER_NAME" printer failed, please check if the printer is available on the network..." >&2
+            	if [[ "$PRINTER_INSTALL_SCRIPT_PATH" != "" ]] && [[ -e "$PRINTER_INSTALL_SCRIPT_PATH" ]]
             	then
-            		echo "adding "$PRINTER_NAME" printer failed, please check if the printer is available on the network an run..." >&2
-            		echo "$PRINTER_INSTALL_SCRIPT_PATH" >&2
+            	    cp -a "$PRINTER_INSTALL_SCRIPT_PATH" ~/Desktop/
+            		echo "printer install script copied to desktop for later usage..." >&2
             	else
-            	    echo "adding "$PRINTER_NAME" printer failed, please check if the printer is available on the network..." >&2
+                    :
             	fi
         	fi
         fi
 
     else
-    	echo ""$DEFAULTS_WRITE_DIR"/script_input_keep/printer_data.sh not found, skipping reinstalling printer..."
+    	echo ""$DEFAULTS_WRITE_DIR"/script_input_keep/printer/printer_data.sh not found, skipping reinstalling printer..."
     fi
        
      
