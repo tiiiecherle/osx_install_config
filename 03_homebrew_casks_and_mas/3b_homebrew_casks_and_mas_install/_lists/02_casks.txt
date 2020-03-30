@@ -10,6 +10,7 @@ libreoffice-language-pack
 adobe-acrobat-reader
 alfred
 angry-ip-scanner
+anydesk
 appcleaner
 bartender
 bbedit
