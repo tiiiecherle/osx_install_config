@@ -375,12 +375,15 @@ installation_and_configuration() {
     	sudo -H -u "$loggedInUser" touch "$CUSTOM_SCAN_PROFILE"
     	sudo -H -u "$loggedInUser" chown "$loggedInUser":admin "$CUSTOM_SCAN_PROFILE"
     	sudo -H -u "$loggedInUser" chmod 644 "$CUSTOM_SCAN_PROFILE"
-    	sudo -H -u "$loggedInUser" mkdir -p "$HOMEBREW_PATH"/var/run/clamav
-    	#sudo chown "$HOMEBREW_PATH"/var/run/clamav
-    	#sudo chmod 775 "$HOMEBREW_PATH"/var/run/clamav
     	FRESH_INSTALL="yes"
     fi
     
+    # make sure socket directory exists
+    sudo -H -u "$loggedInUser" mkdir -p "$HOMEBREW_PATH"/var/run/clamav
+    sudo chown "$loggedInUser":admin "$HOMEBREW_PATH"/var/run/clamav
+    sudo chmod 755 "$HOMEBREW_PATH"/var/run/clamav
+    
+    # custom config file
     sudo -H -u "$loggedInUser" cat > "$CUSTOM_SCAN_PROFILE" << EOF
     LogTime yes
     TemporaryDirectory /tmp

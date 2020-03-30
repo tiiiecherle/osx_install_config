@@ -88,10 +88,15 @@ else
 	touch "$CUSTOM_SCAN_PROFILE"
 	chown "$USER":admin "$CUSTOM_SCAN_PROFILE"
 	chmod 644 "$CUSTOM_SCAN_PROFILE"
-	mkdir -p "$HOMEBREW_PATH"/var/run/clamav
 	FRESH_INSTALL="yes"
 fi
 
+# make sure socket directory exists
+mkdir -p "$HOMEBREW_PATH"/var/run/clamav
+chown "$USER":admin "$HOMEBREW_PATH"/var/run/clamav
+chmod 755 "$HOMEBREW_PATH"/var/run/clamav
+
+# custom config file
 cat > "$CUSTOM_SCAN_PROFILE" << EOF
 LogTime yes
 TemporaryDirectory /tmp
