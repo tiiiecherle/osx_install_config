@@ -641,6 +641,13 @@ casks_install_updates() {
             else
                 :
             fi
+            if [[ "$CASK" == "zoomus" ]]
+            then 
+            	sleep 2
+            	osascript -e "tell app \""$PATH_TO_APPS"/zoom.us.app\" to quit" >/dev/null 2>&1
+            	sleep 2
+                env_active_source_app
+            fi
             
             # cleanup entries
             local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
