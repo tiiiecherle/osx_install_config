@@ -439,6 +439,7 @@ u	~/Library/Preferences/com.crystalidea.macsfancontrol.plist
 # Microsoft Office 365
 echo Microsoft Office 365
 u	~/Library/Group Containers/UBF8T346G9.Office
+#u	~/Library/Group Containers/UBF8T346G9.Office/User Content.localized/Queries
 # relinking ~/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg is done in 11k_third_party_app_preferences.sh
 
 # MonKey Office
