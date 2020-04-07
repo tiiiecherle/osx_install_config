@@ -579,6 +579,11 @@ clamav_monitor() {
         "^/Applications/hosts_file_generator/"
         "^"$PATH_TO_APPS"/Rambox.app"
         "^/Applications/Rambox.app"
+        "^/Users/"$loggedInUser"/Library/Containers/com.adguard.safari.AdGuard/Data/Library/Application Support/AdGuardSafariApp/config.json"
+        "^/Users/"$loggedInUser"/Library/Group Containers/UBF8T346G9.Office/User Content.localized/Queries/"
+        "^/usr/local/Caskroom/joplin/"
+        "^/Users/"$loggedInUser"/Library/Caches/Homebrew/downloads/.*Joplin.*dmg"
+        "^/Applications/Joplin.app"
     )
     
     # matching patterns to exclude from monitoring
@@ -603,8 +608,8 @@ clamav_monitor() {
     do
         sleep 1
     done
-    # avoiding socket errors
-    sleep 5
+    # avoiding socket errors on start
+    sleep 10
     
     # starting fswatch
     echo ''
