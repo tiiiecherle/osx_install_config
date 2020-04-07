@@ -474,6 +474,7 @@ AUTOMATION_APPS=(
 "virtualbox_backup                                                          Terminal                    1"
 "run_on_login_signal                                                        System Events               1"
 "run_on_login_whatsapp                                                      System Events               1"
+"run_on_login_reminders                                                     System Events               1"
 "iTerm                                                                      System Events               1"
 "XtraFinder                                                                 Finder                      1"
 "TotalFinder.app                                                            Finder                      1"
@@ -481,6 +482,7 @@ AUTOMATION_APPS=(
 "EagleFiler                                                                 Mail.app                    1"
 "EagleFiler                                                                 Finder.app                  1"
 "witchdaemon                                                                Mail                        0"
+"Linphone                                                                   System Events               1"
 )
         
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
