@@ -1293,7 +1293,7 @@ env_set_path_for_shell() {
 	
 env_get_current_command_line_tools_version() {
     CURRENT_COMMANDLINETOOLVERSION=""
-    # https://github.com/Homebrew/install/blob/master/install
+    # https://github.com/Homebrew/install/blob/master/install.sh
     CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line Tools' | awk -F'*' '/^ *\\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n 1)
     #CURRENT_COMMANDLINETOOLVERSION=$(softwareupdate --list 2>&1 | grep -B 1 -E 'Command Line Tools' | awk -F'*' '{print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n 1)
 }
