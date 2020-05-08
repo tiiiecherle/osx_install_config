@@ -2271,29 +2271,33 @@ EOF
         	echo ''
         	echo "checking last change of printer driver..."
         	ls -la "$PRINTER_PPD"
-        	echo ''
+        	#echo ''
+	        echo "installing printer using driver..."
         	lpadmin -E -p "$PRINTER_NAME" -v "$PRINTER_URL" -P "$PRINTER_PPD" -o printer-is-shared=false
         else
+        	#echo ''
+	        echo "installing printer driverless using ipp everywhere..."
         	# only works if the printer is available via the given ipp address
         	lpadmin -E -p "$PRINTER_NAME" -D "$PRINTER_NAME" -v "$PRINTER_URL" -m everywhere -o printer-is-shared=false &>/dev/null
-        	if [[ $? -eq 0 ]]
-        	then
-            	# successful
-            	echo "printer "$PRINTER_NAME" added successfully..."
-            	cupsenable "$PRINTER_NAME"
-        		cupsaccept "$PRINTER_NAME"
-        	else
-            	# failed
-            	echo "adding "$PRINTER_NAME" printer failed, please check if the printer is available on the network..." >&2
-            	if [[ "$PRINTER_INSTALL_SCRIPT_PATH" != "" ]] && [[ -e "$PRINTER_INSTALL_SCRIPT_PATH" ]]
-            	then
-            	    cp -a "$PRINTER_INSTALL_SCRIPT_PATH" ~/Desktop/
-            		echo "printer install script copied to desktop for later usage..." >&2
-            	else
-                    :
-            	fi
-        	fi
         fi
+        # check if printer was added successfully
+        if [[ $? -eq 0 ]]
+    	then
+        	# successful
+        	echo "printer "$PRINTER_NAME" added successfully..."
+        	cupsenable "$PRINTER_NAME"
+    		cupsaccept "$PRINTER_NAME"
+    	else
+        	# failed
+        	echo "adding "$PRINTER_NAME" printer failed, please check if the printer is available on the network..." >&2
+        	if [[ "$PRINTER_INSTALL_SCRIPT_PATH" != "" ]] && [[ -e "$PRINTER_INSTALL_SCRIPT_PATH" ]]
+        	then
+        	    cp -a "$PRINTER_INSTALL_SCRIPT_PATH" ~/Desktop/
+        		echo "printer install script copied to desktop for later usage..." >&2
+        	else
+                :
+        	fi
+    	fi
 
     else
     	echo ""$DEFAULTS_WRITE_DIR"/script_input_keep/printer/printer_data.sh not found, skipping reinstalling printer..."
