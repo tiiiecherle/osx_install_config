@@ -363,6 +363,7 @@ CAMERAAPPS=(
 # app name									security service										    allowed (1=yes, 0=no)
 "Microsoft Remote Desktop                   kTCCServiceCamera                                           0"
 "Linphone                                   kTCCServiceCamera                                           1"
+"Jitsi                                      kTCCServiceCamera                                           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CAMERAAPPS[@]}")
