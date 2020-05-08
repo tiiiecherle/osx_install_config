@@ -60,14 +60,15 @@ else
     installer=()
     while IFS= read -r line; do installer+=("$line"); done <<< "$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 1 -name "Install*macOS*")"
     COLUMNS_DEFAULT="$COLUMNS"
-    COLUMNS=1 PS3="Please select installer to use: "
+    PS3="Please select installer to use: "
+    (COLUMNS=1
     select INSTALLERPATH in "${installer[@]}"
     do
         #echo "you selected "$INSTALLERPATH"..."
         #echo ''
         COLUMNS="$COLUMNS_DEFAULT"
         break
-    done
+    done)
 fi
 echo "the path to the installer is "$INSTALLERPATH"..."
 VOLUMENAME="Untitled"

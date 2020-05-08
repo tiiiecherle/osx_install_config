@@ -57,14 +57,15 @@ fi
 ### selecting kind of formating usb storage device
 echo ''
 COLUMNS_DEFAULT="$COLUMNS"
-COLUMNS=1 PS3="Please select how to format usb storage device: "
+PS3="Please select how to format usb storage device: "
+(COLUMNS=1
 select OPTION in "mbr, windows compatible, one $WIN_PARTITION_FORMAT partition" "gpt, one $WIN_PARTITION_FORMAT and one $MAC_PARTITION_FORMAT partition with option of windows compatibility"
 do
     echo "you selected option "$OPTION"..."
     #echo ""
     COLUMNS="$COLUMNS_DEFAULT"
     break
-done
+done)
 
 if [[ "$OPTION" == "mbr, windows compatible, one $WIN_PARTITION_FORMAT partition" ]]; then OPTION="mbr"; fi
 if [[ "$OPTION" == "gpt, one $WIN_PARTITION_FORMAT and one $MAC_PARTITION_FORMAT partition with option of windows compatibility" ]]; then OPTION="gpt"; fi

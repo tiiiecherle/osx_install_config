@@ -223,14 +223,15 @@ if [[ "$OPTION" == "" ]]
 then
     # choosing the backup and defining $BACKUP variable
     COLUMNS_DEFAULT="$COLUMNS"
-    COLUMNS=1 PS3="Please select option by typing the number: "
+    PS3="Please select option by typing the number: "
+    (COLUMNS=1 
     select OPTION in BACKUP RESTORE
     do
         echo "you selected option "$OPTION"..."
         echo ''
         COLUMNS="$COLUMNS_DEFAULT"
         break
-    done
+    done)
 else
     echo "script is run with option $OPTION..."
     echo ''
@@ -258,6 +259,12 @@ backup_restore() {
     # users on the system without ".localized" and "Shared"
     #SYSTEMUSERS=$(pushd /Users/ >/dev/null 2>&1; printf "%s " * | egrep -v "^[.]" | egrep -v "Guest"; popd >/dev/null 2>&1)
     SYSTEMUSERS=$(ls -1 /Users/ | egrep -v "^[.]" | egrep -v "Shared" | egrep -v "Guest")
+    # converting list to array
+    while IFS= read -r line || [[ -n "$line" ]] 
+    do
+	if [[ "$line" == "" ]]; then continue; fi
+        SYSTEMUSERS_ARRAY+=( "$line" )
+    done <<< "$(printf "%s\n" "${SYSTEMUSERS[@]}")"
     
     # getting logged in user and unique id
     # done in config script
@@ -279,22 +286,23 @@ backup_restore() {
         if [[ "$OPTION" == "BACKUP" ]]
         then
             COLUMNS_DEFAULT="$COLUMNS"
-            COLUMNS=1 PS3="Please select user to backup by typing the number: "
+            PS3="Please select user to backup by typing the number: "
         elif [[ "$OPTION" == "RESTORE" ]]
         then
             COLUMNS_DEFAULT="$COLUMNS"
-            COLUMNS=1 PS3="Please select user to restore to by typing the number: "
+            PS3="Please select user to restore to by typing the number: "
         else
             :
         fi
         
-        select SELECTEDUSER in ""$SYSTEMUSERS""
+        (COLUMNS=1
+        select SELECTEDUSER in "${SYSTEMUSERS_ARRAY[@]}"
         do
             echo "you selected user "$SELECTEDUSER"..."
             echo ''
             COLUMNS="$COLUMNS_DEFAULT"
             break
-        done
+        done)
     fi
     
     # check1 if a valid user was selected

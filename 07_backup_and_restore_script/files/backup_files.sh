@@ -102,6 +102,12 @@ if [[ "$SELECTEDUSER" == "" ]]
 then
     # users on the system without ".localized" and "Shared"
     SYSTEMUSERS=$(ls -1 /Users/ | egrep -v "^[.]" | egrep -v "Shared" | egrep -v "Guest")
+    # converting list to array
+    while IFS= read -r line || [[ -n "$line" ]] 
+    do
+	if [[ "$line" == "" ]]; then continue; fi
+        SYSTEMUSERS_ARRAY+=( "$line" )
+    done <<< "$(printf "%s\n" "${SYSTEMUSERS[@]}")"
     
     if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/ //g') == "1" ]]
     then
@@ -109,14 +115,15 @@ then
     else
         echo ''
         COLUMNS_DEFAULT="$COLUMNS"
-        COLUMNS=1 PS3="Please select user profile for file backup by typing the number: "
-        select SELECTEDUSER in ""$SYSTEMUSERS""
+        PS3="Please select user profile for file backup by typing the number: "
+        (COLUMNS=1
+        select SELECTEDUSER in "${SYSTEMUSERS_ARRAY[@]}"
         do
             echo "you selected user "$SELECTEDUSER"..."
             #echo ''
             COLUMNS="$COLUMNS_DEFAULT"
             break
-        done
+        done)
     fi
     
     # check1 if a valid user was selected
