@@ -83,11 +83,20 @@ reset_safari_download_location
 
 
 # workaround for macos bug that prevents /etc/fstab entries to work for encrypted apfs volumes
-unmount_test_partition() {
+# it seems there is another way of preventing macintosh_hd2 to auto-mount by adding apfs role D (data)
+# https://apple.stackexchange.com/questions/310574/how-to-prevent-auto-mounting-of-a-volume-in-macos-high-sierra
+# DEVICE_IDENTIFIER=$(diskutil info macintosh_hd2 | grep -e "Device Identifier" | awk '{print $NF}')
+# DEVICE_IDENTIFIER2=$(diskutil info "macintosh_hd2 - Daten" | grep -e "Device Identifier" | awk '{print $NF}')
+# diskutil apfs changeVolumeRole /dev/diskXsX D
+# diskutil apfs changeVolumeRole "$DEVICE_IDENTIFIER" D
+# check role
+# diskutil apfs list | grep "$DEVICE_IDENTIFIER"
+# LESS='+/^[[:space:]]*changeVolumeRole' man diskutil
+unmount_second_system_partition() {
     MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
     if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd" ]]
     then
-        sleep 15
+        sleep 25
         #if [[ -e "/Volumes/macintosh_hd2" ]]; then sudo diskutil unmount /Volumes/macintosh_hd2; fi
         #if [[ -e "/Volumes/macintosh_hd2 - Daten" ]]; then sudo diskutil unmount "/Volumes/macintosh_hd2 - Daten"; fi
         if [[ -e "/Volumes/macintosh_hd2" ]]; then sudo umount -f /Volumes/macintosh_hd2; fi
@@ -96,7 +105,7 @@ unmount_test_partition() {
         :
     fi
 }
-unmount_test_partition &
+#unmount_second_system_partition &
 
 
 ###
