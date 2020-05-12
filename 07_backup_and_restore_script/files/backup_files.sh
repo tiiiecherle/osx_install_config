@@ -116,14 +116,14 @@ then
         echo ''
         COLUMNS_DEFAULT="$COLUMNS"
         PS3="Please select user profile for file backup by typing the number: "
-        (COLUMNS=1
+        COLUMNS=1
         select SELECTEDUSER in "${SYSTEMUSERS_ARRAY[@]}"
         do
             echo "you selected user "$SELECTEDUSER"..."
             #echo ''
             COLUMNS="$COLUMNS_DEFAULT"
             break
-        done)
+        done
     fi
     
     # check1 if a valid user was selected

@@ -58,14 +58,14 @@ fi
 echo ''
 COLUMNS_DEFAULT="$COLUMNS"
 PS3="Please select how to format usb storage device: "
-(COLUMNS=1
+COLUMNS=1
 select OPTION in "mbr, windows compatible, one $WIN_PARTITION_FORMAT partition" "gpt, one $WIN_PARTITION_FORMAT and one $MAC_PARTITION_FORMAT partition with option of windows compatibility"
 do
     echo "you selected option "$OPTION"..."
     #echo ""
     COLUMNS="$COLUMNS_DEFAULT"
     break
-done)
+done
 
 if [[ "$OPTION" == "mbr, windows compatible, one $WIN_PARTITION_FORMAT partition" ]]; then OPTION="mbr"; fi
 if [[ "$OPTION" == "gpt, one $WIN_PARTITION_FORMAT and one $MAC_PARTITION_FORMAT partition with option of windows compatibility" ]]; then OPTION="gpt"; fi
@@ -159,7 +159,8 @@ then
             installer=()
             while IFS= read -r line; do installer+=("$line"); done <<< "$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 1 -name "Install*macOS*")"
             COLUMNS_DEFAULT="$COLUMNS"
-            COLUMNS=1 PS3="Please select installer to use for calculating needed usb diskspace: "
+            COLUMNS=1 
+            PS3="Please select installer to use for calculating needed usb diskspace: "
             select INSTALLERPATH in "${installer[@]}"
             do
                 #echo "you selected "$INSTALLERPATH"..."

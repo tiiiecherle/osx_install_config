@@ -224,14 +224,14 @@ then
     # choosing the backup and defining $BACKUP variable
     COLUMNS_DEFAULT="$COLUMNS"
     PS3="Please select option by typing the number: "
-    (COLUMNS=1 
+    COLUMNS=1 
     select OPTION in BACKUP RESTORE
     do
         echo "you selected option "$OPTION"..."
         echo ''
         COLUMNS="$COLUMNS_DEFAULT"
         break
-    done)
+    done
 else
     echo "script is run with option $OPTION..."
     echo ''
@@ -295,16 +295,16 @@ backup_restore() {
             :
         fi
         
-        (COLUMNS=1
+        COLUMNS=1
         select SELECTEDUSER in "${SYSTEMUSERS_ARRAY[@]}"
         do
             echo "you selected user "$SELECTEDUSER"..."
             echo ''
             COLUMNS="$COLUMNS_DEFAULT"
             break
-        done)
+        done
     fi
-    
+
     # check1 if a valid user was selected
     USERCHECK=$(find /Users -maxdepth 1 -name "$SELECTEDUSER" -exec basename {} \;)
     if [[ "$SELECTEDUSER" != "$USERCHECK" ]]
@@ -315,7 +315,7 @@ backup_restore() {
     else
         :
     fi
-    
+
     # check2 if a valid user was selected
     if [[ "$SELECTEDUSER" == "" ]]
     then
