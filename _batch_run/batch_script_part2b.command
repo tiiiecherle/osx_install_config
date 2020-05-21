@@ -155,26 +155,21 @@ batch_run_all() {
 	"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/system/install_run_on_login_hook.sh
 	
 		
-	### special autostart apps	
-	if [[ "$INSTALL_RUN_ON_LOGIN_WHATSAPP" == "yes" ]] || [[ "$INSTALL_RUN_ON_LOGIN_SIGNAL" == "yes" ]]
-	then
-		printf "\n${bold_text}###\nspecial autostart apps...\n###\n${default_text}"
-		if [[ "$INSTALL_RUN_ON_LOGIN_WHATSAPP" == "yes" ]]
-		then
-			"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_whatsapp.sh
-		else
-			:
-		fi
-		if [[ "$INSTALL_RUN_ON_LOGIN_SIGNAL" == "yes" ]]
-		then
-			"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_signal.sh
-		else
-			:
-		fi		
-		echo ''
-	else
-		:
-	fi
+	### special autostart apps
+	for AUTOSTART_APP in whatsapp signal reminders
+	do
+	    AUTOSTART_APP_UPPER=$(echo "$AUTOSTART_APP" | tr '[:lower:]' '[:upper:]')
+	    AUTOSTART_APP_LOWER=$(echo "$AUTOSTART_APP" | tr '[:upper:]' '[:lower:]')
+        AUTOSTART_VARIABLE_TO_CHECK=INSTALL_RUN_ON_LOGIN_$AUTOSTART_APP_UPPER
+        if [[ $(eval "echo \"\$$AUTOSTART_VARIABLE_TO_CHECK\"") == "yes" ]]
+        then
+        	printf "\n${bold_text}###\nspecial autostart app $AUTOSTART_APP_LOWER...\n###\n${default_text}"
+        	"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_"$AUTOSTART_APP_LOWER".sh	
+        	echo ''
+        else
+        	:
+        fi
+	done
 	
 	
 	### dock
