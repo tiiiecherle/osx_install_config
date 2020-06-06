@@ -2228,6 +2228,9 @@ EOF
         # lpinfo -v
         # lpinfo -m
         # lpinfo --make-and-model "PART_OF_PRINTER_NAME" -m
+        # listing printer attributes
+        # ipptool -tv "$PRINTER_URL" get-printer-attributes.test | grep -i color
+        # lpoptions -l | grep Color
         
         if [[ "$PRINTER_PPD" != "" ]] && [[ -e "$PRINTER_PPD" ]]
         then
