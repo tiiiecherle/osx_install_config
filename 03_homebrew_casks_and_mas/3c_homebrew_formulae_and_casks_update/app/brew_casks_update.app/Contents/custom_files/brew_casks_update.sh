@@ -498,7 +498,12 @@ casks_show_updates_parallel() {
         local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
         #brew cask info --json=v1 "$CASK" | jq -r '.[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
         local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
-        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
+        if [[ "$CASK_ARTIFACT_APP" != "" ]]
+        then
+            local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
+        else
+            :
+        fi
         #local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "${CASK_ARTIFACT_APP##*/}" | cut -d '.' -f 1)
         #echo CASK_ARTIFACT_APP_NO_EXTENSION is "$CASK_ARTIFACT_APP_NO_EXTENSION"
         #local CASK_NAME=$(printf '%s\n' "$CASK" | cut -d ":" -f1 | xargs)
@@ -550,7 +555,7 @@ casks_show_updates_parallel() {
         # autostart
         # 10.15 is not opening autostart apps on next boot after install/update without explicitly granting permissions or opening manually before autostart
         local AUTOSTART_APP_LIST=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//')
-        if [[ "$AUTOSTART_APP_LIST" != "" ]] && [[ "$CHECK_RESULT" == "outdated" ]]
+        if [[ "$AUTOSTART_APP_LIST" != "" ]] && [[ "$CHECK_RESULT" == "outdated" ]] && [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
         then
             if [[ $(printf '%s\n' "$AUTOSTART_APP_LIST" | grep -i "$CASK") != "" ]] || [[ $(printf '%s\n' "$AUTOSTART_APP_LIST" | grep -i "$CASK_ARTIFACT_APP_NO_EXTENSION") != "" ]]
             then
