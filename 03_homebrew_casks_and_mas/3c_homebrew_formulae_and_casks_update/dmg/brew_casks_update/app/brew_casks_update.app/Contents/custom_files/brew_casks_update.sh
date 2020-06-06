@@ -498,7 +498,8 @@ casks_show_updates_parallel() {
         local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
         #brew cask info --json=v1 "$CASK" | jq -r '.[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
         local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
-        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "${CASK_ARTIFACT_APP%.*}")
+        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
+        #local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "${CASK_ARTIFACT_APP##*/}" | cut -d '.' -f 1)
         #echo CASK_ARTIFACT_APP_NO_EXTENSION is "$CASK_ARTIFACT_APP_NO_EXTENSION"
         #local CASK_NAME=$(printf '%s\n' "$CASK" | cut -d ":" -f1 | xargs)
         local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | jq -r '.version')
