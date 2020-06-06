@@ -1058,7 +1058,7 @@ EOF
     fi
     
     ### opening autostart apps    
-    # 10.15 was not opening autostart apps on next boot if they had not been opened before
+    # 10.15 is not opening autostart apps on next boot after install/update without explicitly granting permissions or opening manually before autostart
     opening_autostart_apps() {
         echo "opening autostart apps to make them available after reboot"
         if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//') != "" ]]
@@ -1068,46 +1068,9 @@ EOF
         	do
         	    if [[ "$line" == "" ]]; then continue; fi
                 autostartapp="$line"
-                
-                if [[ "$line" == "witchdaemon" ]]
-                then
-                    PATH_TO_FIRST_RUN_APP="/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app"
-                    env_set_open_on_first_run_permissions
-                elif [[ "$line" == "run_on_login_whatsapp" ]]
-                then
-                    PATH_TO_FIRST_RUN_APP="/Users/"$USER"/Library/Scripts/run_on_login_whatsapp.app"
-                    env_set_open_on_first_run_permissions
-                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/WhatsApp.app"
-                    env_set_open_on_first_run_permissions
-                elif [[ "$line" == "run_on_login_signal" ]]
-                then
-                    PATH_TO_FIRST_RUN_APP="/Users/"$USER"/Library/Scripts/run_on_login_signal.app"
-                    env_set_open_on_first_run_permissions
-                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/Signal.app"
-                    env_set_open_on_first_run_permissions
-                elif [[ "$line" == "AppCleaner SmartDelete" ]]
-                then
-                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/AppCleaner.app/Contents/Library/LoginItems/AppCleaner SmartDelete.app"
-                    env_set_open_on_first_run_permissions
-                elif [[ "$line" == "VirusScannerHelper" ]]
-                then
-                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/VirusScannerPlus.app"
-                    env_set_open_on_first_run_permissions
-                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/VirusScannerPlus.app/Contents/Library/LoginItems/VirusScannerHelper.app"
-                    env_set_open_on_first_run_permissions
-                    # does not work as it resets the license agreement
-                    #autostartapp="VirusScannerPlus"
-                elif [[ "$line" == "Alfred 4" ]]
-                then
-                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/Alfred 4.app/Contents/Preferences/Alfred Preferences.app"
-                    env_set_open_on_first_run_permissions
-                    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/Alfred 4.app"
-                    env_set_open_on_first_run_permissions
-                else
-                    PATH_TO_FIRST_RUN_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/"$autostartapp".app$" | sort -n | head -1)
-                    #PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/"$autostartapp".app"
-                    env_set_open_on_first_run_permissions
-                fi
+                echo "$autostartapp"
+                APP_NAME="$autostartapp"
+                env_set_open_on_first_run_permissions
                 
                 if [[ "$line" == "XtraFinder" ]]
         		then

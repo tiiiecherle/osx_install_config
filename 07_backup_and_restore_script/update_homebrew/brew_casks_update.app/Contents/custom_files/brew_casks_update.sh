@@ -467,6 +467,10 @@ casks_show_updates_parallel() {
     export DATE_LIST_FILE_CASKS
     touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
     
+    DATE_LIST_FILE_CASKS_AUTOSTART=$(echo "casks_update_autostart"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    export DATE_LIST_FILE_CASKS_AUTOSTART
+    touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART"
+    
     # cleanup formulae preparation
     TMP_DIR_CASK_VERSIONS=/tmp/cask_versions
     export TMP_DIR_CASK_VERSIONS
@@ -492,6 +496,10 @@ casks_show_updates_parallel() {
         local CASK_INFO=$(brew cask info --json=v1 "$CASK" | jq '.[]')
         #local CASK_INFO=$(brew cask info "$CASK")
         local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
+        #brew cask info --json=v1 "$CASK" | jq -r '.[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
+        local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "${CASK_ARTIFACT_APP%.*}")
+        #echo CASK_ARTIFACT_APP_NO_EXTENSION is "$CASK_ARTIFACT_APP_NO_EXTENSION"
         #local CASK_NAME=$(printf '%s\n' "$CASK" | cut -d ":" -f1 | xargs)
         local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | jq -r '.version')
         #local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
@@ -536,6 +544,21 @@ casks_show_updates_parallel() {
         else
             :
         	#echo "only one version installed..."
+        fi
+        
+        # autostart
+        # 10.15 is not opening autostart apps on next boot after install/update without explicitly granting permissions or opening manually before autostart
+        local AUTOSTART_APP_LIST=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//')
+        if [[ "$AUTOSTART_APP_LIST" != "" ]] && [[ "$CHECK_RESULT" == "outdated" ]]
+        then
+            if [[ $(printf '%s\n' "$AUTOSTART_APP_LIST" | grep -i "$CASK") != "" ]] || [[ $(printf '%s\n' "$AUTOSTART_APP_LIST" | grep -i "$CASK_ARTIFACT_APP_NO_EXTENSION") != "" ]]
+            then
+                echo -e "$CASK\t\t$CASK_ARTIFACT_APP_NO_EXTENSION" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART"
+            else
+                :
+            fi
+        else
+            :
         fi
     	
     	if [[ "$CONT_LATEST" =~ ^(yes|y)$ ]]
@@ -718,6 +741,29 @@ post_cask_installations() {
 	    # reset quicklook and quicklook cache if neccessary
 	    #qlmanage -r
 	    #qlmanage -r cache
+    else
+        :
+    fi
+    
+    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART") != "" ]]
+    then
+    	echo ''
+        echo "allowing autostart of updated apps..."
+        while IFS= read -r line || [[ -n "$line" ]]
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+	        local CASK=$(echo "$line" | awk '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+	        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "$line" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	        #echo "$CASK_ARTIFACT_APP_NO_EXTENSION"
+	        if [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
+	        then
+	            APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
+                env_set_open_on_first_run_permissions
+            else
+                echo "${bold_text}app artifact for updated autostart cask "$CASK" not found...${default_text}"
+                echo "open app manually to make autostart work again..." 
+            fi
+        done <<< "$(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART")"
     else
         :
     fi

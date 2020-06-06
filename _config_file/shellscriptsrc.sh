@@ -613,17 +613,8 @@ env_active_source_app() {
 }
 
 
-### app id / bundle identifier
-env_get_app_id() {
-
-    # app id
-    #if [[ -e "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt ]]
-    #then
-    #    local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
-    #else
-    #    :
-    #fi
-    
+### path to app
+env_get_path_to_app() {
     # app path
     local NUM1=0
     local FIND_APP_PATH_TIMEOUT=3
@@ -632,6 +623,11 @@ env_get_app_id() {
     if [[ "$PATH_TO_APP" == "" ]]
     then
         PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+    fi
+    # find apps in pref panes
+    if [[ "$PATH_TO_APP" == "" ]]
+    then
+        PATH_TO_APP=$(find ~/Library/PreferencePanes -mindepth 1 -name ""$APP_NAME".app" | sort -n | head -1)
     fi
     # find apps in other apps
     if [[ "$PATH_TO_APP" == "" ]]
@@ -656,6 +652,21 @@ env_get_app_id() {
     		break
     	fi
     done
+}
+
+
+### app id / bundle identifier
+env_get_app_id() {
+
+    # app id
+    #if [[ -e "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt ]]
+    #then
+    #    local APP_ID=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+    #else
+    #    :
+    #fi
+    
+    env_get_path_to_app
     if [[ "$PATH_TO_APP" == "" ]]
     then
         # trying another way to get the app id without knowing the path to the .app
@@ -1675,10 +1686,11 @@ env_deactivating_keepingyouawake() {
 
 ### permissions for opening on first run
 env_set_open_on_first_run_permissions() {
-    if [[ $(xattr -l "$PATH_TO_FIRST_RUN_APP") != "" ]]
+    env_get_path_to_app
+    if [[ $(xattr -l "$PATH_TO_APP") != "" ]]
 	then
-        xattr -d com.apple.quarantine "$PATH_TO_FIRST_RUN_APP" &> /dev/null
-        /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted "$PATH_TO_FIRST_RUN_APP"
+        xattr -d com.apple.quarantine "$PATH_TO_APP" &> /dev/null
+        /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted "$PATH_TO_APP"
     else
         :
     fi
