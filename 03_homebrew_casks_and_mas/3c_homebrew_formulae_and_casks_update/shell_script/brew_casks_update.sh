@@ -139,7 +139,7 @@ cleanup_casks() {
                 local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
                 #local CASK_NAME=$(printf '%s\n' "$CASK" | cut -d ":" -f1 | xargs)
                 local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | jq -r '.version')
-                #local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
+                #local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
         	    local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
         	    local NEWEST_INSTALLED_VERSION=$(printf '%s\n' "$INSTALLED_VERSIONS" | head -n 1)
         	    #local NEWEST_INSTALLED_VERSION="$NEW_VERSION"
@@ -290,8 +290,8 @@ formulae_show_updates_parallel() {
             local NEW_VERSION=$(echo $(printf '%s\n' "$FORMULA_INFO" | jq -r '.versions.stable')_"$FORMULA_REVISION")
         fi
         #echo NEW_VERSION is $NEW_VERSION
-        local NUMBER_OF_INSTALLED_FORMULAE=$(printf '%s\n' "$INSTALLED_FORMULAE" | wc -l | sed 's/^ *//' | sed 's/ *$//')
-        local NUMBER_OF_FORMULA=$(printf '%s\n' "$INSTALLED_FORMULAE" | grep -n "^$FORMULA$" | awk -F: '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
+        local NUMBER_OF_INSTALLED_FORMULAE=$(printf '%s\n' "$INSTALLED_FORMULAE" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+        local NUMBER_OF_FORMULA=$(printf '%s\n' "$INSTALLED_FORMULAE" | grep -n "^$FORMULA$" | awk -F: '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
         local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAE_PATH"/"$FORMULA" | sort -V)
         #echo INSTALLED_VERSIONS is "$INSTALLED_VERSIONS"
         local NUMBER_OF_INSTALLED_VERSIONS=$(printf '%s\n' "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//')
@@ -508,9 +508,9 @@ casks_show_updates_parallel() {
         #echo CASK_ARTIFACT_APP_NO_EXTENSION is "$CASK_ARTIFACT_APP_NO_EXTENSION"
         #local CASK_NAME=$(printf '%s\n' "$CASK" | cut -d ":" -f1 | xargs)
         local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | jq -r '.version')
-        #local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^ *//' | sed 's/ *$//')
-        local NUMBER_OF_INSTALLED_CASKS=$(printf '%s\n' "$INSTALLED_CASKS" | wc -l | sed 's/^ *//' | sed 's/ *$//')
-        local NUMBER_OF_CASK=$(printf '%s\n' "$INSTALLED_CASKS" | grep -n "^$CASK$" | awk -F: '{print $1}' | sed 's/^ *//' | sed 's/ *$//')
+        #local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | grep -e "$CASK_NAME: .*" | cut -d ":" -f2 | head -1 | sed 's|(auto_updates)||g' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+        local NUMBER_OF_INSTALLED_CASKS=$(printf '%s\n' "$INSTALLED_CASKS" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+        local NUMBER_OF_CASK=$(printf '%s\n' "$INSTALLED_CASKS" | grep -n "^$CASK$" | awk -F: '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
         local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
         #echo INSTALLED_VERSIONS is "$INSTALLED_VERSIONS"
         local NUMBER_OF_INSTALLED_VERSIONS=$(printf '%s\n' "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//') 
@@ -554,7 +554,7 @@ casks_show_updates_parallel() {
         
         # autostart
         # 10.15 is not opening autostart apps on next boot after install/update without explicitly granting permissions or opening manually before autostart
-        local AUTOSTART_APP_LIST=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//')
+        local AUTOSTART_APP_LIST=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
         if [[ "$AUTOSTART_APP_LIST" != "" ]] && [[ "$CHECK_RESULT" == "outdated" ]] && [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
         then
             if [[ $(printf '%s\n' "$AUTOSTART_APP_LIST" | grep -i "$CASK") != "" ]] || [[ $(printf '%s\n' "$AUTOSTART_APP_LIST" | grep -i "$CASK_ARTIFACT_APP_NO_EXTENSION") != "" ]]
@@ -751,27 +751,45 @@ post_cask_installations() {
         :
     fi
     
-    if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART") != "" ]]
+    # as it is not possible to get the full name of all apps from the cask take the safer way and ensure all autostart apps
+    autostart_permissions_cask_specific() {
+        if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART") != "" ]]
+        then
+        	echo ''
+            echo "allowing autostart of updated apps..."
+            while IFS= read -r line || [[ -n "$line" ]]
+    		do
+    		    if [[ "$line" == "" ]]; then continue; fi
+    	        local CASK=$(echo "$line" | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    	        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "$line" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    	        #echo "$CASK_ARTIFACT_APP_NO_EXTENSION"
+    	        if [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
+    	        then
+    	            APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
+                    env_set_open_on_first_run_permissions
+                else
+                    echo "${bold_text}app artifact for updated autostart cask "$CASK" not found...${default_text}"
+                    echo "open app manually to make autostart work again..." 
+                fi
+            done <<< "$(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART")"
+        else
+            :
+        fi
+    }
+    #autostart_permissions_cask_specific
+    
+    # if casks were updated ensure permissions for all autostart apps
+    if [[ ! -s "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" ]]
     then
-    	echo ''
-        echo "allowing autostart of updated apps..."
-        while IFS= read -r line || [[ -n "$line" ]]
-		do
-		    if [[ "$line" == "" ]]; then continue; fi
-	        local CASK=$(echo "$line" | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-	        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "$line" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-	        #echo "$CASK_ARTIFACT_APP_NO_EXTENSION"
-	        if [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
-	        then
-	            APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
-                env_set_open_on_first_run_permissions
-            else
-                echo "${bold_text}app artifact for updated autostart cask "$CASK" not found...${default_text}"
-                echo "open app manually to make autostart work again..." 
-            fi
-        done <<< "$(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART")"
-    else
+    	# file is empty or does not exist
         :
+    else
+    	# file exists and is not empty
+        echo ''
+        echo "setting permissions for autostart apps..."
+        AUTOSTART_PERMISSIONS_ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+        env_check_if_parallel_is_installed 1>/dev/null
+        if [[ "${AUTOSTART_PERMISSIONS_ITEMS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "env_set_permissions_autostart_apps {}" ::: "${AUTOSTART_PERMISSIONS_ITEMS[@]}"; fi 1>/dev/null
     fi
     
 }

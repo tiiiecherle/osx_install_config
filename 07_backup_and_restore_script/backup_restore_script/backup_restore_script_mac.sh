@@ -923,7 +923,7 @@ EOF
                         else
                             ENTRY="$(find "$DIRNAME_ENTRY" -name "$BASENAME_ENTRY" 2> /dev/null)"
                         fi
-                        if [[ $(echo "$ENTRY" | wc -l | sed 's/^ *//' | sed 's/ *$//') -gt 1 ]]
+                        if [[ $(echo "$ENTRY" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') -gt 1 ]]
                         then
                             TERMINALWIDTH_WITHOUT_LEADING_SPACES=$((TERMINALWIDTH-8))
                             echo "`tput setaf 1``tput bold`"$ENTRY_WITH_ASTERISK" gave multiple results, please be more specific with the entry, only using first line of results...`tput sgr0`" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
@@ -1392,7 +1392,7 @@ EOF
                         else
                             ENTRY_RESTORE_FROM="$(find "$DIRNAME_RESTORE_FROM" -mindepth 1 -maxdepth 1 -name "$BASENAME_RESTORE_FROM" 2> /dev/null)"
                         fi
-                        if [[ $(echo "$ENTRY_RESTORE_FROM" | wc -l | sed 's/^ *//' | sed 's/ *$//') -gt 1 ]]
+                        if [[ $(echo "$ENTRY_RESTORE_FROM" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') -gt 1 ]]
                         then
                             TERMINALWIDTH_WITHOUT_LEADING_SPACES=$((TERMINALWIDTH-8))
                             echo -e "\033[1;31m$ENTRY_WITH_ASTERISK gave multiple results, please be more specific with the entry, only using first line of results...\033[0m" | fold -w "$TERMINALWIDTH_WITHOUT_LEADING_SPACES" | sed "s/^/\ \ \ \ \ \ \ \ /g"
