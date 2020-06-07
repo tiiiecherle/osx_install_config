@@ -168,9 +168,9 @@ env_databases_apps_security_permissions
 
 ### getting identifier
 # APP_IDENTIFIER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APPS"/"$APP_NAME".app/Contents/Info.plist)
-#APP_IDENTIFIER=$(printf '%s\n' "${!ARRAY_NAME}" | sed -n '2p' | sed 's/^ //g' | sed 's/ $//g')
+#APP_IDENTIFIER=$(printf '%s\n' "${!ARRAY_NAME}" | sed -n '2p' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 #echo $APP_IDENTIFIER
-#CSREQ_BLOB=$(printf '%s\n' "${!ARRAY_NAME}" | sed -n '3p' | sed 's/^ //g' | sed 's/ $//g')
+#CSREQ_BLOB=$(printf '%s\n' "${!ARRAY_NAME}" | sed -n '3p' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 #echo $CSREQ_BLOB
 
 ### getting csreq_blob
@@ -185,10 +185,10 @@ env_databases_apps_security_permissions
 
 #sudo tccutil reset AppleEvents
 #tccutil reset AppleEvents
-#for APP_ARRAY_NAME in $(cat "$SCRIPT_DIR"/"$SCRIPT_NAME" | sed 's/^ //g' | sed 's/ $//g' | grep "_DATA=($" | sed 's/_DATA.*//')
+#for APP_ARRAY_NAME in $(cat "$SCRIPT_DIR"/"$SCRIPT_NAME" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | grep "_DATA=($" | sed 's/_DATA.*//')
 #do
 #    APP_ARRAY="$APP_ARRAY_NAME""_DATA"[@]
-#    APP_NAME=$(printf '%s\n' "${!APP_ARRAY}" | sed -n '1p' | sed 's/^ //g' | sed 's/ $//g')
+#    APP_NAME=$(printf '%s\n' "${!APP_ARRAY}" | sed -n '1p' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 #    echo "$APP_NAME"
 #    osascript -e "tell application \"$APP_NAME\" to «event BATFinit»"
 #done

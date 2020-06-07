@@ -280,9 +280,9 @@ install_mas_apps() {
 	fi
 	#echo ''
 	#echo "$i"
-	MAS_NUMBER=$(echo "$i" | awk '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+	MAS_NUMBER=$(echo "$i" | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	#echo $MAS_NUMBER
-	MAS_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	MAS_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	#echo $MAS_NAME
     if [[ $(find "$PATH_TO_APPS" -path '*Contents/_MASReceipt/receipt' -maxdepth 4 -print0 | sed 's#.app/Contents/_MASReceipt/receipt#.app#g; s#/Applications/##' | xargs -0 basename | grep "$MAS_NAME") == "" ]]
     then

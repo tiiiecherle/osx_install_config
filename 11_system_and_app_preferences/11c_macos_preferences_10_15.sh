@@ -1000,11 +1000,11 @@ EOF
 		do
 		    if [[ "$line" == "" ]]; then continue; fi
 	        i="$line"
-	        local APP_PATH=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+	        local APP_PATH=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	        #echo "APP_PATH is "$APP_PATH"..."
 	        local APP_NAME=$(basename "$APP_PATH")
 	       	#echo "APP_NAME is "$APP_NAME"..."
-			local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+			local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	       	#echo "START_HIDDEN is "$START_HIDDEN"..."
 			if [[ -e "$APP_PATH".app ]]
 			then
@@ -1972,7 +1972,7 @@ EOF
     
     echo "preferences sharing"
     
-    MY_HOSTNAME=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g' | sed 's/^/'"$USER"'s-/g')    
+    MY_HOSTNAME=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed 's/^/'"$USER"'s-/g')    
     if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd2" ]]
     then
         MY_HOSTNAME=$(echo "$MY_HOSTNAME" | sed 's/$/2/g') 

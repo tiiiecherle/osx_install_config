@@ -123,7 +123,7 @@ create_network_devices_profile() {
     ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep -v "Bluetooth" | grep -v "Bridge")
     #ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018
     #ETHERNET_DEVICE="Ethernet"                 # imacs
-    HARDWARE_TYPE=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g') 
+    HARDWARE_TYPE=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') 
     if [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "macbookpro" ]]
     then
         ETHERNET_DEVICE="USB 10/100/1000 LAN"
@@ -617,7 +617,7 @@ check_if_ethernet_is_active() {
     		#echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
     		sleep 1
             ETHERNET_CONNECTED=$(printf "get State:/Network/Interface/"$ETHERNET_DEVICE_ID"/Link\nd.show" | scutil | grep Active | awk '{print $NF}')
-            #$(ifconfig en0 | grep status | cut -d ":" -f 2 | sed 's/ //g' | sed '/^$/d') == "active"
+            #$(ifconfig en0 | grep status | cut -d ":" -f 2 | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d') == "active"
     	else
     		#printf '\n'
     		break

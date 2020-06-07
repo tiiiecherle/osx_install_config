@@ -507,7 +507,7 @@ then
 	echo "installing casks..."
 	
 	# installing some casks that have to go first for compatibility reasons
-	casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+	casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
 	if [[ "$casks_pre" == "" ]]
     then
     	:
@@ -531,8 +531,8 @@ then
 	    fi
 	fi
 	
-	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d' | grep -vi "xtrafinder" | grep -vi "totalfinder")
-	finder_enhancements=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d' | grep -i -e "xtrafinder" -e "totalfinder")
+	casks=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d' | grep -vi "xtrafinder" | grep -vi "totalfinder")
+	finder_enhancements=$(cat "$SCRIPT_DIR"/_lists/02_casks.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d' | grep -i -e "xtrafinder" -e "totalfinder")
     if [[ "$casks" == "" ]]
     then
     	:
@@ -642,7 +642,7 @@ then
     then
         echo ''
     	echo "installing casks specific1..."
-    	casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+    	casks_specific1=$(cat "$SCRIPT_DIR"/_lists/03_casks_specific1.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
     	if [[ "$casks_specific1" == "" ]]
 	    then
 	    	:
@@ -676,7 +676,7 @@ then
     SECOND_TRY="yes"
     echo ''
     echo "second try for casks that failed the first time..."
-    casks_second_try=$(cat /tmp/casks_second_try.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+    casks_second_try=$(cat /tmp/casks_second_try.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
     if [[ "$casks_second_try" == "" ]]
     then
     	:

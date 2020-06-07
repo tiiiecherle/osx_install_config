@@ -119,9 +119,9 @@ sudo chmod -R 755 "$SCRIPT_INSTALL_PATH"/
 sudo sed -i '' '/CERTIFICATES_TO_INSTALL=(/,/)$/{//!d;}' "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh
 for i in "${CERTIFICATES_TO_INSTALL[@]}"
 do
-    SERVER_LOCAL=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
-    SERVER_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
-    CERTIFICATE_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
+    SERVER_LOCAL=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    SERVER_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    CERTIFICATE_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
     #echo "LOCAL_SERVER is "$LOCAL_SERVER""
     #echo "CERTIFICATE_NAME is "$CERTIFICATE_NAME""
     sudo sed -i '' -e '/CERTIFICATES_TO_INSTALL=(/a\'$'\n\\\ \t"'"$(printf "%-30s %-40s %-40s\n" \"$SERVER_LOCAL\" \"$SERVER_NAME\" \"$CERTIFICATE_NAME\"\")"'' "$SCRIPT_INSTALL_PATH"/"$SCRIPT_INSTALL_NAME".sh

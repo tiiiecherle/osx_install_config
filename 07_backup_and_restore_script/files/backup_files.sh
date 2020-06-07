@@ -109,7 +109,7 @@ then
         SYSTEMUSERS_ARRAY+=( "$line" )
     done <<< "$(printf "%s\n" "${SYSTEMUSERS[@]}")"
     
-    if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/ //g') == "1" ]]
+    if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') == "1" ]]
     then
         SELECTEDUSER="$SYSTEMUSERS"
     else

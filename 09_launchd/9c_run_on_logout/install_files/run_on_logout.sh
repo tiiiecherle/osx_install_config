@@ -17,7 +17,7 @@ echo "loggedInUser is $loggedInUser..."
 #echo "loggedInUser is $loggedInUser" > /Users/"$loggedInUser"/Desktop/loggedInUser.txt
 
 # getting sum of number of reboots and shutdowns since installation
-NUM1=$(last reboot | grep reboot | wc -l | sed 's/ //g')
+NUM1=$(last reboot | grep reboot | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 #echo $NUM1
 NUM2=$(last shutdown | grep shutdown | wc -l | sed 's/ //g')
 #echo $NUM2

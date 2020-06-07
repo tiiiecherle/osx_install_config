@@ -758,8 +758,8 @@ post_cask_installations() {
         while IFS= read -r line || [[ -n "$line" ]]
 		do
 		    if [[ "$line" == "" ]]; then continue; fi
-	        local CASK=$(echo "$line" | awk '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
-	        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "$line" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	        local CASK=$(echo "$line" | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+	        local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo "$line" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	        #echo "$CASK_ARTIFACT_APP_NO_EXTENSION"
 	        if [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
 	        then

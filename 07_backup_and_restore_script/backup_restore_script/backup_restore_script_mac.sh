@@ -269,7 +269,7 @@ backup_restore() {
     # getting logged in user and unique id
     # done in config script
 
-    if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/ //g') == "1" ]]
+    if [[ $(echo "$SYSTEMUSERS" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') == "1" ]]
     then
         SELECTEDUSER="$SYSTEMUSERS"
         if [[ "$OPTION" == "BACKUP" ]]

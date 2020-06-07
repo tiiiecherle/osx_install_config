@@ -72,7 +72,7 @@ echo "installing homebrew formulae..."
 echo ''
 
 # installing formulae
-homebrew_formulae=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_formulae.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/ //g' | sed '/^$/d')
+homebrew_formulae=$(cat "$SCRIPT_DIR"/_lists/01_homebrew_formulae.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
 if [[ "$homebrew_formulae" == "" ]]
 then
 	echo ''

@@ -109,8 +109,8 @@ getting-needed-entry() {
 for application in "${applications_to_set_values[@]}"
 do
 
-	APP_PATH=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
-    FLAGS_VALUE=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	APP_PATH=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    FLAGS_VALUE=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
     
     if [[ -e "$APP_PATH" ]]
     then
@@ -181,8 +181,8 @@ echo "checking settings..."
 for application in "${applications_to_set_values[@]}"
 do
 
-	APP_PATH=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
-    FLAGS_VALUE=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	APP_PATH=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    FLAGS_VALUE=$(echo "$application" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
     
     if [[ -e "$APP_PATH" ]]
     then

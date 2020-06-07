@@ -291,7 +291,7 @@ check_if_ethernet_is_active() {
     		#echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
     		sleep 1
             ETHERNET_CONNECTED=$(printf "get State:/Network/Interface/"$ETHERNET_DEVICE_ID"/Link\nd.show" | scutil | grep Active | awk '{print $NF}')
-            #$(ifconfig en0 | grep status | cut -d ":" -f 2 | sed 's/ //g' | sed '/^$/d') == "active"
+            #$(ifconfig en0 | grep status | cut -d ":" -f 2 | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d') == "active"
     	else
     		#printf '\n'
     		break

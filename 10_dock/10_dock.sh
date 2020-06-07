@@ -104,13 +104,13 @@ set_dock_from_profile() {
         i="$line"
         LINENUMBER=$((LINENUMBER+1))
 
-        ENTRY_POSITION=$(echo "$i" | awk '{print $1}' | sed 's/^ //g' | sed 's/ $//g')
+        ENTRY_POSITION=$(echo "$i" | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	    #echo "$ENTRY_POSITION"
-	    ENTRY_TYPE=$(echo "$i" | awk '{print $2}' | sed 's/^ //g' | sed 's/ $//g')
+	    ENTRY_TYPE=$(echo "$i" | awk '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	    #echo "$ENTRY_TYPE"
-	    ENTRY_VALUE1=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^ //g' | sed 's/ $//g')
-	    ENTRY_VALUE2=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $4}' | sed 's/^ //g' | sed 's/ $//g')
-	    ENTRY_VALUE3=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $5}' | sed 's/^ //g' | sed 's/ $//g')
+	    ENTRY_VALUE1=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+	    ENTRY_VALUE2=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $4}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+	    ENTRY_VALUE3=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $5}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	    #echo "$ENTRY_VALUE1"
 	    #echo "$ENTRY_VALUE2"
 	    #echo "$ENTRY_VALUE3"
