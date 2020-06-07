@@ -88,7 +88,7 @@ check_mas_apps() {
 	#echo doing it for $1
 	if [[ "$INSTALLATION_METHOD" == "parallel" ]]
 	then
-		# if parallels is used i needs to redefined
+		# if parallels is used i needs to be redefined
 		i="$1"
 	else
 		:
