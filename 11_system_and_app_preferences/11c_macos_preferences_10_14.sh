@@ -1814,13 +1814,13 @@ EOF
     ### current user startup items
     
     # listing startup-items
-    #osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//'
+    #osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g'
     
     # deleting startup-items
     # osascript -e 'tell application "System Events" to delete login item "itemname"'
     
     # deleting all startup items
-    if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//') != "" ]]
+    if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') != "" ]]
     then
         while IFS= read -r line || [[ -n "$line" ]]        
 		do
@@ -1828,7 +1828,7 @@ EOF
             autostartapp="$line"
         	echo "deleting autostartentry for $autostartapp..."
         	osascript -e "tell application \"System Events\" to delete login item \"$autostartapp\""
-        done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//')"
+        done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')"
     else
         :
     fi

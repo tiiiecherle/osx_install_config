@@ -975,13 +975,13 @@ EOF
     ### current user startup items
     
     # listing startup-items
-    #osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//'
+    #osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g'
     
     # deleting startup-items
     # osascript -e 'tell application "System Events" to delete login item "itemname"'
     
     # deleting all startup items
-    if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//') != "" ]]
+    if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') != "" ]]
     then
         while IFS= read -r line || [[ -n "$line" ]]        
 		do
@@ -989,7 +989,7 @@ EOF
             autostartapp="$line"
         	echo "deleting autostartentry for $autostartapp..."
         	osascript -e "tell application \"System Events\" to delete login item \"$autostartapp\""
-        done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//')"
+        done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')"
     else
         :
     fi
@@ -1061,7 +1061,7 @@ EOF
     # 10.15 is not opening autostart apps on next boot after install/update without explicitly granting permissions or opening manually before autostart
     opening_autostart_apps() {
         echo "opening autostart apps to make them available after reboot"
-        if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//') != "" ]]
+        if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') != "" ]]
         then
                 
             while IFS= read -r line || [[ -n "$line" ]]        
@@ -1094,7 +1094,7 @@ EOF
                     #osascript -e "tell application \"$autostartapp\" to quit"
                 fi
                 
-            done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^ *//')"
+            done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')"
             
             if [[ -e "/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon.app" ]]
             then
@@ -1113,9 +1113,19 @@ EOF
         env_identify_terminal
         osascript -e "tell application \"$SOURCE_APP_NAME\" to activate"
     }
-    opening_autostart_apps
-
-
+    #opening_autostart_apps
+    
+    echo "setting permissions for autostart apps to make them available after reboot"
+    AUTOSTART_PERMISSIONS_ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    env_check_if_parallel_is_installed
+    if [[ "$INSTALLATION_METHOD" == "parallel" ]]
+    then
+        NUMBER_OF_MAX_JOBS_ROUNDED=$(parallel --number-of-cores)
+        if [[ "${AUTOSTART_PERMISSIONS_ITEMS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "env_set_permissions_autostart_apps {}" ::: "${AUTOSTART_PERMISSIONS_ITEMS[@]}"; fi
+    else
+        env_set_permissions_autostart_apps_sequential
+    fi
+    
 
     ###
     ### preferences screen time
