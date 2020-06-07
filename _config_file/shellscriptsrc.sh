@@ -617,14 +617,28 @@ env_active_source_app() {
 env_get_path_to_app() {
     # app path
     local NUM1=0
-    local FIND_APP_PATH_TIMEOUT=3
+    local FIND_APP_PATH_TIMEOUT=4
     unset PATH_TO_APP
-    PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+    # if an app is deleted and reinstalled or installed for the first time mdfind needs some time for indexing and find is a faster
+    # apps
+    if [[ "$PATH_TO_APP" == "" ]]
+    then
+        PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 2 -name ""$APP_NAME".app" | sort -n | head -1)
+    fi
     if [[ "$PATH_TO_APP" == "" ]]
     then
         PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
     fi
-    # find apps in pref panes
+    # system apps
+    if [[ "$PATH_TO_APP" == "" ]]
+    then
+        PATH_TO_APP=$(find "$PATH_TO_SYSTEM_APPS" -mindepth 1 -maxdepth 2 -name ""$APP_NAME".app" | sort -n | head -1)
+    fi
+    if [[ "$PATH_TO_APP" == "" ]]
+    then
+        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+    fi
+    # pref panes
     if [[ "$PATH_TO_APP" == "" ]]
     then
         PATH_TO_APP=$(find ~/Library/PreferencePanes -mindepth 1 -name ""$APP_NAME".app" | sort -n | head -1)
@@ -1694,6 +1708,38 @@ env_set_open_on_first_run_permissions() {
     else
         :
     fi
+}
+
+env_set_permissions_autostart_apps() {
+    if [[ "$INSTALLATION_METHOD" == "parallel" ]]
+	then
+		# if parallels is used $line needs to be redefined
+		APP_NAME="$1"
+    else
+	    APP_NAME="$autostartapp"
+    fi
+    echo "$APP_NAME"
+    env_set_open_on_first_run_permissions
+    if [[ "$APP_NAME" == "run_on_login_whatsapp" ]]
+    then
+        APP_NAME="WhatsApp"
+        env_set_open_on_first_run_permissions
+    elif [[ "$APP_NAME" == "run_on_login_signal" ]]
+    then
+        APP_NAME="Signal"
+        env_set_open_on_first_run_permissions
+    else
+        :
+    fi
+}
+
+env_set_permissions_autostart_apps_sequential() {
+    while IFS= read -r line || [[ -n "$line" ]]        
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
+        autostartapp="$line"
+        env_set_permissions_autostart_apps "$autostartapp"
+    done <<< "$(printf "%s\n" "${AUTOSTART_PERMISSIONS_ITEMS[@]}")"
 }
 
 
