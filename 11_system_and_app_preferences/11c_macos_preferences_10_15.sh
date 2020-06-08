@@ -1982,7 +1982,7 @@ EOF
     
     echo "preferences sharing"
     
-    MY_HOSTNAME=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed 's/^/'"$USER"'s-/g')    
+    MY_HOSTNAME=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed -e 's/ //g' | sed 's/^/'"$USER"'s-/g')    
     if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd2" ]]
     then
         MY_HOSTNAME=$(echo "$MY_HOSTNAME" | sed 's/$/2/g') 
