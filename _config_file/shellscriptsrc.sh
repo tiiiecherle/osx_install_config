@@ -619,34 +619,45 @@ env_get_path_to_app() {
     local NUM1=0
     local FIND_APP_PATH_TIMEOUT=4
     unset PATH_TO_APP
+    
+    # app name
+    APP_NAME_EXTENSION=$([[ "$APP_NAME" = *.* ]] && echo ".${APP_NAME##*.}" || echo '')
+    if [[ "$APP_NAME_EXTENSION" == "" ]]
+    then
+        APP_NAME_WITH_EXTENSION=""$APP_NAME".app"
+    else
+        # extension exists
+        APP_NAME_WITH_EXTENSION="$APP_NAME"
+    fi
+    
     # if an app is deleted and reinstalled or installed for the first time mdfind needs some time for indexing and find is a faster
     # apps
     if [[ "$PATH_TO_APP" == "" ]]
     then
-        PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 2 -name ""$APP_NAME".app" | sort -n | head -1)
+        PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
     fi
     if [[ "$PATH_TO_APP" == "" ]]
     then
-        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
     fi
     # system apps
     if [[ "$PATH_TO_APP" == "" ]]
     then
-        PATH_TO_APP=$(find "$PATH_TO_SYSTEM_APPS" -mindepth 1 -maxdepth 2 -name ""$APP_NAME".app" | sort -n | head -1)
+        PATH_TO_APP=$(find "$PATH_TO_SYSTEM_APPS" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
     fi
     if [[ "$PATH_TO_APP" == "" ]]
     then
-        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
     fi
     # pref panes
     if [[ "$PATH_TO_APP" == "" ]]
     then
-        PATH_TO_APP=$(find ~/Library/PreferencePanes -mindepth 1 -name ""$APP_NAME".app" | sort -n | head -1)
+        PATH_TO_APP=$(find ~/Library/PreferencePanes -mindepth 1 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
     fi
     # find apps in other apps
     if [[ "$PATH_TO_APP" == "" ]]
     then
-        PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 2 -name ""$APP_NAME".app" | sort -n | head -1)
+        PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
     fi
     while [[ "$PATH_TO_APP" == "" ]]
     do
@@ -660,7 +671,7 @@ env_get_path_to_app() {
     		#perl -e 'printf "%.2f\n",'$NUM1''
 	        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
     		sleep 0.5
-            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/$APP_NAME.app$" | sort -n | head -1)
+            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
     	else
     	    #printf '\n'
     		break
