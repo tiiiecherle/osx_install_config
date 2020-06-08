@@ -621,7 +621,7 @@ env_get_path_to_app() {
     unset PATH_TO_APP
     
     # app name
-    APP_NAME_EXTENSION=$([[ "$APP_NAME" = *.* ]] && echo ".${APP_NAME##*.}" || echo '')
+    APP_NAME_EXTENSION=$([[ "$APP_NAME" = *.* ]] && echo "${APP_NAME##*.}" || echo '')
     if [[ "$APP_NAME_EXTENSION" == "" ]]
     then
         APP_NAME_WITH_EXTENSION=""$APP_NAME".app"
@@ -1712,12 +1712,18 @@ env_deactivating_keepingyouawake() {
 ### permissions for opening on first run
 env_set_open_on_first_run_permissions() {
     env_get_path_to_app
-    if [[ $(xattr -l "$PATH_TO_APP") != "" ]]
-	then
-        xattr -d com.apple.quarantine "$PATH_TO_APP" &> /dev/null
-        /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted "$PATH_TO_APP"
-    else
+    APP_NAME_EXTENSION=$([[ "$APP_NAME" = *.* ]] && echo "${APP_NAME##*.}" || echo '')
+    if [[ "$APP_NAME_EXTENSION" == "jar" ]]
+    then
         :
+    else
+        if [[ $(xattr -l "$PATH_TO_APP") != "" ]]
+        then
+            xattr -d com.apple.quarantine "$PATH_TO_APP" &> /dev/null
+            /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted "$PATH_TO_APP"
+        else
+            :
+        fi
     fi
 }
 
