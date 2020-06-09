@@ -225,8 +225,8 @@ env_check_if_online_old() {
 }
 
 env_check_if_online() {
-    PINGTARGET1=google.com
-    PINGTARGET2=duckduckgo.com
+    ONLINECHECK1=google.com
+    ONLINECHECK2=duckduckgo.com
     # check 1
     # ping -c 3 "$PINGTARGET1" >/dev/null 2>&1'
     # check 2
@@ -236,12 +236,12 @@ env_check_if_online() {
     #
     echo ''
     echo "checking internet connection..."
-    if [[ $(env_timeout 3 2>/dev/null dig +short -4 "$PINGTARGET1" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+    if [[ $(env_timeout 3 2>/dev/null dig +short -4 "$ONLINECHECK1" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
     then
         ONLINE_STATUS="online"
         echo "we are online..."
     else
-        if [[ $(env_timeout 3 2>/dev/null dig +short -4 "$PINGTARGET2" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
+        if [[ $(env_timeout 3 2>/dev/null dig +short -4 "$ONLINECHECK2" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
         then
             ONLINE_STATUS="online"
             echo "we are online..."
