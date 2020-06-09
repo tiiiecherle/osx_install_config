@@ -147,24 +147,16 @@ create_logfile() {
 }
 
 getting_network_device_ids() {
-    # get device names
-    WLAN_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: AirPort" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
-    ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep -v "Bluetooth" | grep -v "Bridge")
-    #ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018 and newer
-    #ETHERNET_DEVICE="Ethernet"                 # imacs
-    HARDWARE_TYPE=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed -e 's/ //g') 
-    if [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "macbookpro" ]]
+    # sourcing profile variables
+    NETWORK_DEVICES_CONFIG_FILE=/Users/"$loggedInUser"/Library/Preferences/network_devices.conf
+    if [[ -e "$NETWORK_DEVICES_CONFIG_FILE" ]]
     then
-        ETHERNET_DEVICE="USB 10/100/1000 LAN"
-    elif [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "imac" ]]
-    then
-        ETHERNET_DEVICE="Ethernet"
+        . "$NETWORK_DEVICES_CONFIG_FILE"
     else
-        :
+        echo "$NETWORK_DEVICES_CONFIG_FILE not found, exiting..."
+        echo ''
+        exit
     fi
-    BLUETOOTH_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep "Bluetooth")
-    THUNDERBOLT_BRIDGE_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep "Bridge")
-    
     # wlan device id
     if [[ "$WLAN_DEVICE" != "" ]]
     then
@@ -191,118 +183,17 @@ getting_network_device_ids() {
     else
         echo "no ethernet device in devices profile..."
     fi
-    echo ''
-}
-
-set_ethernet_priority() {
-    # make sure lan has a higher priority than wlan if both are enabled
-    # all available network devices have be be used in this order or an arror will occur
-    NETWORKSERVICES_ETHERNET_WLAN_PRIORIZED=(
-    # priority sorted order
-    "$ETHERNET_DEVICE"
-    "$WLAN_DEVICE"
-    )
-
-    ALL_ACTIVE_NETWORKSERVICES=$(networksetup -listnetworkserviceorder | cut -d')' -f2 | sed '/^$/d' | sed '1d' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-    ALL_ACTIVE_NETWORKSERVICES_FILTERED="$ALL_ACTIVE_NETWORKSERVICES"
-    if [[ "$ETHERNET_DEVICE" != "" ]] || [[ "$ETHERNET_DEVICE_ID" != "" ]]
-    then
-        NETWORKSERVICES_ETHERNET_WLAN_PRIORIZED=$(printf '%s\n' "${NETWORKSERVICES_ETHERNET_WLAN_PRIORIZED[@]}" | grep -v "$ETHERNET_DEVICE")
-    else
-        ALL_ACTIVE_NETWORKSERVICES_FILTERED=$(printf '%s\n' "${ALL_ACTIVE_NETWORKSERVICES_FILTERED[@]}" | grep -v "$ETHERNET_DEVICE")
-    fi
-    if [[ "$WLAN_DEVICE" != "" ]] || [[ "$WLAN_DEVICE_ID" != "" ]]
-    then
-        NETWORKSERVICES_ETHERNET_WLAN_PRIORIZED=$(printf '%s\n' "${NETWORKSERVICES_ETHERNET_WLAN_PRIORIZED[@]}" | grep -v "$WLAN_DEVICE")
-    else
-        ALL_ACTIVE_NETWORKSERVICES_FILTERED=$(printf '%s\n' "${ALL_ACTIVE_NETWORKSERVICES_FILTERED[@]}" | grep -v "$WLAN_DEVICE")
-    fi
-    ALL_ACTIVE_NETWORKSERVICES_PRIORIZED=(
-    # priority sorted order
-    "${NETWORKSERVICES_ETHERNET_WLAN_PRIORIZED[@]}"
-    "${ALL_ACTIVE_NETWORKSERVICES_FILTERED[@]}"
-    )
-    ALL_ACTIVE_DEVICES_PRIORIZED_TO_SET=$(printf '%s\n' "${ALL_ACTIVE_NETWORKSERVICES_PRIORIZED[@]}" | sed '/^$/d' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed -n 's/.*/"&"/; $! s/$//; 1 h; 1 ! H; $ { x; s/\n/ /g; p; }')
-    #echo "$ALL_ACTIVE_DEVICES_PRIORIZED_TO_SET"
-    eval "sudo networksetup -ordernetworkservices $ALL_ACTIVE_DEVICES_PRIORIZED_TO_SET"
-}
-
-finish_ethernet_setup() {
-    NETWORK_PROFILE=/Users/"$loggedInUser"/Library/Preferences/network_profile_"$loggedInUser".conf
-
-    FILES_TO_SOURCE=(
-    "$NETWORK_PROFILE"
-    )
-    
-    while IFS= read -r line || [[ -n "$line" ]] 
-	do
-	    if [[ "$line" == "" ]]; then continue; fi
-        i="$line"
-        if [[ -e "$i" ]]
-        then
-            #echo "sourcing "$i"..."
-            . "$i"
-        else
-            :
-        fi
-    done <<< "$(printf "%s\n" "${FILES_TO_SOURCE[@]}")"
-    
-    #echo "NETWORK_PROFILE is "$NETWORK_PROFILE""
-    #echo "ETHERNET_SETUP_COMPLETE is "$ETHERNET_SETUP_COMPLETE""
-    #echo "ETHERNET_DEVICE_ID is "$ETHERNET_DEVICE_ID""
-    #echo "ETHERNET_DEVICE is "$ETHERNET_DEVICE""
-    #echo "WLAN_DEVICE is "$WLAN_DEVICE""
-    if [[ -e "$NETWORK_PROFILE" ]] && [[ "$ETHERNET_SETUP_COMPLETE" == "no" ]] && [[ "$ETHERNET_DEVICE_ID" != "" ]]
-    then
-        #echo ''
-        echo "finishing ethernet setup..."
-        
-        while IFS= read -r line || [[ -n "$line" ]] 
-    	do
-    	    if [[ "$line" == "" ]]; then continue; fi
-            LOCATION_NAME="$line"
-            
-            sudo networksetup -switchtolocation "$LOCATION_NAME" &>/dev/null
-            sleep 2
-            sudo networksetup -createnetworkservice "$ETHERNET_DEVICE" "$ETHERNET_DEVICE" &>/dev/null
-            sleep 2
-            sudo networksetup -setv6off "$ETHERNET_DEVICE"
-            #sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
-            sleep 2
-            if [[ "$LOCATION_NAME" == "$CUSTOM_LOCATION" ]]
-            then
-                sudo networksetup -setmanual "$ETHERNET_DEVICE" "$IP" 255.255.255.0 "$DNS"
-                sleep 2
-                sudo networksetup -setdnsservers "$ETHERNET_DEVICE" "$DNS"
-                sleep 2
-            else
-                :
-            fi
-            set_ethernet_priority
-            sleep 2
-        done <<< "$(printf "%s\n" "${NETWORK_LOCATIONS[@]}")"
-        
-        # ethernet setup complete
-        if [[ -e "$NETWORK_PROFILE" ]]
-        then
-            sed -i '' 's|^ETHERNET_SETUP_COMPLETE=.*|ETHERNET_SETUP_COMPLETE="yes"|g' "$NETWORK_PROFILE"
-            rm -f "$NETWORK_PROFILE"
-        else
-            :
-        fi
-    else
-        :
-    fi
+    #echo ''
 }
 
 enable_wlan_device() {
     # make sure wlan device is enabled when using wlan profile
     if [[ "$WLAN_DEVICE_ID" != "" ]]
     then
+        sleep 1
         if [[ $(sudo networksetup -getairportpower "$WLAN_DEVICE_ID" | awk '{print $NF}') == "Off" ]]
         then
             sudo networksetup -setairportpower "$WLAN_DEVICE_ID" On
-            sleep 10
         else
             :
         fi
@@ -312,12 +203,13 @@ enable_wlan_device() {
 }
 
 disable_wlan_device() {
+    # make sure wlan device is enabled when using wlan profile
     if [[ "$WLAN_DEVICE_ID" != "" ]]
     then
+        sleep 1
         if [[ $(sudo networksetup -getairportpower "$WLAN_DEVICE_ID" | awk '{print $NF}') == "On" ]]
         then
             sudo networksetup -setairportpower "$WLAN_DEVICE_ID" Off
-            sleep 2
         else
             :
         fi
@@ -384,60 +276,35 @@ setting_config() {
 }
 
 check_if_ethernet_is_active() {
+    echo ''
     echo "checking ethernet connection..."
-    sleep 1
     NUM1=0
-    COMMAND_TIMEOUT=3
-    ETHERNET_CONNECTED=$(printf "get State:/Network/Interface/"$ETHERNET_DEVICE_ID"/Link\nd.show" | scutil | grep Active | awk '{print $NF}')
+    FIND_APP_PATH_TIMEOUT=4
+    while [[ "$ETHERNET_CONNECTED" != "TRUE" ]]
+    do
+    	#printf "%.2f\n" "$NUM1"
+    	NUM1=$(bc<<<$NUM1+1)
+    	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+    	then
+    		# bash builtin printf can not print floating numbers
+    		#perl -e 'printf "%.2f\n",'$NUM1''
+    		#echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+    		sleep 1
+            ETHERNET_CONNECTED=$(printf "get State:/Network/Interface/"$ETHERNET_DEVICE_ID"/Link\nd.show" | scutil | grep Active | awk '{print $NF}')
+            #$(ifconfig en0 | grep status | cut -d ":" -f 2 | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d') == "active"
+    	else
+    		#printf '\n'
+    		break
+    	fi
+    done
     if [[ "$ETHERNET_CONNECTED" != "TRUE" ]]
     then
-        echo "ethernet is not active..."
+        echo "ethernet is not active, activating wlan..."
         echo ''
     else
         echo "ethernet is active..."
     fi
     #echo ''
-}
-
-check_if_online() {
-    ONLINECHECK1=google.com
-    ONLINECHECK2=duckduckgo.com
-    #echo ''
-    #echo "checking internet connection..."
-    if [[ $(timeout 3 2>/dev/null dig +short -4 "$ONLINECHECK1" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
-    then
-        ONLINE_STATUS="online"
-        echo "we are online..."
-    else
-        if [[ $(timeout 3 2>/dev/null dig +short -4 "$ONLINECHECK2" 443 | grep -Eo "[0-9\.]{7,15}" | head -1 2>&1) != "" ]]
-        then
-            ONLINE_STATUS="online"
-            echo "we are online..."
-        else
-            ONLINE_STATUS="offline"
-            echo "not online..."
-        fi
-    fi
-}
-
-change_to_location_custom() {
-    if [[ $(networksetup -getcurrentlocation) != "$CUSTOM_LOCATION" ]]
-    then
-        if [[ $(networksetup -listlocations | grep "$CUSTOM_LOCATION") != "" ]]
-        then
-            echo "changing to location "$CUSTOM_LOCATION"..."
-            #echo ''
-            sudo networksetup -switchtolocation "$CUSTOM_LOCATION" &>/dev/null
-            sleep 2
-            CHANGED_PROFILE="yes"
-        else
-            echo ""$CUSTOM_LOCATION" location not found, skipping..."
-            #echo ''
-        fi
-    else
-        echo "location "$CUSTOM_LOCATION" already enabled..."
-        #echo ''
-    fi
 }
 
 
@@ -474,74 +341,72 @@ network_select() {
     getting_network_device_ids
     
     # locations
-    AUTOMATIC_LOCATION="automatic"
-    CUSTOM_LOCATION="custom"
+    ETHERNET_LOCATION="office_lan"
+    WLAN_LOCATION="wlan"
     
-    NETWORK_LOCATIONS=(
-    "$AUTOMATIC_LOCATION"
-    "$CUSTOM_LOCATION"
-    )
-    
-    ### finishig ethernet setup if necessary
-    finish_ethernet_setup
-        
-    # try custom location first
-    change_to_location_custom
-    
-    # check if ethernet is connected and online
-    # check if ethernet interface is present
-    if [[ "$ETHERNET_DEVICE_ID" != "" ]]
+    ### script
+    # changing to lan profile if lan is connected
+    if [[ $(networksetup -listlocations | grep "$ETHERNET_LOCATION") != "" ]]
     then
-        # check if ethernet cable is connected
-        check_if_ethernet_is_active
-        if [[ "$ETHERNET_CONNECTED" == "TRUE" ]]
+        if [[ "$ETHERNET_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
         then
-            disable_wlan_device
-            echo "checking internet connection for ethernet - location $(networksetup -getcurrentlocation)..."
-            check_if_online
-            if [[ "$ONLINE_STATUS" == "offline" ]]
+            if [[ $(networksetup -getcurrentlocation | grep "$ETHERNET_LOCATION") != "" ]]
             then
-                # switch to (ethernet) automatic dhcp profile
+                echo "location "$ETHERNET_LOCATION" already enabled..."
                 echo ''
-                echo "changing to location $(networksetup -listlocations | grep --ignore-case '^auto')..."
-                sudo networksetup -switchtolocation $(networksetup -listlocations | grep --ignore-case '^auto') &>/dev/null
-                sleep 2
                 disable_wlan_device
-                #echo ''
-                echo "checking internet connection for ethernet - location $(networksetup -getcurrentlocation)..."
-                check_if_online
-                if [[ "$ONLINE_STATUS" == "offline" ]]
-                then
-                    ETHERNET_ONLINE="no"
-                else
-                    ETHERNET_ONLINE="yes"
-                fi
             else
-                ETHERNET_ONLINE="yes"
+                echo "changing to location "$ETHERNET_LOCATION"..."
+                echo '' 
+                sudo networksetup -switchtolocation "$ETHERNET_LOCATION"
+                disable_wlan_device
+                printf '\n\n'
+                sleep 10
+            fi
+            DEVICE="ETHERNET"
+            DEVICE_ID="$ETHERNET_DEVICE_ID"
+            set_vbox_network_device
+        else
+            :
+        fi
+        check_if_ethernet_is_active
+    else
+        echo "ethernet location not found, skipping..."
+        echo ''
+    fi
+    
+    # changing to wlan profile if lan is not connected
+    if [[ "$ETHERNET_CONNECTED" == "TRUE" ]]
+    then
+        :
+    else
+        if [[ $(networksetup -listlocations | grep "$WLAN_LOCATION") != "" ]]
+        then
+            if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") == "" ]] || [[ "$ETHERNET_CONNECTED" != "TRUE" ]]
+            then    
+                if [[ $(networksetup -getcurrentlocation | grep "$WLAN_LOCATION") != "" ]]
+                then
+                    echo "location "$WLAN_LOCATION" already enabled..."
+                    echo ''
+                    enable_wlan_device
+                else
+                    echo "changing to location "$WLAN_LOCATION"..."
+                    echo ''
+                    sudo networksetup -switchtolocation "$WLAN_LOCATION"
+                    enable_wlan_device
+                    printf '\n\n'
+                    sleep 10
+                fi
+                DEVICE="WLAN"
+                DEVICE_ID="$WLAN_DEVICE_ID"
+                set_vbox_network_device
+            else
+                :
             fi
         else
-            ETHERNET_ONLINE="no"
+            echo "wlan location not found, skipping..."
+            echo ''
         fi
-    else
-        ETHERNET_ONLINE="no"
-    fi
-            
-    #echo "ETHERNET_ONLINE is "$ETHERNET_ONLINE""
-    if [[ "$ETHERNET_ONLINE" == "yes" ]]
-    then
-        DEVICE="ETHERNET"
-        DEVICE_ID="$ETHERNET_DEVICE_ID"
-        echo ''
-        echo "enabling "$DEVICE" for vbox..."
-        set_vbox_network_device
-    else
-        change_to_location_custom
-        enable_wlan_device
-        DEVICE="WLAN"
-        DEVICE_ID="$WLAN_DEVICE_ID"
-        echo ''
-        echo "enabling "$DEVICE" for vbox..."
-        set_vbox_network_device
     fi
         
     # loading and disabling other launchd services
