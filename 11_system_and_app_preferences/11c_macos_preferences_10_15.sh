@@ -2184,6 +2184,8 @@ EOF
         # variables
         #PRINTER_NAME="NAME_HERE"
         #PRINTER_URL="ipp://IP_HERE/ipp/print"
+        #PRINTER_URL="ipps://IP_HERE:443/ipp/print"
+        # if ppd is commented out here and in printer_data.sh ipp everywhere is used
         #PRINTER_PPD="PATH_TO_PPD_GZ_FILE_HERE"
         
         # sourcing variables
