@@ -209,7 +209,7 @@ then
     DATASIZE_IN_GB="$(echo "scale=2 ; $DATASIZE_IN_B / $KILOBYTE_SIZE / $KILOBYTE_SIZE / $KILOBYTE_SIZE" | bc)"
     DATASIZE_IN_GB_ROUNDED=$(printf "%.0f" $DATASIZE_IN_GB)
     # buffer in GB for downloading additional stuff via createinstallmedia --volume "$VOLUMEPATH" --nointeraction --downloadassets
-    INSTALLER_VOLUME_BUFFER=2
+    INSTALLER_VOLUME_BUFFER=3
     DATASIZE_IN_GB_ROUNDED_MINUS_BUFFER="$(printf "%.2f" $(echo "scale=0 ; $DATASIZE_IN_GB_ROUNDED - $INSTALLER_VOLUME_BUFFER" | bc))"
     DATASIZE_IN_GB_ROUNDED_FORMAT="$(printf "%.0f" $(echo "scale=0 ; $DATASIZE_IN_GB_ROUNDED_MINUS_BUFFER" | bc))"
     #echo $DATASIZE_IN_B
