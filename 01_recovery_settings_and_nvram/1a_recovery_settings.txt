@@ -1,7 +1,11 @@
 recovery settings
 
 ### boot into recovery
+# intel mac
 reboot with command + R pressed, release the keys when apple logo appears
+# silicon mac
+long press power button until menu appears
+
 Open Utilities - Terminal
 
 
