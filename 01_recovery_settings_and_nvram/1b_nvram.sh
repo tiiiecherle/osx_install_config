@@ -10,10 +10,49 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
+
+###
 ### asking password upfront
 ###
 
-env_enter_sudo_password
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+    else
+        env_enter_sudo_password
+    fi
+else
+    :
+fi
+
+
+### trap
+trap_function_exit_middle() { env_stop_sudo; unset SUDOPASSWORD; unset USE_PASSWORD }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
+env_start_sudo
+
+
+###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
 
 
 
@@ -23,8 +62,11 @@ env_enter_sudo_password
 
 echo "nvram"
 
-# disable the sound effects on boot
-#sudo nvram SystemAudioVolume=" "
+# enable startup chime on boot
+#sudo nvram StartupMute=%00
+
+# disable startup chime on boot
+sudo nvram StartupMute=%01
 
 # enable verbose booting
 #sudo nvram boot-args="-v"
@@ -37,13 +79,12 @@ echo "nvram"
 #sudo nvram -d boot-args
 
 
+### stopping the error output redirecting
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
-###
-### unsetting password
-###
-
-unset SUDOPASSWORD
-
+echo ''
+echo "done ;)"
+echo ''
 
 
 ###
