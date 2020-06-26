@@ -275,6 +275,12 @@ batch_run_all() {
 	"$SCRIPTS_FINAL_DIR"/02_preparations/2d_login_shell_customization.sh
 	
 	
+	### nvram
+	printf "\n${bold_text}###\nnvram...\n###\n${default_text}"
+	create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/01_recovery_settings_and_nvram/1b_nvram.sh
+	
+	
 	### system update
 	printf "\n${bold_text}###\nsystem update...\n###\n${default_text}"
 	"$SCRIPTS_FINAL_DIR"/02_preparations/2a_system_update.sh
