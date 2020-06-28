@@ -127,10 +127,6 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/mas
 WAIT_PID=$!
 wait "$WAIT_PID"
 
-# avoiding [oh-my-zsh] Insecure completion-dependent directories detected
-sudo chmod 755 /usr/local/share/zsh
-sudo chmod 755 /usr/local/share/zsh/site-functions
-
 # making sure config file exists
 if [[ ! -e ~/.zshrc ]]
 then
@@ -245,6 +241,11 @@ sudo launchctl config user path ''
 sudo launchctl config system path ''
 #env_stop_sudo			# done in trap
 
+
+### avoiding [oh-my-zsh] Insecure completion-dependent directories detected
+sudo chmod 755 /usr/local/share/zsh
+sudo chmod 755 /usr/local/share/zsh/site-functions
+
 	
 ### sourcing config file if script is run from zsh for changes to take effect
 # will be sourced when opening a new terminal session automatically
@@ -279,7 +280,6 @@ fi
 # source ~/.zshrc
 # sudo "$SHELL" -c "echo $(which zsh) >> /etc/shells"
 # chsh -s $(which zsh) $USER
-
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
