@@ -93,7 +93,8 @@ reset_safari_download_location
 # diskutil apfs list | grep "$DEVICE_IDENTIFIER"
 # LESS='+/^[[:space:]]*changeVolumeRole' man diskutil
 unmount_second_system_partition() {
-    MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
+    #MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
+    MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | sed 's/^.*Volume Name: //' | awk '{$1=$1};1')
     if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd" ]]
     then
         sleep 25
