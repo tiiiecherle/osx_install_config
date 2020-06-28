@@ -10,7 +10,7 @@ libreoffice-language-pack
 adobe-acrobat-reader
 alfred
 angry-ip-scanner
-anydesk
+#anydesk
 appcleaner
 bartender
 bbedit
@@ -36,6 +36,7 @@ imageoptim
 imazing
 istat-menus
 iterm2
+jitsi-meet
 keepingyouawake
 keka
 linphone
@@ -62,6 +63,7 @@ textmate
 the-archive-browser
 the-unarchiver
 tnefs-enough
+ui-browser
 unified-remote
 veracrypt
 vlc
