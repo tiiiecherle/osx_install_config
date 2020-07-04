@@ -79,7 +79,7 @@ reset_safari_download_location() {
     #sudo -H -u "$loggedInUser" defaults read com.apple.Safari &>/dev/null
         
 }
-reset_safari_download_location
+#reset_safari_download_location
 
 
 # workaround for macos bug that prevents /etc/fstab entries to work for encrypted apfs volumes
