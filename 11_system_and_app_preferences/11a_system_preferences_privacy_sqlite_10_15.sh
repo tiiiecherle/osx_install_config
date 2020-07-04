@@ -478,10 +478,10 @@ AUTOMATION_APPS=(
 "run_on_login_reminders                                                     System Events               1"
 "iTerm                                                                      System Events               1"
 "XtraFinder                                                                 Finder                      1"
-"TotalFinder.app                                                            Finder                      1"
+"TotalFinder                                                                Finder                      1"
 "Ondesoft AudioBook Converter                                               iTunes                      1"
-"EagleFiler                                                                 Mail.app                    1"
-"EagleFiler                                                                 Finder.app                  1"
+"EagleFiler                                                                 Mail                        1"
+"EagleFiler                                                                 Finder                      1"
 "witchdaemon                                                                Mail                        0"
 "Linphone                                                                   System Events               1"
 )
