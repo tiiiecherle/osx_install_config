@@ -108,7 +108,7 @@ then
 		fi
 	done
 else  
-	while ps aux | grep '/Safari.app/' | grep -v grep > /dev/null; do sleep 1; done
+	while ps aux | grep 'Safari.app/Contents/MacOS/Safari$' | grep -v grep > /dev/null; do sleep 1; done
 fi
 
 
