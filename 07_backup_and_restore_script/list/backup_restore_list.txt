@@ -454,8 +454,8 @@ echo muCommander
 u	~/Library/Preferences/muCommander
 
 # mysides
-echo mysides
-u	/usr/local/bin/mysides
+#echo mysides
+#u	/usr/local/bin/mysides
 
 # NameChanger
 #echo NameChanger
