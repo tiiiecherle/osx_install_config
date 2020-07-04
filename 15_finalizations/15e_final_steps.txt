@@ -10,7 +10,13 @@ open "mail" and keep open in background for indexing
 
 virus scanner
 	check if virus scan is autostarted (symbol "B" in menu bar, eventually in bartender)
-	virus scan (menu bar) - open main window - "user-defined scan" - complete disk (macintosh_hd)
+	virus scan (menu bar) - open main window - deep scan
+	if virus scanner often uses 100% CPU (for no obvious reason) follow these steps
+		1	disable firmware password if set (boot in recovery cmd + R)
+		2	boot mac in safe mode press shift during start
+		3	boot mac normally and perform deep scan
+		4	enable firmware password if wanted (boot in recovery cmd + R)
+		5	boot mac normally
 
 print filevault_key from desktop file
 
