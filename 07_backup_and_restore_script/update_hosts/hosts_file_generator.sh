@@ -524,7 +524,7 @@ hosts_file_install_update() {
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    time ( hosts_file_install_update )
+    ( hosts_file_install_update )
 else
     time ( hosts_file_install_update )
 fi
