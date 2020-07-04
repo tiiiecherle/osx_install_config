@@ -1819,7 +1819,7 @@ EOF
     # deleting startup-items
     # osascript -e 'tell application "System Events" to delete login item "itemname"'
     
-    # deleting all startup items
+        # deleting all startup items
     if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') != "" ]]
     then
         while IFS= read -r line || [[ -n "$line" ]]        
@@ -1839,37 +1839,37 @@ EOF
 		do
 		    if [[ "$line" == "" ]]; then continue; fi
 	        i="$line"
-	        local APP_PATH=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	        #echo "APP_PATH is "$APP_PATH"..."
-	        local APP_NAME=$(basename "$APP_PATH")
+	        local APP_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	       	#echo "APP_NAME is "$APP_NAME"..."
 			local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	       	#echo "START_HIDDEN is "$START_HIDDEN"..."
-			if [[ -e "$APP_PATH".app ]]
+	       	env_get_path_to_app
+			if [[ "$PATH_TO_APP" != "" ]]
 			then
 			    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
-	            osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$APP_PATH.app'", hidden:"'$START_HIDDEN'"}'
+	            osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$PATH_TO_APP'", hidden:"'$START_HIDDEN'"}'
 	        else
-	        	echo ""$APP_PATH".app not found, skipping..."
+	        	echo ""$APP_NAME" not found, skipping..."
 	        fi
 		done <<< "$(printf "%s\n" "${AUTOSTART_ITEMS[@]}")"
 	}
 	
     AUTOSTART_ITEMS_ALL_USERS=(
-    # name													                                                    start hidden
-    ""$PATH_TO_APPS"/Bartender 3                                                                                false"
-    ""$PATH_TO_APPS"/AudioSwitcher                                                                              false"   
-    ""$PATH_TO_APPS"/KeepingYouAwake                                                                            false" 
-    ""$PATH_TO_APPS"/Alfred 4                                                                                   false" 
-    ""$PATH_TO_APPS"/GeburtstagsChecker                                                                         false" 
-    ""$PATH_TO_APPS"/AppCleaner.app/Contents/Library/LoginItems/AppCleaner SmartDelete                          true" 
-    ""$PATH_TO_APPS"/TotalFinder                                                                                false" 
-    ""$PATH_TO_APPS"/XtraFinder                                                                                 false" 
-    "/Users/"$USER"/Library/PreferencePanes/Witch.prefPane/Contents/Helpers/witchdaemon                         false" 
-    ""$PATH_TO_APPS"/Quicksilver                                                                                false" 
-    #""$PATH_TO_APPS"/Oversight                                                                                  false" 
-    ""$PATH_TO_APPS"/Better                                                                                     false"
-    ""$PATH_TO_APPS"/VirusScannerPlus.app/Contents/Library/LoginItems/VirusScannerHelper                        false"                    
+    # name													                  start hidden
+    "Bartender 3                                                              false"
+    "AudioSwitcher                                                            false"   
+    "KeepingYouAwake                                                          false" 
+    "Alfred 4                                                                 false" 
+    "GeburtstagsChecker                                                       false" 
+    "AppCleaner SmartDelete                                                   true" 
+    "TotalFinder                                                              false" 
+    "XtraFinder                                                               false" 
+    "witchdaemon                                                              false" 
+    "Quicksilver                                                              false" 
+    #"Oversight                                                               false" 
+    "Better                                                                   false"
+    "VirusScannerHelper                                                       false"                    
     # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
     )
     AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_ALL_USERS[@]}")
@@ -1888,14 +1888,14 @@ EOF
     #if [[ $(system_profiler SPHardwareDataType | grep "Model Identifier" | grep "iMac11,2") != "" ]]
     then
         AUTOSTART_ITEMS=(
-        # name													                                                start hidden
-        ""$PATH_TO_APPS"/Macs Fan Control                                                                       false"                     
+        # name													              start hidden
+        "Macs Fan Control                                                     false"                     
         )
         add_startup_items
     else
     	:
     fi
-    
+        
     
     ###
     ### preferences - siri
