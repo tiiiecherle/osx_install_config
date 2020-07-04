@@ -96,6 +96,12 @@ EOF
 		echo ''
 		sleep 2
 		
+		# without this there could be confusions when the system tries to sync while the files get deleted
+		# this would lead to multiple new entries in the reminders and the calendars app 
+		echo "stopping service agents..."
+		launchctl kill 15 gui/"$(id -u)"/com.apple.CalendarAgent
+		launchctl kill 15 gui/"$(id -u)"/com.apple.remindd
+		echo ''
 		
 		### identifying holidays calendar
 		#CALENDAR_DIRS="$(ls -1 "$PATH_TO_CALENDARS"/ | grep ".*.calendar$")"
@@ -245,7 +251,7 @@ EOF
 		
 		
 		### deleting cache
-		delete_cache() {
+		deleting_cache() {
 			echo ''
 			echo "cleaning calendar cache..."
 			# without this the changes will not take effect
@@ -262,19 +268,22 @@ EOF
 		### making sure changes take effect
 		restart_service() {
 			echo ''
-			echo "stopping calendar agent..."
+			echo "stopping service agents..."
 			#osascript -e 'tell application "System Events" to log out'
 			killall Calendar &> /dev/null
 			#killall CalendarAgent
 			#killall remindd
 			# launchctl list
-			launchctl unload /System/Library/LaunchAgents/com.apple.CalendarAgent.plist 2>&1 | grep -v "in progress"
-			sleep 2
-			#delete_cache
+			# already done at the beginnning of the script
+			#launchctl kill 15 gui/"$(id -u)"/com.apple.CalendarAgent
+			#launchctl kill 15 gui/"$(id -u)"/com.apple.remindd
+			#sleep 2
+			#deleting_cache
 			sleep 2
 			echo ''
-			echo "starting calendar agent..."
-			launchctl load /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
+			echo "starting service agents..."
+			launchctl kickstart -k gui/"$(id -u)"/com.apple.CalendarAgent
+			launchctl kickstart -k gui/"$(id -u)"/com.apple.remindd
 			sleep 2
 		}
 		restart_service
@@ -342,11 +351,11 @@ EOF
 					#echo "no"
 				fi
 			done <<< "$(printf "%s\n" "${INFO_PLISTS[@]}")"
-			delete_cache
+			deleting_cache
 			restart_service
 			
 			# waiting for delegates to be loaded
-			WAITING_TIME=30
+			WAITING_TIME=45
 			NUM1=0
 			echo '' && echo ''
 			while [[ "$NUM1" -le "$WAITING_TIME" ]]
@@ -393,26 +402,59 @@ EOF
 		# disable siri analytics, suggestions and learning
 		# done in macos_preferences and separate script
 		
+		### opening app
 		opening_calendar() {
-		echo ''
-		echo "opening calendar..."
-		osascript <<EOF	
-				tell application "Calendar"
-					launch
-					#delay 3
-					#activate
-					#delay 3
-				end tell
-				
-				delay 3
-				
-				tell application "Calendar"
-					activate
-				end tell
-				
+			echo ''
+			echo "opening calendar..."
+			osascript <<EOF	
+					tell application "Calendar"
+						launch
+						#delay 3
+						#activate
+						#delay 3
+					end tell
+					
+					delay 3
+					
+					#tell application "Calendar"
+					#	activate
+					#end tell
+					
 EOF
-		} 
-		#opening_calendar
+		}
+		opening_calendar
+		
+		waiting_and_quitting_calendar() {
+			WAITING_TIME=20
+			NUM1=0
+			#echo ''
+			echo ''
+			while [[ "$NUM1" -le "$WAITING_TIME" ]]
+			do 
+				NUM1=$((NUM1+1))
+				if [[ "$NUM1" -le "$WAITING_TIME" ]]
+				then
+					#echo "$NUM1"
+					sleep 1
+					tput cuu 1 && tput el
+					echo "waiting $((WAITING_TIME-NUM1)) seconds to give the calendar time to sync and apply settings..."
+				else
+					:
+				fi
+			done
+		}
+		waiting_and_quitting_calendar
+		
+		# quitting calendar
+		osascript <<EOF
+		
+			try
+				tell application "Calendar"
+					quit
+				end tell
+			end try
+		
+EOF
 
 		echo ''
 		echo "done ;)"

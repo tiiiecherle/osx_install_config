@@ -83,6 +83,7 @@ then
 				
 EOF
 	}
+	#opening_calendar
 	
 	waiting_and_quitting_calendar() {
 		WAITING_TIME=20
@@ -103,7 +104,6 @@ EOF
 			fi
 		done
 	}
-	#opening_calendar
 	#waiting_and_quitting_calendar
 	
 	### quitting calandar and contacts
@@ -200,8 +200,11 @@ EOF
 			if [[ $ALARM_SET_TO_OFF == "true" ]]
 			then
 				NOTIFICATION_STATUS="disabled"
-			else
+			elif [[ $ALARM_SET_TO_OFF == "false" ]]
+			then
 				NOTIFICATION_STATUS="enabled"
+			else
+				NOTIFICATION_STATUS="undefined"
 			fi
 			
 			CALENDAR_TITLE_PRINT=$(printf '%s\n' "$CALENDAR_TITLE" | awk -v len=23 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
@@ -254,7 +257,6 @@ EOF
 	deleting_cache() {
 		echo ''
 		echo "cleaning calendar cache..."
-		# without this the changes will not take effect
 		while [[ $(find "$PATH_TO_CALENDARS"/* -type f -name "Calendar Cache*" -print) != "" ]]
 		do 
 			#rm -f "$PATH_TO_CALENDARS"/"Calendar Cache"*
@@ -274,13 +276,16 @@ EOF
 		#killall CalendarAgent
 		#killall remindd
 		# launchctl list
-		launchctl unload /System/Library/LaunchAgents/com.apple.CalendarAgent.plist 2>&1 | grep -v "in progress"
+		#launchctl unload /System/Library/LaunchAgents/com.apple.CalendarAgent.plist 2>&1 | grep -v "in progress"
+		launchctl kill 15 gui/"$(id -u)"/com.apple.CalendarAgent
 		sleep 2
-		#delete_cache
+		# without this the changes will not take effect
+		deleting_cache
 		sleep 2
 		echo ''
 		echo "starting calendar agent..."
-		launchctl load /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
+		#launchctl load /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
+		launchctl kickstart -k gui/"$(id -u)"/com.apple.CalendarAgent
 		sleep 2
 	}
 	restart_service
