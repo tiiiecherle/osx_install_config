@@ -45,18 +45,20 @@ else
 fi
 
 
-### unloading and disabling (-w) launchd service
-if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]]
+### stopping, disabling and removing launchd service
+if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]] || [[ $(launchctl print-disabled system | grep "$SERVICE_NAME" | grep true) != "" ]]
 then
-    sudo launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist 2>&1 | grep -v "in progress"
-    sudo launchctl disable system/"$SERVICE_NAME"
+    # if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
+	sudo launchctl bootout system "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist 2>&1 | grep -v "in progress" | grep -v "No such process"
+	#sudo launchctl kill 15 system/"$SERVICE_NAME"
+	sudo launchctl disable system/"$SERVICE_NAME"
     sudo launchctl remove "$SERVICE_NAME"
 else
     :
 fi
 
 
-### enabling ohter launchd services
+### enabling other launchd services
 # checking if installed and disabled, if yes, enable
 for i in "${other_launchd_services[@]}"
 do

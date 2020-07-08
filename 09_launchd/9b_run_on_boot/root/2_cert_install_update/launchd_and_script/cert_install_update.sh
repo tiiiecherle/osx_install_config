@@ -176,11 +176,15 @@ certificate_variable_check() {
 
 install_update_certificate() {
 
-    VERSION_TO_CHECK_AGAINST=10.14
-    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+    # mounting system as read/write until next reboot
+    if [[ "$MACOS_VERSION_MAJOR" != 10.15 ]]
     then
-        # macos versions until and including 10.14
-        :
+        # macos versions other than 10.15
+        # more complicated and risky on 10.16 and newer due to signed system volume (ssv)
+		echo ''
+	    echo "this script is only compatible with macos 10.15 exiting..."
+	    echo ''
+	    exit
     else
         # macos versions 10.15 and up
         # in 10.15 /System default gets mounted read-only

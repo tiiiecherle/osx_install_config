@@ -70,14 +70,16 @@ wait
 ### launchd service
 echo ''
 if [[ $(launchctl list | grep "$SERVICE_NAME") != "" ]];
-then
-    launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
-    launchctl disable user/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
+then    
+    # if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
+	launchctl bootout gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME" 2>&1 | grep -v "in progress" | grep -v "No such process"
+	#launchctl kill 15 gui/"$SERVICE_NAME"
+	launchctl disable gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
 else
     :
 fi
-launchctl enable user/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
-launchctl load "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+launchctl enable gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
+launchctl bootstrap gui/"$UNIQUE_USER_ID" "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist | grep -v "in progress" | grep -v "already bootstrapped"
 
 WAITING_TIME=5
 NUM1=0

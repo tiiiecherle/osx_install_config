@@ -114,7 +114,7 @@ configure_other_launchd_services() {
         if [[ $(sudo launchctl list | grep "$i") != "" ]];
         then
             echo "unloading "$i"..."
-            sudo launchctl unload /Library/LaunchDaemons/"$i".plist 2>&1 | grep -v "in progress"
+            sudo launchctl bootout system /Library/LaunchDaemons/"$i".plist 2>&1 | grep -v "in progress" | grep -v "No such process"
         else
             :
         fi
@@ -141,14 +141,16 @@ configure_other_launchd_services() {
 ### launchd service
 echo ''
 if [[ $(sudo launchctl list | grep "$SERVICE_NAME") != "" ]];
-then
-    sudo launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist 2>&1 | grep -v "in progress"
-    sudo launchctl disable system/"$SERVICE_NAME"
+then    
+    # if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
+	sudo launchctl bootout system "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist 2>&1 | grep -v "in progress" | grep -v "No such process"
+	#sudo launchctl kill 15 system/"$SERVICE_NAME"
+	sudo launchctl disable system/"$SERVICE_NAME"
 else
     :
 fi
 sudo launchctl enable system/"$SERVICE_NAME"
-sudo launchctl load "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
+sudo launchctl bootstrap system "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
 
 WAITING_TIME=10
 NUM1=0

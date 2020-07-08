@@ -427,8 +427,10 @@ network_select() {
                 else
                     #echo "$i is not running..."
                     echo "loading "$i"..."
-                    # starting service and ignoring the disabled status, will not be enabled after boot
-                    sudo launchctl load -F /Library/LaunchDaemons/"$i".plist
+                    # starting service and ignoring the disabled status, will not be enabled after boot                    
+                    sudo launchctl enable system/"$i"
+                    sudo launchctl bootstrap system /Library/LaunchDaemons/"$i".plist 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"	
+                    sudo launchctl disable system/"$i"    
                 fi
                 #
                 #sudo launchctl print-disabled system | grep "$i"

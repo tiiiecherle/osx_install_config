@@ -43,29 +43,17 @@ else
 fi
 
 
-### unloading and disabling (-w) launchd service
-if [[ $(launchctl list | grep "$SERVICE_NAME") != "" ]]
+### stopping, disabling and removing launchd service
+if [[ $(launchctl list | grep "$SERVICE_NAME") != "" ]] || [[ $(launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$SERVICE_NAME" | grep true) != "" ]]
 then
-    launchctl unload "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist
-    launchctl disable user/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
+    # if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
+	launchctl bootout gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME" 2>&1 | grep -v "in progress" | grep -v "No such process"
+	#launchctl kill 15 gui/"$SERVICE_NAME"
+	launchctl disable gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
     launchctl remove "$SERVICE_NAME"
 else
     :
 fi
-
-
-### enabling launchd service
-# checking if installed and disabled, if yes, enable
-for i in "$SERVICE_NAME"
-do
-    if [[ $(launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i" | grep true) != "" ]]
-    then
-        #echo "enabling "$i"..."
-        launchctl disable user/"$UNIQUE_USER_ID"/"$i"
-    else
-        :
-    fi
-done
 
 
 ### deleting launchd service
