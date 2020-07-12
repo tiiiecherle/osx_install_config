@@ -65,7 +65,7 @@ launchd_services=(
 stop_if_running() {
     echo ''
     echo "stopping commands if running..."
-    for COMMAND in fswatch clamdscan clamd
+    for COMMAND in fswatch clamdscan libtool clamd
     do
         #if [[ $(ps aux | grep -v grep | grep "$COMMAND") != "" ]]
         if [[ $(pgrep "$COMMAND") != "" ]]
