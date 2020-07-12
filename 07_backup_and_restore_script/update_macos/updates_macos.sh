@@ -243,3 +243,20 @@ please reboot after finishing the script - thanks ;)" buttons "OK"'
 #2018-06-20_update
 
 
+
+###
+### 2018-06-20
+###
+
+2020-07-08_update() {
+    
+    set +e
+    echo ''
+    brew install python
+    
+    echo ''
+
+}
+#2020-07-08_update
+
+
