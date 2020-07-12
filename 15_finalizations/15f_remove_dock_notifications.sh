@@ -34,7 +34,6 @@ fi
 
 
 
-
 ###
 ### removing dock notifications
 ###
