@@ -128,7 +128,8 @@ then
     # redefining sudo so it is possible to run homebrew without entering the password again
     env_sudo_homebrew
     # uninstalling with homebrew script
-    sudo yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    #sudo yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
     # forcing sudo to forget the sudo password (can still be used with env_use_password)
     sudo -K
     # redefining sudo back for the rest of the script
