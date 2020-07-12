@@ -655,18 +655,22 @@ casks_install_updates() {
             fi
             if [[ "$CASK" == "libreoffice" ]]
             then
-                PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
+                SKIP_ENV_GET_PATH_TO_APP="yes"
+                PATH_TO_APP=""$PATH_TO_APPS"/LibreOffice.app"
                 env_set_open_on_first_run_permissions
+                unset SKIP_ENV_GET_PATH_TO_APP
             else
                 :
             fi
             if [[ "$CASK" == "libreoffice-language-pack" ]]
             then
+                SKIP_ENV_GET_PATH_TO_APP="yes"
                 LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-                PATH_TO_FIRST_RUN_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+                PATH_TO_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
                 env_set_open_on_first_run_permissions
-                PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
+                PATH_TO_APP=""$PATH_TO_APPS"/LibreOffice.app"
                 env_set_open_on_first_run_permissions
+                unset SKIP_ENV_GET_PATH_TO_APP
             else
                 :
             fi

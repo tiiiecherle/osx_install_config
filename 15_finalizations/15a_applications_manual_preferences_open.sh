@@ -120,11 +120,13 @@ then
 	then
 	    # installung libreoffice language pack
 	    LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-	    PATH_TO_FIRST_RUN_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+	    SKIP_ENV_GET_PATH_TO_APP="yes"
+	    PATH_TO_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
 	    env_set_open_on_first_run_permissions
-	    PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
+	    PATH_TO_APP=""$PATH_TO_APPS"/LibreOffice.app"
 	    env_set_open_on_first_run_permissions
 	    open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
+	    unset SKIP_ENV_GET_PATH_TO_APP
 	    sleep 5
 	else
 		:
@@ -137,7 +139,6 @@ then
     else
     	:
     fi
-
 else
 	:
 fi
