@@ -747,58 +747,6 @@ EOF
                     #echo "$WAIT_PIDS"
                     #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
                     while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"
-                    
-                    collapsing_elements_in_calendar_sidebar() {
-                        # collapsing (specified) elements in the sidebar
-                        # delegates
-                        INFO_PLISTS=$(find "$PATH_TO_CALENDARS" -name "Info.plist" -mindepth 2 -maxdepth 2)
-            			# leaving DELEGATES_TO_COLLAPSE empty folds all delegates
-            			DELEGATES_TO_COLLAPSE=(
-            			""
-            			)
-            			while IFS= read -r line || [[ -n "$line" ]]
-            			do
-            		    	if [[ "$line" == "" ]]; then continue; fi
-            		    	i="$line"
-            				#echo $i
-            				if [[ $(/usr/libexec/PlistBuddy -c 'Print Delegate' "$i" 2> /dev/null) == "true" ]]
-            				then
-            					#echo "yes"
-            					DELEGATE_IN_PLIST=$(/usr/libexec/PlistBuddy -c 'Print Title' "$i")
-            					DELEGATE_KEY=$(/usr/libexec/PlistBuddy -c 'Print Key' "$i")
-                                add_entry_to_collapsed_elements() {
-                                    #echo "adding "$DELEGATE_IN_PLIST" do collapsed elements ..."
-                                    /usr/libexec/PlistBuddy -c "Add :CollapsedTopLevelNodes dict" "$CALENDAR_PREFERENCES_PLIST" 2>&1 | grep -v "Entry Already Exists$"
-            					    /usr/libexec/PlistBuddy -c "Add :CollapsedTopLevelNodes:MainWindow array" "$CALENDAR_PREFERENCES_PLIST" 2>&1 | grep -v "Entry Already Exists$"
-            					    /usr/libexec/PlistBuddy -c "Add :CollapsedTopLevelNodes:MainWindow:0 string "$DELEGATE_KEY"" "$CALENDAR_PREFERENCES_PLIST" 2>&1 | grep -v "Entry Already Exists$"   
-                                }
-            					if [[ "$DELEGATES_TO_COLLAPSE" == "" ]]
-            					then
-            						# collapse entry
-            						add_entry_to_collapsed_elements
-            					else
-            						# collapse only specified delegates
-            						while IFS= read -r line || [[ -n "$line" ]]
-            						do
-            		    				if [[ "$line" == "" ]]; then continue; fi
-            		    				DELEGATE="$line"
-            							#echo $i	
-            							if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$i" 2> /dev/null) == "$DELEGATE" ]]
-            							then
-            								# collapse entry
-            						        add_entry_to_collapsed_elements
-            							else
-            							    :
-            								#echo "leaving delegate "$DELEGATE_IN_PLIST" uncollapsed..."
-            							fi
-            						done <<< "$(printf "%s\n" "${DELEGATES_TO_COLLAPSE[@]}")"
-            					fi
-            				else
-            					#echo "no"
-            				fi
-            			done <<< "$(printf "%s\n" "${INFO_PLISTS[@]}")"
-            			sleep 2
-        			}
         			                   
                 else
                     :
@@ -1048,13 +996,13 @@ EOF
             	if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]] || [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]; then sleep 20; else :; fi
             	run_gui_backups
             	wait
-            	if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then collapsing_elements_in_calendar_sidebar; else :; fi
+            	if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then env_collapsing_elements_in_calendar_sidebar; else :; fi
         	}
         	run_backups
         	
         	run_backups_with_gui_first() {
         	    run_gui_backups
-        	    if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then collapsing_elements_in_calendar_sidebar; else :; fi
+        	    if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then env_collapsing_elements_in_calendar_sidebar; else :; fi
         	    run_files_backup
             	run_vbox_backup
                 run_backup_data
