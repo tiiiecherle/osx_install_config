@@ -33,8 +33,6 @@ else
     # script is not sourced, run standalone
     if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
     then
-    	# setting empty variable as it is not needed in this script and if not set it would be asked
-    	SUDOPASSWORD="" 
        	. "$SCRIPT_DIR"/1_script_frame.sh
        	eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
     else
