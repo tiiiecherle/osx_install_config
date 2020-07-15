@@ -361,6 +361,12 @@ u	~/Library/jameica
 #echo JDownloader
 #u	"$PATH_TO_APPS"/JDownloader2.app
 
+# Jitsi Meet
+echo Jitsi Meet
+u	~/Library/Application Support/Jitsi Meet/config.json
+u	~/Library/Application Support/Jitsi Meet/Preferences
+u	~/Library/Application Support/Jitsi Meet/window-state.json
+
 # KeePassX
 echo KeePassX
 #u	"$PATH_TO_APPS"/KeePassX.app
