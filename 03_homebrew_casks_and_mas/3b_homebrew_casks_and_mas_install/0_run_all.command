@@ -96,7 +96,7 @@ run_all() {
         
     if [[ "$CONT3_BREW" =~ ^(yes|y)$ ]]
     then
-
+        env_check_if_second_macos_volume_is_mounted
         if [[ "$MAS_APPLE_ID" == "" ]]
         then
             #echo ''
@@ -305,7 +305,7 @@ EOF
     
     ### checking success of installations
     #echo ''
-    CHECK_IF_CASKS_INSTALLED="$CHECK_IF_CASKS_INSTALLED" CHECK_IF_MASAPPS_INSTALLED="$CHECK_IF_MASAPPS_INSTALLED" RUN_FROM_ALL_SCRIPT="yes" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+    CHECK_IF_CASKS_INSTALLED="$CHECK_IF_CASKS_INSTALLED" CHECK_IF_MASAPPS_INSTALLED="$CHECK_IF_MASAPPS_INSTALLED" RUN_FROM_ALL_SCRIPT="yes" . "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
     
     sleep 0.5
     echo ''

@@ -138,7 +138,7 @@ else
     echo "cleaning up..."
     env_cleanup_all_homebrew
     
-    CHECK_IF_CASKS_INSTALLED="no" CHECK_IF_MASAPPS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+    CHECK_IF_CASKS_INSTALLED="no" CHECK_IF_MASAPPS_INSTALLED="no" . "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 fi
     
 

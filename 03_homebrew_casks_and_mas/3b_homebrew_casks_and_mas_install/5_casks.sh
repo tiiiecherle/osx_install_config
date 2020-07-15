@@ -730,7 +730,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
     :
 else
-    CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_MASAPPS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+    CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_MASAPPS_INSTALLED="no" . "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 fi
 
 # installing user specific casks
