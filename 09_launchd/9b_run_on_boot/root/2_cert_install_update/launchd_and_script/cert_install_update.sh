@@ -186,7 +186,7 @@ install_update_certificate() {
 	    echo ''
 	    exit
     else
-        # macos versions 10.15 and up
+        # macos versions 10.15
         # in 10.15 /System default gets mounted read-only
         # can only be mounted read/write with according SIP settings
         sudo mount -uw /
