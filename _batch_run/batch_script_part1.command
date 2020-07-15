@@ -385,6 +385,7 @@ sed -i '' '/Von https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
 sed -i '' '/From https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
 sed -i '' '/Warning.*already installed/d' "$COMBINED_ERROR_LOG"
 sed -i '' '/\[33mWarning.*are using macOS/,/running this pre-release version/d' "$COMBINED_ERROR_LOG"
+sed -i '' '/Creating client\/daemon connection/d' "$COMBINED_ERROR_LOG"
 #sed -i '' '/\[33mWarning.*Ruby version/,/supported Rubies/d' "$COMBINED_ERROR_LOG"
 #awk '/./ { e=0 } /^$/ { e += 1 } e <= 2' "$COMBINED_ERROR_LOG" > /tmp/errorlog.txt
 #cat /tmp/errorlog.txt > "$COMBINED_ERROR_LOG"
