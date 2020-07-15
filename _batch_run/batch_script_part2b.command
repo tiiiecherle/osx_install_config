@@ -110,12 +110,20 @@ batch_run_all() {
 		
 	
 	### local ssl certificate
-	printf "\n${bold_text}###\nlocal ssl certificate...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
-	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/2_cert_install_update/install_cert_install_update_launchdservice.sh
-	env_active_source_app
-	
-	
+    if [[ "$MACOS_VERSION_MAJOR" != 10.15 ]]
+    then
+        # macos versions other than 10.15
+        # more complicated and risky on 10.16 and newer due to signed system volume (ssv)
+        :
+    else
+        # macos versions 10.15
+    	printf "\n${bold_text}###\nlocal ssl certificate...\n###\n${default_text}"
+    	create_tmp_batch_script_fifo
+    	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/2_cert_install_update/install_cert_install_update_launchdservice.sh
+    	env_active_source_app
+    fi
+    
+    
 	### network locations
 	printf "\n${bold_text}###\nnetwork locations...\n###\n${default_text}"
 	create_tmp_batch_script_fifo
