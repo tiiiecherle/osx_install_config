@@ -43,6 +43,30 @@ fi
 
 
 ###
+### compatibility
+###
+
+# mounting system as read/write until next reboot
+if [[ "$MACOS_VERSION_MAJOR" != 10.15 ]]
+then
+    # macos versions other than 10.15
+    # more complicated and risky on 10.16 and newer due to signed system volume (ssv)
+	echo ''
+    echo "this script is only compatible with macos 10.15 exiting..."
+    echo ''
+    exit
+else
+    # macos versions 10.15
+    # in 10.15 /System default gets mounted read-only
+    # can only be mounted read/write with according SIP settings
+    sudo mount -uw /
+    # stays mounted rw until next reboot
+    sleep 0.5
+fi
+    
+
+
+###
 ### installing and running script and launchd service
 ### 
 
