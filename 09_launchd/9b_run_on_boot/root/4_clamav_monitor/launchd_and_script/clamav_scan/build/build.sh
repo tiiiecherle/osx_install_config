@@ -112,8 +112,8 @@ do
 	cp -a "$BUILD_DIR"/done/"$APP_NAME"_done.app "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
 	cp -a "$BUILD_DIR"/found/"$APP_NAME"_found.app "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
 	cp -a "$BUILD_DIR"/stopped/"$APP_NAME"_stopped.app "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
-	chown 501:admin "$BUILD_DIR"/app/"$APP_NAME".app
-	chown -R 501:admin "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
+	chown $(id -u "$USER"):admin "$BUILD_DIR"/app/"$APP_NAME".app
+	chown -R $(id -u "$USER"):admin "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
 	chmod 755 "$BUILD_DIR"/app/"$APP_NAME".app
 	chmod 755 "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$APP_NAME"_done.app
 	chmod 755 "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$APP_NAME"_found.app

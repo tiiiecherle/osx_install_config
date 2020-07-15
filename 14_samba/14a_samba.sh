@@ -87,7 +87,7 @@ EOL
 fi
 
 chmod 600 ~/Library/Preferences/nsmb.conf
-chown 501:staff ~/Library/Preferences/nsmb.conf
+chown $(id -u "$USER"):staff ~/Library/Preferences/nsmb.conf
 
 
 ### more options and default values

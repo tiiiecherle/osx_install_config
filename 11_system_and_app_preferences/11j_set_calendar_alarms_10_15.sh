@@ -277,7 +277,7 @@ EOF
 		#killall remindd
 		# launchctl list
 		#launchctl unload /System/Library/LaunchAgents/com.apple.CalendarAgent.plist 2>&1 | grep -v "in progress"
-		launchctl kill 15 gui/"$(id -u)"/com.apple.CalendarAgent
+		launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.CalendarAgent
 		sleep 2
 		# without this the changes will not take effect
 		deleting_cache
@@ -285,7 +285,7 @@ EOF
 		echo ''
 		echo "starting calendar agent..."
 		#launchctl load /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
-		launchctl kickstart -k gui/"$(id -u)"/com.apple.CalendarAgent
+		launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.CalendarAgent
 		sleep 2
 	}
 	restart_service

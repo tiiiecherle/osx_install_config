@@ -99,8 +99,8 @@ EOF
 		# without this there could be confusions when the system tries to sync while the files get deleted
 		# this would lead to multiple new entries in the reminders and the calendars app 
 		echo "stopping service agents..."
-		launchctl kill 15 gui/"$(id -u)"/com.apple.CalendarAgent
-		launchctl kill 15 gui/"$(id -u)"/com.apple.remindd
+		launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.CalendarAgent
+		launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.remindd
 		echo ''
 		
 		### identifying holidays calendar
@@ -275,15 +275,15 @@ EOF
 			#killall remindd
 			# launchctl list
 			# already done at the beginnning of the script
-			#launchctl kill 15 gui/"$(id -u)"/com.apple.CalendarAgent
-			#launchctl kill 15 gui/"$(id -u)"/com.apple.remindd
+			#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.CalendarAgent
+			#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.remindd
 			#sleep 2
 			#deleting_cache
 			sleep 2
 			echo ''
 			echo "starting service agents..."
-			launchctl kickstart -k gui/"$(id -u)"/com.apple.CalendarAgent
-			launchctl kickstart -k gui/"$(id -u)"/com.apple.remindd
+			launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.CalendarAgent
+			launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.remindd
 			sleep 2
 		}
 		restart_service

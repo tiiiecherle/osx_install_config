@@ -90,8 +90,8 @@ do
 	mkdir -p "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files
 	cp -a "$BUILD_DIR"/shell_script/"$SCRIPT_NAME".sh "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
 	cp -a "$BUILD_DIR"/icons/"$ICON_NAME".icns "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
-	chown 501:admin "$BUILD_DIR"/app/"$APP_NAME".app
-	chown -R 501:admin "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
+	chown $(id -u "$USER"):admin "$BUILD_DIR"/app/"$APP_NAME".app
+	chown -R $(id -u "$USER"):admin "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/
 	chmod 755 "$BUILD_DIR"/app/"$APP_NAME".app
 	chmod 770 "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html

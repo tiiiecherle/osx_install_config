@@ -79,7 +79,7 @@ sudo chown -R "$USER" $(brew --cache)
 #	echo "setting ownerships and permissions for homebrew..."
 #	BREWGROUP="admin"
 #	BREWPATH=$(brew --prefix)
-#	sudo chown -R 501:"$BREWGROUP" "$BREWPATH"
+#	sudo chown -R $(id -u "$USER"):"$BREWGROUP" "$BREWPATH"
 #	sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
 #	sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
 #else

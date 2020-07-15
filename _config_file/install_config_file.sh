@@ -53,7 +53,7 @@ else
 fi
 
 # ownership and permissions
-chown 501:staff "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+chown $(id -u "$USER"):staff "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
 chmod 600 "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
 
 # checking if installation was successful

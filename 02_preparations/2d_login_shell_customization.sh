@@ -131,7 +131,7 @@ wait "$WAIT_PID"
 if [[ ! -e ~/.zshrc ]]
 then
 	touch ~/.zshrc
-	chown 501:staff ~/.zshrc
+	chown $(id -u "$USER"):staff ~/.zshrc
 	chmod 600 ~/.zshrc
 else
 	:

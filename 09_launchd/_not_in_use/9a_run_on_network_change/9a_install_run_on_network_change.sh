@@ -33,17 +33,17 @@ chmod 640 ~/Library/LaunchAgents/com.run_script_on_network_change.plist
 
 ### enable service
 # if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
-launchctl bootout gui/"$(id -u)"/com.run_script_on_network_change 2>&1 | grep -v "in progress" | grep -v "No such process"
-#launchctl kill 15 gui/"$(id -u)"/com.run_script_on_network_change
-launchctl bootstrap gui/"$(id -u)" ~/Library/LaunchAgents/com.run_script_on_network_change.plist 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
-launchctl enable gui/"$(id -u)"/com.run_script_on_network_change
+launchctl bootout gui/"$(id -u "$USER")"/com.run_script_on_network_change 2>&1 | grep -v "in progress" | grep -v "No such process"
+#launchctl kill 15 gui/"$(id -u "$USER")"/com.run_script_on_network_change
+launchctl bootstrap gui/"$(id -u "$USER")" ~/Library/LaunchAgents/com.run_script_on_network_change.plist 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+launchctl enable gui/"$(id -u "$USER")"/com.run_script_on_network_change
 
 
 ### uninstall
 uninstall_run_on_network_change() {
-	launchctl bootout gui/"$(id -u)"/com.run_script_on_network_change 2>&1 | grep -v "in progress" | grep -v "No such process"
-	#launchctl kill 15 gui/"$(id -u)"/com.run_script_on_network_change
-	launchctl disable gui/"$(id -u)"/com.run_script_on_network_change
+	launchctl bootout gui/"$(id -u "$USER")"/com.run_script_on_network_change 2>&1 | grep -v "in progress" | grep -v "No such process"
+	#launchctl kill 15 gui/"$(id -u "$USER")"/com.run_script_on_network_change
+	launchctl disable gui/"$(id -u "$USER")"/com.run_script_on_network_change
 	rm -rf ~/Library/Scripts/run_on_network_change_login.app
 	rm -f ~/Library/LaunchAgents/com.run_script_on_network_change.plist
 }

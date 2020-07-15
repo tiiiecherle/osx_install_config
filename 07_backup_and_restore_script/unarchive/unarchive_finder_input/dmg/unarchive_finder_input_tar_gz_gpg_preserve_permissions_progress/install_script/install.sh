@@ -27,7 +27,7 @@ fi
 
 # ownership and permissions
 cp -a "$DMG_DIR"/app/"$APP_NAME".app "$PATH_TO_APPS"/
-chown 501:admin "$PATH_TO_APPS"/"$APP_NAME".app
+chown $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_NAME".app
 chmod 755 "$PATH_TO_APPS"/"$APP_NAME".app
 xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
 

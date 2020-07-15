@@ -110,7 +110,7 @@ install_update_dependency_apps() {
     	:
     fi
     cp -a "$WORKING_DIR"/gui_apps/"$APP_TO_INSTALL".app "$PATH_TO_APPS"/
-    chown 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chown $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     
@@ -125,8 +125,8 @@ install_update_dependency_apps() {
     	:
     fi
     cp -a "$WORKING_DIR"/vbox_backup/"$APP_TO_INSTALL".app "$PATH_TO_APPS"/
-    chown 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
-    chown -R 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
+    chown $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chown -R $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
     chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     chmod 770 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
     #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app  
@@ -142,8 +142,8 @@ install_update_dependency_apps() {
     	:
     fi
     cp -a "$WORKING_DIR"/update_homebrew/"$APP_TO_INSTALL".app "$PATH_TO_APPS"/
-    chown 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
-    chown -R 501:admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
+    chown $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chown -R $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
     chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     chmod 770 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
     #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
