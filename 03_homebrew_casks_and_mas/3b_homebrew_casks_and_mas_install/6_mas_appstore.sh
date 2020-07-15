@@ -75,6 +75,8 @@ env_command_line_tools_install_shell
 ###
 
 checking_homebrew
+env_check_if_second_macos_volume_is_mounted
+
 
 
 ### activating keepingyouawake
@@ -161,7 +163,7 @@ mas_login_applescript() {
     else
         if [[ "$MAS_APPLE_ID" == "" ]]
         then
-            echo ''
+            #echo ''
             MAS_APPLE_ID=""
             VARIABLE_TO_CHECK="$MAS_APPLE_ID"
             QUESTION_TO_ASK="please enter apple id to log into appstore: "
@@ -205,8 +207,17 @@ mas_login_applescript() {
         		delay 2
         		### on first run when installing the appstore asks for accepting privacy policy
         		try
-    			    click button 2 of UI element 1 of sheet 1 of window 1
-    			    #click button "Weiter" of UI element 1 of sheet 1 of window 1
+        		   if "$MACOS_VERSION_MAJOR" is equal to "10.14" then
+            		    click button 2 of UI element 1 of sheet 1 of window 1
+            		    #click button "Weiter" of UI element 1 of sheet 1 of window 1
+                    end if
+                    if "$MACOS_VERSION_MAJOR" is equal to "10.15" then
+            		    click button 2 of UI element 1 of sheet 1 of window 1
+            		    #click button "Weiter" of UI element 1 of sheet 1 of window 1
+                    end if
+                    if "$MACOS_VERSION_MAJOR" is equal to "10.16" then
+            		    click button 2  of UI element 1 of sheet 1 of window "App Store" 
+                    end if
     			    delay 3
     		    end try
     		    ### login
@@ -216,9 +227,20 @@ mas_login_applescript() {
                 if "$MACOS_VERSION_MAJOR" is equal to "10.15" then
         		    click menu item 16 of menu "Store" of menu bar item "Store" of menu bar 1
                 end if
+                if "$MACOS_VERSION_MAJOR" is equal to "10.16" then
+        		    click menu item 16 of menu "Store" of menu bar item "Store" of menu bar 1
+                end if
         		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
         		delay 2
-        		set focused of text field "Apple-ID:" of sheet 1 of window 1 to true
+        		if "$MACOS_VERSION_MAJOR" is equal to "10.14" then
+        		    set focused of text field "Apple-ID:" of sheet 1 of window 1 to true
+                end if
+                if "$MACOS_VERSION_MAJOR" is equal to "10.15" then
+        		    set focused of text field "Apple-ID:" of sheet 1 of window 1 to true
+                end if
+                if "$MACOS_VERSION_MAJOR" is equal to "10.16" then
+        		    set focused of text field "Apple-ID:" of sheet 1 of sheet 1 of window "App Store" to true
+                end if
         		delay 2
         		tell application "System Events" to keystroke "$MAS_APPLE_ID"
         		delay 2
@@ -227,6 +249,18 @@ mas_login_applescript() {
         		tell application "System Events" to keystroke "$MAS_APPSTORE_PASSWORD"
         		delay 2
         		tell application "System Events" to keystroke return
+        		# leave two factor auth disabled if diabled before
+        		if "$MACOS_VERSION_MAJOR" is equal to "10.16" then
+            		try
+            		    delay 10
+            		    #click button "Weitere Optionen"  of group 5 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
+            		    click button 1 of group 5 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
+            		    delay 2
+            		    #button "Nicht aktualisieren"  of group 3 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
+            		    click button 2 of group 3 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store" 
+                        delay 5
+                    end try
+                end if
         	end tell
         end tell
         
@@ -301,6 +335,9 @@ if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
 then
 	
 	mas_login_applescript
+	
+	# make sure mas is aware of installed and uninstalled apps
+	mas reset
 
     echo "the app store has to be quit before continuing..."
     while ps aux | grep 'App Store.app' | grep -v grep > /dev/null; do sleep 1; done
@@ -382,7 +419,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
     echo ''
 else
-    CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_CASKS_INSTALLED="no" "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
+    CHECK_IF_FORMULAE_INSTALLED="no" CHECK_IF_CASKS_INSTALLED="no" . "$SCRIPT_DIR"/7_formulae_casks_and_mas_install_check.sh
 fi
 
 

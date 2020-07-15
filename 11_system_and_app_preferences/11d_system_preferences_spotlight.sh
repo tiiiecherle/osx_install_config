@@ -204,15 +204,19 @@ defaults read ~/Library/Preferences/com.apple.Spotlight.plist &> /dev/null
 sleep 1
 
 # mounting system as read/write until next reboot
-VERSION_TO_CHECK_AGAINST=10.14
-if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+if [[ "$MACOS_VERSION_MAJOR" != 10.15 ]]
 then
-    # macos versions until and including 10.14
+    # macos versions other than 10.15
+    # not necessary on 10.14
+    # more complicated and risky on 10.16 and newer due to signed system volume (ssv)
 	:
 else
     # macos versions 10.15 and up
-	env_use_password | sudo mount -uw /
-	sleep 1
+    # in 10.15 /System default gets mounted read-only
+    # can only be mounted read/write with according SIP settings
+    sudo mount -uw /
+    # stays mounted rw until next reboot
+    sleep 0.5
 fi
 
 # another way of stopping indexing AND searching for a volume (very helpful for network volumes) is putting an empty file ".metadata_never_index"
@@ -226,7 +230,8 @@ SPOTLIGHT_INDEX_FOLDERS=(
 "$SPOTLIGHT_FOLDER_CONFIG"
 "$SPOTLIGHT_FOLDER"
 )
-SPOTLIGHT_VOLUMES=$(df -Hl | tail -n +2 | awk '{print $NF}' | grep -v "var\/vm" | grep -v "\/Volumes\/macintosh_hd*")
+env_get_mounted_disks
+SPOTLIGHT_VOLUMES=$(printf "%s\n" "${LIST_OF_ALL_MOUNTED_VOLUMES_ON_BOOT_VOLUME[@]}" | grep -v '/Update$' | grep -v '/Preboot$' | grep -v '/VM$')
 run_spotlight_command() {
 	if [[ "$SPOTLIGHT_COMMAND" == "" ]]
 	then
@@ -246,24 +251,28 @@ run_spotlight_command() {
 # stop indexing before rebuilding the index
 #killall mds &> /dev/null
 
-# sizes of spotlight folders
-echo ''
-echo "sizes of spotlight folders..."
-while IFS= read -r line || [[ -n "$line" ]]
-do
-    if [[ "$line" == "" ]]; then continue; fi
-    SPOTLIGHT_INDEX_FOLDER="$line"
-    #echo "$SPOTLIGHT_FOLDER"
-	if [[ -e "$SPOTLIGHT_INDEX_FOLDER" ]]
-	then
-		sudo du -hs "$SPOTLIGHT_INDEX_FOLDER"
-	else
-		echo ""$SPOTLIGHT_INDEX_FOLDER" does not exist, skipping..."
-	fi
-done <<< "$(printf "%s\n" "${SPOTLIGHT_INDEX_FOLDERS[@]}")"
+get_sizes_spotlight_folders() {
+	# sizes of spotlight folders
+	echo ''
+	echo "sizes of spotlight folders..."
+	while IFS= read -r line || [[ -n "$line" ]]
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
+	    SPOTLIGHT_INDEX_FOLDER="$line"
+	    #echo "$SPOTLIGHT_FOLDER"
+		if [[ -e "$SPOTLIGHT_INDEX_FOLDER" ]]
+		then
+			sudo du -hs "$SPOTLIGHT_INDEX_FOLDER"
+		else
+			echo ""$SPOTLIGHT_INDEX_FOLDER" does not exist, skipping..."
+		fi
+	done <<< "$(printf "%s\n" "${SPOTLIGHT_INDEX_FOLDERS[@]}")"
+}
+get_sizes_spotlight_folders
 
 # turning indexing off
-#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
+#sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.metadata.mds.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
+#sudo launchctl disable system/com.apple.metadata.mds
 # currently booted volume
 echo ''
 echo "disabling indexing..."
@@ -344,9 +353,6 @@ defaults write com.apple.lookup.shared LookupSuggestionsDisabled -bool true
 echo ''
 echo "restarting affected apps..."
 
-#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
-#sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
-
 apps_to_kill=(
 "cfprefsd"
 "System Preferences"
@@ -365,6 +371,7 @@ done <<< "$(printf "%s\n" "${apps_to_kill[@]}")"
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
+get_sizes_spotlight_folders
 
 echo ''
 echo "done ;)"

@@ -337,7 +337,7 @@ env_config_file_self_update() {
                     if [[ $? -eq 0 ]]; then SUCCESSFULLY_INSTALLED="yes"; else SUCCESSFULLY_INSTALLED="no"; fi
                 
                     # ownership and permissions
-                    chown 501:staff "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+                    chown $(id -u "$USER"):staff "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
                     chmod 600 "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
                     
                     # checking if installation was successful
@@ -386,6 +386,8 @@ SCRIPT_INTERPRETER=$(ps h -p $$ -o args='' | cut -f1 -d' ')
 
 ### macos version
 MACOS_VERSION=$(sw_vers -productVersion)
+#MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
+#MACOS_VERSION=$(/usr/libexec/PlistBuddy -c "Print:ProductVersion" /System/Library/CoreServices/SystemVersion.plist)
 MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
 #MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | sed 's|\.|_|g')
 MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | tr '.' '_')
@@ -398,13 +400,23 @@ then
     elif [[ "$MACOS_VERSION_MAJOR" == 10.15 ]]
     then
         MACOS_MARKETING_NAME="Catalina"
+    elif [[ "$MACOS_VERSION_MAJOR" == 10.16 ]]
+    then
+        MACOS_MARKETING_NAME="Big Sur"
     else
         :
     fi
 else
     :
 fi
-MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
+#MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | awk '{print $3}')
+MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | sed 's/^.*Volume Name: //' | awk '{$1=$1};1')
+env_get_mounted_disks() {
+    MACOS_CURRENTLY_BOOTED_DISK_IDENTIFIER_MAJOR=$(diskutil info "$MACOS_CURRENTLY_BOOTED_VOLUME" | grep "Part of Whole:" | sed 's/^.*Part of Whole: //' | awk '{$1=$1};1')
+    LIST_OF_ALL_MOUNTED_VOLUMES=$(for i in $(df -Hl | tail -n +2 | awk '{print $1}'); do diskutil info "$i" | grep "Mount Point:" | sed 's/^.*Mount Point: //' | awk '{$1=$1};1'; done)
+    LIST_OF_ALL_MOUNTED_VOLUMES_ON_BOOT_VOLUME=$(for i in $(df -Hl | tail -n +2 | awk '{print $1}' | grep "/dev/"$MACOS_CURRENTLY_BOOTED_DISK_IDENTIFIER_MAJOR""); do diskutil info "$i" | grep "Mount Point:" | sed 's/^.*Mount Point: //' | awk '{$1=$1};1'; done)
+    LIST_OF_ALL_MOUNTED_VOLUMES_OUTSIDE_OF_BOOT_VOLUME=$(for i in $(df -Hl | tail -n +2 | awk '{print $1}' | grep -v "/dev/"$MACOS_CURRENTLY_BOOTED_DISK_IDENTIFIER_MAJOR""); do diskutil info "$i" | grep "Mount Point:" | sed 's/^.*Mount Point: //' | awk '{$1=$1};1'; done)
+}
 
 env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
 
@@ -615,74 +627,80 @@ env_active_source_app() {
 
 ### path to app
 env_get_path_to_app() {
-    # app path
-    local NUM1=0
-    local FIND_APP_PATH_TIMEOUT=4
-    unset PATH_TO_APP
-    
-    # app name
-    APP_NAME_EXTENSION=$([[ "$APP_NAME" = *.* ]] && echo "${APP_NAME##*.}" || echo '')
-    if [[ "$APP_NAME_EXTENSION" == "" ]]
+
+    if [[ "$SKIP_ENV_GET_PATH_TO_APP" == "yes" ]]
     then
-        APP_NAME_WITH_EXTENSION=""$APP_NAME".app"
+        :
     else
-        # extension exists
-        APP_NAME_WITH_EXTENSION="$APP_NAME"
+        # app path
+        local NUM1=0
+        local FIND_APP_PATH_TIMEOUT=4
+        unset PATH_TO_APP
+        
+        # app name
+        APP_NAME_EXTENSION=$([[ "$APP_NAME" = *.* ]] && echo "${APP_NAME##*.}" || echo '')
+        if [[ "$APP_NAME_EXTENSION" == "" ]]
+        then
+            APP_NAME_WITH_EXTENSION=""$APP_NAME".app"
+        else
+            # extension exists
+            APP_NAME_WITH_EXTENSION="$APP_NAME"
+        fi
+        
+        # if an app is deleted and reinstalled or installed for the first time mdfind needs some time for indexing and find is a faster
+        # apps
+        if [[ "$PATH_TO_APP" == "" ]]
+        then
+            PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
+        fi
+        if [[ "$PATH_TO_APP" == "" ]]
+        then
+            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
+        fi
+        # system apps
+        if [[ "$PATH_TO_APP" == "" ]]
+        then
+            PATH_TO_APP=$(find "$PATH_TO_SYSTEM_APPS" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
+        fi
+        if [[ "$PATH_TO_APP" == "" ]]
+        then
+            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
+        fi
+        # pref panes
+        if [[ "$PATH_TO_APP" == "" ]]
+        then
+            PATH_TO_APP=$(find ~/Library/PreferencePanes -mindepth 1 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
+        fi
+        # find apps in other apps
+        if [[ "$PATH_TO_APP" == "" ]]
+        then
+            PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
+        fi
+        while [[ "$PATH_TO_APP" == "" ]]
+        do
+            # bash builtin printf can not print floating numbers
+        	#perl -e 'printf "%.2f\n",'$NUM1''
+    	    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+        	local NUM1=$(bc<<<$NUM1+0.5)
+        	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
+        	then
+        	    # bash builtin printf can not print floating numbers
+        		#perl -e 'printf "%.2f\n",'$NUM1''
+    	        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
+        		sleep 0.5
+                PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
+        	else
+        	    #printf '\n'
+        		break
+        	fi
+        done
     fi
-    
-    # if an app is deleted and reinstalled or installed for the first time mdfind needs some time for indexing and find is a faster
-    # apps
-    if [[ "$PATH_TO_APP" == "" ]]
-    then
-        PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
-    fi
-    if [[ "$PATH_TO_APP" == "" ]]
-    then
-        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
-    fi
-    # system apps
-    if [[ "$PATH_TO_APP" == "" ]]
-    then
-        PATH_TO_APP=$(find "$PATH_TO_SYSTEM_APPS" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
-    fi
-    if [[ "$PATH_TO_APP" == "" ]]
-    then
-        PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
-    fi
-    # pref panes
-    if [[ "$PATH_TO_APP" == "" ]]
-    then
-        PATH_TO_APP=$(find ~/Library/PreferencePanes -mindepth 1 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
-    fi
-    # find apps in other apps
-    if [[ "$PATH_TO_APP" == "" ]]
-    then
-        PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
-    fi
-    while [[ "$PATH_TO_APP" == "" ]]
-    do
-        # bash builtin printf can not print floating numbers
-    	#perl -e 'printf "%.2f\n",'$NUM1''
-	    #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
-    	local NUM1=$(bc<<<$NUM1+0.5)
-    	if (( $(echo "$NUM1 <= $FIND_APP_PATH_TIMEOUT" | bc -l) ))
-    	then
-    	    # bash builtin printf can not print floating numbers
-    		#perl -e 'printf "%.2f\n",'$NUM1''
-	        #echo $NUM1 | awk '{printf "%.2f", $1; print $2}' | sed s/,/./g
-    		sleep 0.5
-            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin / | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
-    	else
-    	    #printf '\n'
-    		break
-    	fi
-    done
 }
 
 
 ### app id / bundle identifier
 env_get_app_id() {
-
+    
     # app id
     #if [[ -e "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt ]]
     #then
@@ -759,13 +777,27 @@ env_set_apps_security_permissions() {
             then
                 # macos 10.13
                 sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL);" 2>&1 | grep -v '^$'
-            elif VERSION_TO_CHECK_AGAINST=10.14; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            elif [[ "$MACOS_VERSION_MAJOR" == "10.14" ]] || [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
             then
-                # macos 10.14 and higher
+                # macos 10.14 and 10.15
                 # working, but no csreq
                 sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,?,NULL,0,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,$APP_CSREQ,NULL,0,?);"
+            elif VERSION_TO_CHECK_AGAINST=10.16; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos 11.0 and higher
+                if [[ $PERMISSION_GRANTED == "0" ]]
+                then
+                    :
+                elif [[ $PERMISSION_GRANTED == "1" ]]
+                then
+                    PERMISSION_GRANTED=2
+                fi
+                # working, but no csreq
+                sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,4,1,NULL,NULL,NULL,?,NULL,0,?);" 2>&1 | grep -v '^$'
+                # working with csreq
+                #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,4,1,NULL,NULL,NULL,$APP_CSREQ,NULL,0,?);"
             else
                 echo ''
                 echo "setting security permissions for this version of macos is not supported, skipping..."
@@ -779,13 +811,27 @@ env_set_apps_security_permissions() {
             then
                 # macos 10.13
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL);"
-            elif VERSION_TO_CHECK_AGAINST=10.14; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            elif [[ "$MACOS_VERSION_MAJOR" == "10.14" ]] || [[ "$MACOS_VERSION_MAJOR" == "10.15" ]]
             then
-                # macos 10.14 and higher
+                # macos 10.14 and 10.15
                 # working, but no csreq
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,NULL,?,NULL,NULL,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,$APP_CSREQ,NULL,NULL,?,NULL,NULL,?);"
+            elif VERSION_TO_CHECK_AGAINST=10.16; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos 11.0 and higher
+                if [[ $PERMISSION_GRANTED == "0" ]]
+                then
+                    :
+                elif [[ $PERMISSION_GRANTED == "1" ]]
+                then
+                    PERMISSION_GRANTED=2
+                fi
+                # working, but no csreq
+                sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,4,1,?,NULL,NULL,?,NULL,NULL,?);" 2>&1 | grep -v '^$'
+                # working with csreq
+                #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,4,1,$APP_CSREQ,NULL,NULL,?,NULL,NULL,?);"
             else
                 echo ''
                 echo "setting security permissions for this version of macos is not supported, skipping..."
@@ -795,11 +841,12 @@ env_set_apps_security_permissions() {
 
         # app name print
         local APP_NAME_PRINT=$(echo "$APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
+        local INPUT_SERVICE_PRINT=$(echo "$INPUT_SERVICE" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         
         # print line
         if [[ "$PRINT_SECURITY_PERMISSIONS_ENTRIES" == "yes" ]]
         then
-            printf "%-33s %-33s %-5s\n" "$APP_NAME_PRINT" "$INPUT_SERVICE" "$PERMISSION_GRANTED"
+            printf "%-33s %-33s %4s\n" "$APP_NAME_PRINT" "$INPUT_SERVICE_PRINT" "$PERMISSION_GRANTED"
         else
             :
         fi
@@ -937,15 +984,31 @@ env_set_apps_automation_permissions() {
             # delete entry before resetting
             sqlite3 "$DATABASE_USER" "delete from access where (service='kTCCServiceAppleEvents' and client='$SOURCE_APP_ID' and indirect_object_identifier='$AUTOMATED_APP_ID');"
             sleep 0.1
-            # working and showing in gui of system preferences if csreq is not '?'
-            sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
+            
+            VERSION_TO_CHECK_AGAINST=10.15
+            if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos versions until and including 10.15
+                # working and showing in gui of system preferences if csreq is not '?'
+                sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
+            else
+                # macos version 11.0 and higher
+                if [[ $PERMISSION_GRANTED == "0" ]]
+                then
+                    :
+                elif [[ $PERMISSION_GRANTED == "1" ]]
+                then
+                    PERMISSION_GRANTED=2
+                fi
+                sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,4,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
+            fi
             
             ### print line
             local SOURCE_APP_NAME_PRINT=$(echo "$SOURCE_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
             local AUTOMATED_APP_NAME_PRINT=$(echo "$AUTOMATED_APP_NAME" | cut -d ":" -f1 | awk -v len=30 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
             if [[ "$PRINT_AUTOMATING_PERMISSIONS_ENTRIES" == "yes" ]]
             then
-                printf "%-33s %-33s %-5s\n" "$SOURCE_APP_NAME_PRINT" "$AUTOMATED_APP_NAME_PRINT" "$PERMISSION_GRANTED"
+                printf "%-33s %-33s %4s\n" "$SOURCE_APP_NAME_PRINT" "$AUTOMATED_APP_NAME_PRINT" "$PERMISSION_GRANTED"
             else
                 :
             fi
@@ -1090,7 +1153,6 @@ env_set_check_apps_notifications() {
 		### restarting notification center
 		echo ''
 		echo "restarting notification center..."
-		#launchctl load -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
 		#open /System/Library/CoreServices/NotificationCenter.app
 		# applying changes without having to logout
 		#sudo killall usernoted
@@ -1304,7 +1366,7 @@ env_set_path_for_shell() {
         if [[ ! -e "$SHELL_CONFIG" ]]
         then
             touch "$SHELL_CONFIG"
-            chown 501:staff "$SHELL_CONFIG"
+            chown $(id -u "$USER"):staff "$SHELL_CONFIG"
             chmod 600 "$SHELL_CONFIG"
             env_add_path_to_shell
         elif [[ $(cat "$SHELL_CONFIG" | grep "^export PATH=") != "" ]]
@@ -1712,6 +1774,7 @@ env_deactivating_keepingyouawake() {
 ### permissions for opening on first run
 env_set_open_on_first_run_permissions() {
     env_get_path_to_app
+    #echo "PATH_TO_APP is "$PATH_TO_APP""
     APP_NAME_EXTENSION=$([[ "$APP_NAME" = *.* ]] && echo "${APP_NAME##*.}" || echo '')
     if [[ "$APP_NAME_EXTENSION" == "jar" ]]
     then
@@ -1824,7 +1887,88 @@ env_check_for_user_profile() {
             #echo ''
         fi
     fi
+}
 
+### check if run from boot volume
+env_check_if_second_macos_volume_is_mounted() {
+    env_get_mounted_disks
+    if [[ $(printf "%s\n" "${LIST_OF_ALL_MOUNTED_VOLUMES_OUTSIDE_OF_BOOT_VOLUME[@]}" | grep "macintosh_hd") != "" ]]
+    then
+        # second macos volume is mounted
+        output_mas_hint() {
+            echo ''
+            echo "${bold_text}${red_text}important info${default_text}"
+            echo "at least one more macos volume is mounted, due to this bug"
+            echo "https://github.com/mas-cli/mas/issues/250"
+            echo "mas will install appstore apps to first macos partition found, not necessarily to the mounted one..."
+            echo "as a workaround follow these steps:"
+            echo "1   make sure the scripts are stored on the currently booted macos volume,"
+            echo "    if not copy them"
+            echo "2   unmount all other macos volumes"
+            echo "3   run the script again"
+            echo "exiting..."
+            echo ''
+            exit
+        }
+        output_mas_hint >&2
+    else
+        # second macos volume is not mounted
+        :
+    fi
+}
+
+
+### calendar
+env_collapsing_elements_in_calendar_sidebar() {
+    # collapsing (specified) elements in the sidebar
+    # delegates
+    INFO_PLISTS=$(find "$PATH_TO_CALENDARS" -name "Info.plist" -mindepth 2 -maxdepth 2)
+	# leaving DELEGATES_TO_COLLAPSE empty folds all delegates
+	DELEGATES_TO_COLLAPSE=(
+	""
+	)
+	while IFS= read -r line || [[ -n "$line" ]]
+	do
+    	if [[ "$line" == "" ]]; then continue; fi
+    	i="$line"
+		#echo $i
+		if [[ $(/usr/libexec/PlistBuddy -c 'Print Delegate' "$i" 2> /dev/null) == "true" ]]
+		then
+			#echo "yes"
+			DELEGATE_IN_PLIST=$(/usr/libexec/PlistBuddy -c 'Print Title' "$i")
+			DELEGATE_KEY=$(/usr/libexec/PlistBuddy -c 'Print Key' "$i")
+            add_entry_to_collapsed_elements() {
+                #echo "adding "$DELEGATE_IN_PLIST" do collapsed elements ..."
+                /usr/libexec/PlistBuddy -c "Add :CollapsedTopLevelNodes dict" "$CALENDAR_PREFERENCES_PLIST" 2>&1 | grep -v "Entry Already Exists$"
+			    /usr/libexec/PlistBuddy -c "Add :CollapsedTopLevelNodes:MainWindow array" "$CALENDAR_PREFERENCES_PLIST" 2>&1 | grep -v "Entry Already Exists$"
+			    /usr/libexec/PlistBuddy -c "Add :CollapsedTopLevelNodes:MainWindow:0 string "$DELEGATE_KEY"" "$CALENDAR_PREFERENCES_PLIST" 2>&1 | grep -v "Entry Already Exists$"   
+            }
+			if [[ "$DELEGATES_TO_COLLAPSE" == "" ]]
+			then
+				# collapse entry
+				add_entry_to_collapsed_elements
+			else
+				# collapse only specified delegates
+				while IFS= read -r line || [[ -n "$line" ]]
+				do
+    				if [[ "$line" == "" ]]; then continue; fi
+    				DELEGATE="$line"
+					#echo $i	
+					if [[ $(/usr/libexec/PlistBuddy -c 'Print Title' "$i" 2> /dev/null) == "$DELEGATE" ]]
+					then
+						# collapse entry
+				        add_entry_to_collapsed_elements
+					else
+					    :
+						#echo "leaving delegate "$DELEGATE_IN_PLIST" uncollapsed..."
+					fi
+				done <<< "$(printf "%s\n" "${DELEGATES_TO_COLLAPSE[@]}")"
+			fi
+		else
+			#echo "no"
+		fi
+	done <<< "$(printf "%s\n" "${INFO_PLISTS[@]}")"
+	sleep 2
 }
 
 
