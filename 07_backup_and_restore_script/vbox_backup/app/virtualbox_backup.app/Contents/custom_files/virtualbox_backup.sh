@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 ###
 ### sourcing config file
