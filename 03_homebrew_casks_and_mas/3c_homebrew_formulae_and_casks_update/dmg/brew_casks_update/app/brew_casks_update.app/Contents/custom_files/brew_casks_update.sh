@@ -386,6 +386,10 @@ formulae_install_updates() {
                     else
                         :
                     fi
+                elif [[ "$FORMULA" == "^python$" ]] || [[ "$FORMULA" =~ "^python@.*" ]]
+                then
+                    brew uninstall python
+                    brew install python --force-bottle
                 else
                     :
                 fi
