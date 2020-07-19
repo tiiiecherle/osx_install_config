@@ -1972,6 +1972,61 @@ env_collapsing_elements_in_calendar_sidebar() {
 }
 
 
+### set custom icon
+env_set_custom_icon() {
+    # http://apple.stackexchange.com/questions/6901/how-can-i-change-a-file-or-folder-icon-using-the-terminal
+    
+    # check if a needed variable is empty
+    if [[ "$PATH_TO_ICON" == "" ]] || [[ "$PATH_TO_OBJECT_TO_SET_ICON_FOR" == "" ]]
+    then
+        echo "PATH_TO_ICON or PATH_TO_OBJECT_TO_SET_ICON_FOR is empty, skipping..."
+        continue
+    else
+        :
+    fi
+    
+    # check if fileicon is installed, if not try to install via homebrew
+    if command -v fileicon &> /dev/null
+    then
+        # installed
+        :
+    else
+        # not installed
+    	if command -v brew &> /dev/null
+		then
+		    # installed
+			echo "installing missing dependency fileicon..."
+			brew install fileicon
+		else
+			# not installed
+            :
+		fi
+    fi
+    
+    # set icon via fileicon or python
+    if command -v fileicon &> /dev/null
+    then
+        # installed
+        echo "using fileicon to set custom icon..."
+        fileicon -q set "$PATH_TO_OBJECT_TO_SET_ICON_FOR" "$PATH_TO_ICON"
+    else
+        # not installed
+        echo "using python to set custom icon..."
+        pip3 install pyobjc-framework-Cocoa | grep -v "already satisfied"
+        python3 -c 'import Cocoa; import sys; Cocoa.NSWorkspace.sharedWorkspace().setIcon_forFile_options_(Cocoa.NSImage.alloc().initWithContentsOfFile_(sys.argv[1]), sys.argv[2], 0) or sys.exit("Unable to set file icon")' "$PATH_TO_ICON" "$PATH_TO_OBJECT_TO_SET_ICON_FOR"
+        for i in applet droplet AutomatorApplet
+    	do
+    		if [[ -e "$PATH_TO_OBJECT_TO_SET_ICON_FOR"/Contents/Resources/"$i".icns ]]
+    		then 
+    		    cp -a "$PATH_TO_ICON" "$PATH_TO_OBJECT_TO_SET_ICON_FOR"/Contents/Resources/"$i".icns
+    		else 
+    		    :
+    		fi
+    	done
+    fi
+}
+
+
 ### testing
 if [[ "$TEST_SOURCING_AND_VARIABLES" == "yes" ]]
 then

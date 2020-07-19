@@ -19,20 +19,18 @@ APP_NAME_VERSIONS=(
 BUILD_DIR="$SCRIPT_DIR_ONE_BACK"
 ICON_NAME="virtualbox_backup.icns"
 
+PATH_TO_ICON="$SCRIPT_DIR"/"$ICON_NAME"
+#PATH_TO_OBJECT_TO_SET_ICON_FOR="$BUILD_DIR"/app/"$APP_NAME"
+
 for APP_NAME in "${APP_NAME_VERSIONS[@]}"
 do
+    PATH_TO_OBJECT_TO_SET_ICON_FOR="$BUILD_DIR"/app/"$APP_NAME"
     echo ''
+    echo "$APP_NAME"
     # setting icons
-    chmod 770 "$SCRIPT_DIR"/icon_set_python3.py
-    #sudo pip install pyobjc
-    pip3 install pyobjc-framework-Cocoa | grep -v "already satisfied"
-    python3 "$SCRIPT_DIR"/icon_set_python3.py "$SCRIPT_DIR"/"$ICON_NAME" "$BUILD_DIR"/app/"$APP_NAME"
-    for i in applet droplet AutomatorApplet
-	do
-		if [[ -e "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Resources/"$i".icns ]]; then cp -a "$BUILD_DIR"/icons/"$ICON_NAME".icns "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Resources/"$i".icns; else :; fi
-	done
+    env_set_custom_icon
 done
 
-#echo ''
+echo ''
 echo "done ;)"
 echo ''

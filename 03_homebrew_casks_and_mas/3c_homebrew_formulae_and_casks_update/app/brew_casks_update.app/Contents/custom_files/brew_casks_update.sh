@@ -361,11 +361,11 @@ formulae_install_updates() {
             FORMULA="$line"
             
             echo 'updating '"$FORMULA"'...'            
-            if [[ $(brew outdated --quiet | grep "^$FORMULA$") == "" ]] && [[ $(brew outdated --quiet | grep "/$FORMULA$") == "" ]]
+            #if [[ $(brew outdated --quiet | grep "^$FORMULA$") == "" ]] && [[ $(brew outdated --quiet | grep "/$FORMULA$") == "" ]]
             #[[ $(brew outdated --verbose | grep "^$FORMULA[[:space:]]") == "" ]]
-            then
-                echo "$FORMULA"" already up-to-date..."
-            else
+            #then
+            #    echo "$FORMULA"" already up-to-date..."
+            #else
                 if [[ "$FORMULA" == "qtfaststart" ]]
                 then
                     if [[ $(brew list | grep "^ffmpeg$") != "" ]]
@@ -386,16 +386,12 @@ formulae_install_updates() {
                     else
                         :
                     fi
-                elif [[ "$FORMULA" == "^python$" ]] || [[ "$FORMULA" =~ "^python@.*" ]]
-                then
-                    brew uninstall python
-                    brew install python --force-bottle
                 else
                     :
                 fi
                 env_use_password | brew upgrade "$FORMULA"
                 #
-            fi
+            #fi
             echo 'removing old installed versions of '"$FORMULA"'...'
             env_use_password | brew cleanup "$FORMULA"
             echo ''

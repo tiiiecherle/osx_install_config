@@ -60,16 +60,11 @@ do
     done
     
 	echo ''
+	
 	# setting icons
-	chmod 770 "$BUILD_DIR"/icons/icon_set_python3.py
-	#sudo pip install pyobjc
-	pip3 install pyobjc-framework-Cocoa | grep -v "already satisfied"
-	python3 "$BUILD_DIR"/icons/icon_set_python3.py "$BUILD_DIR"/icons/"$ICON_NAME".icns "$BUILD_DIR"/app/"$APP_NAME".app
-	for i in applet droplet AutomatorApplet
-	do
-		if [[ -e "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Resources/"$i".icns ]]; then cp -a "$BUILD_DIR"/icons/"$ICON_NAME".icns "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Resources/"$i".icns; else :; fi
-	done
-	cp -a "$BUILD_DIR"/icons/document.icns "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Resources/document.icns
+	PATH_TO_ICON="$BUILD_DIR"/icons/"$ICON_NAME".icns
+	PATH_TO_OBJECT_TO_SET_ICON_FOR="$BUILD_DIR"/app/"$APP_NAME".app
+	env_set_custom_icon
 	
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html
 	xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
