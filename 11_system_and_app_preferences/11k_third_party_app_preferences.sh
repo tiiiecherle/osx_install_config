@@ -623,8 +623,8 @@ then
     
     # index based on the modification date rather than when the file was written to disk
     # this avoids re-indexing when restoring/unpacking from an archive
-    # should already be set in the preferences file in backup/restore - leave it here for documentation
-	#defaults write com.c-command.EagleFiler IndexingUsesAttributeModificationDate -string "NO"
+    # should already be set in the preferences file in backup/restore
+	defaults write com.c-command.EagleFiler IndexingUsesAttributeModificationDate -string "NO"
 	
 	# revert to default (re-index by date when the file was written to disk)
 	# leads to re-indexing after unarchiving from backup
