@@ -215,7 +215,7 @@ mas_login_applescript() {
             		    click button 2 of UI element 1 of sheet 1 of window 1
             		    #click button "Weiter" of UI element 1 of sheet 1 of window 1
                     end if
-                    if "$MACOS_VERSION_MAJOR" is equal to "10.16" then
+                    if "$MACOS_VERSION_MAJOR" is equal to "11.0" then
             		    click button 2  of UI element 1 of sheet 1 of window "App Store" 
                     end if
     			    delay 3
@@ -227,7 +227,7 @@ mas_login_applescript() {
                 if "$MACOS_VERSION_MAJOR" is equal to "10.15" then
         		    click menu item 16 of menu "Store" of menu bar item "Store" of menu bar 1
                 end if
-                if "$MACOS_VERSION_MAJOR" is equal to "10.16" then
+                if "$MACOS_VERSION_MAJOR" is equal to "11.0" then
         		    click menu item 16 of menu "Store" of menu bar item "Store" of menu bar 1
                 end if
         		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
@@ -238,7 +238,7 @@ mas_login_applescript() {
                 if "$MACOS_VERSION_MAJOR" is equal to "10.15" then
         		    set focused of text field "Apple-ID:" of sheet 1 of window 1 to true
                 end if
-                if "$MACOS_VERSION_MAJOR" is equal to "10.16" then
+                if "$MACOS_VERSION_MAJOR" is equal to "11.0" then
         		    set focused of text field "Apple-ID:" of sheet 1 of sheet 1 of window "App Store" to true
                 end if
         		delay 2
@@ -250,7 +250,7 @@ mas_login_applescript() {
         		delay 2
         		tell application "System Events" to keystroke return
         		# leave two factor auth disabled if diabled before
-        		if "$MACOS_VERSION_MAJOR" is equal to "10.16" then
+        		if "$MACOS_VERSION_MAJOR" is equal to "11.0" then
             		try
             		    delay 10
             		    #click button "Weitere Optionen"  of group 5 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"

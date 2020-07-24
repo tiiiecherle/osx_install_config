@@ -400,7 +400,7 @@ then
     elif [[ "$MACOS_VERSION_MAJOR" == 10.15 ]]
     then
         MACOS_MARKETING_NAME="Catalina"
-    elif [[ "$MACOS_VERSION_MAJOR" == 10.16 ]]
+    elif [[ "$MACOS_VERSION_MAJOR" == 11.0 ]]
     then
         MACOS_MARKETING_NAME="Big Sur"
     else
@@ -784,7 +784,7 @@ env_set_apps_security_permissions() {
                 sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,?,NULL,0,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,$APP_CSREQ,NULL,0,?);"
-            elif VERSION_TO_CHECK_AGAINST=10.16; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            elif VERSION_TO_CHECK_AGAINST=11.0; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
             then
                 # macos 11.0 and higher
                 if [[ $PERMISSION_GRANTED == "0" ]]
@@ -818,7 +818,7 @@ env_set_apps_security_permissions() {
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,NULL,?,NULL,NULL,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,$APP_CSREQ,NULL,NULL,?,NULL,NULL,?);"
-            elif VERSION_TO_CHECK_AGAINST=10.16; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            elif VERSION_TO_CHECK_AGAINST=11.0; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
             then
                 # macos 11.0 and higher
                 if [[ $PERMISSION_GRANTED == "0" ]]
