@@ -410,6 +410,7 @@ echo Linphone
 u	~/Library/Preferences/org.linphone.linphone.linphone.plist
 u	~/Library/Preferences/linphone/linphonerc
 u	~/Library/Application Support/linphone
+u	~/Library/Sounds/incomingCall.wav
 
 # LiteIcon
 echo LiteIcon
