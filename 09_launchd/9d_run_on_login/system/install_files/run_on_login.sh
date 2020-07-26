@@ -108,6 +108,32 @@ unmount_second_system_partition() {
 }
 #unmount_second_system_partition &
 
+unmount_update_partition() {
+    # see config file
+    MACOS_CURRENTLY_BOOTED_VOLUME=$(diskutil info / | grep "Volume Name:" | sed 's/^.*Volume Name: //' | awk '{$1=$1};1')
+    get_mounted_disks() {
+        MACOS_CURRENTLY_BOOTED_DISK_IDENTIFIER_MAJOR=$(diskutil info "$MACOS_CURRENTLY_BOOTED_VOLUME" | grep "Part of Whole:" | sed 's/^.*Part of Whole: //' | awk '{$1=$1};1')
+        LIST_OF_ALL_MOUNTED_VOLUMES=$(for i in $(df -Hl | tail -n +2 | awk '{print $1}'); do diskutil info "$i" | grep "Mount Point:" | sed 's/^.*Mount Point: //' | awk '{$1=$1};1'; done)
+        LIST_OF_ALL_MOUNTED_VOLUMES_ON_BOOT_VOLUME=$(for i in $(df -Hl | tail -n +2 | awk '{print $1}' | grep "/dev/"$MACOS_CURRENTLY_BOOTED_DISK_IDENTIFIER_MAJOR""); do diskutil info "$i" | grep "Mount Point:" | sed 's/^.*Mount Point: //' | awk '{$1=$1};1'; done)
+        LIST_OF_ALL_MOUNTED_VOLUMES_OUTSIDE_OF_BOOT_VOLUME=$(for i in $(df -Hl | tail -n +2 | awk '{print $1}' | grep -v "/dev/"$MACOS_CURRENTLY_BOOTED_DISK_IDENTIFIER_MAJOR""); do diskutil info "$i" | grep "Mount Point:" | sed 's/^.*Mount Point: //' | awk '{$1=$1};1'; done)
+    }
+    get_mounted_disks
+    
+    if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd" ]]
+    then
+        if [[ $(echo "$LIST_OF_ALL_MOUNTED_VOLUMES_OUTSIDE_OF_BOOT_VOLUME" | grep '/Update$') != "" ]]
+        then
+            sleep 25
+            if [[ -e "/Volumes/Update" ]]; then sudo umount -f /Volumes/Update; fi
+        else
+            :
+        fi
+    else
+        :
+    fi
+}
+unmount_update_partition &
+
 
 ###
 
