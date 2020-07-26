@@ -3760,13 +3760,7 @@ EOF
     # preventing photos from opening automatically when devices are plugged in
     defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
     
-        
     
-    ###
-    ### mojave specific app changes
-    ###
-    
-
 
     ###
     ### links to core service utilities
