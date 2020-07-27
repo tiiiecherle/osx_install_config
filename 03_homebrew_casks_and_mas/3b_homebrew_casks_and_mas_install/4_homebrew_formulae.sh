@@ -87,8 +87,7 @@ else
         homebre_formula_to_install="$line"
 	    echo "installing formula "$homebre_formula_to_install"..."
 		#env_use_password | brew install "$homebre_formula_to_install" 2> /dev/null | grep "/Cellar/.*files,\|Installing.*dependency"
-		#env_use_password | brew install "$homebre_formula_to_install"
-		env_use_password | brew install --force-bottle "$homebre_formula_to_install"
+		env_use_password | brew install "$homebre_formula_to_install"
 	    echo ''
 	done <<< "$(printf "%s\n" "${homebrew_formulae[@]}")"
     
