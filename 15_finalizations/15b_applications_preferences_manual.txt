@@ -21,6 +21,7 @@ iMessage (ts & ws)
 
 Reminders
 	check and test sync
+	preferences - select default reminders list
 
 Safari
 	check google consent
