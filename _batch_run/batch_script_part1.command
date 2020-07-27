@@ -200,6 +200,7 @@ batch_run_all() {
 	echo "waiting for respective homebrew formulae before starting to unarchive the backup files..."
 	echo ''
 	checking_dependencies() {
+	    MISSING_SCRIPT_DEPENDENCY=""
 		if command -v brew &> /dev/null
 		then
 			# installed
@@ -225,7 +226,6 @@ batch_run_all() {
 	checking_dependencies
 	while [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
 	do
-		MISSING_SCRIPT_DEPENDENCY=""
 		sleep 30
 		checking_dependencies
 	done
