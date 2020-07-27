@@ -95,8 +95,8 @@ then
 	echo "changing to xcode command line tools..."
 	sudo rm -rf /Library/Developer/CommandLineTools
     sudo xcode-select --switch /Applications/Xcode-beta.app
-	sudo xcodebuild -runFirstLaunch
 	sudo xcodebuild -license accept
+	sudo xcodebuild -runFirstLaunch
 else
 	:
 fi
