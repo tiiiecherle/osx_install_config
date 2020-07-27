@@ -63,6 +63,25 @@ open_applications() {
 		    echo "opening $(basename "$i")"
 			open "$i" &
 			sleep 5
+			if [[ $(echo "$i" | grep "Reminders.app") != "" ]]
+			then		
+osascript <<EOF
+tell application "Reminders"
+	activate
+end tell
+delay 2
+try
+	tell application "System Events" 
+		tell process "Reminders" 
+			click button 1 of window 1
+			delay 2
+		end tell
+	end tell
+end try
+EOF
+			else
+				:
+			fi
 		else
 			:
 		fi
