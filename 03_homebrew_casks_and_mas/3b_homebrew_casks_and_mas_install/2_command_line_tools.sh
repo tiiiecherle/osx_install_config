@@ -52,11 +52,14 @@ env_start_sudo
     
 # installing command line tools (graphical)
 command_line_tools_install_gui() {
-    if xcode-select --install 2>&1 | grep installed >/dev/null
+    env_check_if_command_line_tools_are_installed
+    if [[ "$COMMAND_LINE_TOOLS_INSTALLED" == "yes" ]]
     then
       	echo "command line tools are installed..."
     else
       	echo "command line tools are not installed, installing..."
+      	xcode-select --install
+      	sleep 1
       	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
       	#sudo xcodebuild -license accept
     fi

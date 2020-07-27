@@ -1429,10 +1429,21 @@ env_check_for_software_updates_gui() {
 EOF
 }
 
+env_check_if_command_line_tools_are_installed() {
+    #if type xcode-select >&- && xpath=$( xcode-select --print-path ) && test -d "${xpath}" && test -x "${xpath}"
+    if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ -n "$(ls -A "$(xcode-select -print-path)")" ]]
+    then
+      	COMMAND_LINE_TOOLS_INSTALLED="yes"
+    else
+        COMMAND_LINE_TOOLS_INSTALLED="no"
+    fi
+
+}
+
 env_command_line_tools_install_shell() {
     # installing command line tools (command line)
-    #if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ "$(ls -A "$(xcode-select -print-path)")" ]]
-    if xcode-select -print-path >/dev/null 2>&1 && [[ -e "$(xcode-select -print-path)" ]] && [[ -n "$(ls -A "$(xcode-select -print-path)")" ]]
+    env_check_if_command_line_tools_are_installed
+    if [[ "$COMMAND_LINE_TOOLS_INSTALLED" == "yes" ]]
     then
       	echo "command line tools are installed..."
     else

@@ -88,6 +88,19 @@ sudo chown -R "$USER" $(brew --cache)
 
 #echo ''
 
+# use xcode if installed
+if [[ -e "/Applications/Xcode-beta.app" ]]
+then
+	echo ''
+	echo "changing to xcode command line tools..."
+	sudo rm -rf /Library/Developer/CommandLineTools
+    sudo xcode-select --switch /Applications/Xcode-beta.app
+	sudo xcodebuild -runFirstLaunch
+	sudo xcodebuild -license accept
+else
+	:
+fi
+
 
 ### including homebrew commands in PATH
 # path documentation

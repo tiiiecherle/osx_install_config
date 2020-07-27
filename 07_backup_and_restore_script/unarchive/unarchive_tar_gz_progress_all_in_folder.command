@@ -44,14 +44,7 @@ echo ''
 echo "checking if all needed tools are installed..."
 
 # installing command line tools
-if xcode-select --install 2>&1 | grep installed >/dev/null
-then
-  	echo command line tools are installed...
-else
-  	echo command line tools are not installed, installing...
-  	while ps aux | grep 'Install Command Line Developer Tools.app' | grep -v grep > /dev/null; do sleep 1; done
-  	#sudo xcodebuild -license accept
-fi
+env_command_line_tools_install_shell
 
 # checking homebrew including script dependencies
 if command -v brew &> /dev/null
