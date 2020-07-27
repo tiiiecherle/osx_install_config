@@ -209,10 +209,10 @@ batch_run_all() {
 		    do
 		    	if [[ $(brew list | grep "^$formula$") == '' ]]
 		    	then
-		    		#echo """$formula"" is NOT installed..."
+		    		#echo ""$formula" is NOT installed..."
 		    		MISSING_SCRIPT_DEPENDENCY="yes"
 		    	else
-		    		#echo """$formula"" is installed..."
+		    		#echo ""$formula" is installed..."
 		    		:
 		    	fi
 		    done
@@ -221,10 +221,10 @@ batch_run_all() {
 		    do
 		   		if command -v "$command_to_test" &> /dev/null
 		    	then
-		    		#echo """$command_to_test"" is installed..."
+		    		#echo ""$command_to_test" is installed..."
 					:
 		    	else
-		    		#echo """$command_to_test"" is NOT installed..."
+		    		#echo ""$command_to_test" is NOT installed..."
 		    		MISSING_SCRIPT_DEPENDENCY="yes"
 		    	fi
 		    done
