@@ -6,7 +6,9 @@ reboot to recovery (cmd +R)
 	- do not allow boot from usb
 	reboot
 
-open "mail" and keep open in background for indexing
+open mail and keep open in background for indexing
+
+open reminders - preferences - select default reminders list
 
 virus scanner
 	check if virus scan is autostarted (symbol "B" in menu bar, eventually in bartender)
