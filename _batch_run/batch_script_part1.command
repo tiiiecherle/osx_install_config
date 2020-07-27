@@ -216,6 +216,18 @@ batch_run_all() {
 		    		:
 		    	fi
 		    done
+		    # wait until command is available, e.g. if building from source
+		    for command_to_test in gtar pigz pv gdu parallel gpg
+		    do
+		   		if command -v "$command_to_test" &> /dev/null
+		    	then
+		    		#echo """$command_to_test"" is installed..."
+					:
+		    	else
+		    		#echo """$command_to_test"" is NOT installed..."
+		    		MISSING_SCRIPT_DEPENDENCY="yes"
+		    	fi
+		    done
 		else
 		    # not installed
 		    MISSING_SCRIPT_DEPENDENCY="yes"
