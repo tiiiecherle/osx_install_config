@@ -538,21 +538,32 @@ then
     	:
     else
         # adding kext entries
+        # read values
+        # sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "select * from kext_policy;"
+        VERSION_TO_CHECK_AGAINST=10.15
+        if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+        then
+            # macos versions until and including 10.15
+            LAST_KEXT_ENTRY="1"
+        else
+            # macos versions 11.0 and up
+            LAST_KEXT_ENTRY="5"
+        fi
         # a reboot is needed for the changes to take effect
         if [[ $(printf "%s\n" "${casks[@]}" | grep "^virtualbox" ) != "" ]]
         then
             echo ''
             echo "adding kext entry for virtualbox..."
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxDrv',1,'Oracle America, Inc.',1);"
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxUSB',1,'Oracle America, Inc.',1);"
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxNetFlt',1,'Oracle America, Inc.',1);"
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxNetAdp',1,'Oracle America, Inc.',1);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxDrv',1,'Oracle America, Inc.',$LAST_KEXT_ENTRY);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxUSB',1,'Oracle America, Inc.',$LAST_KEXT_ENTRY);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxNetFlt',1,'Oracle America, Inc.',$LAST_KEXT_ENTRY);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxNetAdp',1,'Oracle America, Inc.',$LAST_KEXT_ENTRY);"
             #echo ''
         fi
         if [[ $(printf "%s\n" "${casks[@]}" | grep "^osxfuse$" ) != "" ]] || [[ $(printf "%s\n" "${casks[@]}" | grep "^veracrypt$" ) != "" ]]
         then
             echo "adding kext entry for macosfuse..."
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('3T5GSNBU6W','com.github.osxfuse.filesystems.osxfuse',1,'Benjamin Fleischer',1);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('3T5GSNBU6W','com.github.osxfuse.filesystems.osxfuse',1,'Benjamin Fleischer',$LAST_KEXT_ENTRY);"
             echo ''
         fi
         # installing casks
