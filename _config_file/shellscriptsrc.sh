@@ -647,35 +647,31 @@ env_get_path_to_app() {
             APP_NAME_WITH_EXTENSION="$APP_NAME"
         fi
         
-        # if an app is deleted and reinstalled or installed for the first time mdfind needs some time for indexing and find is a faster
-        # apps
-        if [[ "$PATH_TO_APP" == "" ]]
-        then
-            PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
-        fi
-        if [[ "$PATH_TO_APP" == "" ]]
-        then
-            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_APPS" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
-        fi
-        # system apps
-        if [[ "$PATH_TO_APP" == "" ]]
-        then
-            PATH_TO_APP=$(find "$PATH_TO_SYSTEM_APPS" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
-        fi
-        if [[ "$PATH_TO_APP" == "" ]]
-        then
-            PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$PATH_TO_SYSTEM_APPS" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
-        fi
-        # pref panes
-        if [[ "$PATH_TO_APP" == "" ]]
-        then
-            PATH_TO_APP=$(find ~/Library/PreferencePanes -mindepth 1 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
-        fi
-        # find apps in other apps
-        if [[ "$PATH_TO_APP" == "" ]]
-        then
-            PATH_TO_APP=$(find "$PATH_TO_APPS" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
-        fi
+        # apps, system apps, core apps, user apps
+        for i in "$PATH_TO_APPS" "$PATH_TO_SYSTEM_APPS" "/System/Library/CoreServices" "/Users/"$USER"/Library/Scripts/"
+        do
+            if [[ "$PATH_TO_APP" == "" ]]
+            then
+                PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
+            fi
+            if [[ "$PATH_TO_APP" == "" ]]
+            then
+                PATH_TO_APP=$(find "$i" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
+            fi
+        done
+        # pref panes, apps in other apps
+        for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS"
+        do
+            if [[ "$PATH_TO_APP" == "" ]]
+            then
+                PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
+            fi
+            if [[ "$PATH_TO_APP" == "" ]]
+            then
+                PATH_TO_APP=$(find "$i" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
+            fi
+        done
+        
         while [[ "$PATH_TO_APP" == "" ]]
         do
             # bash builtin printf can not print floating numbers
