@@ -29,6 +29,11 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 # "/$HOMEFOLDER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
 # are restored by the restore script if they were present at backup
 
+# allow better to start correctly
+defaults write better.fyi.mac dontShowMigrationCancelMessageAgain -bool true
+defaults write better.fyi.mac IntroductionComplete -bool true
+
+# opening extensions
 echo ''
 echo "opening safari apps that include extensions..."
 # should already be enabled by restoring ~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions
