@@ -1533,7 +1533,7 @@ env_cleanup_all_homebrew() {
     chmod 755 "$HOMEBREW_CACHE_DIR"/
     
     #brew cleanup 1> /dev/null
-    # also seems to clear cleans hidden files and folders
+    # also seems to clear hidden files and folders
     brew cleanup --prune=0 1> /dev/null
     
     if [[ "$HOMEBREW_CACHE_DIR" != "" ]] && [[ -e "$HOMEBREW_CACHE_DIR" ]]
