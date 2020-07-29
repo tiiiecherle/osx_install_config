@@ -82,6 +82,11 @@ env_check_if_run_from_batch_script() {
     fi
 }
 
+start_log() {
+    # prints stdout and stderr to terminal and to logfile
+    exec > >(tee -ia "$LOGFILE")
+}
+
 env_start_error_log() {
     local ERROR_LOG_DIR=/Users/"$loggedInUser"/Desktop/batch_error_logs
     if [[ ! -e "$ERROR_LOG_DIR" ]]
@@ -90,11 +95,13 @@ env_start_error_log() {
     else
         local ERROR_LOG_NUM=$(($(ls -1 "$ERROR_LOG_DIR" | awk -F'_' '{print $1}' | sort -n | tail -1)+1))
     fi
+    #echo "starting error log..."
     mkdir -p "$ERROR_LOG_DIR"
     if [[ "$ERROR_LOG_NUM" -le "9" ]]; then ERROR_LOG_NUM="0"$ERROR_LOG_NUM""; else :; fi
     local ERROR_LOG="$ERROR_LOG_DIR"/"$ERROR_LOG_NUM"_"$SERVICE_NAME"_errorlog.txt
     echo "### "$SERVICE_NAME"" >> "$ERROR_LOG"
     #echo "### $(date "+%Y-%m-%d %H:%M:%S")" >> "$ERROR_LOG"
+    start_log
     echo '' >> "$ERROR_LOG"
     exec 2> >(tee -ia "$ERROR_LOG" >&2)
 }
@@ -102,11 +109,6 @@ env_start_error_log() {
 env_stop_error_log() {
     exec 2<&-
     exec 2>&1
-}
-
-start_log() {
-    # prints stdout and stderr to terminal and to logfile
-    exec > >(tee -ia "$LOGFILE")
 }
 
 timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
@@ -332,10 +334,10 @@ setting_config() {
 
 ### script
 create_logfile
+wait_for_loggedinuser
 #timeout 3 env_check_if_run_from_batch_script
 env_check_if_run_from_batch_script
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else start_log; fi
-wait_for_loggedinuser
 echo ''
 wait_for_network_select
 echo ''
