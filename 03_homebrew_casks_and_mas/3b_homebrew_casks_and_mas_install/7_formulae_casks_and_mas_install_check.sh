@@ -162,10 +162,10 @@ check_homebrew_formulae() {
 		:
 	fi
 	#if [[ $(brew info "$item" | grep "Not installed") == "" ]];
-	if [[ $(brew list | grep "^$i$") != "" ]]
+	if [[ $(brew list | grep "^$i$") != "" ]] || [[ $(brew list | grep "^$i@.*$") != "" ]]
 	then 
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"
-	else 
+	else
 		printf "%-50s\e[1;31mFAILED\e[0m%-10s\n" "$i" >&2
 	fi
 }
