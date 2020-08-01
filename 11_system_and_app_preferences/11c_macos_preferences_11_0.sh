@@ -831,34 +831,80 @@ EOF
     #sudo launchctl bootstrap system "/System/Library/LaunchAgents/com.apple.notificationcenterui.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
         
     ### do not disturb
-    # defaults -currentHost read ~/Library/Preferences/ByHost/com.apple.notificationcenterui
+    # defaults read com.apple.ncprefs dnd_prefs | xxd -p
     
-    # disable do not disturb
-    defaults -currentHost write ~/Library/Preferences/ByHost/com.apple.notificationcenterui doNotDisturb -boolean false
-    defaults -currentHost delete ~/Library/Preferences/ByHost/com.apple.notificationcenterui doNotDisturbDate 2> /dev/null
-    #killall NotificationCenter
+    dnd_settings() {
+    #osascript 2>/dev/null <<EOF
+    osascript <<EOF
     
-    # enable do not disturb
-    #defaults -currentHost write ~/Library/Preferences/ByHost/com.apple.notificationcenterui doNotDisturb -boolean true
-    #defaults -currentHost write ~/Library/Preferences/ByHost/com.apple.notificationcenterui doNotDisturbDate -date "`date -u +\"%Y-%m-%d %H:%M:%S +0000\"`"
-    #killall NotificationCenter
+    tell application "System Preferences"
+    	activate
+    	#set paneids to (get the id of every pane)
+    	#display dialog paneids
+    	#return paneids
+    	#set current pane to pane "com.apple.preference.notifications"
+    	#get the name of every anchor of pane id "com.apple.preference.notifications"
+    	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.notifications")
+    	#return tabnames
+    	#display dialog tabnames
+    	reveal anchor "Main" of pane id "com.apple.preference.notifications"
+    	delay 1
+    	tell application "System Events"
+    		select row 1 of table 1 of scroll area 1 of window 1 of application process "System Preferences"
+    	end tell
+    end tell
     
-    # enable do not disturb for a certain time
-    #defaults -currentHost write ~/Library/Preferences/ByHost/com.apple.notificationcenterui dndStart -int 1320          # 10 p.m.
-    #defaults -currentHost write ~/Library/Preferences/ByHost/com.apple.notificationcenterui dndEnd -int 420             # 7 a.m.
+    delay 2
     
-    # do not enable do not disturb for a certain time
-    defaults -currentHost delete ~/Library/Preferences/ByHost/com.apple.notificationcenterui dndStart 2> /dev/null
-    defaults -currentHost delete ~/Library/Preferences/ByHost/com.apple.notificationcenterui dndEnd 2> /dev/null
+    tell application "System Events"
+    	tell process "System Preferences"
+    		# time based dnd
+    		if exists checkbox 3 of group 1 of window 1 then
+    			set theCheckbox to (checkbox 3 of group 1 of window 1)
+    			tell theCheckbox
+    				set checkboxStatus to value of theCheckbox as boolean
+    				if checkboxStatus is true then click theCheckbox
+    			end tell
+    		end if
+    		delay 0.2
+    		# if screen is sleeping
+    		if exists checkbox 4 of group 1 of window 1 then
+    			set theCheckbox to (checkbox 4 of group 1 of window 1)
+    			tell theCheckbox
+    				set checkboxStatus to value of theCheckbox as boolean
+    				if checkboxStatus is true then click theCheckbox
+    			end tell
+    		end if
+    		delay 0.2
+    		# if screen is locked
+    		if exists checkbox 6 of group 1 of window 1 then
+    			set theCheckbox to (checkbox 6 of group 1 of window 1)
+    			tell theCheckbox
+    				set checkboxStatus to value of theCheckbox as boolean
+    				if checkboxStatus is true then click theCheckbox
+    			end tell
+    		end if
+    		delay 0.2
+    		# sync tvs and projectors
+    		if exists checkbox 5 of group 1 of window 1 then
+    			set theCheckbox to (checkbox 5 of group 1 of window 1)
+    			tell theCheckbox
+    				set checkboxStatus to value of theCheckbox as boolean
+    				if checkboxStatus is false then click theCheckbox
+    			end tell
+    		end if
+    		delay 0.2
+    	end tell
+    end tell
+    delay 2
     
-    # enable do not disturb when display sleeps
-    defaults -currentHost write ~/Library/Preferences/ByHost/com.apple.notificationcenterui dndEnabledDisplaySleep -boolean false
+    tell application "System Preferences"
+    	quit
+    end tell
     
-    # enable do not disturb when display is locked
-    defaults -currentHost write ~/Library/Preferences/ByHost/com.apple.notificationcenterui dndEnabledDisplayLock -boolean false
-    
-    # enable do not disturb when syncing to tv or presentation
-    defaults -currentHost write ~/Library/Preferences/ByHost/com.apple.notificationcenterui dndMirroring -boolean true
+EOF
+    }
+    dnd_settings
     
     # allow calls from everyone if do not disturb is active
     defaults write com.apple.messages.facetime FaceTimeFavoritesDNDEnabled -bool false
@@ -1392,14 +1438,13 @@ expect eof
     
     tell application "System Preferences"
     	activate
-    	#set panenames to (get the name of every pane)
-    	#display dialog panenames
-    	--return panenames
-    	set current pane to pane "com.apple.preference.security"
-    	get the name of every anchor of pane id "com.apple.preference.security"
-    	set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")
-    	
-    	#display dialog tabnames
+    	#set paneids to (get the id of every pane)
+    	#display dialog paneids
+    	#return paneids
+    	#set current pane to pane "com.apple.preference.security"
+    	#get the name of every anchor of pane id "com.apple.preference.security"
+    	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")  	
+    	#return tabnames
     	reveal anchor "Privacy" of pane id "com.apple.preference.security"
     	delay 1
     	tell application "System Events"
@@ -1953,13 +1998,14 @@ EOF
     
     tell application "System Preferences"
     	activate
-    	#set panenames to (get the name of every pane)
-    	#display dialog panenames
-    	--return panenames
-    	set current pane to pane "com.apple.preference.displays"
+    	#set paneids to (get the id of every pane)
+    	#display dialog paneids
+    	#return paneids
+    	#set current pane to pane "com.apple.preference.displays"
     	#get the name of every anchor of pane id "com.apple.preference.displays"
     	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.displays")
     	#display dialog tabnames
+    	#return tabnames
     	reveal anchor "displaysDisplayTab" of pane id "com.apple.preference.displays"
     end tell
     
