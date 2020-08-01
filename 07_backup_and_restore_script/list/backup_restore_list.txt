@@ -249,6 +249,12 @@ u	~/Library/Preferences/org.grunenberg.EasyFind.plist
 #u	~/Library/Application Support/Editra
 #u	~/Library/Preferences/org.editra.Editra.plist
 
+# FaceTime and iMessage
+echo FaceTime and iMessage
+u	~/Library/Preferences/com.apple.identityservicesd.plist
+u	~/Library/Preferences/com.apple.imservice.ids.FaceTime.plist
+u	~/Library/Preferences/com.apple.imservice.ids.iMessage.plist
+
 # FileZilla
 echo FileZilla
 #u	"$PATH_TO_APPS"/FileZilla.app
