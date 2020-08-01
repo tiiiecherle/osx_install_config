@@ -57,42 +57,9 @@ do
 done
 
 
-### restoring basic cookies
-if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
-then
-	echo ''
-	echo "restoring basic cookies..."
-	rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
-	mkdir -p /Users/"$loggedInUser"/Library/Cookies/
-	cp -a /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$USER"/Library/Cookies/Cookies.binarycookies
-	sleep 1
-	open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
-	sleep 2
-else
-	echo ''
-	echo "/Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies not found, skipping..."
-fi
-
-
-### accepting sever certificate internally
-# opening safari to test if certificate for syncing calendar, contacts and reminders on local network via https is installed
-# install via 09_launchd/9f_cert_install_update/install_cert_and_launchdservice.sh
-echo ''
-#echo "please accept certificate by showing details, opening the website and entering the password..."
-echo "checking if certificate is installed correctly by opening the website..."
-
-SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
-if [[ -e "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh ]]
-then
-	. "$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep/cert_install_update_data.sh
-else
-    echo "script with variables not found, exiting..."
-    exit
-fi
-
+### opening safari
 # on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
-#"$PATH_TO_APPS"/Safari.app
-open -a "$PATH_TO_APPS"/Safari.app https://"$DAV_SERVER"
+open -a "$PATH_TO_APPS"/Safari.app
 echo "safari has to be quit before continuing..."
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
@@ -114,6 +81,28 @@ then
 	done
 else  
 	while ps aux | grep 'Safari.app/Contents/MacOS/Safari$' | grep -v grep > /dev/null; do sleep 1; done
+fi
+
+
+### restoring basic cookies
+if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
+then
+	echo ''
+	echo "restoring basic cookies..."
+	rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+	mkdir -p /Users/"$loggedInUser"/Library/Cookies/
+	cp -a /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+	if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+	then
+		:
+	else
+		sleep 2
+		open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
+		sleep 2
+	fi
+else
+	echo ''
+	echo "/Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies not found, skipping..."
 fi
 
 
