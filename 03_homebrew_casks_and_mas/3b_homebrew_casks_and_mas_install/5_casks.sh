@@ -542,7 +542,7 @@ then
         # sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "select * from kext_policy;"
         # delete all entries from the same team id
         # sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "DELETE FROM kext_policy WHERE team_id = 'VB5E2TV963';"
-        # allowingkext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
+        # allowing kext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
         # a reboot is needed for the changes to take effect
         if [[ $(printf "%s\n" "${casks[@]}" | grep "^virtualbox" ) != "" ]]
         then
