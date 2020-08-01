@@ -91,6 +91,22 @@ EOF
 echo ''
 echo "opening apps for applying preferences manually..."
 
+# confirm kext extensions
+# allowing kext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
+tell application "System Preferences"
+	activate
+	#set paneids to (get the id of every pane)
+	#display dialog paneids
+	#return paneids
+	#set current pane to pane "com.apple.preference.security"
+	#get the name of every anchor of pane id "com.apple.preference.security"
+	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")
+	#display dialog tabnames
+	#return tabnames
+	reveal anchor "General" of pane id "com.apple.preference.security"
+end tell
+
+# opening apps
 applications_to_open=(
 ""$PATH_TO_SYSTEM_APPS"/FaceTime.app"
 ""$PATH_TO_SYSTEM_APPS"/Messages.app"
