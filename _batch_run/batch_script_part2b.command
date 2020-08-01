@@ -193,7 +193,7 @@ batch_run_all() {
 	
 	### safari
 	printf "\n${bold_text}###\nsafari...\n###\n${default_text}"
-	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11b_safari_extensions_cookies_certificate.sh
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11b_safari_extensions_cookies.sh
 	env_active_source_app
 	
 	
