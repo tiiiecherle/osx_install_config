@@ -49,6 +49,18 @@ env_command_line_tools_install_shell
 ### starting sudo
 env_start_sudo
 
+# use xcode if installed
+if [[ -e "/Applications/Xcode-beta.app" ]]
+then
+    echo ''
+    echo "changing to xcode command line tools..."
+    sudo rm -rf /Library/Developer/CommandLineTools
+    sudo xcode-select --switch /Applications/Xcode-beta.app
+    sudo xcodebuild -license accept
+    sudo xcodebuild -runFirstLaunch
+else
+    :
+fi
 
 ### installing homebrew without pressing enter or entering the password again
 echo ''
