@@ -337,7 +337,9 @@ then
 	mas_login_applescript
 	
 	# make sure mas is aware of installed and uninstalled apps
+	sleep 2
 	mas reset
+	sleep 2
 
     echo "the app store has to be quit before continuing..."
     while ps aux | grep 'App Store.app' | grep -v grep > /dev/null; do sleep 1; done
