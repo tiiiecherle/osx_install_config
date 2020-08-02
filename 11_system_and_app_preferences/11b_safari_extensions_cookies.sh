@@ -24,6 +24,30 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ### safari extensions
 ###
 
+
+### opening safari
+# on a clean install (without restoring some data or preferences, e.g. PerSitePreferences.db) Safari has to be opened at least one time before the files will be created
+# opening wihtout loading a website does not trigger creating the files, so "run" is not enough, opening and loading a first website is needed
+WEBSITE_SAFARI_DATABASE="/Users/"$USER"/Library/Safari/PerSitePreferences.db"
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]] || [[ ! -e "$WEBSITE_SAFARI_DATABASE" ]]
+then
+    echo "opening and quitting safari..."
+    open -a ""$PATH_TO_APPS"/Safari.app" "https://google.com"
+    osascript <<EOF
+		try
+    		tell application "Safari"
+    			#run
+    			delay 5
+    			quit
+    		end tell
+    	end try
+EOF
+else
+	:
+fi
+
+
+### extensions
 # as apple changed the format of extensions for 10.14 and up it is no longer necessary to restore the "*.safariextz" files
 # "/$HOMEFOLDER/Library/Safari/Extensions/Extensions.plist"
 # "/$HOMEFOLDER/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist"
@@ -57,12 +81,10 @@ do
 done
 
 
-### opening safari
-# on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
-open -a "$PATH_TO_APPS"/Safari.app
+### extensions
 echo "safari has to be quit before continuing..."
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
-then
+#if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+#then
 	sleep 5
     osascript -e "tell application \"Safari\" to quit"
     sleep 1
@@ -79,24 +101,33 @@ then
 			:
 		fi
 	done
-else  
-	while ps aux | grep 'Safari.app/Contents/MacOS/Safari$' | grep -v grep > /dev/null; do sleep 1; done
-fi
+#else
+#	:
+#fi
+
+while ps aux | grep 'Safari.app/Contents/MacOS/Safari$' | grep -v grep > /dev/null; do sleep 1; done
 
 
 ### restoring basic cookies
 if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
 then
+	sleep 2
 	echo ''
 	echo "restoring basic cookies..."
-	rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
-	mkdir -p /Users/"$loggedInUser"/Library/Cookies/
-	cp -a /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+	if [[ -e /Users/"$loggedInUser"/Library/Cookies ]]
+	then
+		#rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+		rm -rf /Users/"$loggedInUser"/Library/Cookies
+	else
+		:
+	fi
+	mkdir -p /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies
+	cp -a /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies
 	if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 	then
 		:
 	else
-		sleep 2
+		sleep 10
 		open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 		sleep 2
 	fi
