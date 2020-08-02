@@ -2674,22 +2674,6 @@ EOF
     ###
     
     echo "safari & webkit"
-    
-    
-    ### preparations
-    echo "opening and quitting safari in background..."
-    # on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
-	osascript <<EOF
-
-		try
-			tell application "Safari"
-				run
-				delay 4
-				quit
-			end tell
-		end try
-			
-EOF
 
     SAFARI_PREFERENCES_FILE="/Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist"
     
@@ -2889,9 +2873,26 @@ EOF
     ### safari websites
     
     WEBSITE_SAFARI_DATABASE="/Users/"$USER"/Library/Safari/PerSitePreferences.db"
-    
-    # on a clean install (without restoring PerSitePreferences.db) Safari has to be opened at least one time before the database exists
-    # e.g. in script 11b_safari_extensions_and_certificate
+
+    # on a clean install (without restoring some data or preferences, e.g. PerSitePreferences.db) Safari has to be opened at least one time before the files will be created
+    # opening wihtout loading a website does not trigger creating the files, so "run" is not enough, opening and loading a first website is needed
+    if [[ -e "$WEBSITE_SAFARI_DATABASE" ]]
+    then
+        :
+    else
+        echo "opening and quitting safari..."
+
+        open -a ""$PATH_TO_APPS"/Safari.app" "https://google.com"
+	    osascript <<EOF
+    		try
+        		tell application "Safari"
+        			#run
+        			delay 5
+        			quit
+        		end tell
+        	end try
+EOF
+    fi
     
     # general preferences
     # /Users/$USER/Library/Safari/PerSitePreferences.db
