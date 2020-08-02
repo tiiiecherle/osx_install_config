@@ -93,6 +93,7 @@ echo "opening apps for applying preferences manually..."
 
 # confirm kext extensions
 # allowing kext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
+osascript <<EOF
 tell application "System Preferences"
 	activate
 	#set paneids to (get the id of every pane)
@@ -105,6 +106,8 @@ tell application "System Preferences"
 	#return tabnames
 	reveal anchor "General" of pane id "com.apple.preference.security"
 end tell
+EOF
+sleep 2
 
 # opening apps
 applications_to_open=(
@@ -135,7 +138,7 @@ open_more_apps() {
 }
 #open_more_apps
 
-# google consent
+### google consent
 open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 #open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a ""$PATH_TO_APPS"/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 
