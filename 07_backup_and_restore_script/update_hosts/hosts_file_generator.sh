@@ -95,7 +95,7 @@ env_start_error_log() {
     else
         local ERROR_LOG_NUM=$(($(ls -1 "$ERROR_LOG_DIR" | awk -F'_' '{print $1}' | sort -n | tail -1)+1))
     fi
-    echo "starting error log..."
+    #echo "starting error log..."
     mkdir -p "$ERROR_LOG_DIR"
     if [[ "$ERROR_LOG_NUM" -le "9" ]]; then ERROR_LOG_NUM="0"$ERROR_LOG_NUM""; else :; fi
     local ERROR_LOG="$ERROR_LOG_DIR"/"$ERROR_LOG_NUM"_"$SERVICE_NAME"_errorlog.txt
@@ -334,8 +334,8 @@ setting_config() {
 
 ### script
 create_logfile
-#timeout 3 env_check_if_run_from_batch_script
 wait_for_loggedinuser
+#timeout 3 env_check_if_run_from_batch_script
 env_check_if_run_from_batch_script
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else start_log; fi
 echo ''
@@ -383,7 +383,7 @@ hosts_file_install_update() {
                 cd ""$PATH_TO_APPS"/hosts_file_generator/"
                 sudo git fetch --all
                 sudo git reset --hard origin/master
-                sudo git pull origin master
+                sudo git pull
                 cd -
             else
                 :
