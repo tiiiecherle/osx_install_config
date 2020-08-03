@@ -1797,12 +1797,11 @@ env_set_permissions_autostart_apps_sequential() {
 env_deactivating_caffeinate() {
     if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
     then
-        APP_NAME="KeepingYouAwake"
-	    env_set_open_on_first_run_permissions
         echo ''
         echo "deactivating keepingyouawake..."
         echo ''
-        #open -g "$PATH_TO_APPS"/KeepingYouAwake.app
+        # also works
+        #pkill -15 caffeinate
         open -g keepingyouawake:///deactivate
         sleep 1
     else
@@ -1814,21 +1813,26 @@ env_deactivating_caffeinate() {
 }
 
 env_activating_caffeinate() {
-    env_deactivating_caffeinate &> /dev/null
-    sleep 1
-    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
+    if [[ $(ps aux | grep -ie /caffeinate | grep -v grep) == "" ]]
     then
-        echo ''
-    	echo "activating keepingyouawake..."
-	    APP_NAME="KeepingYouAwake"
-	    env_set_open_on_first_run_permissions
-        open -g keepingyouawake:///activate
-        sleep 1
-        echo ''
+        if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
+        then
+            echo ''
+        	echo "activating keepingyouawake..."
+            APP_NAME="KeepingYouAwake"
+            env_set_open_on_first_run_permissions
+            open -g keepingyouawake:///activate
+            sleep 1
+            echo ''
+        else
+            echo ''
+            echo "activating caffeinate..."
+            caffeinate -d -i &
+            echo ''
+        fi
     else
         echo ''
-        echo "activating caffeinate..."
-        caffeinate -d -i &
+        echo "caffeinate or keepingyouawake already active..."
         echo ''
     fi
 }
