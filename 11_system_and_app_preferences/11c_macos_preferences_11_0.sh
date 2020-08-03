@@ -3355,6 +3355,25 @@ EOF
     
     echo "mail"
     
+    
+    ### opening mail
+    echo "opening and quitting mail in background..."
+	# without opening mail on first run favorites get double entries
+	osascript <<EOF
+	
+			try
+				tell application "Mail"
+					run
+					delay 5
+					quit
+				end tell
+			end try	
+EOF
+
+    sleep 2
+    
+    
+    ### preferences file
     MAIL_PREFERENCES_FILE="/Users/"$USER"/Library/Containers/com.apple.mail/Data/Library/Preferences/com.apple.mail.plist"
 
 
@@ -3552,21 +3571,7 @@ EOF
     # un-collapse favorites
     defaults write com.apple.mail UserDidCollapseFavoritesSectionKey -bool false
     
-    # organize favorites    
-	echo "opening and quitting mail in background..."
-	# without opening mail on first run favorites get double entries
-	osascript <<EOF
-	
-			try
-				tell application "Mail"
-					run
-					delay 4
-					quit
-				end tell
-			end try
-				
-EOF
-
+    # organize favorites
     defaults delete com.apple.mail Favorites
     defaults write com.apple.mail Favorites "
 	<array>
@@ -3675,16 +3680,16 @@ EOF
 	echo "opening and quitting contacts in background..."
 	# without opening contacs first some settings could not be applied (e.g. ABDefaultAddressCountryCode)
 	osascript <<EOF
-	
 			try
 				tell application "Contacts"
 					run
-					delay 4
+					delay 5
 					quit
 				end tell
-			end try
-				
+			end try		
 EOF
+
+    sleep 2
     
     # enable the debug menu in contacts
     #defaults write com.apple.addressbook ABShowDebugMenu -bool true
