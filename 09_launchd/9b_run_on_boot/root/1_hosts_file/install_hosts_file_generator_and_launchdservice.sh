@@ -110,7 +110,10 @@ SCRIPTS_DEFAULTS_WRITE_DIR="$SCRIPT_DIR_FIVE_BACK"
 if [[ -e "$PATH_TO_APPS"/hosts_file_generator/whitelist ]] && [[ -e "$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_general ]]
 then
 	echo "general whitelist file found, adding entries and re-running script..."
-    sudo "$SCRIPT_INTERPRETER" -c 'cat '"$SCRIPTS_DEFAULTS_WRITE_DIR"'/_scripts_input_keep/hosts/whitelist_general >> '"$PATH_TO_APPS"'/hosts_file_generator/whitelist'
+    WHITELIST_GENERAL=""$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_general"
+    WHITELIST_GENERAL_QUOTED=$(echo \'$WHITELIST_GENERAL\')
+    #sudo "$SCRIPT_INTERPRETER" -c "echo $WHITELIST_GENERAL_QUOTED"
+    sudo "$SCRIPT_INTERPRETER" -c "cat "$WHITELIST_GENERAL_QUOTED" >> "$PATH_TO_APPS"/hosts_file_generator/whitelist"
     sudo "$SCRIPT_INTERPRETER" -c 'printf "\n" >> '"$PATH_TO_APPS"'/hosts_file_generator/whitelist'
     # script will run a second time when activating service to respect whitelist while updating
     sudo touch -mt 201512010000 /etc/hosts
@@ -122,7 +125,10 @@ fi
 if [[ -e "$PATH_TO_APPS"/hosts_file_generator/whitelist ]] && [[ -e "$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_"$USER" ]]
 then
 	echo "user specific whitelist file found, adding entries and re-running script..."
-    sudo "$SCRIPT_INTERPRETER" -c 'cat '"$SCRIPTS_DEFAULTS_WRITE_DIR"'/_scripts_input_keep/hosts/whitelist_'"$USER"' >> '"$PATH_TO_APPS"'/hosts_file_generator/whitelist'
+	WHITELIST_SPECIFIC=""$SCRIPTS_DEFAULTS_WRITE_DIR"/_scripts_input_keep/hosts/whitelist_"$USER""
+    WHITELIST_SPECIFIC_QUOTED=$(echo \'$WHITELIST_SPECIFIC\')
+    #sudo "$SCRIPT_INTERPRETER" -c "echo $WHITELIST_SPECIFIC_QUOTED"
+    sudo "$SCRIPT_INTERPRETER" -c "cat "$WHITELIST_SPECIFIC_QUOTED" >> "$PATH_TO_APPS"/hosts_file_generator/whitelist"
     sudo "$SCRIPT_INTERPRETER" -c 'printf "\n" >> '"$PATH_TO_APPS"'/hosts_file_generator/whitelist'
     # script will run a second time when activating service to respect whitelist while updating
     sudo touch -mt 201512010000 /etc/hosts
