@@ -113,8 +113,10 @@ run_cleaning2 () {
 	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Caches/*
 	
 	# safari cookies
-	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
-	sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies
+	#sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+	#sudo -H -u "$loggedInUser" rm -f /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies
+	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Cookies/
+	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/*
 
 	# restoring basic cookies
 	if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
