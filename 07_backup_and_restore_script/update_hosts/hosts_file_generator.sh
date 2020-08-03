@@ -383,7 +383,10 @@ hosts_file_install_update() {
                 cd ""$PATH_TO_APPS"/hosts_file_generator/"
                 sudo git fetch --all
                 sudo git reset --hard origin/master
-                sudo git pull
+                git config pull.rebase false    # merge (the default strategy)
+                #git config pull.rebase true    # rebase
+                #git config pull.ff only        # fast-forward only
+                sudo git pull origin master
                 cd -
             else
                 :
