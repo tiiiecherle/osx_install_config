@@ -126,12 +126,12 @@ then
     #trap_function_exit_middle() { COMMAND1; COMMAND2; }
     :
 else
-    trap_function_exit_middle() { env_deactivating_keepingyouawake; }
+    trap_function_exit_middle() { env_deactivating_caffeinate; }
 fi
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
 
-env_activating_keepingyouawake
+env_activating_caffeinate
 
 
 ### backup/restore files and directories

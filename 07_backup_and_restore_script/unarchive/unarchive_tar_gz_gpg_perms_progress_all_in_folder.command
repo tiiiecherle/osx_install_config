@@ -56,7 +56,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
     trap_function_exit_middle() { env_stop_sudo; unset GPG_PASSWORD; }
 else
-    trap_function_exit_middle() { env_stop_sudo; unset GPG_PASSWORD; env_deactivating_keepingyouawake; }
+    trap_function_exit_middle() { env_stop_sudo; unset GPG_PASSWORD; env_deactivating_caffeinate; }
 fi
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
@@ -148,7 +148,7 @@ decrypt_and_unarchive_sequential() {
 	    if [[ "$line" == "" ]]; then continue; fi
         item="$line"
         echo ''
-        env_activating_keepingyouawake
+        env_activating_caffeinate
     	echo "decrypting and unarchiving..."
     	echo "$item"
     	echo to "$SCRIPT_DIR"/

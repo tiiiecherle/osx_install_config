@@ -8,35 +8,6 @@ if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
-
-###
-### functions
-###
-
-env_activating_keepingyouawake() {
-    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
-    then
-    	echo "activating keepingyouawake..."
-        #echo ''
-    	open -g "$PATH_TO_APPS"/KeepingYouAwake.app
-        open -g keepingyouawake:///activate
-    else
-            :
-    fi
-}
-
-env_deactivating_keepingyouawake() {
-    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
-    then
-        echo "deactivating keepingyouawake..."
-        open -g "$PATH_TO_APPS"/KeepingYouAwake.app
-        open -g keepingyouawake:///deactivate
-    else
-        :
-    fi
-}
-
-
     
 ###
 ### starting installation
@@ -60,16 +31,8 @@ then
         ### install
         # https://apple.stackexchange.com/questions/255621/how-to-enable-ssh-v1-in-macos-sierra
                 
-        # activating keepingyouawake
-        if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
-        then
-            :
-        else
-            echo ''
-            echo "installing keepingyouawake..."
-            brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
-        fi
-        env_activating_keepingyouawake
+        # activating caffeinate
+        env_activating_caffeinate
         
         # updating homebrew
         echo ''
@@ -107,9 +70,9 @@ then
         echo "disabling incompatible ssh1 entries in ssh config file..."
         sed -i '' '/UseKeychain/s/^/#/g' /Users/$USER/.ssh/config
         
-        # deactivating keepingyouawake
+        # deactivating caffeinate
         echo ''
-        env_deactivating_keepingyouawake
+        env_deactivating_caffeinate
         
         # checking openssh version and ssh1 compatibility
         echo ''

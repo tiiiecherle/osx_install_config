@@ -474,8 +474,8 @@ backup_restore() {
         ### backup
         ###
         
-        # activating keepingyouawake
-        env_activating_keepingyouawake
+        # activating caffeinate
+        env_activating_caffeinate
         
         # checking and installing dependencies
         install_update_dependency_apps
@@ -1131,14 +1131,8 @@ EOF
                 echo ''
             fi
             
-            # deactivating keepingyouawake
-            if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
-            then
-                echo "deactivating keepingyouawake..."
-                open -g keepingyouawake:///deactivate
-            else
-                :
-            fi
+            # deactivating caffeinate
+			env_deactivating_caffeinate
             
             echo ''
             echo "done ;)"

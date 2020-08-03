@@ -109,8 +109,8 @@ then
     trap_function_exit_end() { :; }
 else
     # script is session master and not run from another script (S on mac Ss on linux)
-    trap_function_exit_middle() { env_stop_sudo; stty sane; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_keepingyouawake >/dev/null 2>&1; }
-    #trap_function_exit_middle() { env_stop_sudo; stty sane; pkill ruby; unset SUDOPASSWORD; env_deactivating_keepingyouawake >/dev/null 2>&1; }
+    trap_function_exit_middle() { env_stop_sudo; stty sane; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_caffeinate >/dev/null 2>&1; }
+    #trap_function_exit_middle() { env_stop_sudo; stty sane; pkill ruby; unset SUDOPASSWORD; env_deactivating_caffeinate >/dev/null 2>&1; }
     #trap_function_exit_end() { :; }
 fi
 "${ENV_SET_TRAP_SIG[@]}"

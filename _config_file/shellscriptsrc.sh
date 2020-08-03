@@ -1742,42 +1742,6 @@ env_delete_tmp_batch_script_gpg_fifo() {
 }
 
 
-### keepingyouawake
-env_activating_keepingyouawake() {
-    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
-    then
-        #echo ''
-    	#echo "activating keepingyouawake..."
-    	if [[ $(xattr -l ""$PATH_TO_APPS"/KeepingYouAwake.app") != "" ]]
-    	then
-            xattr -d com.apple.quarantine ""$PATH_TO_APPS"/KeepingYouAwake.app" &> /dev/null
-            /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted ""$PATH_TO_APPS"/KeepingYouAwake.app"
-        else
-            :
-        fi
-        open -g keepingyouawake:///activate
-        sleep 1
-        echo ''
-    else
-        :
-    fi
-}
-    
-env_deactivating_keepingyouawake() {
-    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
-    then
-        echo ''
-        echo "deactivating keepingyouawake..."
-        echo ''
-        #open -g "$PATH_TO_APPS"/KeepingYouAwake.app
-        open -g keepingyouawake:///deactivate
-        sleep 1
-    else
-        :
-    fi
-}
-
-
 ### permissions for opening on first run
 env_set_open_on_first_run_permissions() {
     env_get_path_to_app
@@ -1827,6 +1791,46 @@ env_set_permissions_autostart_apps_sequential() {
         autostartapp="$line"
         env_set_permissions_autostart_apps "$autostartapp"
     done <<< "$(printf "%s\n" "${AUTOSTART_PERMISSIONS_ITEMS[@]}")"
+}
+
+### caffeinate
+env_deactivating_caffeinate() {
+    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
+    then
+        APP_NAME="KeepingYouAwake"
+	    env_set_open_on_first_run_permissions
+        echo ''
+        echo "deactivating keepingyouawake..."
+        echo ''
+        #open -g "$PATH_TO_APPS"/KeepingYouAwake.app
+        open -g keepingyouawake:///deactivate
+        sleep 1
+    else
+        echo ''
+        echo "deactivating caffeinate..."
+        echo ''
+        pkill -15 caffeinate
+    fi
+}
+
+env_activating_caffeinate() {
+    env_deactivating_caffeinate &> /dev/null
+    sleep 1
+    if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
+    then
+        echo ''
+    	echo "activating keepingyouawake..."
+	    APP_NAME="KeepingYouAwake"
+	    env_set_open_on_first_run_permissions
+        open -g keepingyouawake:///activate
+        sleep 1
+        echo ''
+    else
+        echo ''
+        echo "activating caffeinate..."
+        caffeinate -d -i &
+        echo ''
+    fi
 }
 
 

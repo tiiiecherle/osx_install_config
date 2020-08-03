@@ -79,8 +79,8 @@ env_check_if_second_macos_volume_is_mounted
 
 
 
-### activating keepingyouawake
-env_activating_keepingyouawake
+### activating caffeinate
+env_activating_caffeinate
 
 
 ### installing mas

@@ -74,10 +74,21 @@ create_tmp_batch_script_gpg_fifo() {
 
 
 ###
+### caffeinate
+###
+
+echo ''
+printf "\n${bold_text}###\ncaffeinate...\n###\n${default_text}"
+#echo ''
+env_activating_caffeinate
+
+
+
+###
 ### trap
 ###
 
-trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; env_delete_tmp_batch_script_gpg_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_keepingyouawake; rm -f "/tmp/batch_script_in_progress" }
+trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; env_delete_tmp_batch_script_gpg_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_caffeinate; rm -f "/tmp/batch_script_in_progress" }
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
 
@@ -95,7 +106,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 
 
 ### security permissions
-echo ''
+#echo ''
 printf "\n${bold_text}###\nsecurity permissions...\n###\n${default_text}"
 echo ''
 env_databases_apps_security_permissions
@@ -261,7 +272,7 @@ batch_run_all() {
 		unset RESTORE_FILES_OPTION
 		sleep 1
 		env_active_source_app
-		env_activating_keepingyouawake
+		env_activating_caffeinate
 	fi
 	
 	
@@ -278,7 +289,7 @@ batch_run_all() {
 	while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"
 	sleep 1
 	env_active_source_app
-	env_activating_keepingyouawake
+	env_activating_caffeinate
 	
 	
 	### login shell customization

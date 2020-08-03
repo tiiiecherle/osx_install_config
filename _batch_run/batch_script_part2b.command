@@ -74,7 +74,7 @@ env_check_for_user_profile
 ### trap
 ###
 
-trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_keepingyouawake; rm -f "/tmp/batch_script_in_progress" }
+trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_caffeinate; rm -f "/tmp/batch_script_in_progress" }
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
 
@@ -98,16 +98,15 @@ batch_run_all() {
 	osascript -e "set Volume 0"
 	
 
-	### activating keepingyouawake
-	env_activating_keepingyouawake
+	### activating caffeinate
+	env_activating_caffeinate
 
 
 	### hosts file generator
 	printf "\n${bold_text}###\nhosts file generator...\n###\n${default_text}"
 	create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/1_hosts_file/install_hosts_file_generator_and_launchdservice.sh
-	env_active_source_app
-		
+	env_active_source_app		
 	
 	### local ssl certificate
     if [[ "$MACOS_VERSION_MAJOR" != 10.15 ]]

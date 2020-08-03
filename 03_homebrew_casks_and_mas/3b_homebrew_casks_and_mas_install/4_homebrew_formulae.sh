@@ -55,8 +55,8 @@ checking_homebrew
 env_homebrew_update
 
 
-### activating keepingyouawake
-env_activating_keepingyouawake
+### activating caffeinate
+env_activating_caffeinate
 
 
 ### parallel
