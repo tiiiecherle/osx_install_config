@@ -66,7 +66,7 @@ open_applications() {
 		    echo "opening $(basename "$PATH_TO_APP")"
 			open "$PATH_TO_APP" &
 			sleep 5
-			if [[ $(echo "$i" | grep "Reminders.app") != "" ]]
+			if [[ "$APP_NAME" == "Reminders" ]]
 			then		
 osascript <<EOF
 tell application "Reminders"
@@ -84,14 +84,14 @@ end try
 tell application "System Events" to tell process "Reminders"
 	#return position of window 1
 	#return size of window 1
-    set position of window 1 to {440, 150}
+    set position of window 1 to {440, 130}
     set size of window 1 to {860, 850}
     delay 2
 end tell
 EOF
 			fi
 
-			if [[ $(echo "$i" | grep "Calendar.app") != "" ]]
+			if [[ "$APP_NAME" == "Calendar" ]]
 			then		
 osascript <<EOF
 tell application "Calendar"
@@ -108,7 +108,7 @@ end tell
 EOF
 			fi
 
-			if [[ $(echo "$i" | grep "Contacts.app") != "" ]]
+			if [[ "$APP_NAME" == "Contacts" ]]
 			then		
 osascript <<EOF
 tell application "Contacts"
@@ -269,7 +269,7 @@ fi
 # for some reason textmate breaks on first install, second install fixes installation
 echo ''
 echo "reinstalling textmate to avoid error on opening..."
-brew cask install --force textmate
+brew cask install --force textmate 2> /dev/null | grep "successfully installed"
 
 
 ### stopping the error output redirecting
