@@ -17,7 +17,6 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### in addition to showing them in terminal write errors to logfile when run from batch script
 env_check_if_run_from_batch_script
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
-RUN_FROM_BATCH_SCRIPT=yes
 
 
 
@@ -56,12 +55,16 @@ PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 ###
 
 open_applications() {
-	for i in "${applications_to_open[@]}"
+
+    while IFS= read -r line || [[ -n "$line" ]] 
 	do
-		if [[ -e "$i" ]]
+	    if [[ "$line" == "" ]]; then continue; fi
+        APP_NAME="$line"
+        env_get_path_to_app
+		if [[ "$PATH_TO_APP" != "" ]]
 		then
-		    echo "opening $(basename "$i")"
-			open "$i" &
+		    echo "opening $(basename "$PATH_TO_APP")"
+			open "$PATH_TO_APP" &
 			sleep 5
 			if [[ $(echo "$i" | grep "Reminders.app") != "" ]]
 			then		
@@ -73,19 +76,59 @@ delay 2
 try
 	tell application "System Events" 
 		tell process "Reminders" 
-			click button 1 of window 1
+			click button "Weiter" of window 1
 			delay 2
 		end tell
 	end tell
 end try
+tell application "System Events" to tell process "Reminders"
+	#return position of window 1
+	#return size of window 1
+    set position of window 1 to {440, 150}
+    set size of window 1 to {860, 850}
+    delay 2
+end tell
 EOF
-			else
-				:
+			fi
+
+			if [[ $(echo "$i" | grep "Calendar.app") != "" ]]
+			then		
+osascript <<EOF
+tell application "Calendar"
+	activate
+end tell
+delay 2
+tell application "System Events" to tell process "Calendar"
+	#return position of window 1
+	#return size of window 1
+    set position of window 1 to {50, 50}
+    set size of window 1 to {1700, 1000}
+    delay 2
+end tell
+EOF
+			fi
+
+			if [[ $(echo "$i" | grep "Contacts.app") != "" ]]
+			then		
+osascript <<EOF
+tell application "Contacts"
+	activate
+end tell
+delay 2
+tell application "System Events" to tell process "Contacts"
+	#return position of window 1
+	#return size of window 1
+    set position of window 1 to {400, 150}
+    set size of window 1 to {1000, 800}
+    delay 2
+end tell
+EOF
 			fi
 		else
-			:
+			echo "$APP_NAME not found, skipping..."
 		fi
-	done
+	done <<< "$(printf "%s\n" "${applications_to_open[@]}")"
+	
 }
 
 echo ''
@@ -109,40 +152,42 @@ end tell
 EOF
 sleep 2
 
-# opening apps
+
+### opening apps
 applications_to_open=(
-""$PATH_TO_SYSTEM_APPS"/FaceTime.app"
-""$PATH_TO_SYSTEM_APPS"/Messages.app"
-""$PATH_TO_SYSTEM_APPS"/Calendar.app"
-""$PATH_TO_SYSTEM_APPS"/Contacts.app"
-""$PATH_TO_SYSTEM_APPS"/Reminders.app"
-""$PATH_TO_APPS"/Overflow 3.app"
-""$PATH_TO_APPS"/BresinkSoftwareUpdater.app"
+"FaceTime"
+"Messages"
+"Calendar"
+"Contacts"
+"Reminders"
+"Overflow 3"
+"BresinkSoftwareUpdater"
 )
 open_applications
 
 open_more_apps() {
 	# no longer needed, but kept for testing
 	applications_to_open_test=(
-	""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app"
-	""$PATH_TO_APPS"/AppCleaner.app"
-	""$PATH_TO_APPS"/VirusScannerPlus.app"
-	""$PATH_TO_APPS"/iStat Menus.app"
-	""$PATH_TO_APPS"/Microsoft Excel.app"
-	""$PATH_TO_APPS"/iMazing.app"
-	""$PATH_TO_APPS"/MacPass.app"
-	""$PATH_TO_APPS"/The Unarchiver.app"
+	"Adobe Acrobat Reader DC"
+	"AppCleaner"
+	"VirusScannerPlus"
+	"iStat Menus"
+	"Microsoft Excel"
+	"iMazing"
+	"MacPass"
+	"The Unarchiver"
 	)
 	applications_to_open=$(printf "%s\n" "${applications_to_open_test[@]}")
 	open_applications
 }
 #open_more_apps
 
+
 ### google consent
 open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 #open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a ""$PATH_TO_APPS"/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 
-# open user specific apps
+### open user specific apps
 if [[ "$APPLICATIONS_TO_OPEN_USER_SPECIFIC" != "" ]]
 then
     applications_to_open=$(printf "%s\n" "${APPLICATIONS_TO_OPEN_USER_SPECIFIC[@]}")
@@ -151,7 +196,8 @@ else
     :
 fi
 
-# moved to manual install script so that auto reboot after batch_script1 and therefore restoring keychain works
+
+### moved to manual install script so that auto reboot after batch_script1 and therefore restoring keychain works
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
 	if [[ $(brew cask list | grep "^libreoffice-language-pack$") != "" ]] 
@@ -181,7 +227,8 @@ else
 	:
 fi
 
-# opening system preferences for the monitor
+
+### opening system preferences for the monitor
 open_system_prefs_monitor() {
 #osascript 2>/dev/null <<EOF
 osascript <<EOF
@@ -201,7 +248,9 @@ EOF
 }
 #open_system_prefs_monitor
 
-# testing ssh connection
+
+### testing ssh connection
+echo ''
 SCRIPT_NAME="ssh_connection_test"
 SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
 SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
@@ -214,9 +263,13 @@ then
 else
     echo "script to test ssh connections not found..."
 fi
-             
-### removing security permissions
-#remove_apps_security_permissions_stop
+   
+          
+### reinstalling textmate
+# for some reason textmate breaks on first install, second install fixes installation
+echo ''
+echo "reinstalling textmate to avoid error on opening..."
+brew cask install --force textmate
 
 
 ### stopping the error output redirecting
