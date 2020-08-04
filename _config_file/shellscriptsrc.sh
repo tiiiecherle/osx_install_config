@@ -1813,7 +1813,7 @@ env_deactivating_caffeinate() {
 }
 
 env_activating_caffeinate() {
-    if [[ $(ps aux | grep -ie /caffeinate | grep -v grep) == "" ]]
+    if [[ $(ps aux | grep -ie "caffeinate" | grep -v grep) == "" ]]
     then
         if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
         then
