@@ -106,7 +106,7 @@ EOF
 		launchctl bootout gui/"$(id -u "$USER")"/com.apple.remindd 2>&1 | grep -v "in progress" | grep -v "No such process"
 		#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.CalendarAgent
 		#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.remindd
-		sleep 1
+		sleep 2
 		echo ''
 		
 		### identifying holidays calendar
@@ -287,7 +287,7 @@ EOF
 			launchctl bootout gui/"$(id -u "$USER")"/com.apple.remindd 2>&1 | grep -v "in progress" | grep -v "No such process"
 			#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.CalendarAgent
 			#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.remindd
-			sleep 1
+			sleep 2
 			#deleting_cache
 			#sleep 1
 			echo ''
@@ -297,7 +297,7 @@ EOF
 			launchctl bootstrap gui/"$(id -u "$USER")" /System/Library/LaunchAgents/com.apple.remindd.plist
 			#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.CalendarAgent
 			#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.remindd
-			sleep 1
+			sleep 2
 		}
 		restart_service
 		

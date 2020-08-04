@@ -40,6 +40,7 @@ then
     # if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
 	launchctl bootout gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME" 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#launchctl kill 15 gui/"$SERVICE_NAME"
+	sleep 2
 	launchctl disable gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
     launchctl remove "$SERVICE_NAME"
 else

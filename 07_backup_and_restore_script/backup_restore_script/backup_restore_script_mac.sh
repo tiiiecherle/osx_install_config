@@ -1448,6 +1448,14 @@ EOF
             ### cleaning up old unused files after restore
             echo ''
             echo "cleaning up some files..."
+            
+            # restore dir
+            if [[ -e "$RESTOREUSERDIR" ]]
+            then
+                sudo rm -rf "$RESTOREUSERDIR"
+            else
+                :
+            fi
         
             # virtualbox extpack
             if [[ -e "$HOMEFOLDER"/Library/VirtualBox ]]

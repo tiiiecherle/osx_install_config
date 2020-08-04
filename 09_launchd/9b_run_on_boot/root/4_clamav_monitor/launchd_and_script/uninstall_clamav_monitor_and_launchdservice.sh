@@ -44,6 +44,7 @@ then
     # if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
 	sudo launchctl bootout system "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#sudo launchctl kill 15 system/"$SERVICE_NAME"
+	sleep 2
 	sudo launchctl disable system/"$SERVICE_NAME"
     sudo launchctl remove "$SERVICE_NAME"
 else

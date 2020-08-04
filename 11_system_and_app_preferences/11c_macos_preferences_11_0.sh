@@ -824,11 +824,13 @@ EOF
     
     # disable notification center
 	#sudo launchctl bootout system "/System/Library/LaunchAgents/com.apple.notificationcenterui.plist" 2>&1 | grep -v "in progress"
+	#sleep 2
 	#sudo launchctl disable system/com.apple.notificationcenterui
 
     # reenable notification center
     #sudo launchctl enable system/com.apple.notificationcenterui
     #sudo launchctl bootstrap system "/System/Library/LaunchAgents/com.apple.notificationcenterui.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+	#sleep 2
         
     ### do not disturb
     # defaults read com.apple.ncprefs dnd_prefs | xxd -p
@@ -1378,25 +1380,26 @@ expect eof
         :
     else
         sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.alf.agent.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-        sleep 1 
+        sleep 2
     fi
     if [[ $(sudo launchctl list | grep com.apple.alf.useragent) == "" ]] > /dev/null 2>&1
     then
         :
     else
         sudo launchctl bootout system "/System/Library/LaunchAgents/com.apple.alf.useragent.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-        sleep 1 
+        sleep 2
     fi
 	sudo launchctl bootstrap system "/System/Library/LaunchDaemons/com.apple.alf.agent.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
 	sudo launchctl bootstrap system "/System/Library/LaunchAgents/com.apple.alf.useragent.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
-    
+    sleep 2
+	
     
     #### security privacy
     
     # disable location services
     ##
     sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.locationd.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-    sleep 1
+    sleep 2
     #sudo defaults write /var/db/locationd/Library/Preferences/ByHost/com.apple.locationd.$uuid1 LocationServicesEnabled -int 0
     sudo defaults write /var/db/locationd/Library/Preferences/ByHost/com.apple.locationd LocationServicesEnabled -int 0
     sudo chown -R _locationd:_locationd /var/db/locationd
@@ -2310,13 +2313,15 @@ EOF
     # enable
     #sudo launchctl enable system/com.apple.screensharing
     #sudo launchctl bootstrap system "/System/Library/LaunchDaemons/com.apple.screensharing.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+	#sleep 2
 	# disable
 	if [[ $(sudo launchctl list | grep com.apple.screensharing) == "" ]] > /dev/null 2>&1
     then
         :
     else
 	    sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.screensharing.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-	    sudo launchctl disable system/com.apple.screensharing
+	    sleep 2
+		sudo launchctl disable system/com.apple.screensharing
 	fi
     
     # turn off file sharing
@@ -2327,7 +2332,8 @@ EOF
         :
     else
     	sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.smbd.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-	    sudo launchctl disable system/com.apple.smbd
+	    sleep 2
+		sudo launchctl disable system/com.apple.smbd
     fi
     
     # deactivate afp file server
@@ -2337,7 +2343,8 @@ EOF
         :
     else
     	sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.AppleFileServer.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-	    sudo launchctl disable system/com.apple.AppleFileServer
+	    sleep 2
+		sudo launchctl disable system/com.apple.AppleFileServer
     fi
     
     # turn off internet sharing
@@ -2346,7 +2353,8 @@ EOF
         :
     else
     	sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.InternetSharing.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-	    sudo launchctl disable system/com.apple.InternetSharing
+	    sleep 2
+		sudo launchctl disable system/com.apple.InternetSharing
     fi
     
     # removing public share
@@ -2417,11 +2425,13 @@ EOF
         
         # enabling sharing
     	#sudo launchctl bootstrap system "/System/Library/LaunchDaemons/com.apple.smbd.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
+		#sleep 2
 	    #sudo launchctl enable system/LaunchDaemons/com.apple.smbd
 	    # use "$PATH_TO_APPS"/smb_enable.app
         
         # disabling sharing
     	#sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.smbd.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
+		#sleep 2
 	    #sudo launchctl disable system/LaunchDaemons/com.apple.smbd
 	    # use "$PATH_TO_APPS"/smb_disable.app
             
@@ -2447,7 +2457,8 @@ EOF
         :
     else
     	sudo launchctl bootout system "/System/Library/LaunchAgents/com.apple.amp.mediasharingd.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-	    sudo launchctl disable system/com.apple.mediasharingd
+	    sleep 2
+		sudo launchctl disable system/com.apple.mediasharingd
     fi
 
     # printer sharing
@@ -2480,7 +2491,8 @@ EOF
         :
     else
     	sudo launchctl bootout system "/System/Library/LaunchDaemons/eppc.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-	    sudo launchctl disable system/eppc
+	    sleep 2
+		sudo launchctl disable system/eppc
     fi
     # check
     #sudo systemsetup -getremoteappleevents | grep "Apple Events"
@@ -3752,10 +3764,11 @@ EOF
     echo "text edit"
     
     TEXTEDIT_CONFIG_FILE="/Users/"$USER"/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/com.apple.TextEdit.plist"
+    mkdir -p /Users/"$USER"/Library/Containers/com.apple.TextEdit/Data/Library/Preferences/
     touch "$TEXTEDIT_CONFIG_FILE"
     
     # use plain text mode for new textedit documents
-    #defaults write com.apple.TextEdit RichText -int 0
+    #defaults write "$TEXTEDIT_CONFIG_FILE" RichText -int 0
     
     # show page breaks in new documents by default
     defaults write "$TEXTEDIT_CONFIG_FILE" ShowPageBreaks -bool false

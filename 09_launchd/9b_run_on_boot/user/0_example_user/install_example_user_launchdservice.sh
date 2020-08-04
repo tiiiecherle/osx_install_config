@@ -74,12 +74,14 @@ then
     # if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
 	launchctl bootout gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME" 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#launchctl kill 15 gui/"$SERVICE_NAME"
+	sleep 2
 	launchctl disable gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
 else
     :
 fi
 launchctl enable gui/"$UNIQUE_USER_ID"/"$SERVICE_NAME"
 launchctl bootstrap gui/"$UNIQUE_USER_ID" "$SERVICE_INSTALL_PATH"/"$SERVICE_NAME".plist | grep -v "in progress" | grep -v "already bootstrapped"
+sleep 2
 
 WAITING_TIME=5
 NUM1=0

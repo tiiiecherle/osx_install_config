@@ -272,6 +272,7 @@ get_sizes_spotlight_folders
 
 # turning indexing off
 #sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.metadata.mds.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
+#sleep 2
 #sudo launchctl disable system/com.apple.metadata.mds
 # currently booted volume
 echo ''

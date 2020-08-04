@@ -203,9 +203,11 @@ then
 	fi
 	launchctl bootout gui/"$(id -u "$USER")"/com.bjango.istatmenus.agent 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#launchctl kill 15 gui/"$(id -u "$USER")"/com.bjango.istatmenus.agent
+	sleep 2
 	launchctl enable gui/"$(id -u "$USER")"/com.bjango.istatmenus.agent
 	launchctl bootstrap gui/"$(id -u "$USER")" "/Users/"$USER"/Library/LaunchAgents/com.bjango.istatmenus.agent.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
-
+	sleep 2
+	
 	if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app/Contents/Resources/InstallerBundle.bundle/Contents/Resources/com.bjango.istatmenus.status.plist" ]]
 	then
 		cp ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app/Contents/Resources/InstallerBundle.bundle/Contents/Resources/com.bjango.istatmenus.status.plist" "/Users/"$USER"/Library/LaunchAgents/com.bjango.istatmenus.status.plist"
@@ -214,25 +216,33 @@ then
 	fi
 	launchctl bootout gui/"$(id -u "$USER")"/com.bjango.istatmenus.status 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#launchctl kill 15 gui/"$(id -u "$USER")"/com.bjango.istatmenus.status
+	sleep 2
 	launchctl enable gui/"$(id -u "$USER")"/com.bjango.istatmenus.status
 	launchctl bootstrap gui/"$(id -u "$USER")" "/Users/"$USER"/Library/LaunchAgents/com.bjango.istatmenus.status.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+	sleep 2
 	
 	#launchctl print-disabled system
 	#launchctl print system | grep com.bjango.
 	sudo launchctl bootout system "/Library/LaunchDaemons/com.bjango.istatmenus.fans.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#sudo launchctl kill 15 system/com.bjango.istatmenus.fans
+	sleep 2
 	sudo launchctl enable system/com.bjango.istatmenus.fans
 	sudo launchctl bootstrap system "/Library/LaunchDaemons/com.bjango.istatmenus.fans.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+	sleep 2
 	
 	sudo launchctl bootout system "/Library/LaunchDaemons/com.bjango.istatmenus.daemon.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#sudo launchctl kill 15 system/com.bjango.istatmenus.daemon
+	sleep 2
 	sudo launchctl enable system/com.bjango.istatmenus.daemon
 	sudo launchctl bootstrap system "/Library/LaunchDaemons/com.bjango.istatmenus.daemon.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+	sleep 2
 	
 	#sudo launchctl bootout system "/Library/LaunchDaemons/com.bjango.istatmenus.installerhelper.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#sudo launchctl kill 15 system/com.bjango.istatmenus.installerhelper
+	#sleep 2
 	#sudo launchctl enable system com.bjango.istatmenus.installerhelper
 	#sudo launchctl bootstrap system "/Library/LaunchDaemons/com.bjango.istatmenus.installerhelper.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+	#sleep 2
 	
 	# permissions are set from restore script
 
@@ -253,9 +263,11 @@ then
 	
 	sudo launchctl bootout system "/Library/LaunchDaemons/BresinkSoftwareUpdater-PrivilegedTool.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
 	#sudo launchctl kill 15 system/BresinkSoftwareUpdater-PrivilegedTool
+	sleep 2
 	sudo launchctl enable system/BresinkSoftwareUpdater-PrivilegedTool
 	sudo launchctl bootstrap system "/Library/LaunchDaemons/BresinkSoftwareUpdater-PrivilegedTool.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
-		
+	sleep 2
+	
 	# permissions are set from restore script
 
 else
