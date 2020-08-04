@@ -3,11 +3,6 @@ APPLICATIONS PREFERENCES
 System Preferences (security - general)
 	allow kernel extensions
 
-Facetime (ts & ws)
-	account log-in or log-out
-	only activate number for being reachable, deactivate email
-	enable forwarding calls on iphone
-
 iMazing (ts)
 	open, attach iphone via usb and trust on both devices
 
@@ -18,8 +13,6 @@ Contacts
 	check and test sync
 
 iMessage (ts & ws)
-	account log-in or log-out
-	receive messages for telephone number, not for mail address
 	enable text message forwarding on iphone
 
 Reminders
@@ -28,7 +21,7 @@ Reminders
 
 Safari
 	check google consent
-	drag adguard icon out of toolbar (cmd + drag)
+	drag icons out of toolbar (cmd + drag)
 	check if extensions are enabled
 
 Signal (ts)
