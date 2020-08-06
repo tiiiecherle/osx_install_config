@@ -175,6 +175,11 @@ setting_preferences() {
     # 1=small, 2=medium, 3=big
     defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 1
     
+    # desktop tinting
+    # slightly translucent windows = true
+    # not translucent windows = false
+    defaults write NSGlobalDomain AppleReduceDesktopTinting -bool false
+    
     # show scrollbars
     # possible values: WhenScrolling, Automatic, Always
     defaults write NSGlobalDomain AppleShowScrollBars -string "WhenScrolling"
@@ -218,25 +223,72 @@ setting_preferences() {
     echo "preferences wallpaper & screensaver"
     
     # setting desktop wallpaper
-    # getting info
+    # reading infos
     #osascript -e 'tell application "System Events" to get properties of every desktop'
     
-    # set a custom wallpaper image. `DefaultDesktop.jpg` is already a symlink, and
-    # all wallpapers are in `/Library/Desktop Pictures/`.
-    # default additionally is in /System/Library/CoreServices/
+    # sets picture, but does not set the dynamic mode (light, dark, dynamic)
+    #osascript -e 'tell application "System Events" to set picture of every desktop to posix file "/System/Library/Desktop Pictures/Big Sur.heic"'
     
-    #rm -rf ~/Library/Application Support/Dock/desktoppicture.db
-    #sudo rm -rf /System/Library/CoreServices/DefaultDesktop.jpg
-    #sudo ln -s /Users/tom/Downloads/"nameofpictures".jpg /System/Library/CoreServices/DefaultDesktop.jpg
-    #
-    # or
-    #
-    # osascript -e 'tell application "System Events" to set picture of every desktop to posix file "/System/Library/Desktop Pictures/Appearance Dynamic.heic"' 
+    # all credits for the desktop picture section go to
+    # https://github.com/tech-otaku/macos-desktop
     
-    # default dynamic
-    osascript -e 'tell application "System Events" to set picture of every desktop to posix file "/System/Library/Desktop Pictures/Appearance Dynamic.heic"' 
-    #osascript -e 'tell application "System Events" to set picture of every desktop to posix file "/System/Library/CoreServices/DefaultDesktop.heic"' 
+    # desktop picture database
+    DESKTOP_DB="/Users/"$USER"/Library/Application Support/Dock/desktoppicture.db"
     
+    # sqlite3 "$DESKTOP_DB" ".dump data"
+    # big sur dynamic
+    VALUE=1
+    DESKTOP_FILE="/System/Library/Desktop Pictures/Big Sur.heic"
+    
+    if [[ $(sqlite3 "$DESKTOP_DB" "SELECT COUNT() FROM displays;") -ge 2 ]] || [[ $(sqlite3 "$DESKTOP_DB" "SELECT COUNT() FROM spaces;") -ge 2 ]]
+    then
+        osascript -e "tell application \"System Events\" to set picture of every desktop to posix file \"$DESKTOP_FILE\""
+        echo "multiple displays or spaces deteced, please select dynamic mode of desktop pictures manually in system preferences..." >&2
+    else
+        
+        # reset desktop wallpaper to make sure to start with a clean database
+        if [[ -f "$DESKTOP_DB" ]]; then rm -f "$DESKTOP_DB" && killall Dock && sleep 2; else :; fi
+        
+        # sqlite3 "$DESKTOP_DB" ".dump preferences"
+        # sqlite3 "$DESKTOP_DB" "SELECT key FROM preferences WHERE picture_id=1;"
+        # sqlite3 "$DESKTOP_DB" "SELECT key FROM preferences;" | head -n 2
+        KEY1=20
+        KEY2=1
+    
+        # last rows
+        LAST_ROW_DATA=$(sqlite3 "$DESKTOP_DB" "SELECT ROWID FROM data ORDER BY ROWID DESC LIMIT 1;")
+        if [[ "$LAST_ROW_DATA" == "" ]]; then LAST_ROW_DATA=0; else :; fi
+        LAST_ROW_PREFERENCES=$(sqlite3 "$DESKTOP_DB" "SELECT ROWID FROM preferences ORDER BY ROWID DESC LIMIT 1;")
+        if [[ "$LAST_ROW_PREFERENCES" == "" ]]; then LAST_ROW_PREFERENCES=0; else :; fi
+    
+        # deleting values to start cleanly
+        sqlite3 "$DESKTOP_DB" "DELETE FROM data;"
+        sqlite3 "$DESKTOP_DB" "DELETE FROM preferences;"
+    
+        # add needed row to data
+        sqlite3 "$DESKTOP_DB" "INSERT INTO data(rowid,value) VALUES( $((LAST_ROW_DATA + 1)), $VALUE );"
+        # add needed rows to preferences
+        DATA_ID1=$(sqlite3 "$DESKTOP_DB" "SELECT rowid FROM data WHERE value=$VALUE;")
+        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 1)),$KEY1,$DATA_ID1,3);"
+        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 2)),$KEY1,$DATA_ID1,4);"
+        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 3)),$KEY1,$DATA_ID1,2);"
+        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 4)),$KEY1,$DATA_ID1,1);"
+        
+        # for desktop pictures that have a dynamic mode (light, dark, dynamic) more entreis are needed
+        # add needed row to data
+        sqlite3 "$DESKTOP_DB" "INSERT INTO data(rowid,value) VALUES( $((LAST_ROW_DATA + 2)), \"$DESKTOP_FILE\" );"
+        # add needed rows to preferences
+        DATA_ID2=$(sqlite3 "$DESKTOP_DB" "SELECT rowid FROM data WHERE value=\"$DESKTOP_FILE\"")
+        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 5)),$KEY2,$DATA_ID2,3);"
+        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 6)),$KEY2,$DATA_ID2,4);"
+        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 7)),$KEY2,$DATA_ID2,2);"
+        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 8)),$KEY2,$DATA_ID2,1);"
+        
+        # applying changes    
+        killall Dock
+        # killall "System Preferences"          # needed to see changes in system preferences
+    fi
+
     # screen saver: 
     # defaults -currentHost read com.apple.screensaver
     # defaults -currentHost read com.apple.ScreenSaver.iLifeSlideShows
@@ -2236,7 +2288,8 @@ EOF
     
     # analog menu bar clock
     ##
-    defaults write com.apple.menuextra.clock IsAnalog -bool false
+    #defaults write com.apple.menuextra.clock IsAnalog -bool false
+    defaults write com.apple.menuextra.clock IsAnalog -bool true
     
     # flash the time separators
     ##
