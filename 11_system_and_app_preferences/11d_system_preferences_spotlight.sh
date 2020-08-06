@@ -231,7 +231,7 @@ SPOTLIGHT_INDEX_FOLDERS=(
 "$SPOTLIGHT_FOLDER"
 )
 env_get_mounted_disks
-SPOTLIGHT_VOLUMES=$(printf "%s\n" "${LIST_OF_ALL_MOUNTED_VOLUMES_ON_BOOT_VOLUME[@]}" | grep -v '/Update$' | grep -v '/Preboot$' | grep -v '/VM$')
+SPOTLIGHT_VOLUMES=$(printf "%s\n" "${LIST_OF_ALL_MOUNTED_VOLUMES_ON_BOOT_VOLUME[@]}" | grep -v '/Update$' | grep -v '/Preboot$' | grep -iv '/var/vm$')
 run_spotlight_command() {
 	if [[ "$SPOTLIGHT_COMMAND" == "" ]]
 	then
