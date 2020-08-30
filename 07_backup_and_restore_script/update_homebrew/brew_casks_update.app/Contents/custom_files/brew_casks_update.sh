@@ -319,7 +319,7 @@ formulae_show_updates_parallel() {
         printf "%+7s %-2s %-22s %-17s %-17s %-10s\n" "$NUMBER_OF_FORMULA/$NUMBER_OF_INSTALLED_FORMULAE" "  " "$NAME_PRINT" "$CURRENT_INSTALLED_VERSION_PRINT" "$NEW_VERSION_PRINT" "$CHECK_RESULT_PRINT"
                 
         # installing if not up-to-date and not excluded
-        if [[ "$CHECK_RESULT" == "outdated" ]] && [[ ${CASK_EXCLUDES} != *"$FORMULA"* ]]
+        if [[ "$CHECK_RESULT" == "outdated" ]] && [[ $(printf '%s\n' "${FORMULA_EXCLUDES[@]}" | grep "^$FORMULA$") == "" ]]
         then
             echo "$FORMULA" >> "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE"
         fi
@@ -538,7 +538,7 @@ casks_show_updates_parallel() {
         printf "%+7s %-2s %-22s %-17s %-17s %-10s\n" "$NUMBER_OF_CASK/$NUMBER_OF_INSTALLED_CASKS" "  " "$CASK_NAME_PRINT" "$CURRENT_INSTALLED_VERSION_PRINT" "$NEW_VERSION_PRINT" "$CHECK_RESULT_PRINT"
 
         # installing if not up-to-date and not excluded
-        if [[ "$CHECK_RESULT" == "outdated" ]] && [[ ${CASK_EXCLUDES} != *"$CASK"* ]]
+        if [[ "$CHECK_RESULT" == "outdated" ]] && [[ $(printf '%s\n' "${CASK_EXCLUDES[@]}" | grep "^$CASK$") == "" ]]
         then
             echo "$CASK" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
         fi
@@ -569,7 +569,7 @@ casks_show_updates_parallel() {
     	
     	if [[ "$CONT_LATEST" =~ ^(yes|y)$ ]]
         then
-            if [[ "$NEW_VERSION" == "latest" ]] && [[ ${CASK_EXCLUDES} != *"$CASK"* ]]
+            if [[ "$NEW_VERSION" == "latest" ]] && [[ $(printf '%s\n' "${CASK_EXCLUDES[@]}" | grep "^$CASK$") == "" ]]
             then
                 echo "$CASK" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
             fi
@@ -916,9 +916,13 @@ then
     
     # will exclude these apps from updating
     # pass in params to fit your needs
-    # use the exact brew/cask name and separate names with a pipe |
-    FORMULA_EXCLUDES="${1:-}"
-    CASK_EXCLUDES="${2:-}"
+    # use the exact formula/cask name and separate names with a new line
+    FORMULA_EXCLUDES=(
+    #formula1
+    )
+    CASK_EXCLUDES=(
+    #cask1
+    )
     
     # more variables
     echo ''
