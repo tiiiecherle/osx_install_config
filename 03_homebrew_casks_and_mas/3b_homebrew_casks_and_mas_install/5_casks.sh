@@ -99,7 +99,7 @@ install_casks_parallel() {
     # if parallels is used i needs to be redefined
     i="$1"
     #if [[ $(brew cask info "$i" | grep "Not installed") != "" ]]
-    if [[ $(brew cask list | grep "^$i$") == "" ]]
+    if [[ $(brew list --cask | grep "^$i$") == "" ]]
     then
         echo "installing cask "$i"..."
         env_use_password | env_timeout 400 brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
@@ -120,7 +120,7 @@ install_casks_parallel() {
                 #echo "installing cask $i failed, noting for a second try..."
                 echo "$i" >> /tmp/casks_second_try.txt
             fi
-            # making sure install check recognizes the failed install when using brew cask list | grep "$i"
+            # making sure install check recognizes the failed install when using brew list --cask | grep "$i"
             if [[ -e "$BREW_CASKS_PATH"/"$i" ]]
             then
             	rm -rf "$BREW_CASKS_PATH"/"$i"
@@ -188,7 +188,7 @@ install_casks_parallel() {
             for d in $(brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]')
             do
                 #echo d for $i is $d
-                if [[ $(brew cask list | grep "^$d$") == "" ]]
+                if [[ $(brew list --cask | grep "^$d$") == "" ]]
                 then
                     echo "installing missing dependency "$d"..."
                     env_use_password | env_timeout 300 brew cask install --force "$d" 2> /dev/null | grep "successfully installed"
@@ -198,7 +198,7 @@ install_casks_parallel() {
                         :
                     else
                         # failed
-                        # making sure install check recognizes the failed install when using brew cask list | grep "$i"
+                        # making sure install check recognizes the failed install when using brew list --cask | grep "$i"
                         if [[ -e "$BREW_CASKS_PATH"/"$d" ]]
                         then
                         	rm -rf "$BREW_CASKS_PATH"/"$d"
@@ -286,7 +286,7 @@ then
     	#echo ''
     	
     	#if [[ $(brew cask info java | grep "Not installed") != "" ]]
-    	if [[ $(brew cask list | grep "^java$") == "" ]] && [[ $(printf '%s\n' "${casks[@]}" | grep "^java$") != "" ]]
+    	if [[ $(brew list --cask | grep "^java$") == "" ]] && [[ $(printf '%s\n' "${casks[@]}" | grep "^java$") != "" ]]
         then
             echo ''
         	# making sure java gets installed on reinstall
@@ -301,7 +301,7 @@ then
         fi
     
     	#if [[ $(brew cask info flash-npapi | grep "Not installed") != "" ]]
-    	if [[ $(brew cask list | grep "^flash-npapi$") == "" ]] && [[ $(printf '%s\n' "${casks[@]}" | grep "^flash-npapi$") != "" ]]
+    	if [[ $(brew list --cask | grep "^flash-npapi$") == "" ]] && [[ $(printf '%s\n' "${casks[@]}" | grep "^flash-npapi$") != "" ]]
         then
         	# making sure flash gets installed on reinstall
         	if [[ -e "/Library/Internet Plug-Ins/Flash Player.plugin" ]]
@@ -327,7 +327,7 @@ then
     	# making sure libreoffice gets installed as a dependency of libreoffice-language-pack
     	# installation would be refused if restored via restore script or already installed otherwise
     	#if [[ $(brew cask info libreoffice | grep "Not installed") != "" ]] || [[ $(brew cask info libreoffice-language-pack | grep "Not installed") != "" ]]
-    	if [[ $(brew cask list | grep "^libreoffice$") == "" ]] || [[ $(brew cask list | grep "^libreoffice-language-pack$") == "" ]]
+    	if [[ $(brew list --cask | grep "^libreoffice$") == "" ]] || [[ $(brew list --cask | grep "^libreoffice-language-pack$") == "" ]]
         then
             echo ''
         	if [[ -e ""$PATH_TO_APPS"/LibreOffice.app" ]]
@@ -344,7 +344,7 @@ then
     
     	# making sure adobe-acrobat-reader gets installed on reinstall
     	#if [[ $(brew cask info adobe-acrobat-reader | grep "Not installed") != "" ]]
-    	if [[ $(brew cask list | grep "^adobe-acrobat-reader$") == "" ]]
+    	if [[ $(brew list --cask | grep "^adobe-acrobat-reader$") == "" ]]
         then
         	if [[ -e ""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app" ]]
         	then
@@ -373,7 +373,7 @@ then
     
     	reinstall_avg_antivirus() {
         	#if [[ $(brew cask info avg-antivirus | grep "Not installed") != "" ]]
-        	if [[ $(brew cask list | grep "^avg-antivirus$") == "" ]]
+        	if [[ $(brew list --cask | grep "^avg-antivirus$") == "" ]]
             then
             	# making sure avg-antivirus gets installed on reinstall
             	if [[ $(printf '%s\n' "${casks[@]}" | grep "^avg-antivirus$") != "" ]] && [[ -e ""$PATH_TO_APPS"/AVGAntivirus.app" ]]
@@ -429,7 +429,7 @@ then
     
     	reinstall_avast_security() {
         	#if [[ $(brew cask info avast-security | grep "Not installed") != "" ]]
-        	if [[ $(brew cask list | grep "^avast-security$") == "" ]]
+        	if [[ $(brew list --cask | grep "^avast-security$") == "" ]]
             then
             	# making sure avast-security gets installed on reinstall
             	if [[ $(printf '%s\n' "${casks[@]}" | grep "^avast-security$") != "" ]] && [[ -e ""$PATH_TO_APPS"/Avast.app" ]]
@@ -579,7 +579,7 @@ then
 	fi
 	
 	# making sure to have the latest version of macosfuse after installing virtualbox (which often ships with an outdated version)
-	if [[ $(brew cask list | grep "^virtualbox$") != "" ]]
+	if [[ $(brew list --cask | grep "^virtualbox$") != "" ]]
     then
         echo ''
         echo "updating macosfuse after virtualbox install..."
@@ -591,7 +591,7 @@ then
             :
         else
             # failed
-            # making sure install check recognizes the failed install when using brew cask list | grep "$i"
+            # making sure install check recognizes the failed install when using brew list --cask | grep "$i"
             if [[ -e "$BREW_CASKS_PATH"/"$i" ]]
             then
             	rm -rf "$BREW_CASKS_PATH"/"$i"
@@ -715,7 +715,7 @@ fi
 
 # listing installed casks
 #echo "the following casks are installed..."
-#brew cask list | tr "," "\n"
+#brew list --cask | tr "," "\n"
 
 # if script is run standalone, not sourced or run from run_all script, clean up
 if [[ "$SCRIPT_IS_SOURCED" == "yes" ]] || [[ "$RUN_FROM_RUN_ALL_SCRIPT" == "yes" ]]

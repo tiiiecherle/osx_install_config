@@ -180,7 +180,7 @@ check_homebrew_formulae() {
 
 # listing installed casks
 #echo "the following casks are installed..."
-#brew cask list | tr "," "\n"
+#brew list --cask | tr "," "\n"
     
 # checking if successfully installed
 # homebrew packages
@@ -228,7 +228,7 @@ check_casks() {
 	else
 		:
 	fi
-	if [[ $(brew cask list | grep "^$i$") != "" ]]; 
+	if [[ $(brew list --cask | grep "^$i$") != "" ]]; 
 	then 
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"; 
 	else 

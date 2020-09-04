@@ -93,18 +93,18 @@ else
     #env_start_sudo
     echo ''
     echo "uninstalling casks incl. preferences..."
-    for caskstouninstall in $(brew cask list)
+    for caskstouninstall in $(brew list --cask)
     do  
         echo "zapping $caskstouninstall"...
     	env_use_password | brew cask zap --force "$caskstouninstall"
     	echo ''
     done
-    if [[ $(brew cask list) == "" ]]
+    if [[ $(brew list --cask) == "" ]]
     then
         echo "all casks uninstalled..."
     else
         echo "the following casks are still installed..."
-        brew cask list
+        brew list --cask
     fi
     #env_stop_sudo
 fi

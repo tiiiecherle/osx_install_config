@@ -178,7 +178,7 @@ brew tap homebrew/cask 2>&1
 
 ### installing keepingyouawake
 #if [[ -e "$PATH_TO_APPS"/KeepingYouAwake.app ]]
-if [[ $(brew cask list | grep "^keepingyouawake$") != "" ]]
+if [[ $(brew list --cask | grep "^keepingyouawake$") != "" ]]
 then
     :
 else

@@ -204,7 +204,7 @@ cleanup_casks() {
     fi
 
     # checking if more than version is installed by using
-    # brew cask list --versions
+    # brew list --cask --versions
     
 }
 
@@ -976,7 +976,7 @@ then
     if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
     then
         echo ''
-        export INSTALLED_CASKS=$(brew cask list | cat)
+        export INSTALLED_CASKS=$(brew list --cask | cat)
         casks_show_updates_parallel
     else
         :

@@ -200,7 +200,7 @@ fi
 ### moved to manual install script so that auto reboot after batch_script1 and therefore restoring keychain works
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
-	if [[ $(brew cask list | grep "^libreoffice-language-pack$") != "" ]] 
+	if [[ $(brew list --cask | grep "^libreoffice-language-pack$") != "" ]] 
 	then
 	    # installung libreoffice language pack
 	    LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
