@@ -10,6 +10,16 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### env_parallel session
+###
+
+# needed for env_paralell using parallel version 20200822 and newer
+# http://savannah.gnu.org/bugs/index.php?59010
+env_parallel --session 
+
+
+
+###
 ### asking password upfront
 ###
 
