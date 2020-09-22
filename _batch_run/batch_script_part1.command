@@ -203,7 +203,7 @@ batch_run_all() {
 	### homebrew and cask install
 	printf "\n${bold_text}###\nhomebrew cask...\n###\n${default_text}"
 	create_tmp_batch_script_fifo
-	open "$SCRIPTS_FINAL_DIR"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/0_run_all.command
+	open -a Terminal "$SCRIPTS_FINAL_DIR"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/0_run_all.command
 	sleep 3
 	
 	# waiting for respective homebrew formulae before starting to unarchive the backup files
@@ -349,7 +349,7 @@ batch_run_all() {
     then
     	printf "\n${bold_text}###\nbatch scripts...\n###\n${default_text}"
         create_tmp_batch_script_fifo
-	    open "$SCRIPTS_FINAL_DIR"/_batch_run/batch_script_part2.command
+	    open -a Terminal "$SCRIPTS_FINAL_DIR"/_batch_run/batch_script_part2.command
 	    ### waiting for running processes to finish
     	echo ''
     	echo "waiting for batch script 2 to finish..."
