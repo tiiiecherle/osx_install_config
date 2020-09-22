@@ -239,7 +239,11 @@ mas_login_applescript() {
         		    set focused of text field "Apple-ID:" of sheet 1 of window 1 to true
                 end if
                 if "$MACOS_VERSION_MAJOR" is equal to "11.0" then
-        		    set focused of text field "Apple-ID:" of sheet 1 of sheet 1 of window "App Store" to true
+                    try
+        		        set focused of text field "Apple-ID:" of sheet 1 of sheet 1 of window "App Store" to true
+        		    on error
+        		        set focused of text field 1 of sheet 1 of sheet 1 of window "App Store" to true
+        		    end try
                 end if
         		delay 2
         		tell application "System Events" to keystroke "$MAS_APPLE_ID"
@@ -249,10 +253,10 @@ mas_login_applescript() {
         		tell application "System Events" to keystroke "$MAS_APPSTORE_PASSWORD"
         		delay 2
         		tell application "System Events" to keystroke return
-        		# leave two factor auth disabled if diabled before
+        		# leave two factor auth disabled if disabled before
         		if "$MACOS_VERSION_MAJOR" is equal to "11.0" then
             		try
-            		    delay 10
+            		    delay 15
             		    #click button "Weitere Optionen"  of group 5 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
             		    click button 1 of group 5 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
             		    delay 2
