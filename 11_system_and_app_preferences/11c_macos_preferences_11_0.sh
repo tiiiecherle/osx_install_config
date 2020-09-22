@@ -484,11 +484,11 @@ setting_preferences() {
     
     tell application "System Preferences"
     	activate
-    	set current pane to pane "com.apple.preference.datetime"
-    	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.datetime")
-    	#display dialog tabnames
-    	get the name of every anchor of pane id "com.apple.preference.datetime"
-    	reveal anchor "ClockPref" of pane id "com.apple.preference.datetime"
+    	set current pane to pane "com.apple.preference.dock"
+    	delay 5
+    	tell application "System Events"
+    		select row 17 of outline 1 of scroll area 1 of window 1 of application process "System Preferences"
+    	end tell
     end tell
     
     delay 2
@@ -514,7 +514,8 @@ setting_preferences() {
     
 EOF
     }
-    disable_menu_bar_clock
+    # disabling the menu bar clock is not an available option any more
+    #disable_menu_bar_clock
     
     
     
@@ -1155,7 +1156,7 @@ EOF
     #"Oversight                                                               false" 
     "Better                                                                   false"
     "AdGuard for Safari                                                       true"
-    "Overflow 3                                                               true"                    
+    #"Overflow 3                                                               true"                    
     # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
     )
     AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_ALL_USERS[@]}")
