@@ -36,11 +36,12 @@ install_finder_enhancement() {
 	    #local VERSION_NUMBER=$(curl -s https://totalfinder.binaryage.com/ | grep -o "TotalFinder.*.dmg" | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
 	    #local VERSION_NUMBER=$(curl -s https://totalfinder.binaryage.com/changelog-beta.txt | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | head -n1)
 	    local VERSION_NUMBER=$(curl -s https://totalfinder.binaryage.com/changelog.txt | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | head -n1)
+	    local VERSION_NUMBER=1.13.0
 		local APP_NAME="TotalFinder"
 		local APP_NAME_LOWERED=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]')
 		local AUTOMATION_APP_NAME="$APP_NAME".app
 		local APP_INSTALLER="/Users/"$USER"/Desktop/"$APP_NAME".dmg"
-		
+	
 		
 		### registering "$APP_NAME"
 	    local SCRIPT_DIR_LICENSE="$SCRIPT_DIR_TWO_BACK"
@@ -95,8 +96,18 @@ install_finder_enhancement() {
 			
 			# open /Users/"$USER"/Library/Preferences/com.binaryage.totalfinder.plist
 			
+			VERSION_TO_CHECK_AGAINST=11.0
+			if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+			then
+			    # macos versions 11.0 and up
+			    sudo defaults write /Library/Preferences/com.apple.security.libraryvalidation.plist DisableLibraryValidation -bool true
+			else
+			    :
+			fi
+			
 			# autostart
 	    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$PATH_TO_APPS'/'$APP_NAME'.app", hidden:false}'
+	    	# set_permissions_autostart_apps is done in script 11c_macos_preferences
 	
 	    else
 	    	:
