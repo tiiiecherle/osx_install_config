@@ -1111,14 +1111,17 @@ env_set_check_apps_notifications() {
 			    	fi
 			    elif [[ "$CHECK_APPS_NOTIFICATIONS" == "yes" ]]
 			    then
+			        local BUNDLE_IDENTIFIER_PRINT=$(printf '%s\n' "$BUNDLE_IDENTIFIER" | awk -v len=35 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
 				    if [[ "$FLAGS_VALUE" == "$ACTIVE_FLAG_VALUE" ]]
 			        then
-			            CHECK_RESULT_PRINT=$(echo -e '\033[1;32m    ok\033[0m')
+			            CHECK_RESULT_PRINT=$(echo -e '\033[1;32mok\033[0m')
+			            CHECK_RESULT_EXPORT="ok"
+			            printf "%-5s %-35s %12s %12s %17s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER_PRINT" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE" "$CHECK_RESULT_PRINT"
 					else
-			            CHECK_RESULT_PRINT=$(echo -e '\033[1;31m  wrong\033[0m' >&2)
+			            CHECK_RESULT_PRINT=$(echo -e '\033[1;31mwrong\033[0m')
+			            CHECK_RESULT_EXPORT="wrong"
+			            printf "%-5s %-35s %12s %12s %20s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER_PRINT" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE" "$CHECK_RESULT_PRINT"  >&2
 			        fi
-			        local BUNDLE_IDENTIFIER_PRINT=$(printf '%s\n' "$BUNDLE_IDENTIFIER" | awk -v len=35 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
-				    printf "%-5s %-35s %12s %12s %12s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER_PRINT" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE" "$CHECK_RESULT_PRINT"
 				fi 
 				
 			else
@@ -1161,23 +1164,28 @@ env_set_check_apps_notifications() {
 		defaults read "$NOTIFICATIONS_PLIST_FILE" &> /dev/null
 		echo ''
 		
-		echo ''
-		SLEEP_TIME=10
-		NUM1=0
-		#echo ''
-		while [[ "$NUM1" -le "$SLEEP_TIME" ]]
-		do 
-			NUM1=$((NUM1+1))
-			if [[ "$NUM1" -le "$SLEEP_TIME" ]]
-			then
-				#echo "$NUM1"
-				sleep 1
-				tput cuu 1 && tput el
-				echo "waiting $((SLEEP_TIME-NUM1)) seconds for the changes to take effect..."
-			else
-				:
-			fi
-		done
+		if [[ "$SLEEP_AFTER_RESTART_NOTIFICATION_CENTER" == "no" ]]
+		then
+		    :
+		else
+    		echo ''
+    		SLEEP_TIME=10
+    		NUM1=0
+    		#echo ''
+    		while [[ "$NUM1" -le "$SLEEP_TIME" ]]
+    		do 
+    			NUM1=$((NUM1+1))
+    			if [[ "$NUM1" -le "$SLEEP_TIME" ]]
+    			then
+    				#echo "$NUM1"
+    				sleep 1
+    				tput cuu 1 && tput el
+    				echo "waiting $((SLEEP_TIME-NUM1)) seconds for the changes to take effect..."
+    			else
+    				:
+    			fi
+    		done
+    	fi
 	else
 		:
 	fi
