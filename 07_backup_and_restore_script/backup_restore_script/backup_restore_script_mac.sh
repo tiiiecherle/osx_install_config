@@ -747,6 +747,10 @@ EOF
                     #echo "$WAIT_PIDS"
                     #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
                     while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"
+                    
+                    # collapsing all elements in the sidebar
+                    sleep 2
+                    env_collapsing_elements_in_calendar_sidebar
         			                   
                 else
                     :
@@ -996,13 +1000,13 @@ EOF
             	if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]] || [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]; then sleep 20; else :; fi
             	run_gui_backups
             	wait
-            	if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then env_collapsing_elements_in_calendar_sidebar; else :; fi
+            	#if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then env_collapsing_elements_in_calendar_sidebar; else :; fi
         	}
         	run_backups
         	
         	run_backups_with_gui_first() {
         	    run_gui_backups
-        	    if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then env_collapsing_elements_in_calendar_sidebar; else :; fi
+        	    #if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then env_collapsing_elements_in_calendar_sidebar; else :; fi
         	    run_files_backup
             	run_vbox_backup
                 run_backup_data
