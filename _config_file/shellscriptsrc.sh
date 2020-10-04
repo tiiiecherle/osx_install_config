@@ -1073,10 +1073,10 @@ env_set_check_apps_notifications() {
 	echo ''
 	if [[ "$SET_APPS_NOTIFICATIONS" == "yes" ]]
 	then
-		echo "${bold_text}setting app notifications...${default_text}"
+		echo "setting app notifications..."
 	elif [[ "$CHECK_APPS_NOTIFICATIONS" == "yes" ]]
 	then
-		echo "${bold_text}checking app notifications...${default_text}"
+		echo "checking app notifications..."
 	fi
 	
 	### setting apps notifications
@@ -1120,7 +1120,12 @@ env_set_check_apps_notifications() {
 					else
 			            CHECK_RESULT_PRINT=$(echo -e '\033[1;31mwrong\033[0m')
 			            CHECK_RESULT_EXPORT="wrong"
-			            printf "%-5s %-35s %12s %12s %20s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER_PRINT" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE" "$CHECK_RESULT_PRINT"  >&2
+			            if [[ "$PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG" == "no" ]]
+			            then
+			                printf "%-5s %-35s %12s %12s %17s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER_PRINT" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE" "$CHECK_RESULT_PRINT"
+			            else
+			                printf "%-5s %-35s %12s %12s %20s\n" "$NEEDED_ENTRY" "$BUNDLE_IDENTIFIER_PRINT" "$FLAGS_VALUE" "$ACTIVE_FLAG_VALUE" "$CHECK_RESULT_PRINT" >&2
+			            fi
 			        fi
 				fi 
 				
