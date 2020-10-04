@@ -643,6 +643,7 @@ u	~/Library/Services/Tag Orange.workflow
 u	~/Library/Services/dial_snom.workflow
 u	~/Library/Services/split_pdfs.workflow
 u	~/Library/Services/restart_reminder_service.workflow
+u	~/Library/Services/enable_disable_reminder_service.workflow
 # /System/Library/CoreServices/pbs -flush
 
 # Signal
