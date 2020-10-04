@@ -150,6 +150,12 @@ batch_run_all() {
 	fi
 	
 	
+	### reminders
+	printf "\n${bold_text}###\nreminders...\n###\n${default_text}"
+	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/user/2_reminders/install_reminders_user_launchdservice.sh
+	env_active_source_app
+	
+	
 	### logout hook
 	printf "\n${bold_text}###\nlogout hook...\n###\n${default_text}"
 	create_tmp_batch_script_fifo
@@ -163,7 +169,7 @@ batch_run_all() {
 	
 		
 	### special autostart apps
-	for AUTOSTART_APP in whatsapp signal reminders
+	for AUTOSTART_APP in whatsapp signal
 	do
 	    AUTOSTART_APP_UPPER=$(echo "$AUTOSTART_APP" | tr '[:lower:]' '[:upper:]')
 	    AUTOSTART_APP_LOWER=$(echo "$AUTOSTART_APP" | tr '[:upper:]' '[:lower:]')
