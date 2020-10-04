@@ -256,12 +256,22 @@ mas_login_applescript() {
         		# leave two factor auth disabled if disabled before
         		if "$MACOS_VERSION_MAJOR" is equal to "11.0" then
             		try
-            		    delay 15
-            		    #click button "Weitere Optionen"  of group 5 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
-            		    click button 1 of group 5 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
-            		    delay 2
-            		    #button "Nicht aktualisieren"  of group 3 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
-            		    click button 2 of group 3 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store" 
+            		    delay 12
+            		    try
+            		        # german
+            		        click button "Weitere Optionen" of group 6 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
+            		    on error
+            		        # universal
+            		        click button 1 of group 6 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
+            		    end try
+            		    delay 5
+            		    try
+            		        # german
+            		        click button "Nicht aktualisieren" of sheet 1 of sheet 1 of window "App Store" 
+            		    on error
+            		        # universal
+            		        click button 1 of sheet 1 of sheet 1 of window "App Store" 
+            		    end try
                         delay 5
                     end try
                 end if
