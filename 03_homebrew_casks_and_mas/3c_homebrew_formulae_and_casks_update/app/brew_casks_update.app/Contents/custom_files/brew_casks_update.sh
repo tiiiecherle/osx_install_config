@@ -10,6 +10,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ###
+### env_parallel session
+###
+
+# needed for env_paralell using parallel version 20200822 and newer
+# http://savannah.gnu.org/bugs/index.php?59010
+# no longer needed after fix in version 20200922
+#env_parallel --session 
+
+
+
+###
 ### asking password upfront
 ###
 
@@ -649,7 +660,8 @@ casks_install_updates() {
             if [[ "$CASK" == "teamviewer" ]]
             then 
             	sleep 2
-            	osascript -e "tell app \""$PATH_TO_APPS"/TeamViewer.app\" to quit" >/dev/null 2>&1
+            	#osascript -e "tell app \""$PATH_TO_APPS"/TeamViewer.app\" to quit" >/dev/null 2>&1
+            	osascript -e "tell app \"TeamViewer.app\" to quit" >/dev/null 2>&1
             	sleep 2
                 env_active_source_app
             fi
@@ -947,7 +959,7 @@ then
     fi
 
     #
-    BREW_CASKS_PATH=$(brew cask doctor 2>/dev/null | grep -A1 -B1 "Cask Staging Location" | tail -1)
+    BREW_CASKS_PATH=$(brew doctor --verbose 2>/dev/null | grep -A1 -B1 "Cask Staging Location" | tail -1)
     export BREW_CASKS_PATH
     if [[ $(echo "$BREW_CASKS_PATH") == "" || ! -e "$BREW_CASKS_PATH" ]]
     then
