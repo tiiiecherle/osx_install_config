@@ -86,7 +86,7 @@ env_command_line_tools_install_shell
 ### variables
 ###
 
-BREW_CASKS_PATH=$(brew cask doctor | grep -A1 -B1 "Cask Staging Location" | tail -1)
+BREW_CASKS_PATH=$(brew doctor --verbose | grep -A1 -B1 "Cask Staging Location" | tail -1)
 
 
 
@@ -132,17 +132,20 @@ install_casks_parallel() {
         if [[ "$i" == "avg-antivirus" ]]
         then 
         	sleep 2
-        	osascript -e "tell app \""$PATH_TO_APPS"/AVGAntivirus.app\" to quit" >/dev/null 2>&1
+        	#osascript -e "tell app \""$PATH_TO_APPS"/AVGAntivirus.app\" to quit" >/dev/null 2>&1
+        	osascript -e "tell app \"AVGAntivirus.app\" to quit" >/dev/null 2>&1
         fi
         if [[ "$i" == "avast-security" ]]
         then 
         	sleep 2
-        	osascript -e "tell app \""$PATH_TO_APPS"/Avast.app\" to quit" >/dev/null 2>&1
+        	#osascript -e "tell app \""$PATH_TO_APPS"/Avast.app\" to quit" >/dev/null 2>&1
+        	osascript -e "tell app \"Avast.app\" to quit" >/dev/null 2>&1
         fi
         if [[ "$i" == "teamviewer" ]]
         then 
         	sleep 2
-        	osascript -e "tell app \""$PATH_TO_APPS"/TeamViewer.app\" to quit" >/dev/null 2>&1
+        	#osascript -e "tell app \""$PATH_TO_APPS"/TeamViewer.app\" to quit" >/dev/null 2>&1
+        	osascript -e "tell app \"TeamViewer.app\" to quit" >/dev/null 2>&1
         	sleep 2
             env_active_source_app
         fi
