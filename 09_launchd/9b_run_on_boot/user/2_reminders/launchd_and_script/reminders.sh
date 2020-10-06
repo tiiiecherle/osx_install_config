@@ -355,7 +355,7 @@ EOF
     	if [[ "$CHECK_RESULT_EXPORT" == "wrong" ]]
     	then
     		echo "enabling..."
-    		SLEEP_AFTER_RESTART_NOTIFICATION_CENTER="no" SET_APPS_NOTIFICATIONS="yes" env_set_check_apps_notifications
+    		SLEEP_AFTER_RESTART_NOTIFICATION_CENTER="no" SET_APPS_NOTIFICATIONS="yes" PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG="no" env_set_check_apps_notifications
     		APP_SETTING_CHANGED="yes"
     		REMINDER_STATUS="on"
     	else
