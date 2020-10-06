@@ -191,15 +191,33 @@ env_get_shell_specific_variables
 
 
 ### text output
-bold_text=$(tput bold)
-red_text=$(tput setaf 1)
-green_text=$(tput setaf 2)
-blue_text=$(tput setaf 4)
-default_text=$(tput sgr0)
+#if [[ "$TERM" == "" ]]
+if [[ $- == *i* ]]
+then
+    # interactive shell
+    bold_text=$(tput bold)
+    red_text=$(tput setaf 1)
+    green_text=$(tput setaf 2)
+    blue_text=$(tput setaf 4)
+    default_text=$(tput sgr0)
+else
+    # non interactive shell
+    # using tput in non interactive shell output
+    # tput: No value for $TERM and no -T specified
+    :
+fi
 
 
 ### timeout
-env_timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
+if command -v gtimeout &> /dev/null
+then
+	# installed
+	env_timeout() { gtimeout "$@"; }
+else
+    # not installed
+    # this does not work in a pipe	
+    env_timeout() { perl -e '; alarm shift; exec @ARGV' "$@"; }
+fi
 
 
 ### checking if online
