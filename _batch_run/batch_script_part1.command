@@ -389,34 +389,38 @@ do
 done <<< "$(find "$ERROR_LOG_DIR" -mindepth 1 -maxdepth 1 -type f -name "*.txt" | sort -n)"
 if [[ -e "$ERROR_LOG_DIR" ]]; then rm -rf "$ERROR_LOG_DIR"; else :; fi
 
-sed -i '' '/Klone nach/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/Cloning into/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/^No updates/d' "$COMBINED_ERROR_LOG"
-#sed -i '' 's/[[:blank:]]*$//' "$COMBINED_ERROR_LOG"
-sed -i '' 's/[ \t]*$//' "$COMBINED_ERROR_LOG"
-sed -i '' '/^#.*#$/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/^#.*%$/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/.*\.[0-9]%$/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/\[new tag\]/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/\[new branch\]/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/^script -q/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/\[.*\].*\[=.*\].*\%.*ETA/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/\[.*\].*\[=.*\].*100\%/d' "$COMBINED_ERROR_LOG"
-sed -i '' "/Already on 'master'/d" "$COMBINED_ERROR_LOG"
-sed -i '' '/reinstall.*brew reinstall/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/Von https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/From https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/Warning.*already installed/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/Warning.*are using macOS/,/running this pre-release version\./d' "$COMBINED_ERROR_LOG"
-sed -i '' '/Creating client\/daemon connection/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/Please note that these warnings.*Homebrew maintainers/,/just ignore this\. Thanks/d' "$COMBINED_ERROR_LOG"
-sed -i '' '/Please note that these warnings.*Homebrew maintainers/,/just ignore this\. Thanks\!/d' "$COMBINED_ERROR_LOG"
-sed -i '' "/Already on 'release/d" "$COMBINED_ERROR_LOG"
-#sed -i '' '/\[33mWarning.*Ruby version/,/supported Rubies/d' "$COMBINED_ERROR_LOG"
-#awk '/./ { e=0 } /^$/ { e += 1 } e <= 2' "$COMBINED_ERROR_LOG" > /tmp/errorlog.txt
-#cat /tmp/errorlog.txt > "$COMBINED_ERROR_LOG"
-#rm -f /tmp/errorlog.txt
-perl -i -ane '$n=(@F==0) ? $n+1 : 0; print if $n<=2' "$COMBINED_ERROR_LOG"
+cleanup_log() {
+    sed -i '' '/Klone nach/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/Cloning into/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/^No updates/d' "$COMBINED_ERROR_LOG"
+    #sed -i '' 's/[[:blank:]]*$//' "$COMBINED_ERROR_LOG"
+    sed -i '' 's/[ \t]*$//' "$COMBINED_ERROR_LOG"
+    sed -i '' '/^#.*#$/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/^#.*%$/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/.*\.[0-9]%$/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/\[new tag\]/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/\[new branch\]/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/^script -q/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/\[.*\].*\[=.*\].*\%.*ETA/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/\[.*\].*\[=.*\].*100\%/d' "$COMBINED_ERROR_LOG"
+    sed -i '' "/Already on 'master'/d" "$COMBINED_ERROR_LOG"
+    sed -i '' '/reinstall.*brew reinstall/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/Von https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/From https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/Warning.*already installed/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/Warning.*are using macOS/,/running this pre-release version/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/Creating client\/daemon connection/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/Please note that these warnings.*Homebrew maintainers/,/just ignore this\. Thanks/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/Your CLT does not support macOS/,/delete it if no updates are available/d' "$COMBINED_ERROR_LOG"
+    sed -i '' "/Already on 'release/d" "$COMBINED_ERROR_LOG"
+    #sed -i '' '/\[33mWarning.*Ruby version/,/supported Rubies/d' "$COMBINED_ERROR_LOG"
+    #awk '/./ { e=0 } /^$/ { e += 1 } e <= 2' "$COMBINED_ERROR_LOG" > /tmp/errorlog.txt
+    #cat /tmp/errorlog.txt > "$COMBINED_ERROR_LOG"
+    #rm -f /tmp/errorlog.txt
+    perl -i -ane '$n=(@F==0) ? $n+1 : 0; print if $n<=2' "$COMBINED_ERROR_LOG"
+}
+sleep 1
+cleanup_log
 
 
 ### done
