@@ -684,7 +684,7 @@ then
     SECOND_TRY="yes"
     echo ''
     echo "second try for casks that failed the first time..."
-    casks_second_try=$(cat /tmp/casks_second_try.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
+    casks_second_try=$(cat /tmp/casks_second_try.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d' | uniq)
     if [[ "$casks_second_try" == "" ]]
     then
     	:
