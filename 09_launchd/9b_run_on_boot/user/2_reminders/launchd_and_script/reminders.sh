@@ -350,7 +350,7 @@ EOF
     	)
     	
     	### setting notification preferences
-    	CHECK_APPS_NOTIFICATIONS="yes" env_set_check_apps_notifications
+    	CHECK_APPS_NOTIFICATIONS="yes" PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG="no" env_set_check_apps_notifications
     	#echo "$CHECK_RESULT_EXPORT"
     	if [[ "$CHECK_RESULT_EXPORT" == "wrong" ]]
     	then
@@ -403,12 +403,12 @@ EOF
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    time ( reminders_notifications_and_update )
+    ( reminders_notifications_and_update )
 else
     time ( reminders_notifications_and_update )
+    echo ''
 fi
 
-echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

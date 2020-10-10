@@ -31,6 +31,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 WEBSITE_SAFARI_DATABASE="/Users/"$USER"/Library/Safari/PerSitePreferences.db"
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]] || [[ ! -e "$WEBSITE_SAFARI_DATABASE" ]]
 then
+	echo ''
     echo "opening and quitting safari..."
     open -a ""$PATH_TO_APPS"/Safari.app" "https://google.com"
     osascript <<EOF

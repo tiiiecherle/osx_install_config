@@ -600,9 +600,9 @@ then
     ( network_select )
 else
     time ( network_select )
+    echo ''
 fi
 
-echo ''
 
 
 ### stopping the error output redirecting

@@ -348,12 +348,12 @@ screen_resolution() {
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    time ( screen_resolution )
+    ( screen_resolution )
 else
     time ( screen_resolution )
+    echo ''
 fi
 
-echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

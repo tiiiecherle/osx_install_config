@@ -97,7 +97,7 @@ unarchive_sequential() {
 	do        
 	    if [[ "$line" == "" ]]; then continue; fi
         item="$line"
-        echo ''
+        #echo ''
         env_activating_caffeinate
     	echo "decrypting and unarchiving..."
     	echo "$item"

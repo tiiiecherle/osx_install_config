@@ -1663,7 +1663,7 @@ EOF
             
             if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
             then
-                tput cuu 1
+                tput cuu 2
             else
                 echo '' 
                 osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot

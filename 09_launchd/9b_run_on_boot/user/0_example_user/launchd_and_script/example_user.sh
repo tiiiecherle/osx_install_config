@@ -164,12 +164,12 @@ example_function() {
 
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
-    time ( example_function )
+    ( example_function )
 else
     time ( example_function )
+    echo ''
 fi
 
-echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

@@ -247,7 +247,7 @@ perl -i -ane '$n=(@F==0) ? $n+1 : 0; print if $n<=2' "$COMBINED_ERROR_LOG"
 ### done
 echo ''
 echo "done ;)"
-echo ''
+#echo ''
 
 
 ### play sound
@@ -280,7 +280,7 @@ ask_for_reboot() {
 		:
 	fi
 }
-echo ''
+#echo ''
 
 if [[ "$RUN_FROM_BATCH_SCRIPT_ONE" == "yes" ]]
 then

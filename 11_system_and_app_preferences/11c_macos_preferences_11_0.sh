@@ -1244,7 +1244,7 @@ EOF
     
     echo "setting permissions for autostart apps to make them available after reboot"
     AUTOSTART_PERMISSIONS_ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-    env_check_if_parallel_is_installed
+    env_check_if_parallel_is_installed 1>/dev/null
     if [[ "$INSTALLATION_METHOD" == "parallel" ]]
     then
         NUMBER_OF_MAX_JOBS_ROUNDED=$(parallel --number-of-cores)
@@ -1766,7 +1766,7 @@ EOF
         
         if [[ "$PRINTER_PPD" != "" ]] && [[ -e "$PRINTER_PPD" ]]
         then
-        	echo ''
+        	#echo ''
         	echo "checking last change of printer driver..."
         	ls -la "$PRINTER_PPD"
         	#echo ''

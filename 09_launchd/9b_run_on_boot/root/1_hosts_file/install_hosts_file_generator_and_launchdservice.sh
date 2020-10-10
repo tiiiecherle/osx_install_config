@@ -97,7 +97,7 @@ wait
 
 
 ### installing whitelist(s)
-echo ''
+#echo ''
 echo "installing empty whitelist file..."
 sudo cp -a "$PATH_TO_APPS"/hosts_file_generator/whitelist.example "$PATH_TO_APPS"/hosts_file_generator/whitelist
 sudo chown root:admin "$PATH_TO_APPS"/hosts_file_generator/whitelist

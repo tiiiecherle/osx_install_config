@@ -502,6 +502,7 @@ check_if_ethernet_is_active() {
 ### configuring network
 ###
 
+echo '' 
 echo "configuring network..."
 echo ''
 

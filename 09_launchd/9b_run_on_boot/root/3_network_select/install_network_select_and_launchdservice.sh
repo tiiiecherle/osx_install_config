@@ -157,7 +157,7 @@ sleep 2
 
 WAITING_TIME=10
 NUM1=0
-echo ''
+#echo ''
 while [[ "$NUM1" -le "$WAITING_TIME" ]]
 do 
 	NUM1=$((NUM1+1))

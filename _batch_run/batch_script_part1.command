@@ -16,6 +16,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 
+
 ###
 ### variables
 ###
@@ -183,11 +184,11 @@ batch_run_all() {
 	    QUESTION_TO_ASK="is your sudo password identical to the backup decryption password? (Y/n)? "
 	    env_ask_for_variable
 	    GPG_SUDO_PASSWORD="$VARIABLE_TO_CHECK"
-	    echo ''
 	    if [[ "$GPG_SUDO_PASSWORD" =~ ^(yes|y)$ ]]
 	    then
 	    	GPG_PASSWORD="$SUDOPASSWORD"
 	    else
+	    	echo ''
 	    	while [[ $GPG_PASSWORD != $GPG_PASSWORD2 ]] || [[ $GPG_PASSWORD == "" ]]; do stty -echo && printf "gpg decryption password: " && read -r "$@" GPG_PASSWORD && printf "\n" && printf "re-enter gpg decryption password: " && read -r "$@" GPG_PASSWORD2 && stty echo && printf "\n" && USE_GPG_PASSWORD='builtin printf '"$GPG_PASSWORD\n"''; done
 	    fi
 	fi
@@ -272,6 +273,7 @@ batch_run_all() {
 		unset RESTORE_FILES_OPTION
 		sleep 1
 		env_active_source_app
+		tput cuu 1
 		env_activating_caffeinate
 	fi
 	
@@ -365,6 +367,7 @@ batch_run_all() {
     fi
 	
 	### batch script done
+	sleep 1
 	echo ''
 	printf "\n${bold_text}###\nbatch script done...\n###\n${default_text}"
 	echo ''
@@ -396,8 +399,11 @@ cleanup_log() {
     #sed -i '' 's/[[:blank:]]*$//' "$COMBINED_ERROR_LOG"
     sed -i '' 's/[ \t]*$//' "$COMBINED_ERROR_LOG"
     sed -i '' '/^#.*#$/d' "$COMBINED_ERROR_LOG"
+    sed -i '' -E '/^#.*[[:space:]]+$/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/^#.*%$/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/.*\.[0-9]%$/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/\[0m.*\[1mTapping homebrew/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/^Tapped.*commands.*\(.*\)$/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/\[new tag\]/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/\[new branch\]/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/^script -q/d' "$COMBINED_ERROR_LOG"
@@ -411,7 +417,7 @@ cleanup_log() {
     sed -i '' '/Warning.*are using macOS/,/running this pre-release version/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/Creating client\/daemon connection/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/Please note that these warnings.*Homebrew maintainers/,/just ignore this\. Thanks/d' "$COMBINED_ERROR_LOG"
-    sed -i '' '/Your CLT does not support macOS/,/delete it if no updates are available/d' "$COMBINED_ERROR_LOG"
+    #sed -i '' '/Your CLT does not support macOS/,/delete it if no updates are available/d' "$COMBINED_ERROR_LOG"
     sed -i '' "/Already on 'release/d" "$COMBINED_ERROR_LOG"
     #sed -i '' '/\[33mWarning.*Ruby version/,/supported Rubies/d' "$COMBINED_ERROR_LOG"
     #awk '/./ { e=0 } /^$/ { e += 1 } e <= 2' "$COMBINED_ERROR_LOG" > /tmp/errorlog.txt
