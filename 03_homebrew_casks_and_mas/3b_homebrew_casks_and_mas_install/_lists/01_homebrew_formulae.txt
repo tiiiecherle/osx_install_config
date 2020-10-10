@@ -1,8 +1,8 @@
 gnu-tar		# backup/restore script
 pigz		# backup/restore script
 pv		# backup/restore script
-coreutils	# backup/restore script
-parallel	# backup/restore script
+coreutils	# backup/restore script, shellscriptsrc (gtimeout)
+parallel	# backup/restore script, formulae and casks install/update
 gnupg		# backup/restore script
 openssl@1.1	# certificate install/update script
 git		# hosts file script, screen resolution script
