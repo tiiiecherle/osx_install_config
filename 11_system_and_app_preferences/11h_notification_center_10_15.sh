@@ -46,8 +46,8 @@ APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "WhatsApp																41943375"
 "Signal																	41943375"
 "pdf_shrink_done			                                            41943375"
-"Reminders														        41943383"
-"Calendar														        41943383"
+"Reminders														        310903127"
+"Calendar														        310903127"
 "Notes															        41943375"
 "Photos															        41943375"
 "EagleFiler															    41943375"
@@ -77,14 +77,13 @@ APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "Tunnelblick															41943375"
 "TinkerTool																41943375"
 "Vox																	41943375"
-"X-Lite																	41943375"
 "TotalFinder															41943375"
 "Firefox																41943375"
 "iStat Menus															41943375"
 "AdGuard for Safari														41943375"
-"clamav_scan_found				                                        41943383"
-"clamav_scan_done					                                    41943383"
-"clamav_scan_stopped				                                    41943383"
+"clamav_scan_found				                                        310903127"
+"clamav_scan_done					                                    310903127"
+"clamav_scan_stopped				                                    310903127"
 )
 
 

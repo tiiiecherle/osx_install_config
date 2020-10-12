@@ -85,10 +85,10 @@ PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
 ### notifications
 #echo "setting notification preferences..."
 APPLICATIONS_TO_SET_NOTIFICATIONS=(
-#"$APP_NAME									41943383"
-"clamav_scan_found							41943383"
-"clamav_scan_done							41943383"
-"clamav_scan_stopped						41943383"
+#"$APP_NAME									310903127"
+"clamav_scan_found							310903127"
+"clamav_scan_done							310903127"
+"clamav_scan_stopped						310903127"
 )
 SET_APPS_NOTIFICATIONS="yes" env_set_check_apps_notifications
 CHECK_APPS_NOTIFICATIONS="yes" env_set_check_apps_notifications
