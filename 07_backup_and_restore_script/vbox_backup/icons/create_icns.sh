@@ -13,8 +13,8 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### set icon
 ###
 
-ICNS_NAME=brew_casks_update
-PNG_NAME=macos_11_icon_ffmpeg
+ICNS_NAME=virtualbox_backup
+PNG_NAME=macos_11_icon_vbox_backup
 
 # Force all images to sRGB with alpha
 # brew install imagemagick

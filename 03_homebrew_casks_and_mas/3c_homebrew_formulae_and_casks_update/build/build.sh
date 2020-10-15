@@ -79,7 +79,7 @@ do
 	PATH_TO_ICON="$BUILD_DIR"/icons/"$ICON_NAME".icns
 	PATH_TO_OBJECT_TO_SET_ICON_FOR="$BUILD_DIR"/app/"$APP_NAME".app
 	echo "$APP_NAME".app
-	env_set_custom_icon
+	#env_set_custom_icon
 		
 	echo copying content to app and setting permissions...
 	# .app final configuration
@@ -92,6 +92,7 @@ do
 	chmod 770 "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html
 	xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
+	env_set_custom_icon
 	
 	# this is to suppress warning on first start
 	#echo opening app...
