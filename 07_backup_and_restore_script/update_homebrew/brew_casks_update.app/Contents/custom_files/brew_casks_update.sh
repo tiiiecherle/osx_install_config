@@ -122,7 +122,7 @@ cleanup_formulae() {
     fi
 
     # checking if more than version is installed by using
-    # brew list --versions
+    # brew list --formula --versions
 
 }
 
@@ -348,7 +348,7 @@ formulae_show_updates_parallel() {
 	# by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
     # it is not neccessary to export variables or functions when using env_parallel
     # zsh does not support exporting functions, thats why parallels is prefered over xargs (bash only)
-    if [[ "$(brew list)" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "formulae_show_updates_parallel_inside {}" ::: "$(brew list)"; fi
+    if [[ "$(brew list --formula)" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "formulae_show_updates_parallel_inside {}" ::: "$(brew list --formula)"; fi
         
     #echo "listing brew formulae updates finished ;)"
 }
@@ -379,7 +379,7 @@ formulae_install_updates() {
             #else
                 if [[ "$FORMULA" == "qtfaststart" ]]
                 then
-                    if [[ $(brew list | grep "^ffmpeg$") != "" ]]
+                    if [[ $(brew list --formula | grep "^ffmpeg$") != "" ]]
                     then
                         brew unlink qtfaststart
                         brew unlink ffmpeg && brew link ffmpeg
@@ -389,7 +389,7 @@ formulae_install_updates() {
                     fi
                 elif [[ "$FORMULA" == "^ffmpeg$" ]]
                 then
-                    if [[ $(brew list | grep "^qtfaststart$") != "" ]]
+                    if [[ $(brew list --formula | grep "^qtfaststart$") != "" ]]
                     then
                         brew unlink ffmpeg
                         brew unlink qtfaststart && brew link qtfaststart
@@ -983,7 +983,7 @@ then
     env_homebrew_update
     #
     echo ''
-    export INSTALLED_FORMULAE=$(brew list | cat)
+    export INSTALLED_FORMULAE=$(brew list --formula | cat)
     formulae_show_updates_parallel
     #
     if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]

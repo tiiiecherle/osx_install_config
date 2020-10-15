@@ -14,7 +14,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ###
 
 ICNS_NAME=gui_apps_backup
-PNG_NAME=gui_apps_backup
+PNG_NAME=macos_11_icon_gui_backups
 
 # Force all images to sRGB with alpha
 # brew install imagemagick

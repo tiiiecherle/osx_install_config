@@ -99,7 +99,7 @@ fi
 # checking if all script dependencies are installed
 #echo ''
 echo "checking for script dependencies..."
-if [[ $(brew list | grep "^openssl@1.1$") == '' ]]
+if [[ $(brew list --formula | grep "^openssl@1.1$") == '' ]]
 then
     echo "not all script dependencies installed, installing..."
     env_use_password | brew install openssl@1.1

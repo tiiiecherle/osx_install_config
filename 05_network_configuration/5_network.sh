@@ -319,7 +319,7 @@ configure_fritz_vpn() {
         # checking for missing dependencies
         for formula in gnu-tar pigz pv coreutils gnupg
         do
-        	if [[ $(brew list | grep "^$formula$") == '' ]]
+        	if [[ $(brew list --formula | grep "^$formula$") == '' ]]
         	then
         		echo """$formula"" is NOT installed, installing..."
                 brew install "$formula"

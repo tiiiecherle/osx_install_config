@@ -311,7 +311,7 @@ cert_check() {
         for formula in openssl@1.1
         #for formula in 123
         do
-        	if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^$formula$") == '' ]]
+        	if [[ $(sudo -H -u "$loggedInUser" brew list --formula | grep "^$formula$") == '' ]]
         	then
         		#echo """$formula"" is NOT installed..."
         		MISSING_SCRIPT_DEPENDENCY="yes"

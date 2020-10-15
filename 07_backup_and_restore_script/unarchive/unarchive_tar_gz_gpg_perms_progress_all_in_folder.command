@@ -81,7 +81,7 @@ then
     # checking for missing dependencies
     for formula in gnu-tar pigz pv coreutils parallel gnupg
     do
-    	if [[ $(brew list | grep "^$formula$") == '' ]]
+    	if [[ $(brew list --formula | grep "^$formula$") == '' ]]
     	then
     		#echo """$formula"" is NOT installed..."
     		MISSING_SCRIPT_DEPENDENCY="yes"

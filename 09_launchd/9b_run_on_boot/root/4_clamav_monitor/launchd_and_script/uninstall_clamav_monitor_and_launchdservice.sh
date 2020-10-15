@@ -83,7 +83,7 @@ uninstall_formulae() {
 			if sudo -H -u "$loggedInUser" command -v brew &> /dev/null
 			then
 			    # installed
-			    if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^$FORMULA$") == "" ]]
+			    if [[ $(sudo -H -u "$loggedInUser" brew list --formula | grep "^$FORMULA$") == "" ]]
 			    then
 				    # not installed
 				    :

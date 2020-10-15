@@ -114,7 +114,7 @@ else
     # those kegs to fail to run properly once built. Run `brew link` on these:
     # qtfaststart
     link_qtfaststart() {
-        if [[ $(brew list | grep "^qtfaststart$") != "" ]]
+        if [[ $(brew list --formula | grep "^qtfaststart$") != "" ]]
         then
             brew link --overwrite qtfaststart
             echo ''

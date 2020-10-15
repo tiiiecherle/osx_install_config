@@ -423,7 +423,7 @@ backup_restore() {
                 # checking for missing dependencies
                 for formula in gnu-tar pigz pv coreutils gnupg cliclick
                 do
-                	if [[ $(brew list | grep "^$formula$") == '' ]]
+                	if [[ $(brew list --formula | grep "^$formula$") == '' ]]
                 	then
                 		#echo """$formula"" is NOT installed..."
                 		MISSING_SCRIPT_DEPENDENCY="yes"
@@ -444,7 +444,7 @@ backup_restore() {
                 # checking for missing dependencies
                 for formula in coreutils parallel
                 do
-                	if [[ $(brew list | grep "^$formula$") == '' ]]
+                	if [[ $(brew list --formula | grep "^$formula$") == '' ]]
                 	then
                 		#echo """$formula"" is NOT installed..."
                 		MISSING_SCRIPT_DEPENDENCY="yes"
@@ -939,7 +939,7 @@ EOF
             
                 ulimit -n 4096
                 
-                if [[ $(brew list | grep "^parallel$") == '' ]]
+                if [[ $(brew list --formula | grep "^parallel$") == '' ]]
             	then
             		#echo parallel is NOT installed..."
             		backup_data_sequential

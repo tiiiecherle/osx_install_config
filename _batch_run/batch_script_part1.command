@@ -219,7 +219,7 @@ batch_run_all() {
 		    # checking for missing dependencies
 		    for formula in gnu-tar pigz pv coreutils parallel gnupg
 		    do
-		    	if [[ $(brew list | grep "^$formula$") == '' ]]
+		    	if [[ $(brew list --formula | grep "^$formula$") == '' ]]
 		    	then
 		    		#echo ""$formula" is NOT installed..."
 		    		MISSING_SCRIPT_DEPENDENCY="yes"
@@ -375,7 +375,7 @@ batch_run_all() {
 }
 
 time ( batch_run_all )
-
+echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi

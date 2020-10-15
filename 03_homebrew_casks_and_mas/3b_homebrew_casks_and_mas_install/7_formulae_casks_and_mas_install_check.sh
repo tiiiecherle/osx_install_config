@@ -162,7 +162,7 @@ check_homebrew_formulae() {
 		:
 	fi
 	#if [[ $(brew info "$item" | grep "Not installed") == "" ]];
-	if [[ $(brew list | grep "^$i$") != "" ]] || [[ $(brew list | grep "^$i@.*$") != "" ]]
+	if [[ $(brew list --formula | grep "^$i$") != "" ]] || [[ $(brew list --formula | grep "^$i@.*$") != "" ]]
 	then 
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"
 	else
@@ -175,7 +175,7 @@ check_homebrew_formulae() {
 #echo "the following top-level homebrew packages incl. dependencies are installed..."
 #brew leaves | tr "," "\n"
 # echo "the following homebrew packages are installed..."
-#brew list | tr "," "\n"
+#brew list --formula | tr "," "\n"
 #echo ""
 
 # listing installed casks

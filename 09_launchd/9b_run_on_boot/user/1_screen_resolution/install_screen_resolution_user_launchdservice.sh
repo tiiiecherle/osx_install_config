@@ -50,7 +50,7 @@ check_homebrew_and_python_versions() {
     
     # homebrew python versions
     # homebrew python2
-    #if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python@2$") == '' ]]
+    #if [[ $(sudo -H -u "$loggedInUser" brew list --formula | grep "^python@2$") == '' ]]
     if sudo -H -u "$loggedInUser" command -v python2 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
     then
         echo "python2 is installed via homebrew..."
@@ -60,7 +60,7 @@ check_homebrew_and_python_versions() {
         PYTHON2_HOMEBREW_INSTALLED="no"
     fi
     # homebrew python3
-    #if [[ $(sudo -H -u "$loggedInUser" brew list | grep "^python$") == '' ]]
+    #if [[ $(sudo -H -u "$loggedInUser" brew list --formula | grep "^python$") == '' ]]
     if sudo -H -u "$loggedInUser" command -v python3 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
     then
         echo "python3 is installed via homebrew..."
