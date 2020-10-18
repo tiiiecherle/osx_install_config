@@ -320,7 +320,7 @@ reminders_notifications_and_update() {
 EOF
     
     	fi
-    	#echo ''
+    	echo ''
     }
     
     
@@ -366,14 +366,14 @@ EOF
     
     
     ### update reminders
-    if [[ "$APP_SETTING_CHANGED" == "yes" ]] && [[ "$REMINDER_STATUS" == "on" ]]
-    then
-    	# update reminders and restart remindd
-    	update_reminders
-    	echo ''
-    else
-    	:
-    fi
+    #if [[ "$APP_SETTING_CHANGED" == "yes" ]] && [[ "$REMINDER_STATUS" == "on" ]]
+    #then
+    #	# update reminders and restart remindd
+    #	update_reminders
+    #else
+    #	:
+    #fi
+    update_reminders
     
     
     ### display notification
