@@ -223,6 +223,14 @@ then
     else
     	:
     fi
+    
+    if [[ "$DISPLAY_WIREGUARD_DIALOG" == "yes" ]]
+	then
+    	# hint for signal
+    	osascript -e 'display dialog "please add wireguard ondemand settings manually after restoring the profiles..."' &
+    else
+    	:
+    fi
 else
 	:
 fi
