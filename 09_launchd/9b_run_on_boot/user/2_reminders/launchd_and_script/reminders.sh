@@ -288,17 +288,22 @@ reminders_notifications_and_update() {
     	else
     	    # macos versions 10.15 and up
     	    
-    		launchctl bootout gui/"$(id -u "$USER")"/com.apple.remindd 2>&1 | grep -v "in progress" | grep -v "No such process"
-    		sleep 2
-    		launchctl enable gui/"$(id -u "$USER")"/com.apple.remindd
-    		launchctl bootstrap gui/"$(id -u "$USER")" "/System/Library/LaunchAgents/com.apple.remindd.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
-    		sleep 2
-    		
-    		#launchctl bootout gui/"$(id -u "$USER")"/com.apple.CalendarAgent 2>&1 | grep -v "in progress" | grep -v "No such process"
-    		#sleep 2
-    		#launchctl enable gui/"$(id -u "$USER")"/com.apple.CalendarAgent
-    		#launchctl bootstrap gui/"$(id -u "$USER")" "/System/Library/LaunchAgents/com.apple.CalendarAgent.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
-    		#sleep 2
+    	    if [[ "$RESTART_REMINDER_SERVICE" == "yes" ]]
+            then
+        		launchctl bootout gui/"$(id -u "$USER")"/com.apple.remindd 2>&1 | grep -v "in progress" | grep -v "No such process"
+        		sleep 2
+        		launchctl enable gui/"$(id -u "$USER")"/com.apple.remindd
+        		launchctl bootstrap gui/"$(id -u "$USER")" "/System/Library/LaunchAgents/com.apple.remindd.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+        		sleep 2
+        		
+        		#launchctl bootout gui/"$(id -u "$USER")"/com.apple.CalendarAgent 2>&1 | grep -v "in progress" | grep -v "No such process"
+        		#sleep 2
+        		#launchctl enable gui/"$(id -u "$USER")"/com.apple.CalendarAgent
+        		#launchctl bootstrap gui/"$(id -u "$USER")" "/System/Library/LaunchAgents/com.apple.CalendarAgent.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+        		#sleep 2
+        	else
+        	    :
+        	fi
     
     
     osascript <<EOF
@@ -358,6 +363,7 @@ EOF
     		SLEEP_AFTER_RESTART_NOTIFICATION_CENTER="no" SET_APPS_NOTIFICATIONS="yes" PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG="no" env_set_check_apps_notifications
     		APP_SETTING_CHANGED="yes"
     		REMINDER_STATUS="on"
+    		RESTART_REMINDER_SERVICE="yes"
     	else
     	    echo "already enabled..."
     		echo ''
