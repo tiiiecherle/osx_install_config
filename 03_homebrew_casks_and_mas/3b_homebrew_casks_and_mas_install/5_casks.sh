@@ -713,7 +713,7 @@ fi
 #echo "the following top-level homebrew packages incl. dependencies are installed..."
 #brew leaves | tr "," "\n"
 # echo "the following homebrew packages are installed..."
-#brew list | tr "," "\n"
+#brew list --formula | tr "," "\n"
 #echo ""
 
 # listing installed casks
