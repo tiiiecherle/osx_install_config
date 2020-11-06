@@ -44,7 +44,7 @@ fi
 ### apps to set notifications for
 APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "WhatsApp																41943375"
-"Signal																	41943375"
+"Signal																	310903127"
 "pdf_shrink_done			                                            41943375"
 "Reminders														        310903127"
 "Calendar														        310903127"
