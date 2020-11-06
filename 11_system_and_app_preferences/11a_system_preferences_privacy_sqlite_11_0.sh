@@ -286,7 +286,7 @@ ACCESSIBILITYAPPS=(
 "VirtualBox                                                          kTCCServiceAccessibility           1"
 "PasswordWallet                                                      kTCCServiceAccessibility           1"
 "VirtualBox Menulet                                                  kTCCServiceAccessibility           1"
-"Bartender 3                                                         kTCCServiceAccessibility           1"
+"Bartender 4                                                         kTCCServiceAccessibility           1"
 "Ondesoft AudioBook Converter                                        kTCCServiceAccessibility           1"
 "VNC Viewer                                                          kTCCServiceAccessibility           1"
 "Commander One                                                       kTCCServiceAccessibility           1"
@@ -399,7 +399,7 @@ sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where service='kTCCServiceSc
 SCREENCAPTUREAPPS=(
 # app name									security service										    allowed (1=yes, 0=no)
 "MacPass                                    kTCCServiceScreenCapture                                    1"
-"Bartender 3                                kTCCServiceScreenCapture                                    1"
+"Bartender 4                                kTCCServiceScreenCapture                                    1"
 "TeamViewer                                 kTCCServiceScreenCapture                                    1"
 )
 
