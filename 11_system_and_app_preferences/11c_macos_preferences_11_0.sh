@@ -1143,7 +1143,7 @@ EOF
 	
     AUTOSTART_ITEMS_ALL_USERS=(
     # name													                  start hidden
-    "Bartender 3                                                              false"
+    "Bartender 4                                                              false"
     "AudioSwitcher                                                            false"   
     "KeepingYouAwake                                                          false" 
     "Alfred 4                                                                 false" 
@@ -1153,9 +1153,9 @@ EOF
     "XtraFinder                                                               false" 
     "witchdaemon                                                              false" 
     "Quicksilver                                                              false" 
-    #"Oversight                                                               false" 
     "Better                                                                   false"
-    "AdGuard for Safari                                                       true"
+    #"AdGuard for Safari                                                       true"
+    # autostart at login activated inside AdGuard for Safari app, this way the preferences window does not open when starting the app on login                      
     #"Overflow 3                                                               true"                    
     # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
     )
