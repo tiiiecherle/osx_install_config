@@ -1,3 +1,4 @@
+chromium
 audiobookbinder
 paragon-extfs
 deluge
@@ -7,3 +8,4 @@ jameica
 spotify
 transmission
 gas-mask
+joplin
