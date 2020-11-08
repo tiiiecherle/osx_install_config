@@ -1602,18 +1602,21 @@ EOF
             # signal
             if [[ -e "/Users/"$USER"/Library/Application Support/Signal/" ]]
             then
-                rm -rf "/Users/"$USER"/Library/Application Support/Signal/__update__"
-                rm -rf "/Users/"$USER"/Library/Application Support/Signal/attachments.noindex"
-                rm -rf "/Users/"$USER"/Library/Application Support/Signal/Cache/"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/__update__"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/attachments.noindex"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/Cache/"
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/databases/"
-                rm -rf "/Users/"$USER"/Library/Application Support/Signal/GPUCache/"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/GPUCache/"
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/IndexedDB/"
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/Local Storage/"
-                rm -rf "/Users/"$USER"/Library/Application Support/Signal/logs/"
+                #rm -rf "/Users/"$USER"/Library/Application Support/Signal/logs/"
                 #find "/Users/"$USER"/Library/Application Support/Signal/" -name "QuotaManager*" -print0 | xargs -0 rm -rf
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/sql/"
                 #
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/"
+                #
+                find "/Users/"$USER"/Library/Application Support/Signal/" ! -name "sql" ! -name "config.json" ! -name "ephemeral.json" ! -name "attachments.noindex" -print0 -mindepth 1 -maxdepth 1 | xargs -0 rm -rf
+                #
                 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
                 then
                     :
