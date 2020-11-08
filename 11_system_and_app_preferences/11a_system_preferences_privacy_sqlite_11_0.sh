@@ -401,6 +401,7 @@ SCREENCAPTUREAPPS=(
 "MacPass                                    kTCCServiceScreenCapture                                    1"
 "Bartender 4                                kTCCServiceScreenCapture                                    1"
 "TeamViewer                                 kTCCServiceScreenCapture                                    1"
+"Jitsi Meet                                 kTCCServiceScreenCapture                                    1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${SCREENCAPTUREAPPS[@]}")
