@@ -3210,6 +3210,12 @@ EOF
     else
         sqlite3 "$WEBSITE_SAFARI_DATABASE" "UPDATE default_preferences SET default_value='1' WHERE preference='PerSitePreferencesContentBlockers'"
     fi
+    # per site preferences
+    sqlite3 "$WEBSITE_SAFARI_DATABASE" "delete from preference_values WHERE preference='PerSitePreferencesContentBlockers';"
+    for WEBSITE in "nba.com" "watch.nba.com" "spiegel.de" "sport1.de"
+    do
+        sqlite3 "$WEBSITE_SAFARI_DATABASE" "insert into preference_values (domain, preference, preference_value) values ('$WEBSITE', 'PerSitePreferencesContentBlockers', '0');"
+    done
     
     # autoplay media
     # allow automatic autoplay for all = 0
