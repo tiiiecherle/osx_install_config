@@ -162,6 +162,7 @@ applications_to_open=(
 "Reminders"
 "Overflow 3"
 "BresinkSoftwareUpdater"
+"VirusScannerPlus"
 )
 open_applications
 
@@ -170,7 +171,6 @@ open_more_apps() {
 	applications_to_open_test=(
 	"Adobe Acrobat Reader DC"
 	"AppCleaner"
-	"VirusScannerPlus"
 	"iStat Menus"
 	"Microsoft Excel"
 	"iMazing"
