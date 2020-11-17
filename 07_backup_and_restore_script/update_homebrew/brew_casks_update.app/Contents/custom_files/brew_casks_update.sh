@@ -805,7 +805,7 @@ post_cask_installations() {
         echo "setting permissions for autostart apps..."
         AUTOSTART_PERMISSIONS_ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
         env_check_if_parallel_is_installed 1>/dev/null
-        echo ''
+        #echo ''
         if [[ "${AUTOSTART_PERMISSIONS_ITEMS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "env_set_permissions_autostart_apps {}" ::: "${AUTOSTART_PERMISSIONS_ITEMS[@]}"; fi 1>/dev/null
     fi
     
