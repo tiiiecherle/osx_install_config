@@ -59,7 +59,7 @@ else
 	:
 fi
 
-# macos 10.14 displays a red dot notification if 10.15 is available
+# macos displays a red dot notification if a system software update is available
 # reaaperas after search for new software in gui
 # "com.apple.preferences.softwareupdate" = 1;
 #defaults write com.apple.systempreferences AttentionPrefBundleIDs -dict-add com.apple.preferences.softwareupdate -integer 0
