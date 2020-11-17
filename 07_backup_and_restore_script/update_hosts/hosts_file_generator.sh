@@ -532,9 +532,9 @@ then
     ( hosts_file_install_update )
 else
     time ( hosts_file_install_update )
+    echo ''
 fi
 
-echo ''
 
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
