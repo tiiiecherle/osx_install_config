@@ -152,6 +152,7 @@ echo ''
 echo "updating and checking homebrew..."
 # checking installation and updating homebrew
 brew analytics on
+#brew analytics off
 #cd /usr/local/Library && git stash && git clean -d -f
 brew update
 brew upgrade
