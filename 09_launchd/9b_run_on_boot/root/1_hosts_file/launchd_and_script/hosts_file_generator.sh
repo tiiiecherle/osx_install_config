@@ -502,6 +502,15 @@ hosts_file_install_update() {
         # solved in
         # https://github.com/StevenBlack/hosts/issues/1155#issuecomment-589870171
         
+        # ocsp.apple.com
+        # https://forums.macrumors.com/threads/regarding-the-news-yesterday-that-apps-on-macos-needs-to-phone-home.2267988/page-6
+        # https://sneak.berlin/20201112/your-computer-isnt-yours/
+        # https://blog.jacopo.io/en/post/apple-ocsp/
+        sudo echo '' >> /etc/hosts
+        sudo echo "# ocsp.apple.com" >> /etc/hosts
+        sudo echo "::1 ocsp.apple.com" >> /etc/hosts
+        sudo echo "127.0.0.1 ocsp.apple.com" >> /etc/hosts
+        
         # testing
         # open respective website in browser
         # deactivate adblocker for the website
