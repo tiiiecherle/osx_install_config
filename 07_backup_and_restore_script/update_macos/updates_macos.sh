@@ -31,8 +31,8 @@ echo "installing some apps and updating preferences..."
     # installing gpgtools
     env_start_sudo
     brew update
-    env_use_password | brew cask install --force eaglefiler
-    env_use_password | brew cask install --force gpgtools
+    env_use_password | brew install --cask --force eaglefiler
+    env_use_password | brew install --cask --force gpgtools
     env_stop_sudo
     if [[ $(cat ~/.gnupg/gpg-agent.conf | grep max-cache-ttl) == "" ]]
     then
@@ -62,11 +62,11 @@ echo "installing some apps and updating preferences..."
 2017_03_24_update() {
     
     # uninstalling gpgtools
-    if [[ $(brew cask info gpgtools | grep "Not installed") == "" ]]
+    if [[ $(brew info --casks gpgtools | grep "Not installed") == "" ]]
     then
         env_start_sudo
-        env_use_password | brew cask zap gpgtools
-        env_use_password | brew cask zap textwrangler
+        env_use_password | brew uninstall --cask --zap gpgtools
+        env_use_password | brew uninstall --cask --zap textwrangler
         sudo rm -rf /Users/$USER/.gnupg
         env_stop_sudo
     else
@@ -122,7 +122,7 @@ please reboot after finishing the script - thanks ;)" buttons "OK"'
     # libreoffice language pack
     env_start_sudo
     brew update
-    env_use_password | brew cask install --force libreoffice-language-pack
+    env_use_password | brew install --cask --force libreoffice-language-pack
     env_stop_sudo
     
 }
@@ -139,8 +139,8 @@ please reboot after finishing the script - thanks ;)" buttons "OK"'
     
     env_start_sudo
     brew update
-    env_use_password | brew cask zap adobe-reader
-    env_use_password | brew cask install --force adobe-acrobat-reader
+    env_use_password | brew uninstall --cask --zap adobe-reader
+    env_use_password | brew install --cask --force adobe-acrobat-reader
     env_stop_sudo
     
 }
@@ -158,7 +158,7 @@ please reboot after finishing the script - thanks ;)" buttons "OK"'
     env_start_sudo
     # installing onyx for high sierra
     echo ''brew update
-    env_use_password | brew cask install --force onyx
+    env_use_password | brew install --cask --force onyx
     echo ''env_stop_sudo
     
 }

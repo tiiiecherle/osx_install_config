@@ -82,7 +82,7 @@ create_tmp_backup_script_fifo1() {
 }
 
 delete_tmp_backup_script_fifo2() {
-    # fifo2 is used for homebrew cask update 
+    # fifo2 is used for homebrew update for casks 
     if [[ -e "/tmp/tmp_backup_script_fifo2" ]]
     then
         rm "/tmp/tmp_backup_script_fifo2"
@@ -92,7 +92,7 @@ delete_tmp_backup_script_fifo2() {
 }
 
 create_tmp_backup_script_fifo2() {
-    # fifo2 is used for homebrew cask update
+    # fifo2 is used for homebrew update for casks
     delete_tmp_backup_script_fifo2
     mkfifo -m 600 "/tmp/tmp_backup_script_fifo2"
     builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_backup_script_fifo2" &

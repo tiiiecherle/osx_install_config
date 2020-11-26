@@ -96,7 +96,7 @@ else
     for caskstouninstall in $(brew list --cask)
     do  
         echo "zapping $caskstouninstall"...
-    	env_use_password | brew cask zap --force "$caskstouninstall"
+    	env_use_password | brew uninstall --zap --cask --force "$caskstouninstall"
     	echo ''
     done
     if [[ $(brew list --cask) == "" ]]

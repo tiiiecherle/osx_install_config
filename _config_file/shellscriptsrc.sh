@@ -1539,23 +1539,12 @@ env_homebrew_update() {
             brew cleanup 1>/dev/null
         }
         { brew_update_reset 2>&1 1>&3 | grep -v "Reset branch" 1>&2; } 3>&1 && brew analytics on 1>/dev/null && brew update 1>/dev/null && brew doctor 1>/dev/null && { brew_cleanup 2>&1 1>&3 | grep -v "Skipping" 1>&2; } 3>&1
-        
-        # working around a --json=v1 bug until it`s fixed
-        # https://github.com/Homebrew/homebrew-cask/issues/52427
-        #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$(brew --repository)"/Library/Homebrew/cask/cask.rb
-        #sed -i '' '/"conflicts_with" =>/s/.to_a//g' "$BREW_PATH"/Library/Homebrew/cask/cask.rb
-        # fixed 2019-01-28
-        # https://github.com/Homebrew/brew/pull/5597
     
         echo 'updating homebrew finished ;)'
     fi
 }
 
 env_cleanup_all_homebrew() {
-
-    # old, no longer needed fixes
-    # brew cask style >/dev/null
-    # brew vendor-install ruby
     
     # making sure brew cache exists
     HOMEBREW_CACHE_DIR=$(brew --cache)
@@ -1573,9 +1562,6 @@ env_cleanup_all_homebrew() {
     else
         :
     fi
-    # brew cask cleanup is deprecated from 2018-09
-    #brew cask cleanup
-    #brew cask cleanup 1> /dev/null
     
     # brew cleanup has to be run after the rm -rf "$HOMEBREW_CACHE_DIR"/{,.[!.],..?}* again
     # if not it will delete a file /Users/$USER/Library/Caches/Homebrew/.cleaned

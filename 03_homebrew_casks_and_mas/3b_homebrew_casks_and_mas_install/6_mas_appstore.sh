@@ -87,7 +87,7 @@ env_activating_caffeinate
 # mas has its own formula for all macos versions
 # if mas in homebrew core is not working or out of date use
 # https://github.com/mas-cli/homebrew-tap
-# when used brew info $item 2>/dev/null has to be used in homebrew update script to avoid warnings
+# when used brew info --formula $item 2>/dev/null has to be used in homebrew update script to avoid warnings
 #brew tap mas-cli/tap
 #brew tap-pin mas-cli/tap
 #brew install mas

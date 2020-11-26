@@ -277,7 +277,7 @@ fi
 # for some reason textmate breaks on first install, second install fixes installation
 echo ''
 echo "reinstalling textmate to avoid error on opening..."
-brew cask install --force textmate 2> /dev/null | grep "successfully installed"
+brew install --cask --force textmate 2> /dev/null | grep "successfully installed"
 
 
 ### stopping the error output redirecting

@@ -372,7 +372,7 @@ then
     
 	# uninstall/reinstall (testing only)
 	#cp -a ""$PATH_TO_APPS"/Microsoft Excel.app" "/Users/"$USER"/Desktop/Microsoft Excel.app"
-	#brew cask zap --force microsoft-office
+	#brew uninstall --cask --zap --force microsoft-office
 	#cp -a "/Users/"$USER"/Desktop/Microsoft Excel.app" ""$PATH_TO_APPS"/Microsoft Excel.app"
 	#rm -rf ""$PATH_TO_APPS"/Microsoft Excel.app"
 	

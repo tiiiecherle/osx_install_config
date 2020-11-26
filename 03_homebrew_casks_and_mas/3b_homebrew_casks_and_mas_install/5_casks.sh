@@ -98,11 +98,11 @@ install_casks_parallel() {
     # always use _ instead of - because some sh commands called by parallel would give errors
     # if parallels is used i needs to be redefined
     i="$1"
-    #if [[ $(brew cask info "$i" | grep "Not installed") != "" ]]
+    #if [[ $(brew info --cask "$i" | grep "Not installed") != "" ]]
     if [[ $(brew list --cask | grep "^$i$") == "" ]]
     then
         echo "installing cask "$i"..."
-        env_use_password | env_timeout 400 brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
+        env_use_password | env_timeout 400 brew install --cask --force "$i" 2> /dev/null | grep "successfully installed"
         if [[ $? -eq 0 ]]
         then
             # successfull
@@ -181,20 +181,20 @@ install_casks_parallel() {
         fi
     else
         # listing dependencies
-        #brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]'
-        brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]' >/dev/null 2>&1 && CASK_HAS_DEPENDENCIES="yes" || CASK_HAS_DEPENDENCIES="no"
+        #brew info --cask --json=v2 "$i" | jq -r '.casks | .[] | .depends_on.cask | .[]'
+        brew info --cask --json=v2 "$i" | jq -r '.casks | .[] | .depends_on.cask | .[]' >/dev/null 2>&1 && CASK_HAS_DEPENDENCIES="yes" || CASK_HAS_DEPENDENCIES="no"
         #echo CASK_HAS_DEPENDENCIES for $i is $CASK_HAS_DEPENDENCIES
         if [[ "$CASK_HAS_DEPENDENCIES" == "yes" ]]
         then
-            #CASK_DEPENDENCIES=$(brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]')
+            #CASK_DEPENDENCIES=$(brew info --cask --json=v2 "$i" | jq -r '.casks | .[] | .depends_on.cask | .[]')
             #echo CASK_DEPENDENCIES for $i is $CASK_DEPENDENCIES
-            for d in $(brew cask info --json=v1 "$i" | jq -r '.[].depends_on.cask | .[]')
+            for d in $(brew info --cask --json=v2 "$i" | jq -r '.casks | .[] | .depends_on.cask | .[]')
             do
                 #echo d for $i is $d
                 if [[ $(brew list --cask | grep "^$d$") == "" ]]
                 then
                     echo "installing missing dependency "$d"..."
-                    env_use_password | env_timeout 300 brew cask install --force "$d" 2> /dev/null | grep "successfully installed"
+                    env_use_password | env_timeout 300 brew install --cask --force "$d" 2> /dev/null | grep "successfully installed"
                     if [[ $? -eq 0 ]]
                     then
                         # successfull
@@ -288,14 +288,14 @@ then
     	echo "uninstalling and cleaning some casks..."
     	#echo ''
     	
-    	#if [[ $(brew cask info java | grep "Not installed") != "" ]]
+    	#if [[ $(brew info --cask java | grep "Not installed") != "" ]]
     	if [[ $(brew list --cask | grep "^java$") == "" ]] && [[ $(printf '%s\n' "${casks[@]}" | grep "^java$") != "" ]]
         then
             echo ''
         	# making sure java gets installed on reinstall
         	if [[ -e "/Library/Java/JavaVirtualMachines/" ]] && [[ -n "$(ls -A /Library/Java/JavaVirtualMachines/)" ]]
         	then
-                env_use_password | brew cask zap --force java
+                env_use_password | brew uninstall --cask --zap --force java
             else
                 :
             fi
@@ -303,7 +303,7 @@ then
             :
         fi
     
-    	#if [[ $(brew cask info flash-npapi | grep "Not installed") != "" ]]
+    	#if [[ $(brew info --cask flash-npapi | grep "Not installed") != "" ]]
     	if [[ $(brew list --cask | grep "^flash-npapi$") == "" ]] && [[ $(printf '%s\n' "${casks[@]}" | grep "^flash-npapi$") != "" ]]
         then
         	# making sure flash gets installed on reinstall
@@ -317,7 +317,7 @@ then
                 else
                     :
                 fi
-                env_use_password | brew cask zap --force flash-npapi
+                env_use_password | brew uninstall --cask --zap --force flash-npapi
         	    #env_stop_sudo
         	    #echo ''
             else
@@ -329,14 +329,14 @@ then
     
     	# making sure libreoffice gets installed as a dependency of libreoffice-language-pack
     	# installation would be refused if restored via restore script or already installed otherwise
-    	#if [[ $(brew cask info libreoffice | grep "Not installed") != "" ]] || [[ $(brew cask info libreoffice-language-pack | grep "Not installed") != "" ]]
+    	#if [[ $(brew info --cask libreoffice | grep "Not installed") != "" ]] || [[ $(brew info --cask libreoffice-language-pack | grep "Not installed") != "" ]]
     	if [[ $(brew list --cask | grep "^libreoffice$") == "" ]] || [[ $(brew list --cask | grep "^libreoffice-language-pack$") == "" ]]
         then
             echo ''
         	if [[ -e ""$PATH_TO_APPS"/LibreOffice.app" ]]
         	then
-        	    env_use_password | brew cask uninstall --force libreoffice
-        	    env_use_password | brew cask uninstall --force libreoffice-language-pack
+        	    env_use_password | brew uninstall --cask --force libreoffice
+        	    env_use_password | brew uninstall --cask --force libreoffice-language-pack
         	    #echo ''
         	else
         	    :
@@ -346,7 +346,7 @@ then
         fi
     
     	# making sure adobe-acrobat-reader gets installed on reinstall
-    	#if [[ $(brew cask info adobe-acrobat-reader | grep "Not installed") != "" ]]
+    	#if [[ $(brew info --cask adobe-acrobat-reader | grep "Not installed") != "" ]]
     	if [[ $(brew list --cask | grep "^adobe-acrobat-reader$") == "" ]]
         then
         	if [[ -e ""$PATH_TO_APPS"/Adobe Acrobat Reader DC.app" ]]
@@ -361,10 +361,10 @@ then
         	    if [[ -e /Users/$USER/Library/Preferences/com.adobe.Reader.plist ]]
         	    then
         	        mv /Users/$USER/Library/Preferences/com.adobe.Reader.plist /tmp/com.adobe.Reader.plist
-        	        env_use_password | brew cask zap --force adobe-acrobat-reader
+        	        env_use_password | brew uninstall --cask --zap --force adobe-acrobat-reader
         	        mv /tmp/com.adobe.Reader.plist /Users/$USER/Library/Preferences/com.adobe.Reader.plist
         	    else
-                    env_use_password | brew cask zap --force adobe-acrobat-reader
+                    env_use_password | brew uninstall --cask --zap --force adobe-acrobat-reader
         	    fi
         	else
         	    :
@@ -375,7 +375,7 @@ then
         fi
     
     	reinstall_avg_antivirus() {
-        	#if [[ $(brew cask info avg-antivirus | grep "Not installed") != "" ]]
+        	#if [[ $(brew info --cask avg-antivirus | grep "Not installed") != "" ]]
         	if [[ $(brew list --cask | grep "^avg-antivirus$") == "" ]]
             then
             	# making sure avg-antivirus gets installed on reinstall
@@ -402,8 +402,8 @@ then
                     done
                     #if [[ -e "/Library/Application Support/AVGAntivirus" ]]; then sudo rm -rf "/Library/Application Support/AVGAntivirus"; fi
                     if [[ -e "/Library/Application Support/AVGHUB" ]]; then sudo rm -rf "/Library/Application Support/AVGHUB"; fi
-                    env_use_password | brew cask zap --force avg-antivirus
-                    env_use_password | brew cask install --force avg-antivirus
+                    env_use_password | brew uninstall --cask --zap --force avg-antivirus
+                    env_use_password | brew install --cask --force avg-antivirus
                     sleep 2
                     osascript -e "tell app \""$PATH_TO_APPS"/AVGAntivirus.app\" to quit" >/dev/null 2>&1
                     sleep 2
@@ -431,7 +431,7 @@ then
     	reinstall_avg_antivirus
     
     	reinstall_avast_security() {
-        	#if [[ $(brew cask info avast-security | grep "Not installed") != "" ]]
+        	#if [[ $(brew info --cask avast-security | grep "Not installed") != "" ]]
         	if [[ $(brew list --cask | grep "^avast-security$") == "" ]]
             then
             	# making sure avast-security gets installed on reinstall
@@ -454,8 +454,8 @@ then
                     		:
                     	fi
                     done
-                    env_use_password | brew cask zap --force avast-security
-                    env_use_password | brew cask install --force avast-security
+                    env_use_password | brew uninstall --cask --zap --force avast-security
+                    env_use_password | brew install --cask --force avast-security
                     sleep 2
                     osascript -e "tell app \""$PATH_TO_APPS"/Avast.app\" to quit" >/dev/null 2>&1
                     sleep 2
@@ -528,7 +528,7 @@ then
                 caskstoinstall_pre="$line"
     			# xquartz is a needed dependency for xpdf, so it has to be installed first
     			echo "installing cask $caskstoinstall_pre"...
-    			env_use_password | brew cask install --force "$caskstoinstall_pre"
+    			env_use_password | brew install --cask --force "$caskstoinstall_pre"
     			echo ''
             done <<< "$(printf "%s\n" "${casks_pre[@]}")"
 	    fi
@@ -560,7 +560,7 @@ then
         #           if a firmware password is set deactivate the firmware password (needed to reset PRAM)
         #       reset PRAM by rebooting and pressing cmd+option+P+R (release after second time chime or logo comes up)
         #       boot into macOS and uninstall and reinstall virtualbox and extension pack and osxfuse
-        #           brew cask reinstall --force virtualbox virtualbox-extension-pack osxfuse
+        #           brew reinstall --cask--force virtualbox virtualbox-extension-pack osxfuse
         #       open system preferences - security - general and accept extension
         #       open system preferences - sound and disable startup chime (if wanted)
         #       reboot if needed
@@ -597,7 +597,7 @@ then
 			    if [[ "$line" == "" ]]; then continue; fi
                 caskstoinstall="$line"
 	            echo "installing cask $caskstoinstall"...
-	        	env_use_password | brew cask install --force "$caskstoinstall"
+	        	env_use_password | brew install --cask --force "$caskstoinstall"
 	        done <<< "$(printf "%s\n" "${casks[@]}")"
 	    fi
 	fi
@@ -608,7 +608,7 @@ then
         echo ''
         echo "updating macosfuse after virtualbox install..."
         i="osxfuse"
-        env_use_password | env_timeout 300 brew cask install --force "$i" 2> /dev/null | grep "successfully installed"
+        env_use_password | env_timeout 300 brew install --cask --force "$i" 2> /dev/null | grep "successfully installed"
         if [[ $? -eq 0 ]]
         then
             # successfull
@@ -688,7 +688,7 @@ then
 				    if [[ "$line" == "" ]]; then continue; fi
                     caskstoinstall_specific1="$line"
 	        	    echo "installing cask $caskstoinstall_specific1"...
-	        		env_use_password | brew cask install --force "$caskstoinstall_specific1"
+	        		env_use_password | brew install --cask --force "$caskstoinstall_specific1"
 	        	done <<< "$(printf "%s\n" "${casks_specific1[@]}")"
 	        fi
 		fi
@@ -722,7 +722,7 @@ then
     		    if [[ "$line" == "" ]]; then continue; fi
                 caskstoinstall_second_try="$line"
         	    echo "installing cask $caskstoinstall_second_try"...
-        		env_use_password | brew cask install --force "$caskstoinstall_second_try"
+        		env_use_password | brew install --cask --force "$caskstoinstall_second_try"
         	done <<< "$(printf "%s\n" "${casks_second_try[@]}")"
         fi
     fi
@@ -769,9 +769,9 @@ then
     echo ''
     
     brew tap AdoptOpenJDK/openjdk
-    env_use_password | brew cask install adoptopenjdk8
-    #env_use_password | brew cask install caskroom/versions/java8
-    #env_use_password | brew cask install AdoptOpenJDK/openjdk/adoptopenjdk8
+    env_use_password | brew install --cask adoptopenjdk8
+    #env_use_password | brew install --cask caskroom/versions/java8
+    #env_use_password | brew install --cask AdoptOpenJDK/openjdk/adoptopenjdk8
     
     java8_install_script() {
     	SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_THREE_BACK"

@@ -185,7 +185,7 @@ then
 else
     echo ''
     echo "installing keepingyouawake..."
-    env_use_password | brew cask install --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    env_use_password | brew install --cask --force keepingyouawake 2> /dev/null | grep "successfully installed"
     sleep 1
 fi
 
@@ -204,13 +204,13 @@ brew install cask-repair
 # fixing red dots before confirming commit that prevent the commit from being made
 # https://github.com/vitorgalvao/tiny-scripts/issues/88
 # gem uninstall -ax rubocop rubocop-cask
-# brew cask style
+# brew style
 # if this is not working try with sudo
 # sudo gem uninstall -ax rubocop rubocop-cask
-# brew cask style
-# if this is not working remove the version of gem which brew cask style complains about, e.g.
+# brew style
+# if this is not working remove the version of gem which brew style complains about, e.g.
 # rm -rf /Users/"$USER"/.gem/ruby/2.6.0/
-# brew cask style
+# brew style
 
 
 ### installing parallel as dependency for the other scripts

@@ -84,7 +84,7 @@ else
     then
         # installed
         echo ''
-        brew cask install --force mysides
+        brew install --cask --force mysides
         echo ''
     else
         # not installed      

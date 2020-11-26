@@ -81,7 +81,7 @@ cleanup_formulae() {
         	if [[ -e "$BREW_FORMULAE_PATH"/"$FORMULA" ]]
         	then
         	    # uninstall old versions
-                local FORMULA_INFO=$(brew info --json=v1 "$FORMULA" | jq '.[]')
+        	    local FORMULA_INFO=$(brew info --formula --json=v2 "$FORMULA" | jq -r '.formulae | .[]')
                 local FORMULA_NAME=$(printf '%s\n' "$FORMULA_INFO" | jq -r '.name')
                 local FORMULA_REVISION=$(printf '%s\n' "$FORMULA_INFO" | jq -r '.revision')
                 if [[ "$FORMULA_REVISION" == "0" ]]
@@ -145,8 +145,8 @@ cleanup_casks() {
         	if [[ -e "$BREW_CASKS_PATH"/"$CASK" ]]
         	then
         	    # uninstall old versions
-                local CASK_INFO=$(brew cask info --json=v1 "$CASK" | jq '.[]')
-                #local CASK_INFO=$(brew cask info "$CASK")
+                local CASK_INFO=$(brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]')
+                #local CASK_INFO=$(brew info --cask "$CASK")
                 local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
                 #local CASK_NAME=$(printf '%s\n' "$CASK" | cut -d ":" -f1 | xargs)
                 local NEW_VERSION=$(printf '%s\n' "$CASK_INFO" | jq -r '.version')
@@ -280,16 +280,16 @@ formulae_show_updates_parallel() {
         # always use _ instead of - because some sh commands called by parallel would give errors
         local FORMULA="$1"
         #echo FORMULA is "$FORMULA"
-        #local FORMULA_INFO=$(brew info $FORMULA)
-        FORMULA_INFO=$(brew info --json=v1 "$FORMULA" | jq '.[]')
+        #local FORMULA_INFO=$(brew info --formula $FORMULA)
+        FORMULA_INFO=$(brew info --formula --json=v2 "$FORMULA" | jq -r '.formulae | .[]')
         #echo FORMULA_INFO is $FORMULA_INFO
         #local FORMULA_NAME=$(printf '%s\n' "$FORMULA_INFO" | grep -e "$FORMULA: .*" | cut -d" " -f1 | sed 's/://g')
         local FORMULA_NAME=$(printf '%s\n' "$FORMULA_INFO" | jq -r '.name')
         # getting value directly
-        #local FORMULA_NAME=$(brew info --json=v1 $FORMULA | jq -r '.[].name')
+        #local FORMULA_NAME=$(brew info --formula --json=v2 $FORMULA | jq -r '.formulae | .[] | .name')
         #echo FORMULA_NAME is $FORMULA_NAME
         # make sure you have jq installed via brew
-        #local FORMULA_REVISION=$(brew info "$FORMULA" --json=v1 | jq . | grep revision | grep -o '[0-9]')
+        #local FORMULA_REVISION=$(brew info --formula "$FORMULA" --json=v2 | jq -r '.formulae | .[]' | grep revision | grep -o '[0-9]')
         local FORMULA_REVISION=$(printf '%s\n' "$FORMULA_INFO" | jq -r '.revision')
         #echo FORMULA_REVISION is $FORMULA_REVISION
         if [[ "$FORMULA_REVISION" == "0" ]]
@@ -504,10 +504,10 @@ casks_show_updates_parallel() {
     casks_show_updates_parallel_inside() {
         # always use _ instead of - because some sh commands called by parallel would give errors
         local CASK="$1"
-        local CASK_INFO=$(brew cask info --json=v1 "$CASK" | jq '.[]')
-        #local CASK_INFO=$(brew cask info "$CASK")
+        local CASK_INFO=$(brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]')
+        #local CASK_INFO=$(brew info --cask "$CASK")
         local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
-        #brew cask info --json=v1 "$CASK" | jq -r '.[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
+        #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
         local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
         if [[ "$CASK_ARTIFACT_APP" != "" ]]
         then
@@ -632,7 +632,7 @@ casks_install_updates() {
         	if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep "$i") != "" ]]
         	then
                 echo 'updating '"$i"'...'
-                env_use_password | brew cask reinstall "$i"
+                env_use_password | brew reinstall --cask "$i"
                 #sed -i "" "/""$i""/d" "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
                 sed -i '' '/'"$i"'/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
                 echo ''
@@ -649,12 +649,12 @@ casks_install_updates() {
             echo 'updating '"$CASK"'...'
             
             # uninstall deletes autostart entries and resets all preferences of the uninstalled app
-            #sudo brew cask uninstall "$line" --force
-            #env_use_password | brew cask uninstall "$line" --force 1> /dev/null
-            #sudo brew cask install "$line" --force
+            #sudo brew uninstall --cask "$line" --force
+            #env_use_password | brew uninstall --cask "$line" --force 1> /dev/null
+            #sudo brew install --cask "$line" --force
             # reinstall deletes autostart entries as it runs uninstall and then install
-            #env_use_password | brew cask reinstall "$line" --force
-            env_use_password | brew cask install "$CASK" --force
+            #env_use_password | brew reinstall --cask "$line" --force
+            env_use_password | brew install --cask "$CASK" --force
             echo ''
             
             if [[ "$CASK" == "teamviewer" ]]
@@ -720,10 +720,10 @@ post_cask_installations() {
     #then
     #    env_start_sudo
     #    echo 'updating virtualbox...'
-    #    env_use_password | brew cask reinstall virtualbox --force
+    #    env_use_password | brew reinstall --cask virtualbox --force
     #    echo ''
     #    echo 'updating virtualbox-extension-pack...'
-    #    env_use_password | brew cask reinstall virtualbox-extension-pack --force
+    #    env_use_password | brew reinstall --cask virtualbox-extension-pack --force
     #    env_stop_sudo
     #    echo ''
     #else
@@ -735,7 +735,7 @@ post_cask_installations() {
 	then
 	    echo ''
         echo "updating macosfuse after virtualbox update..."
-        env_use_password | brew cask install --force osxfuse
+        env_use_password | brew install --cask --force osxfuse
     else
         :
     fi
@@ -866,9 +866,6 @@ else
     exit
 fi
 
-# as of 2018-10-31 brew cask --version is deprecated
-#brew cask --version 2>&1 >/dev/null
-#if [[ $? -eq 0 ]]
 if [[ $(brew --version | grep homebrew-cask) != "" ]]
 then
     echo "homebrew-cask is installed..."
