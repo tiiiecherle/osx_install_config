@@ -14,7 +14,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ###
 
 ICNS_NAME=clamav_icon
-PNG_NAME=clamav_icon
+PNG_NAME=macos_11_icon_clamav
 
 # Force all images to sRGB with alpha
 # brew install imagemagick

@@ -53,7 +53,7 @@ do
 		if command -v brew &> /dev/null
 		then
 		    # installed
-		    if [[ $(brew list | grep "^$FORMULA$") == "" ]]
+		    if [[ $(brew list --formula | grep "^$FORMULA$") == "" ]]
 		    then
 			    #echo ''
 				echo "installing missing dependency "$FORMULA"..."
