@@ -686,7 +686,7 @@ casks_install_updates() {
             else
                 :
             fi
-            if [[ "$CASK" == "zoomus" ]]
+            if [[ "$CASK" == "zoom" ]]
             then 
             	sleep 2
             	osascript -e "tell app \""$PATH_TO_APPS"/zoom.us.app\" to quit" >/dev/null 2>&1
