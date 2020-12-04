@@ -36,6 +36,7 @@ imageoptim
 imazing
 istat-menus
 iterm2
+jameica
 jitsi-meet
 keepingyouawake
 keka

@@ -3,7 +3,6 @@ audiobookbinder
 paragon-extfs
 deluge
 github
-jameica
 #jdownloader
 spotify
 transmission
