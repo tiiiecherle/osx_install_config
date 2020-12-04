@@ -721,12 +721,16 @@ u	"$PATH_TO_APPS"/TinkerTool.app
 #echo TNEF's Enough
 #u	"$PATH_TO_APPS"/TNEF's Enough.app
 
+# Trader Workstation
+echo Trader Workstation
+~/Applications/Trader Workstation
+~/Jts
+
 # Transmission
 echo Transmission
 #u	"$PATH_TO_APPS"/Transmission.app
 u	~/Library/Application Support/Transmission
 u	~/Library/Preferences/org.m0k.transmission.plist
-
 
 # trolCommander
 echo TrolCommander
