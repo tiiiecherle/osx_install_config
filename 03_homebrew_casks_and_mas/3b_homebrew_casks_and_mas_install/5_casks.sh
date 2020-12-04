@@ -633,7 +633,6 @@ then
 	#FINDER_ENHANCEMENT=XtraFinder
 	if [[ "${finder_enhancements[@]}" != "" ]]
     then
-	    # casks specific1
 	    while IFS= read -r line || [[ -n "$line" ]] 
 		do
 		    if [[ "$line" == "" ]]; then continue; fi
