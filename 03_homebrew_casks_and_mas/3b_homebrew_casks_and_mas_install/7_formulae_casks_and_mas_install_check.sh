@@ -117,7 +117,10 @@ else
     echo "checking mas appstore apps installation..."
     sleep 1
     # updating index
-    #mas list &> /dev/null
+	mas list >/dev/null
+	sleep 2
+	mas list >/dev/null
+	sleep 2
     #echo "waiting for mas index to get ready..."
     #while [[ $(mas list) == "" ]]
     #do
