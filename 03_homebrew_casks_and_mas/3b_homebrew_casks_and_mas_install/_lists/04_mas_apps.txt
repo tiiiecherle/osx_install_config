@@ -29,3 +29,4 @@
 1294126402	HEIC Converter
 1037126344 	Apple Configurator 2
 1520204499	Vectorize
+406825478	Telefon
