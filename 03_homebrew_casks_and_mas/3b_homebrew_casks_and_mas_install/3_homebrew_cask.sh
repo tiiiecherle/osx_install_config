@@ -185,7 +185,8 @@ then
 else
     echo ''
     echo "installing keepingyouawake..."
-    env_use_password | brew install --cask --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    #env_use_password | brew install --cask --force keepingyouawake 2> /dev/null | grep "successfully installed"
+    env_use_password | brew install --cask --force keepingyouawake
     sleep 1
 fi
 
