@@ -336,22 +336,84 @@ fi
 
 
 ### pvguard
-if [[ "$CHECK_FOR_PVGUARD" == "yes" ]]
+echo ''
+APP_NAME_FOR_PREFERENCES="PVGuard"
+APP_NAME="$APP_NAME_FOR_PREFERENCES"
+if [[ -e "/Users/"$USER"/PVGuardClient/installer/pvdownload.jnlp" ]] && [[ -e "/Applications/OpenWebStart/OpenWebStart javaws.app" ]]
 then
-	echo ''
-	APP_NAME_FOR_PREFERENCES="PVGuard"
-	if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".jar" ]]
+
+	echo "$APP_NAME_FOR_PREFERENCES"
+	if [[ -L /Users/"$USER"/Desktop/"$APP_NAME".app ]]; then rm -f /Users/"$USER"/Desktop/"$APP_NAME".app; else :; fi
+	if [[ -L "$PATH_TO_APPS"/"$APP_NAME".app ]]; then rm -f "$PATH_TO_APPS"/"$APP_NAME".app; else :; fi
+
+	# installation
+	env_get_path_to_app
+	if [[ "$PATH_TO_APP" == "" ]]
 	then
-		
-		echo "$APP_NAME_FOR_PREFERENCES"
-	    
-	    # symlink to desktop
-	    if [[ -e /Users/"$USER"/Desktop/PVGuard ]]; then rm -f /Users/"$USER"/Desktop/PVGuard; else :; fi
-	    ln -s "$PATH_TO_APPS"/PVGuard.jar /Users/"$USER"/Desktop/PVGuard
+		if [[ -e /Users/"$USER"/.cache/icedtea-web ]]
+		then
+			rm -rf /Users/"$USER"/.cache/icedtea-web
+		else
+			:
+		fi
+		open -a "/Applications/OpenWebStart/OpenWebStart javaws.app/Contents/MacOS/JavaApplicationStub" "/Users/"$USER"/PVGuardClient/installer/pvdownload.jnlp"
+		waiting_for_bundle() {
+			WAITING_TIME=180
+			NUM1=0
+			#echo ''
+			echo ''
+			while [[ "$NUM1" -le "$WAITING_TIME" ]]
+			do 
+				NUM1=$((NUM1+1))
+				if [[ "$NUM1" -le "$WAITING_TIME" ]]
+				then
+					#echo "$NUM1"
+					sleep 1
+					tput cuu 1 && tput el
+					echo "waiting $((WAITING_TIME-NUM1)) seconds for downloading and building "$APP_NAME" bundle..."
+				else
+					:
+				fi
+			done
+		}
+		waiting_for_bundle
+		#WAIT_PIDS=()
+	    #WAIT_PIDS+=$(ps aux | grep /pvdownload.jnlp | grep -v grep | awk '{print $2;}')
+	    #while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"  
+	else
+		echo ""$APP_NAME" already installed..." >&2
+	fi
 	
+	if [[ -e "/Users/"$USER"/.cache/applications/"$APP_NAME".app" ]] && [[ -e "/Users/"$USER"/Applications/"$APP_NAME".app" ]]
+	then
+		rm -rf "/Users/"$USER"/.cache/applications/"$APP_NAME".app"
+	else
+		:
+	fi
+	
+	# symlinks
+	echo "$PATH_TO_APP"
+	APP_NAME="$APP_NAME_FOR_PREFERENCES"
+	env_get_path_to_app
+	if [[ -e "$PATH_TO_APP" ]] && [[ "$PATH_TO_APP" != "" ]]
+	then
+	    
+	    if [[ -L /Users/"$USER"/Desktop/"$APP_NAME".app ]]; then rm -f /Users/"$USER"/Desktop/"$APP_NAME".app; else :; fi
+	    if [[ "$CHECK_FOR_PVGUARD" == "yes" ]]
+		then
+	    	# symlink to desktop
+	    	ln -s "$PATH_TO_APP" /Users/"$USER"/Desktop/"$APP_NAME".app
+	    else
+			:
+		fi
+	    
+	   	# symlink to applications
+	    ln -s "$PATH_TO_APP" "$PATH_TO_APPS"/"$APP_NAME".app
+	    
 	else
 		echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 	fi
+
 else
 	:
 fi
@@ -647,6 +709,97 @@ then
 else
 	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 fi
+
+
+### virtualbox
+echo ''
+APP_NAME_FOR_PREFERENCES="VirtualBox"
+# running macOS 11 with sip (partitally) disabled the following issue occurs
+# vbox 6.1.16 and testing versions 6.1.17.x
+
+# sudo kextload -b org.virtualbox.kext.VBoxDrv
+#Filesystem error: Invalid directory for executable kext bundle org.virtualbox.kext.VBoxDrv at /Library/Application Support/VirtualBox/VBoxDrv.kext. Should appear in one of:
+#	/System/Library/Extensions
+#	/Library/Apple/System/Library/Extensions
+#	/Library/Extensions
+#	/AppleInternal/Library/Extensions
+#	/System/AppleInternal/Library/AuxiliaryExtensions
+#	/System/AppleInternal/Diagnostics/AuxiliaryExtensions
+#	/System/Library/AuxiliaryExtensions
+#	/Library/StagedExtensions
+#	/private/var/db/KernelExtensionManagement/Staging
+#Executing: /usr/bin/kmutil load -b org.virtualbox.kext.VBoxNetFlt
+#Validating extension failed: KernelExtension org.virtualbox.kext.VBoxNetFlt v6.1.16 in executable kext bundle org.virtualbox.kext.VBoxNetFlt at /Library/Application Support/VirtualBox/VBoxNetFlt.kext:
+
+# all directories starting with /System do not work with my sip settings
+# works
+VBOX_KEXT_DESTINATION=/Library/Apple/System/Library/Extensions
+# testing
+# partially working (VBoxDrv works, rest doesn`t)
+#DESTINATION=/Library/Extensions
+# symlinks do not work
+
+# vbox_workaround
+vbox_workaround() {
+
+	echo "$APP_NAME_FOR_PREFERENCES"
+
+	sudo cp -a "/Library/Application Support/VirtualBox/VBoxDrv.kext" "$VBOX_KEXT_DESTINATION"/VBoxDrv.kext
+	sudo cp -a "/Library/Application Support/VirtualBox/VBoxNetFlt.kext" "$VBOX_KEXT_DESTINATION"/VBoxNetFlt.kext
+	sudo cp -a "/Library/Application Support/VirtualBox/VBoxNetAdp.kext" "$VBOX_KEXT_DESTINATION"/VBoxNetAdp.kext
+	sudo cp -a "/Library/Application Support/VirtualBox/VBoxUSB.kext" "$VBOX_KEXT_DESTINATION"/VBoxUSB.kext
+	
+	sudo kextload -b org.virtualbox.kext.VBoxDrv
+	sudo kextload -b org.virtualbox.kext.VBoxNetFlt
+	sudo kextload -b org.virtualbox.kext.VBoxNetAdp
+	sudo kextload -b org.virtualbox.kext.VBoxUSB
+	
+	# open System Preferences - Privacy - General
+	# accept extensions
+	# allowing kext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
+	osascript <<EOF
+	tell application "System Preferences"
+		activate
+		#set paneids to (get the id of every pane)
+		#display dialog paneids
+		#return paneids
+		#set current pane to pane "com.apple.preference.security"
+		#get the name of every anchor of pane id "com.apple.preference.security"
+		#set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")
+		#display dialog tabnames
+		#return tabnames
+		reveal anchor "General" of pane id "com.apple.preference.security"
+	end tell
+EOF
+	sleep 2
+
+}
+vbox_workaround
+
+# undo vbox workaround
+undo_vbox_workaround() {
+	sudo /usr/bin/kmutil unload -b org.virtualbox.kext.VBoxUSB
+	sudo /usr/bin/kmutil unload -b org.virtualbox.kext.VBoxNetFlt
+	sudo /usr/bin/kmutil unload -b org.virtualbox.kext.VBoxNetAdp
+	sudo /usr/bin/kmutil unload -b org.virtualbox.kext.VBoxUSB
+	
+	sudo rm -rf "$VBOX_KEXT_DESTINATION"/VBoxDrv.kext
+	sudo rm -rf "$VBOX_KEXT_DESTINATION"/VBoxNetFlt.kext
+	sudo rm -rf "$VBOX_KEXT_DESTINATION"/VBoxNetAdp.kext
+	sudo rm -rf "$VBOX_KEXT_DESTINATION"/VBoxUSB.kext
+	
+	# reboot and reinstall virtualbox and extension pack
+	
+	#sudo kextload -b org.virtualbox.kext.VBoxDrv
+	#sudo kextload -b org.virtualbox.kext.VBoxNetFlt
+	#sudo kextload -b org.virtualbox.kext.VBoxNetAdp
+	#sudo kextload -b org.virtualbox.kext.VBoxUSB
+	
+	# open System Preferences - Privacy - General
+	# accept extensions
+	
+	}
+#undo_vbox_workaround
 
 
 ### stopping the error output redirecting
