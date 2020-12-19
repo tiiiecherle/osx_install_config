@@ -112,7 +112,7 @@ batch_run_all() {
     if [[ "$MACOS_VERSION_MAJOR" != 10.15 ]]
     then
         # macos versions other than 10.15
-        # more complicated and risky on 11.0 and newer due to signed system volume (ssv)
+        # more complicated and risky on 11 and newer due to signed system volume (ssv)
         :
     else
         # macos versions 10.15

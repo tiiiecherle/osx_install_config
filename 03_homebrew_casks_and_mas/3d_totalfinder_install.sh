@@ -102,10 +102,10 @@ install_finder_enhancement() {
 			
 			# open /Users/"$USER"/Library/Preferences/com.binaryage.totalfinder.plist
 			
-			VERSION_TO_CHECK_AGAINST=11.0
+			VERSION_TO_CHECK_AGAINST=11
 			if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
 			then
-			    # macos versions 11.0 and up
+			    # macos versions 11 and up
 			    sudo defaults write /Library/Preferences/com.apple.security.libraryvalidation.plist DisableLibraryValidation -bool true
 			else
 			    :

@@ -406,7 +406,12 @@ SCRIPT_INTERPRETER=$(ps h -p $$ -o args='' | cut -f1 -d' ')
 MACOS_VERSION=$(sw_vers -productVersion)
 #MACOS_VERSION=$(defaults read loginwindow SystemVersionStampAsString)
 #MACOS_VERSION=$(/usr/libexec/PlistBuddy -c "Print:ProductVersion" /System/Library/CoreServices/SystemVersion.plist)
-MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
+if [[ $(echo "$MACOS_VERSION" | cut -f1 -d'.') == "10" ]]
+then
+    MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1,2 -d'.')
+else
+    MACOS_VERSION_MAJOR=$(echo "$MACOS_VERSION" | cut -f1 -d'.')
+fi
 #MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | sed 's|\.|_|g')
 MACOS_VERSION_MAJOR_UNDERSCORE=$(echo "$MACOS_VERSION_MAJOR" | tr '.' '_')
 MACOS_MARKETING_NAME=$(awk '/SOFTWARE LICENSE AGREEMENT FOR macOS/' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | awk -F 'macOS ' '{print $NF}' | sed 's|\\$||g')
@@ -418,7 +423,7 @@ then
     elif [[ "$MACOS_VERSION_MAJOR" == 10.15 ]]
     then
         MACOS_MARKETING_NAME="Catalina"
-    elif [[ "$MACOS_VERSION_MAJOR" == 11.0 ]]
+    elif [[ "$MACOS_VERSION_MAJOR" == 11 ]]
     then
         MACOS_MARKETING_NAME="Big Sur"
     else
@@ -666,7 +671,7 @@ env_get_path_to_app() {
         fi
         
         # apps, system apps, core apps, user apps
-        for i in "$PATH_TO_APPS" "$PATH_TO_SYSTEM_APPS" "/System/Library/CoreServices" "/Users/"$USER"/Library/Scripts/"
+        for i in "$PATH_TO_APPS" "$PATH_TO_SYSTEM_APPS" "/System/Library/CoreServices" "/Users/"$USER"/Library/Scripts/" "/Users/"$USER"/Applications"
         do
             if [[ "$PATH_TO_APP" == "" ]]
             then
@@ -689,7 +694,6 @@ env_get_path_to_app() {
                 PATH_TO_APP=$(find "$i" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
             fi
         done
-        
         while [[ "$PATH_TO_APP" == "" ]]
         do
             # bash builtin printf can not print floating numbers
@@ -798,9 +802,9 @@ env_set_apps_security_permissions() {
                 sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,?,NULL,0,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,$APP_CSREQ,NULL,0,?);"
-            elif VERSION_TO_CHECK_AGAINST=11.0; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            elif VERSION_TO_CHECK_AGAINST=11; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
             then
-                # macos 11.0 and higher
+                # macos 11 and higher
                 if [[ $PERMISSION_GRANTED == "0" ]]
                 then
                     :
@@ -832,9 +836,9 @@ env_set_apps_security_permissions() {
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,NULL,?,NULL,NULL,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,$APP_CSREQ,NULL,NULL,?,NULL,NULL,?);"
-            elif VERSION_TO_CHECK_AGAINST=11.0; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            elif VERSION_TO_CHECK_AGAINST=11; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
             then
-                # macos 11.0 and higher
+                # macos 11 and higher
                 if [[ $PERMISSION_GRANTED == "0" ]]
                 then
                     :
@@ -1006,7 +1010,7 @@ env_set_apps_automation_permissions() {
                 # working and showing in gui of system preferences if csreq is not '?'
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
             else
-                # macos version 11.0 and higher
+                # macos version 11 and higher
                 if [[ $PERMISSION_GRANTED == "0" ]]
                 then
                     :

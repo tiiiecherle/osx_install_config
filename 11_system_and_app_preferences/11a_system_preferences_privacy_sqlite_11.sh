@@ -25,10 +25,10 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ###
 
 # macos 10.15 only
-if [[ "$MACOS_VERSION_MAJOR" != "11.0" ]]
+if [[ "$MACOS_VERSION_MAJOR" != "11" ]]
 then
     echo ''
-    echo "this script is only compatible with macos 11.0, exiting..."
+    echo "this script is only compatible with macos 11, exiting..."
     echo ''
     exit
 else

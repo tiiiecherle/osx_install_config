@@ -55,11 +55,11 @@ fi
 ### compatibility
 ###
 
-# macos 11.0 only
-if [[ "$MACOS_VERSION_MAJOR" != "11.0" ]]
+# macos 11 only
+if [[ "$MACOS_VERSION_MAJOR" != "11" ]]
 then
     echo ''
-    echo "this script is only compatible with macos 11.0, exiting..."
+    echo "this script is only compatible with macos 11, exiting..."
     echo ''
     exit
 else
