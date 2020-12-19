@@ -456,10 +456,10 @@ u	~/Library/Group Containers/UBF8T346G9.Office
 # relinking ~/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg is done in 11k_third_party_app_preferences.sh
 
 # MonKey Office
-echo MonKey Office 2020
-u	"$PATH_TO_APPS"/MonKey Office 2020.app
+echo MonKey Office 2021
+u	"$PATH_TO_APPS"/MonKey Office 2021.app
 u	~/Library/Application Support/ProSaldo
-#u	~/Library/Preferences/com.prosaldo.monkeyoffice2019.plist
+#u	~/Library/Preferences/com.prosaldo.monkeyoffice2021.plist
 
 # muCommander
 echo muCommander
@@ -584,7 +584,8 @@ u	~/Library/Preferences/com.PS.PSD.plist
 # PVGuard
 echo PVGuard
 u	~/PVGuardClient
-u	"$PATH_TO_APPS"/PVGuard.jar
+#u	~/Applications/PVGuard.app
+u	~/.config/icedtea-web/deployment.properties
 
 # Quicksilver
 echo Quicksilver
@@ -695,6 +696,10 @@ u	~/.ssh
 #u	~/Library/Application Support/Telegram
 #u	~/Library/Containers/ru.keepcoder.Telegram/Data/Library/Preferences/ru.keepcoder.Telegram.plist
 #u	~/Library/Preferences/ru.keepcoder.Telegram.plist
+
+# Telephone
+echo Telephone
+u	~/Library/Containers/com.tlphn.Telephone/Data/Library/Preferences/com.tlphn.Telephone.plist
 
 # TextMate
 #echo TextMate
