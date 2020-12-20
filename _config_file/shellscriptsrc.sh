@@ -191,8 +191,8 @@ env_get_shell_specific_variables
 
 
 ### text output
-#if [[ "$TERM" == "" ]]
-if [[ $- == *i* ]]
+if [[ "$TERM" != "" ]]
+#if [[ $- == *i* ]]
 then
     # interactive shell
     bold_text=$(tput bold)
