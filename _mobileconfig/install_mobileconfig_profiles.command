@@ -1,0 +1,158 @@
+#!/bin/zsh
+
+###
+### config file
+###
+
+if [[ -n "$BASH_SOURCE" ]]
+then
+    # path to script
+    SCRIPT_PATH="$BASH_SOURCE"
+elif [[ -n "$ZSH_VERSION" ]]
+then
+    # path to script
+    SCRIPT_PATH="${(%):-%x}"
+else
+    :
+fi   
+
+# installing config file if this is a first run and the computer is offline
+printf "\n${bold_text}config file...\n${default_text}"
+SCRIPT_DIR_ONE_BACK="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && cd .. && pwd)"
+SCRIPTS_FINAL_DIR="$SCRIPT_DIR_ONE_BACK"
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else "$SCRIPTS_FINAL_DIR"/_config_file/install_config_file.sh; fi
+
+# re-sourcing config file
+if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+
+
+###
+### check if archive exists
+###
+
+if [[ -e "$SCRIPT_DIR_TWO_BACK"/_scripts_input_keep/"$USER"_mobileconfig.dmg ]]
+then
+    MOBILECONFIG_ARCHIV_PATH="$SCRIPT_DIR_TWO_BACK"/_scripts_input_keep/"$USER"_mobileconfig.dmg
+else
+    echo ''
+    echo "archive with mobileconfig files does not exist for the current user, exiting..."
+    echo ''
+    exit
+fi
+
+
+###
+### asking password upfront
+###
+
+printf "\n${bold_text}sudo password...\n${default_text}"
+env_enter_sudo_password
+
+#printf "\n${bold_text}mobileconfig archive password...\n${default_text}"
+#echo "please enter mobileconfig dmg password..."
+#while [[ $MOBILECONFIG_ARCHIV != $MOBILECONFIG_ARCHIV2 ]] || [[ $MOBILECONFIG_ARCHIV == "" ]]; do stty -echo && printf "mobileconfig dmg password: " && read -r "$@" MOBILECONFIG_ARCHIV && printf "\n" && printf "re-enter mobileconfig dmg password: " && read -r "$@" MOBILECONFIG_ARCHIV2 && stty echo && printf "\n" && USE_MOBILECONFIG_ARCHIV='builtin printf '"$MOBILECONFIG_ARCHIV\n"''; done
+
+###
+printf "\n${bold_text}mounting mobileconfig archive...\n${default_text}"
+builtin printf "$SUDOPASSWORD" | hdiutil attach -stdinpass "$MOBILECONFIG_ARCHIV_PATH"
+
+printf "\n${bold_text}installing mobileconfigs...\n${default_text}"
+#MOBILECONFIG_INPUT_PATH=$(find "/Volumes" -mindepth 1 -maxdepth 1 -type d -name "*_mobileconfig")
+MOBILECONFIG_INPUT_PATH="/Volumes/"$USER"_mobileconfig"
+
+while IFS= read -r line || [[ -n "$line" ]] 
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    i="$line"
+    echo "$(basename $i)"
+
+    open "$i"
+    
+    sleep 3
+        
+    osascript <<EOF
+    
+        tell application "System Preferences"
+        	activate
+        	#set paneids to (get the id of every pane)
+        	#display dialog paneids
+        	#return paneids
+        	#set current pane to pane "com.apple.preferences.configurationprofiles"
+        	#get the name of every anchor of pane id "com.apple.preferences.configurationprofiles"
+        	#set tabnames to (get the name of every anchor of pane id "com.apple.preferences.configurationprofiles")
+        	#display dialog tabnames
+        	#return tabnames
+        	#reveal anchor "Profile" of pane id "com.apple.preferences.configurationprofiles"
+        	try
+        		reveal pane id "com.apple.preferences.configurationprofiles"
+        		delay 3
+        	end try
+        end tell
+        
+        tell application "System Events"
+        	select row 2 of table 1 of scroll area 2 of window "Profile" of process "System Preferences"
+        	delay 2
+        	tell process "System Preferences"
+        		try
+        			click button "Installieren …" of scroll area 1 of window "Profile"
+        		on error
+        		    click button 1 of sheet 1 of window 1
+        		end try
+        		delay 2
+        		try
+        			click button "Installieren" of sheet 1 of window "Profile"
+        		on error
+        		    click button 1 of sheet 1 of window 1    			
+        		end try
+        		delay 2
+        		try
+        			tell application "System Events" to keystroke "$SUDOPASSWORD"
+        		end try
+        		delay 2
+        		try
+            		tell application "System Events"
+            		    try
+            			    tell process "SecurityAgent"
+            				    click button "OK" of window 1
+            			    end tell
+            	        end try
+            		end tell
+            	on error
+            		tell application "System Events"
+            		    try
+            			    tell process "SecurityAgent"
+            				    click button 2 of window 1
+            			    end tell
+            	        end try
+            		end tell            	
+        		end try
+        		delay 2
+        		try
+        			click button "Installieren" of sheet 1 of window "Profile"
+        		on error
+        		    try
+        		        click button 1 of sheet 1 of window 1
+        		    end try
+        		end try
+        		delay 2
+        	end tell
+        end tell
+        
+EOF
+    
+    if [[ $(echo "$i" | grep -i "wifi") != "" ]]
+    then
+        sleep 10
+    else
+        sleep 5
+    fi
+    
+done <<< "$(find "$MOBILECONFIG_INPUT_PATH" -type f -name "*.mobileconfig")"
+
+printf "\n${bold_text}unmounting mobileconfig archive...\n${default_text}"
+hdiutil detach "$MOBILECONFIG_INPUT_PATH"
+
+echo ''
+echo 'done ;)'
+echo ''
