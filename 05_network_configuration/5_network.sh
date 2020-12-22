@@ -169,6 +169,34 @@ set_ethernet_priority() {
     eval "sudo networksetup -ordernetworkservices $ALL_ACTIVE_DEVICES_PRIORIZED_TO_SET"
 }
 
+create_location_tmp_automatic() {
+    # creating new location automatic
+    echo "adding location tmp_automatic..."
+    sudo networksetup -createlocation "tmp_automatic" populate >/dev/null 2>&1
+    sleep 2
+    sudo networksetup -switchtolocation "tmp_automatic"
+    sleep 2
+    if [[ "$ETHERNET_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
+    then
+        sudo networksetup -setv6off "$ETHERNET_DEVICE"
+        #sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
+        sleep 2
+    else
+        :
+    fi
+    if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
+    then
+        sudo networksetup -setv6off "$WLAN_DEVICE"
+        #sudo networksetup -setv6automatic "$WLAN_DEVICE"
+        sleep 2
+    else
+        :
+    fi
+    echo ""
+    set_ethernet_priority
+    sleep 2
+}
+
 create_location_automatic() {
     # creating new location automatic
     echo "adding location automatic..."
@@ -513,13 +541,28 @@ profile_based_config
 
 ### deleting all network locations
 #echo please ignore error about missing preferences.plist file, it will be created automatically
-sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist >/dev/null 2>&1
+# this would delete wireguard configurations
+#sudo rm -rf /Library/Preferences/SystemConfiguration/preferences.plist >/dev/null 2>&1
+
+create_location_tmp_automatic
+
+echo ''
+while IFS= read -r line || [[ -n "$line" ]] 
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    i="$line"
+    #echo "$i"
+    echo "deleting location "$i""
+    sudo networksetup -deletelocation "$i"
+    echo ''
+done <<< "$(networksetup -listlocations | grep -v tmp_automatic)"
 sleep 2
 
 
 ### location automatic
 if [[ "$CREATE_LOCATION_AUTOMATIC" == "yes" ]]
 then
+    echo ''
     create_location_automatic
 else
     :
@@ -562,6 +605,14 @@ then
 else
     :
 fi
+
+
+### cleaning temp location
+echo ''
+echo "deleting location tmp_automatic..."
+sudo networksetup -deletelocation "tmp_automatic"
+echo ''
+sleep 2
 
 
 ### auto join hotspots
