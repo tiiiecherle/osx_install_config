@@ -673,11 +673,11 @@ env_get_path_to_app() {
         # apps, system apps, core apps, user apps
         for i in "$PATH_TO_APPS" "$PATH_TO_SYSTEM_APPS" "/System/Library/CoreServices" "/Users/"$USER"/Library/Scripts/" "/Users/"$USER"/Applications"
         do
-            if [[ "$PATH_TO_APP" == "" ]]
+            if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
             then
                 PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
             fi
-            if [[ "$PATH_TO_APP" == "" ]]
+            if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
             then
                 PATH_TO_APP=$(find "$i" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
             fi
@@ -685,11 +685,11 @@ env_get_path_to_app() {
         # pref panes, apps in other apps
         for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS"
         do
-            if [[ "$PATH_TO_APP" == "" ]]
+            if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
             then
                 PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
             fi
-            if [[ "$PATH_TO_APP" == "" ]]
+            if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
             then
                 PATH_TO_APP=$(find "$i" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
             fi
