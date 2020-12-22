@@ -41,7 +41,6 @@ else
     exit
 fi
 
-
 ###
 ### asking password upfront
 ###
@@ -53,7 +52,29 @@ env_enter_sudo_password
 #echo "please enter mobileconfig dmg password..."
 #while [[ $MOBILECONFIG_ARCHIV != $MOBILECONFIG_ARCHIV2 ]] || [[ $MOBILECONFIG_ARCHIV == "" ]]; do stty -echo && printf "mobileconfig dmg password: " && read -r "$@" MOBILECONFIG_ARCHIV && printf "\n" && printf "re-enter mobileconfig dmg password: " && read -r "$@" MOBILECONFIG_ARCHIV2 && stty echo && printf "\n" && USE_MOBILECONFIG_ARCHIV='builtin printf '"$MOBILECONFIG_ARCHIV\n"''; done
 
-###
+
+### security and automation
+printf "\n${bold_text}security and automation preferences...\n${default_text}"
+
+env_identify_terminal
+
+# security
+APPS_SECURITY_ARRAY=(
+# app name									security service									     allowed (1=yes, 0=no)
+"$SOURCE_APP_NAME                           kTCCServiceAccessibility                             	 1"
+)
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
+
+# automation
+# macos versions 10.14 and up
+# source app name							automated app name										 allowed (1=yes, 0=no)
+AUTOMATION_APPS=(
+"$SOURCE_APP_NAME						    System Events                   		                 1"
+)
+PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
+
+
+### mounting archive
 printf "\n${bold_text}mounting mobileconfig archive...\n${default_text}"
 builtin printf "$SUDOPASSWORD" | hdiutil attach -stdinpass "$MOBILECONFIG_ARCHIV_PATH"
 
@@ -61,6 +82,8 @@ printf "\n${bold_text}installing mobileconfigs...\n${default_text}"
 #MOBILECONFIG_INPUT_PATH=$(find "/Volumes" -mindepth 1 -maxdepth 1 -type d -name "*_mobileconfig")
 MOBILECONFIG_INPUT_PATH="/Volumes/"$USER"_mobileconfig"
 
+
+### installing mobileconfigs
 while IFS= read -r line || [[ -n "$line" ]] 
 do
     if [[ "$line" == "" ]]; then continue; fi
