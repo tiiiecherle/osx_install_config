@@ -389,10 +389,6 @@ setting_preferences() {
     
     echo "menu bar control center"
     # options for com.apple.controlcenter.$uuid1.plist
-    # 0 = do not show (only use if disabled in menu bar)
-    # 1 = show (only use if disabled in menu bar)
-    # 2 = do not show (only use if enabled in menu bar)
-    # 3 = show (only use if enabled in menu bar)
     
     set_menu_bar_and_control_center() {
         while IFS= read -r line || [[ -n "$line" ]]
@@ -405,20 +401,36 @@ setting_preferences() {
             
             # control center
             # changes to com.apple.controlcenter.$uuid1.plist have to be made before changing com.apple.controlcenter to make the changes take effect
-            if [[ "$ENABLE_IN_CONTROL_CENTER" == "no" ]] || [[ "$ENABLE_IN_CONTROL_CENTER" == "no-option" ]] && [[ "$ENABLE_IN_MENU_BAR" == "no" ]]
+            if [[ "$ENABLE_IN_CONTROL_CENTER" == "no-option" ]]
             then
-                local CONTROL_CENTER_INT_VALUE=0
-            elif [[ "$ENABLE_IN_CONTROL_CENTER" == "yes" ]] && [[ "$ENABLE_IN_MENU_BAR" == "no" ]]
+                if [[ "$ENABLE_IN_MENU_BAR" == "no" ]]
+                then
+                    CONTROL_CENTER_INT_VALUE=24
+                elif [[ "$ENABLE_IN_MENU_BAR" == "yes" ]] || [[ "$ENABLE_IN_MENU_BAR" == "always" ]]
+                then
+                    CONTROL_CENTER_INT_VALUE=18
+                elif [[ "$ENABLE_IN_MENU_BAR" == "if-active" ]]
+                then
+                    CONTROL_CENTER_INT_VALUE=2
+                fi
+            elif [[ "$ENABLE_IN_CONTROL_CENTER" == "no" ]]         
             then
-                local CONTROL_CENTER_INT_VALUE=1
-            elif [[ "$ENABLE_IN_CONTROL_CENTER" == "no" ]] || [[ "$ENABLE_IN_CONTROL_CENTER" == "no-option" ]] && [[ "$ENABLE_IN_MENU_BAR" == "yes" ]]
+                if [[ "$ENABLE_IN_MENU_BAR" == "no" ]]
+                then
+                    CONTROL_CENTER_INT_VALUE=24
+                elif [[ "$ENABLE_IN_MENU_BAR" == "yes" ]]
+                then
+                    CONTROL_CENTER_INT_VALUE=18
+                fi
+            elif [[ "$ENABLE_IN_CONTROL_CENTER" == "yes" ]]         
             then
-                local CONTROL_CENTER_INT_VALUE=2
-            elif [[ "$ENABLE_IN_CONTROL_CENTER" == "yes" ]] && [[ "$ENABLE_IN_MENU_BAR" == "yes" ]]
-            then
-                local CONTROL_CENTER_INT_VALUE=3
-            else
-                local INT_VALUE=""
+                if [[ "$ENABLE_IN_MENU_BAR" == "no" ]]
+                then
+                    CONTROL_CENTER_INT_VALUE=25
+                elif [[ "$ENABLE_IN_MENU_BAR" == "yes" ]]
+                then
+                    CONTROL_CENTER_INT_VALUE=28
+                fi
             fi
             defaults write /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/Users/"$USER"/Library/Preferences/ByHost/com.apple.controlcenter."$uuid1".plist "$MENU_BAR_CONTROL_CENTER_ENTRY" -int "$CONTROL_CENTER_INT_VALUE"
             
@@ -444,19 +456,22 @@ setting_preferences() {
     }
     
     # battery percentage
+    defaults write /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/Users/"$USER"/Library/Preferences/ByHost/com.apple.controlcenter."$uuid1".plist BatteryShowPercentage -bool true
     defaults write /Volumes/"$MACOS_CURRENTLY_BOOTED_VOLUME"/Users/"$USER"/Library/Preferences/ByHost/com.apple.controlcenter."$uuid1".plist Battery.ShowPercentage -bool true
     
     # other entries
     MENU_BAR_AND_CONTROL_CENTER_ENTRIES=(
+    # 
     # name								 enabled in control center					enabled in menu bar
     "WiFi                                no-option                                  yes"
     "Bluetooth                           no-option                                  yes"
     "AirDrop                             no-option                                  no"
-    "DoNotDisturb                        no-option                                  no"
+    "DoNotDisturb                        no-option                                  if-active"
     "KeyboardBrightness                  no-option                                  no"
     "AirPlay                             no-option                                  no"
-    "Display                             no-option                                  no"
-    "Sound                               no-option                                  yes"
+    "ScreenMirroring                     no-option                                  if-active"
+    "Display                             no-option                                  if-active"
+    "Sound                               no-option                                  always"
     "NowPlaying                          no-option                                  no"
     "AccessibilityShortcuts              no                                         no"
     "Battery                             no                                         yes"
@@ -464,12 +479,15 @@ setting_preferences() {
     )
     MENU_BAR_CONTROL_CENTER_ARRAY=$(printf "%s\n" "${MENU_BAR_AND_CONTROL_CENTER_ENTRIES[@]}")
     set_menu_bar_and_control_center
-    
+
     # siri menu bar icon
     # see siri section below
     
     # spotlight menu bar icon
-    # hide or move with bartender
+    # takes effect after logout or reboot
+    /usr/libexec/PlistBuddy ~/Library/Preferences/ByHost/com.apple.Spotlight."$uuid1".plist -c 'Delete MenuItemHidden bool true' >/dev/null 2>&1
+    /usr/libexec/PlistBuddy ~/Library/Preferences/ByHost/com.apple.Spotlight."$uuid1".plist -c 'Add MenuItemHidden bool true' >/dev/null 2>&1
+    # or hide or move with bartender
     
     # input source menu bar icon
     # see input source section below
