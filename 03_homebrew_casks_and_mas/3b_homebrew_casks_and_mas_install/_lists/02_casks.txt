@@ -45,6 +45,7 @@ liteicon
 macdown
 macpass
 #macs-fan-control
+microsoft-teams
 mysides
 namechanger
 nextcloud
