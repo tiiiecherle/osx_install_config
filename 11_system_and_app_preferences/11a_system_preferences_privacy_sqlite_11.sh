@@ -312,6 +312,7 @@ CONTACTSAPPS=(
 "gui_apps_backup                            kTCCServiceAddressBook                                      1"
 "Alfred 4                                   kTCCServiceAddressBook                                      1"
 "GeburtstagsChecker                         kTCCServiceAddressBook                                      1"
+"Telephone                                  kTCCServiceAddressBook                                      1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CONTACTSAPPS[@]}")
@@ -383,6 +384,7 @@ MICROPHONEAPPS=(
 "Microsoft Remote Desktop                   kTCCServiceMicrophone                                       0"
 "Linphone                                   kTCCServiceMicrophone                                       1"
 "Jitsi Meet                                 kTCCServiceMicrophone                                       1"
+"Telephone                                  kTCCServiceMicrophone                                       1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${MICROPHONEAPPS[@]}")

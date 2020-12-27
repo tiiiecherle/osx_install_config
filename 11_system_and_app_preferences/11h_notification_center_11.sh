@@ -84,6 +84,7 @@ APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "clamav_scan_found				                                        310903127"
 "clamav_scan_done					                                    310903127"
 "clamav_scan_stopped				                                    310903127"
+"Telephone  													        41943375"
 )
 
 
