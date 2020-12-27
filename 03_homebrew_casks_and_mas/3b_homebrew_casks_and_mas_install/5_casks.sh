@@ -86,7 +86,7 @@ env_command_line_tools_install_shell
 ### variables
 ###
 
-BREW_CASKS_PATH=$(brew doctor --verbose | grep -A1 -B1 "Cask Staging Location" | tail -1)
+BREW_CASKS_PATH=$(brew doctor --verbose 2>/dev/null | grep -A1 -B1 "Cask Staging Location" | tail -1)
 
 
 
