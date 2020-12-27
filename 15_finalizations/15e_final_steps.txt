@@ -35,6 +35,10 @@ enable touch id (ts)
 
 clear list of old devices in icloud acccount (ws & ts)
 
+check if running after reboot
+	virus scanner plus
+	adguard for safari
+
 
 ### iOS (ws & ts)
 
