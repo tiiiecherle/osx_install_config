@@ -2383,18 +2383,21 @@ EOF
     
     # screen sharing
     # enable
-    #sudo launchctl enable system/com.apple.screensharing
-    #sudo launchctl bootstrap system "/System/Library/LaunchDaemons/com.apple.screensharing.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+    sudo launchctl enable system/com.apple.screensharing
+    sudo launchctl bootstrap system "/System/Library/LaunchDaemons/com.apple.screensharing.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+    # ask for permission to share screen
+    # enable
+    sudo defaults write /Library/Preferences/com.apple.RemoteManagement.plist ScreenSharingReqPermEnabled -bool true
 	#sleep 2
 	# disable
-	if [[ $(sudo launchctl list | grep com.apple.screensharing) == "" ]] > /dev/null 2>&1
-    then
-        :
-    else
-	    sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.screensharing.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
-	    sleep 2
-		sudo launchctl disable system/com.apple.screensharing
-	fi
+	#if [[ $(sudo launchctl list | grep com.apple.screensharing) == "" ]] > /dev/null 2>&1
+    #then
+    #    :
+    #else
+	#    sudo launchctl bootout system "/System/Library/LaunchDaemons/com.apple.screensharing.plist" 2>&1 | grep -v "in progress" | grep -v "No such process"
+	#    sleep 2
+	#	sudo launchctl disable system/com.apple.screensharing
+	#fi
     
     # turn off file sharing
     # deactivate smb file server
