@@ -383,7 +383,7 @@ backup_restore_permissions() {
         sudo find ""$HOMEFOLDER"/Library/Application Support/Tunnelblick/Configurations" -type f -print0 | xargs -0 -n100 sudo chmod 600
     else
         echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
+        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..."
     fi
     
     # homebrew permissions
