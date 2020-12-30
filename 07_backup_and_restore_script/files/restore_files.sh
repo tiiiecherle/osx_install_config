@@ -173,12 +173,12 @@ restore_files() {
                 then
                     # not empy
                     rm -rf "$line"/*
+                    mv -f /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
+        		    #cp -a /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
                 else
                     # empty
                     :
                 fi
-        		mv -f /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
-        		#cp -a /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
         	else
         		echo "source or destination does not exist, skipping..."
         	fi
