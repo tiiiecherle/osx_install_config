@@ -308,7 +308,7 @@ show_vpn_in_menu_bar() {
     # show vpn in the menu bar
     if [[ $(defaults read com.apple.systemuiserver menuExtras | grep "vpn.menu") == "" ]]
     then
-        defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/vpn.menu"
+        defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/vpn.menu" >/dev/null 2>&1
         # do not show vpm connection time in menu bar
         # 0 = no
         # 1 = yes
@@ -350,7 +350,7 @@ configure_fritz_vpn() {
         	if [[ $(brew list --formula | grep "^$formula$") == '' ]]
         	then
         		echo """$formula"" is NOT installed, installing..."
-                brew install "$formula"
+                brew install --formula "$formula"
         	else
         		#echo """$formula"" is installed..."
         		:
