@@ -774,7 +774,13 @@ EOF
 	sleep 2
 
 }
-vbox_workaround
+if [[ -e "/Users/"$USER"/virtualbox" ]] && [[ -e /Applications/VirtualBox.app ]]
+then
+	vbox_workaround
+else
+	:
+fi
+
 
 # undo vbox workaround
 undo_vbox_workaround() {
