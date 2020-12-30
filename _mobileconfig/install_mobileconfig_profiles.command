@@ -31,9 +31,9 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### check if archive exists
 ###
 
-if [[ -e "$SCRIPT_DIR_TWO_BACK"/_scripts_input_keep/"$USER"_mobileconfig.dmg ]]
+if [[ -e "$SCRIPT_DIR_TWO_BACK"/_scripts_input_keep/mobileconfig_macos_"$USER".dmg ]]
 then
-    MOBILECONFIG_ARCHIV_PATH="$SCRIPT_DIR_TWO_BACK"/_scripts_input_keep/"$USER"_mobileconfig.dmg
+    MOBILECONFIG_ARCHIV_PATH="$SCRIPT_DIR_TWO_BACK"/_scripts_input_keep/mobileconfig_macos_"$USER".dmg
 else
     echo ''
     echo "archive with mobileconfig files does not exist for the current user, exiting..."
@@ -80,7 +80,7 @@ builtin printf "$SUDOPASSWORD" | hdiutil attach -stdinpass "$MOBILECONFIG_ARCHIV
 
 printf "\n${bold_text}installing mobileconfigs...\n${default_text}"
 #MOBILECONFIG_INPUT_PATH=$(find "/Volumes" -mindepth 1 -maxdepth 1 -type d -name "*_mobileconfig")
-MOBILECONFIG_INPUT_PATH="/Volumes/"$USER"_mobileconfig"
+MOBILECONFIG_INPUT_PATH="/Volumes/mobileconfig_macos_"$USER""
 
 
 ### installing mobileconfigs
