@@ -27,6 +27,7 @@ if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e
 eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
 
 
+
 ###
 ### check if archive exists
 ###
@@ -41,12 +42,20 @@ else
     exit
 fi
 
+
+
 ###
 ### asking password upfront
 ###
 
 printf "\n${bold_text}sudo password...\n${default_text}"
 env_enter_sudo_password
+
+
+### trapping
+trap_function_exit_middle() { unset SUDOPASSWORD; }
+"${ENV_SET_TRAP_SIG[@]}"
+"${ENV_SET_TRAP_EXIT[@]}"
 
 #printf "\n${bold_text}mobileconfig archive password...\n${default_text}"
 #echo "please enter mobileconfig dmg password..."
@@ -77,10 +86,20 @@ PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 ### mounting archive
 printf "\n${bold_text}mounting mobileconfig archive...\n${default_text}"
 builtin printf "$SUDOPASSWORD" | hdiutil attach -stdinpass "$MOBILECONFIG_ARCHIV_PATH"
+sleep 3
 
 printf "\n${bold_text}installing mobileconfigs...\n${default_text}"
 #MOBILECONFIG_INPUT_PATH=$(find "/Volumes" -mindepth 1 -maxdepth 1 -type d -name "*_mobileconfig")
 MOBILECONFIG_INPUT_PATH="/Volumes/mobileconfig_macos_"$USER""
+
+
+### cleaning possible old trashes on Volume
+if [[ -e "/Volumes/mobileconfig_macos_"$USER"/.Trashes" ]]
+then
+    builtin printf "$SUDOPASSWORD" | builtin command sudo -p '' -k -S rm -rf "/Volumes/mobileconfig_macos_"$USER"/.Trashes"
+else
+    :
+fi
 
 
 ### installing mobileconfigs
