@@ -110,39 +110,21 @@ echo "clearing and setting finder sidebar items..."
 # copy build file to /usr/local/bin/mysides
 # sudo chown root:wheel "/usr/local/bin/mysides"
 # sudo chmod 755 "/usr/local/bin/mysides"
-#mysides remove all
+mysides remove all
 #
 #mysides remove "Alle meine Dateien"
 #mysides remove myDocuments.cannedSearch
 #mysides remove iCloud
 #mysides add domain-AirDrop nwnode://domain-AirDrop
-mysides remove domain-AirDrop >/dev/null 2>&1
-mysides add Applications file://"$PATH_TO_APPS"
-mysides add Desktop file:///Users/"$USER"/Desktop
-mysides add Documents file:///Users/"$USER"/Documents
-mysides add Downloads file:///Users/"$USER"/Downloads
-mysides add Movies file:///Users/"$USER"/Movies
-mysides add Music file:///Users/"$USER"/Music
-mysides add Pictures file:///Users/"$USER"/Pictures
-mysides add "$USER" file:///Users/"$USER"
-
-# user specific customization
-SCRIPT_NAME="finder_sidebar_"$USER""
-SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
-SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
-if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
-then
-    echo ''
-    echo "user specific sidebar customization script found..."
-    USER_ID=`id -u`
-    chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-    chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-    . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-else
-    echo ''
-    echo "user specific sidebar customization script not found......"
-fi
-echo ''
+#mysides remove domain-AirDrop >/dev/null 2>&1
+#mysides add Programme file://"$PATH_TO_APPS"
+#mysides add Schreibtisch file://Users/"$USER"/Desktop
+#mysides add Dokumente file://Users/"$USER"/Documents
+#mysides add Downloads file://Users/"$USER"/Downloads
+#mysides add Filme file://Users/"$USER"/Movies
+#mysides add Musik file://Users/"$USER"/Music
+#mysides add Bilder file://Users/"$USER"/Pictures
+#mysides add "$USER" file://Users/"$USER"
 
 #touch ~/Library/Preferences/com.apple.sidebarlists.plist
 #if [[ -e ~/Library/Preferences/com.apple.sidebarlists.plist ]]
@@ -196,6 +178,77 @@ tell application "System Events"
 		end tell
 		delay 0.2
 		
+		# applications
+		set theCheckbox to checkbox 3 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 0.2
+		
+		# desktop
+		set theCheckbox to checkbox 4 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 0.2
+		
+		# documents
+		set theCheckbox to checkbox 5 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 0.2
+		
+		# downloads
+		set theCheckbox to checkbox 6 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 0.2		
+
+		# movies
+		set theCheckbox to checkbox 7 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 0.2
+
+		# music
+		set theCheckbox to checkbox 8 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 0.2
+		
+		# pictures
+		set theCheckbox to checkbox 9 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 0.2
+		
+		# user
+		set theCheckbox to checkbox 10 of window 1
+		click theCheckbox
+		tell theCheckbox
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is false then click theCheckbox
+		end tell
+		delay 0.2
 		
 		###
 
@@ -298,6 +351,24 @@ end tell
 EOF
 }
 enable_disable_finder_sidebar_items
+
+# user specific customization
+SCRIPT_NAME="finder_sidebar_"$USER""
+SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
+SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
+if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
+then
+    echo ''
+    echo "user specific sidebar customization script found..."
+    USER_ID=`id -u`
+    chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+else
+    echo ''
+    echo "user specific sidebar customization script not found......"
+fi
+echo ''
 
 # do not show icloud drive in drives
 defaults write com.apple.finder SidebarShowingiCloudDesktop -bool false
