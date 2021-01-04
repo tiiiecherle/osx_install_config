@@ -196,11 +196,11 @@ env_activating_caffeinate
 
 
 ### installing cask repair to contribute to homebrew casks
+# deprecated as of 2021-01, use brew bump-cask-pr instead
 #echo ''
-echo "installing cask-repair..."
-#brew install vitorgalvao/tiny-scripts/cask-repair
-brew tap vitorgalvao/tiny-scripts 2>&1
-brew install cask-repair
+#echo "installing cask-repair..."
+#brew tap vitorgalvao/tiny-scripts 2>&1
+#brew install cask-repair
 #cask-repair --help
 # fixing red dots before confirming commit that prevent the commit from being made
 # https://github.com/vitorgalvao/tiny-scripts/issues/88
