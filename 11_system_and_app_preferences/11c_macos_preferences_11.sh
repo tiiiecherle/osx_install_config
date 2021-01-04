@@ -904,7 +904,20 @@ EOF
 	#sleep 2
         
     ### do not disturb
-    # defaults read com.apple.ncprefs dnd_prefs | xxd -p
+    # /usr/libexec/PlistBuddy -x -c 'Print "dnd_prefs"' /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | xxd -p
+    # or
+    # plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | xxd -p
+    
+    # input_keep/dnd for links and references
+    # enable dnd
+    #defaults write com.apple.ncprefs.plist dnd_prefs -data 62706C6973743030D60102030405060708080A08085B646E644D6972726F7265645F100F646E64446973706C6179536C6565705F101E72657065617465644661636574696D6543616C6C73427265616B73444E445875736572507265665E646E64446973706C61794C6F636B5F10136661636574696D6543616E427265616B444E44090808D30B0C0D070F1057656E61626C6564546461746556726561736F6E093341C2B41C4FC9D3891001080808152133545D6C828384858C9499A0A1AAACAD00000000000001010000000000000013000000000000000000000000000000AE
+    #killall usernoted
+    #killall ControlCenter
+    
+    # disable dnd
+    #defaults write com.apple.ncprefs.plist dnd_prefs -data 62706C6973743030D5010203040506070707075B646E644D6972726F7265645F100F646E64446973706C6179536C6565705F101E72657065617465644661636574696D6543616C6C73427265616B73444E445E646E64446973706C61794C6F636B5F10136661636574696D6543616E427265616B444E44090808080808131F3152617778797A7B0000000000000101000000000000000B0000000000000000000000000000007C
+    #killall usernoted
+    #killall ControlCenter
     
     dnd_settings() {
     #osascript 2>/dev/null <<EOF

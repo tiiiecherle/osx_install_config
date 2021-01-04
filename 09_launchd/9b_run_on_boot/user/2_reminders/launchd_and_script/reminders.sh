@@ -359,13 +359,27 @@ EOF
     	#echo "$CHECK_RESULT_EXPORT"
     	if [[ "$CHECK_RESULT_EXPORT" == "wrong" ]]
     	then
+    		echo ''
     		echo "enabling..."
+    		echo "disabling dnd..."
+    		# disable dnd
+        	defaults write com.apple.ncprefs.plist dnd_prefs -data 62706C6973743030D5010203040506070707075B646E644D6972726F7265645F100F646E64446973706C6179536C6565705F101E72657065617465644661636574696D6543616C6C73427265616B73444E445E646E64446973706C61794C6F636B5F10136661636574696D6543616E427265616B444E44090808080808131F3152617778797A7B0000000000000101000000000000000B0000000000000000000000000000007C
+            #killall usernoted
+            #killall ControlCenter
+            # usernoted gets killed in env_set_check_apps_notifications and ControlCenter after REMINDER_STATUS
+            echo "enabling reminder notifications..."
+            # enable reminder notifications
     		SLEEP_AFTER_RESTART_NOTIFICATION_CENTER="no" SET_APPS_NOTIFICATIONS="yes" PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG="no" env_set_check_apps_notifications
     		APP_SETTING_CHANGED="yes"
     		REMINDER_STATUS="on"
-    		RESTART_REMINDER_SERVICE="yes"
+    		killall ControlCenter
     	else
     	    echo "already enabled..."
+    	    echo "disabling dnd..."
+    		# disable dnd
+        	defaults write com.apple.ncprefs.plist dnd_prefs -data 62706C6973743030D5010203040506070707075B646E644D6972726F7265645F100F646E64446973706C6179536C6565705F101E72657065617465644661636574696D6543616C6C73427265616B73444E445E646E64446973706C61794C6F636B5F10136661636574696D6543616E427265616B444E44090808080808131F3152617778797A7B0000000000000101000000000000000B0000000000000000000000000000007C
+            killall usernoted
+            killall ControlCenter
     		echo ''
     	fi
     fi
