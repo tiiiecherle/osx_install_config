@@ -135,224 +135,114 @@ mysides remove all
 #fi
 
 
-### run applescript to set sidebar preferences
-#open /"$SCRIPT_DIR"/11f_script_finder_sidebar/11f_finder_sidebar.app
+### settings and functions
+FINDER_SIDEBAR_ITEMS=(
+# entry name						    position		        toggle status
+"last used                              1                       off"
+"airdrop                                2                       off"
+"applications                           3                       on"
+"desktop                                4                       on"
+"documents                              5                       on"
+"downloads                              6                       on"
+"movies                                 7                       on"
+"music                                  8                       on"
+"pictures                               9                       on"
+"user                                   10                      on"
+"icloud_drive                           11                      off"
+"mac                                    12                      off"
+"internal drives                        13                      on"
+"external drives                        14                      on"
+"removable media                        15                      on"
+"icloud                                 16                      off"
+"bonjour                                17                      off"
+"connected server                       18                      on"
+"tags                                   19                      off"
+)
+FINDER_SIDEBAR_ITEMS_ARRAY=$(printf "%s\n" "${FINDER_SIDEBAR_ITEMS[@]}")
 
-enable_disable_finder_sidebar_items() {
-#osascript 2>/dev/null <<EOF
-osascript <<EOF
-
-tell application "System Events"
-	
-	set frontApp to first application process whose frontmost is true
-	set frontAppName to name of frontApp
-	
-	tell process "Finder"
-		set frontmost to true
-		#click menu item "Einstellungen …" of menu "Finder" of menu bar item "Finder" of menu bar 1
-		keystroke "," using {command down}
-		delay 1
-		#click button "Seitenleiste" of toolbar 1 of window "Finder-Einstellungen"
-		click button 3 of toolbar 1 of window 1
-		delay 1
-		
-		
-		###
-		
-		
-		# last used
-		#set theCheckbox to checkbox host_name of window "Finder-Einstellungen"
-		set theCheckbox to checkbox 1 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# airdrop
-		#set theCheckbox to checkbox host_name of window "Finder-Einstellungen"
-		set theCheckbox to checkbox 2 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# applications
-		set theCheckbox to checkbox 3 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# desktop
-		set theCheckbox to checkbox 4 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# documents
-		set theCheckbox to checkbox 5 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# downloads
-		set theCheckbox to checkbox 6 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2		
-
-		# movies
-		set theCheckbox to checkbox 7 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-
-		# music
-		set theCheckbox to checkbox 8 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# pictures
-		set theCheckbox to checkbox 9 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# user
-		set theCheckbox to checkbox 10 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		###
-
-		
-		# icloud drive
-		set theCheckbox to checkbox 11 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2		
-		
-
-		###
-		
-		
-		# my computer
-		set theCheckbox to checkbox 12 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# drives
-		set theCheckbox to checkbox 13 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# external drives
-		set theCheckbox to checkbox 14 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# cds, dvds and ios-devices
-		set theCheckbox to checkbox 15 of window 1
-		click theCheckbox
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-
-		# icloud drive
-		set theCheckbox to checkbox 16 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# bonjour
-		set theCheckbox to checkbox 17 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# connected servers
-		set theCheckbox to checkbox 18 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 0.2
-		
-		# tags
-		set theCheckbox to checkbox 19 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
-		
-		
-		###
-		
-		
-		delay 1
-		#tell application "Finder" to close window "Finder-Einstellungen"
-		tell application "Finder" to close window 1
-		
-	end tell
-	
-	tell process frontAppName
-		set frontmost to true
-	end tell
-	
-end tell
-
+open_finder_preferences() {
+    osascript <<EOF
+        tell application "System Events"
+        	tell process "Finder"
+        		set frontmost to true
+        		#click menu item "Einstellungen …" of menu "Finder" of menu bar item "Finder" of menu bar 1
+        		keystroke "," using {command down}
+        		delay 1
+        		#click button "Seitenleiste" of toolbar 1 of window "Finder-Einstellungen"
+        		click button 3 of toolbar 1 of window 1
+        		delay 1
+        	end tell
+        end tell
 EOF
 }
-enable_disable_finder_sidebar_items
 
-# user specific customization
+toggle_sidebar_item_status() {
+    osascript <<EOF
+        tell application "System Events"
+        	tell process "Finder"
+            	set theCheckbox to checkbox $POSITION of window 1
+            	tell theCheckbox
+            		set checkboxStatus to value of theCheckbox as boolean
+            		if checkboxStatus is $CHECK_CHECKBOXSTATUS then click theCheckbox
+            	end tell
+            	delay 0.2
+            end tell
+        end tell	
+EOF
+}
+
+close_finder_preferences() {
+    osascript <<EOF
+        tell application "System Events"		
+    	    delay 1
+    	    #tell application "Finder" to close window "Finder-Einstellungen"
+    	    tell application "Finder" to close window 1
+    	end tell
+EOF
+}
+
+
+### set sidebar preferences
+open_finder_preferences
+
+while IFS= read -r line || [[ -n "$line" ]]
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    local ITEM_ENTRY="$line"
+    #echo "$APP_ENTRY"
+    
+   	local SIDEBAR_ITEM=$(echo "$ITEM_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    local POSITION=$(echo "$ITEM_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    local TOGGLE_STATUS=$(echo "$ITEM_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    
+    if [[ "$TOGGLE_STATUS" == "on" ]]
+    then
+        local CHECK_CHECKBOXSTATUS="false"
+    else
+        local CHECK_CHECKBOXSTATUS="true"
+    fi
+    
+    if [[ "$SIDEBAR_ITEM" == "icloud_drive" ]]
+    then
+        ICLOUD_DRIVE_POSITION="$POSITION"
+    else
+        :
+    fi
+    
+    toggle_sidebar_item_status
+    
+    # unset variables for next entry
+    unset SIDEBAR_ITEM
+    unset POSITION
+    unset TOGGLE_STATUS
+    unset CHECK_CHECKBOXSTATUS     
+
+done <<< "$(printf "%s\n" "${FINDER_SIDEBAR_ITEMS_ARRAY[@]}")"
+			
+close_finder_preferences
+
+
+### user specific customization
 SCRIPT_NAME="finder_sidebar_"$USER""
 SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
 SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
@@ -370,11 +260,13 @@ else
 fi
 echo ''
 
-# do not show icloud drive in drives
+
+### do not show icloud drive in drives
 defaults write com.apple.finder SidebarShowingiCloudDesktop -bool false
 defaults write com.apple.finder SidebarShowingSignedIntoiCloud -bool false
 
-# show tags
+
+### show tags
 defaults write com.apple.finder ShowRecentTags -bool false
 
 # settings are in 
@@ -388,53 +280,20 @@ killall cfprefsd
 killall Finder
 sleep 5
 
-enable_disable_finder_sidebar_items2() {
-#osascript 2>/dev/null <<EOF
-osascript <<EOF
 
-tell application "System Events"
-	
-	set frontApp to first application process whose frontmost is true
-	set frontAppName to name of frontApp
-	
-	tell process "Finder"
-		set frontmost to true
-		#click menu item "Einstellungen …" of menu "Finder" of menu bar item "Finder" of menu bar 1
-		keystroke "," using {command down}
-		delay 1
-		#click button "Seitenleiste" of toolbar 1 of window "Finder-Einstellungen"
-		click button 3 of toolbar 1 of window 1
-		delay 1
-		# icloud drive
-		#set theCheckbox to checkbox "iCloud Drive" of window "Finder-Einstellungen"
-		set theCheckbox to checkbox 11 of window 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 0.2
-		#
-		delay 1
-		#tell application "Finder" to close window "Finder-Einstellungen"
-		tell application "Finder" to close window 1
-		
-	end tell
-	
-	tell process frontAppName
-		set frontmost to true
-	end tell
-	
-end tell
+### icloud drive
+open_finder_preferences
 
-EOF
+POSITION=$ICLOUD_DRIVE_POSITION
+CHECK_CHECKBOXSTATUS="true"
 
-# restarting finder
+toggle_sidebar_item_status
+
+close_finder_preferences
+
 killall cfprefsd
 killall Finder
 sleep 5
-
-}
-enable_disable_finder_sidebar_items2
 
 
 ### removing security permissions
@@ -445,6 +304,6 @@ enable_disable_finder_sidebar_items2
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
 
-#echo ''
+echo ''
 echo "done ;)"
 echo ''
