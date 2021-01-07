@@ -239,7 +239,7 @@ do
 
 done <<< "$(printf "%s\n" "${FINDER_SIDEBAR_ITEMS_ARRAY[@]}")"
 			
-close_finder_preferences
+close_finder_preferences 1>/dev/null
 
 
 ### user specific customization
@@ -258,7 +258,6 @@ else
     echo ''
     echo "user specific sidebar customization script not found......"
 fi
-echo ''
 
 
 ### do not show icloud drive in drives
@@ -289,7 +288,7 @@ CHECK_CHECKBOXSTATUS="true"
 
 toggle_sidebar_item_status
 
-close_finder_preferences
+close_finder_preferences 1>/dev/null
 
 killall cfprefsd
 killall Finder
