@@ -385,6 +385,7 @@ MICROPHONEAPPS=(
 "Linphone                                   kTCCServiceMicrophone                                       1"
 "Jitsi Meet                                 kTCCServiceMicrophone                                       1"
 "Telephone                                  kTCCServiceMicrophone                                       1"
+"Signal                                     kTCCServiceMicrophone                                       1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${MICROPHONEAPPS[@]}")
