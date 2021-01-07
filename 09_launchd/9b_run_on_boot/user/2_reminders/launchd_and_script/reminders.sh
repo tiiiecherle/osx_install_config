@@ -351,7 +351,7 @@ EOF
     else
     	### enable
     	APPLICATIONS_TO_SET_NOTIFICATIONS=(
-    	"Reminders														        310903127"
+    	"Reminders														        41951575"
     	)
     	
     	### setting notification preferences

@@ -44,10 +44,10 @@ fi
 ### apps to set notifications for
 APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "WhatsApp																41943375"
-"Signal																	310903127"
+"Signal																	41951575"
 "pdf_shrink_done			                                            41943375"
-"Reminders														        310903127"
-"Calendar														        310903127"
+"Reminders														        41951575"
+"Calendar														        41951575"
 "Notes															        41943375"
 "Photos															        41943375"
 "EagleFiler															    41943375"
@@ -81,9 +81,9 @@ APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "Firefox																41943375"
 "iStat Menus															41943375"
 "AdGuard for Safari														41943375"
-"clamav_scan_found				                                        310903127"
-"clamav_scan_done					                                    310903127"
-"clamav_scan_stopped				                                    310903127"
+"clamav_scan_found				                                        41951575"
+"clamav_scan_done					                                    41951575"
+"clamav_scan_stopped				                                    41951575"
 "Telephone  													        41943375"
 )
 
