@@ -596,6 +596,7 @@ u	~/Library/Preferences/com.blacktree.Quicksilver.plist
 # Reminders
 echo Reminders
 u	~/Library/Reminders
+u	"$PATH_TO_APPS"/reminders_on_off.app
 
 # Remote Buddy
 #echo Remote Buddy
@@ -643,8 +644,6 @@ u	~/Library/Preferences/pbs.plist
 u	~/Library/Services/Tag Orange.workflow
 u	~/Library/Services/dial_snom.workflow
 u	~/Library/Services/split_pdfs.workflow
-u	~/Library/Services/restart_reminder_service.workflow
-u	~/Library/Services/enable_disable_reminder_service.workflow
 # /System/Library/CoreServices/pbs -flush
 
 # Signal

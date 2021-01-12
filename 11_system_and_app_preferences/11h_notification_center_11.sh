@@ -45,6 +45,7 @@ fi
 APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "WhatsApp																41943375"
 "Signal																	41951575"
+"Script Editor                                                          41943375"
 "pdf_shrink_done			                                            41943375"
 "Reminders														        41951575"
 "Calendar														        41951575"
