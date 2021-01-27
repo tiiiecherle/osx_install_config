@@ -1090,7 +1090,9 @@ env_get_needed_notification_apps_entry() {
 }
 
 env_set_check_apps_notifications() {
-
+    
+    defaults read "$NOTIFICATIONS_PLIST_FILE" &> /dev/null
+    
 	### setting flags
 	echo ''
 	if [[ "$SET_APPS_NOTIFICATIONS" == "yes" ]]
@@ -1185,7 +1187,9 @@ env_set_check_apps_notifications() {
 		#sudo killall NotificationCenter
 		#killall sighup usernoted
 		#killall sighup NotificationCenter
-		killall usernoted
+		killall cfprefsd
+		killall usernoted && sleep 0.1 && while [[ $(ps aux | grep usernoted | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
+		#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.usernoted
 		killall NotificationCenter
 		sleep 2
 		defaults read "$NOTIFICATIONS_PLIST_FILE" &> /dev/null

@@ -238,6 +238,32 @@ setting_config() {
     fi
 }
 
+check_dnd_status() {
+    DND_STATUS=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | xmllint --xpath 'boolean(//key[text()="userPref"]/following-sibling::dict/key[text()="enabled"])' -)
+}
+
+enable_dnd() {
+    DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -insert userPref -xml "
+    <dict>
+        <key>date</key>
+        <date>$(date -u +"%Y-%m-%dT%H:%M:%SZ")</date>
+        <key>enabled</key>
+        <true/>
+        <key>reason</key>
+        <integer>1</integer>
+    </dict> " - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
+    defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
+    killall usernoted && sleep 0.1 && while [[ $(ps aux | grep usernoted | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
+    #sleep 2
+}
+
+disable_dnd() {
+    DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -remove userPref - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
+    defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
+    killall usernoted && sleep 0.1 && while [[ $(ps aux | grep usernoted | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
+    #sleep 2
+}
+
 
 ### script
 create_logfile
@@ -290,10 +316,11 @@ reminders_notifications_and_update() {
     	    
     	    if [[ "$RESTART_REMINDER_SERVICE" == "yes" ]]
             then
-        		launchctl bootout gui/"$(id -u "$USER")"/com.apple.remindd 2>&1 | grep -v "in progress" | grep -v "No such process"
-        		sleep 2
-        		launchctl enable gui/"$(id -u "$USER")"/com.apple.remindd
-        		launchctl bootstrap gui/"$(id -u "$USER")" "/System/Library/LaunchAgents/com.apple.remindd.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+        		#launchctl bootout gui/"$(id -u "$USER")"/com.apple.remindd 2>&1 | grep -v "in progress" | grep -v "No such process"
+        		#sleep 2
+        		#launchctl enable gui/"$(id -u "$USER")"/com.apple.remindd
+        		#launchctl bootstrap gui/"$(id -u "$USER")" "/System/Library/LaunchAgents/com.apple.remindd.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+        		launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.remindd
         		sleep 2
         		
         		#launchctl bootout gui/"$(id -u "$USER")"/com.apple.CalendarAgent 2>&1 | grep -v "in progress" | grep -v "No such process"
@@ -351,7 +378,8 @@ EOF
     else
     	### enable
     	APPLICATIONS_TO_SET_NOTIFICATIONS=(
-    	"Reminders														        41951575"
+    	#"Reminders														        41951575"
+    	"Reminders														        310911319"
     	)
     	
     	### setting notification preferences
@@ -369,37 +397,23 @@ EOF
     		REMINDER_STATUS="on"
     		
     		# disable dnd
-    		if [[ $(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | xxd -p) != "62706c6973743030d5010203040506070707075b646e644d6972726f7265
-645f100f646e64446973706c6179536c6565705f101e7265706561746564
-4661636574696d6543616c6c73427265616b73444e445e646e6444697370
-6c61794c6f636b5f10136661636574696d6543616e427265616b444e4409
-0808080808131f3152617778797a7b000000000000010100000000000000
-0b0000000000000000000000000000007c" ]]
+    		check_dnd_status
+    		if [[ "$DND_STATUS" == "true" ]]
     		then
     			echo "disabling dnd..."
-    			echo ''
-    			sleep 15
-        		defaults write com.apple.ncprefs.plist dnd_prefs -data 62706c6973743030d5010203040506070707075b646e644d6972726f7265645f100f646e64446973706c6179536c6565705f101e72657065617465644661636574696d6543616c6c73427265616b73444e445e646e64446973706c61794c6f636b5f10136661636574696d6543616e427265616b444e44090808080808131f3152617778797a7b0000000000000101000000000000000b0000000000000000000000000000007c
-            	killall usernoted
-            	killall ControlCenter
+                disable_dnd
             else
             	:
             fi
     	else
     	    echo "already enabled..."
-    		if [[ $(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | xxd -p) != "62706c6973743030d5010203040506070707075b646e644d6972726f7265
-645f100f646e64446973706c6179536c6565705f101e7265706561746564
-4661636574696d6543616c6c73427265616b73444e445e646e6444697370
-6c61794c6f636b5f10136661636574696d6543616e427265616b444e4409
-0808080808131f3152617778797a7b000000000000010100000000000000
-0b0000000000000000000000000000007c" ]]
+    	    echo ''
+    		# disable dnd
+    		check_dnd_status
+    		if [[ "$DND_STATUS" == "true" ]]
     		then
     			echo "disabling dnd..."
-    			echo ''
-    			sleep 15
-        		defaults write com.apple.ncprefs.plist dnd_prefs -data 62706c6973743030d5010203040506070707075b646e644d6972726f7265645f100f646e64446973706c6179536c6565705f101e72657065617465644661636574696d6543616c6c73427265616b73444e445e646e64446973706c61794c6f636b5f10136661636574696d6543616e427265616b444e44090808080808131f3152617778797a7b0000000000000101000000000000000b0000000000000000000000000000007c
-            	killall usernoted
-            	killall ControlCenter
+                disable_dnd
             else
             	:
             fi

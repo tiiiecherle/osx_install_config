@@ -904,20 +904,38 @@ EOF
 	#sleep 2
         
     ### do not disturb
-    # /usr/libexec/PlistBuddy -x -c 'Print "dnd_prefs"' /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | xxd -p
+    # /usr/libexec/PlistBuddy -x -c 'Print "dnd_prefs"' /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o -
     # or
-    # plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | xxd -p
+    # plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o -
     
-    # input_keep/dnd for links and references
-    # enable dnd
-    #defaults write com.apple.ncprefs.plist dnd_prefs -data 62706C6973743030D60102030405060708080A08085B646E644D6972726F7265645F100F646E64446973706C6179536C6565705F101E72657065617465644661636574696D6543616C6C73427265616B73444E445875736572507265665E646E64446973706C61794C6F636B5F10136661636574696D6543616E427265616B444E44090808D30B0C0D070F1057656E61626C6564546461746556726561736F6E093341C2B41C4FC9D3891001080808152133545D6C828384858C9499A0A1AAACAD00000000000001010000000000000013000000000000000000000000000000AE
-    #killall usernoted
-    #killall ControlCenter
+    check_dnd_status() {
+        DND_STATUS=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | xmllint --xpath 'boolean(//key[text()="userPref"]/following-sibling::dict/key[text()="enabled"])' -)
+    }
+    #check_dnd_status
     
-    # disable dnd
-    #defaults write com.apple.ncprefs.plist dnd_prefs -data 62706c6973743030d5010203040506070707075b646e644d6972726f7265645f100f646e64446973706c6179536c6565705f101e72657065617465644661636574696d6543616c6c73427265616b73444e445e646e64446973706c61794c6f636b5f10136661636574696d6543616e427265616b444e44090808080808131f3152617778797a7b0000000000000101000000000000000b0000000000000000000000000000007c
-    #killall usernoted
-    #killall ControlCenter
+    enable_dnd() {
+        DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -insert userPref -xml "
+        <dict>
+            <key>date</key>
+            <date>$(date -u +"%Y-%m-%dT%H:%M:%SZ")</date>
+            <key>enabled</key>
+            <true/>
+            <key>reason</key>
+            <integer>1</integer>
+        </dict> " - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
+        defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
+        killall usernoted && sleep 0.1 && while [[ $(ps aux | grep usernoted | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
+        #sleep 2
+    }
+    #enable_dnd
+    
+    disable_dnd() {
+        DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -remove userPref - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
+        defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
+        killall usernoted && sleep 0.1 && while [[ $(ps aux | grep usernoted | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
+        #sleep 2
+    }
+    #disable_dnd
     
     dnd_settings() {
     #osascript 2>/dev/null <<EOF

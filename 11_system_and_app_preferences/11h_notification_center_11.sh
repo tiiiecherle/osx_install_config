@@ -47,7 +47,7 @@ APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "Signal																	41951575"
 "Script Editor                                                          41943375"
 "pdf_shrink_done			                                            41943375"
-"Reminders														        41951575"
+"Reminders														        310911319"
 "Calendar														        41951575"
 "Notes															        41943375"
 "Photos															        41943375"
