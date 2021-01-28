@@ -243,6 +243,7 @@ check_dnd_status() {
 }
 
 enable_dnd() {
+	defaults read /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist >/dev/null
     DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -insert userPref -xml "
     <dict>
         <key>date</key>
@@ -253,15 +254,48 @@ enable_dnd() {
         <integer>1</integer>
     </dict> " - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
     defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
-    killall usernoted && sleep 0.1 && while [[ $(ps aux | grep usernoted | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
-    #sleep 2
+    PROCESS_LIST=(
+    #cfprefsd
+    usernoted
+    #NotificationCenter
+    )
+    while IFS= read -r line || [[ -n "$line" ]] 
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
+        i="$line"
+        #echo "$i"
+        if [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') != "" ]]
+        then
+        	killall "$i" && sleep 0.1 && while [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
+		else
+			:
+		fi
+    done <<< "$(printf "%s\n" "${PROCESS_LIST[@]}")"
+    sleep 2
 }
 
 disable_dnd() {
+	defaults read /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist >/dev/null
     DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -remove userPref - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
     defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
-    killall usernoted && sleep 0.1 && while [[ $(ps aux | grep usernoted | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
-    #sleep 2
+    PROCESS_LIST=(
+    #cfprefsd
+    usernoted
+    #NotificationCenter
+    )
+    while IFS= read -r line || [[ -n "$line" ]] 
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
+        i="$line"
+        #echo "$i"
+        if [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') != "" ]]
+        then
+        	killall "$i" && sleep 0.1 && while [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
+		else
+			:
+		fi
+    done <<< "$(printf "%s\n" "${PROCESS_LIST[@]}")"
+    sleep 2
 }
 
 
@@ -320,8 +354,8 @@ reminders_notifications_and_update() {
         		#sleep 2
         		#launchctl enable gui/"$(id -u "$USER")"/com.apple.remindd
         		#launchctl bootstrap gui/"$(id -u "$USER")" "/System/Library/LaunchAgents/com.apple.remindd.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
-        		launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.remindd
-        		sleep 2
+        		#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.remindd
+        		#sleep 2
         		
         		#launchctl bootout gui/"$(id -u "$USER")"/com.apple.CalendarAgent 2>&1 | grep -v "in progress" | grep -v "No such process"
         		#sleep 2
@@ -389,13 +423,6 @@ EOF
     	then
     		echo ''
     		echo "enabling..."
-            # usernoted gets killed in env_set_check_apps_notifications and ControlCenter after REMINDER_STATUS
-            echo "enabling reminder notifications..."
-            # enable reminder notifications
-    		SLEEP_AFTER_RESTART_NOTIFICATION_CENTER="no" SET_APPS_NOTIFICATIONS="yes" PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG="no" env_set_check_apps_notifications
-    		APP_SETTING_CHANGED="yes"
-    		REMINDER_STATUS="on"
-    		
     		# disable dnd
     		check_dnd_status
     		if [[ "$DND_STATUS" == "true" ]]
@@ -405,6 +432,12 @@ EOF
             else
             	:
             fi
+            # usernoted gets killed in env_set_check_apps_notifications and ControlCenter after REMINDER_STATUS
+            echo "enabling reminder notifications..."
+            # enable reminder notifications
+    		SLEEP_AFTER_RESTART_NOTIFICATION_CENTER="no" SET_APPS_NOTIFICATIONS="yes" PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG="no" env_set_check_apps_notifications
+    		APP_SETTING_CHANGED="yes"
+    		REMINDER_STATUS="on"
     	else
     	    echo "already enabled..."
     	    echo ''

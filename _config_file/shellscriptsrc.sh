@@ -1187,11 +1187,24 @@ env_set_check_apps_notifications() {
 		#sudo killall NotificationCenter
 		#killall sighup usernoted
 		#killall sighup NotificationCenter
-		killall cfprefsd
-		killall usernoted && sleep 0.1 && while [[ $(ps aux | grep usernoted | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
-		#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.usernoted
-		killall NotificationCenter
-		sleep 2
+        PROCESS_LIST=(
+        cfprefsd
+        usernoted
+        #NotificationCenter
+        )
+        while IFS= read -r line || [[ -n "$line" ]] 
+    	do
+    	    if [[ "$line" == "" ]]; then continue; fi
+            i="$line"
+            #echo "$i"
+            if [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') != "" ]]
+            then
+            	killall "$i" && sleep 0.1 && while [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
+    		else
+    			:
+    		fi
+        done <<< "$(printf "%s\n" "${PROCESS_LIST[@]}")"
+        sleep 2
 		defaults read "$NOTIFICATIONS_PLIST_FILE" &> /dev/null
 		echo ''
 		
