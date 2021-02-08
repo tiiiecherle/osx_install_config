@@ -660,8 +660,8 @@ casks_install_updates() {
             if [[ "$CASK" == "teamviewer" ]]
             then 
             	sleep 2
-            	#osascript -e "tell app \""$PATH_TO_APPS"/TeamViewer.app\" to quit" >/dev/null 2>&1
             	osascript -e "tell app \"TeamViewer.app\" to quit" >/dev/null 2>&1
+            	#pkill -15 "TeamViewer"
             	sleep 2
                 env_active_source_app
             fi
@@ -689,7 +689,8 @@ casks_install_updates() {
             if [[ "$CASK" == "zoom" ]]
             then 
             	sleep 2
-            	osascript -e "tell app \""$PATH_TO_APPS"/zoom.us.app\" to quit" >/dev/null 2>&1
+            	osascript -e "tell app \"zoom.us.app\" to quit" >/dev/null 2>&1
+            	#pkill -15 "zoom.us"
             	sleep 2
                 env_active_source_app
             fi
