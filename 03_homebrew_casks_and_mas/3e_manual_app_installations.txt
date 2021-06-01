@@ -5,7 +5,7 @@ boot to recovery (cmd + R)
 csrutil disable
 reboot
 # reinstall macosfuse after virtualbox installation as virtualbox often ships with an outdated version
-brew install --cask --force virtualbox virtualbox-extension-pack osxfuse
+brew install --cask --force virtualbox virtualbox-extension-pack macfuse
 
 boot to recovery (cmd + R)
 adjust csrutil settings
