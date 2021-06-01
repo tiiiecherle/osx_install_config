@@ -42,7 +42,7 @@ trap_function_exit_middle() { unset DIRECTORY_TO_SCAN; }
 echo ''
 echo "${bold_text}formula installation...${default_text}"
 
-for FORMULA in clamav gnu-tar
+for FORMULA in clamav gnu-tar gnu-sed
 do
 	if command -v "$FORMULA" &> /dev/null
 	then
@@ -129,19 +129,19 @@ else
 fi
 
 DOWNLOAD_FILE=clamav-unofficial-sigs.sh
-curl -s https://raw.githubusercontent.com/extremeshok/clamav-unofficial-sigs/master/clamav-unofficial-sigs.sh --output ""$HOMEBREW_BIN_PATH"/clamav-unofficial-sigs.sh"
-if [[ $? -eq 0 ]]; then echo "successfully downloaded "$DOWNLOAD_FILE"..."; else echo "download of "$DOWNLOAD_FILE" unsuccessful, skipping..."; fi
+curl -s https://raw.githubusercontent.com/extremeshok/clamav-unofficial-sigs/master/"$DOWNLOAD_FILE" --output ""$HOMEBREW_BIN_PATH"/clamav-unofficial-sigs.sh"
+if [[ $? -eq 0 ]]; then echo "successfully downloaded "$DOWNLOAD_FILE"..."; else echo "download of "$DOWNLOAD_FILE" unsuccessful, exiting..." && exit; fi
 chmod 755  ""$HOMEBREW_BIN_PATH"/clamav-unofficial-sigs.sh"
 mkdir -p "$HOMEBREW_PATH"/etc/clamav-unofficial-sigs
 DOWNLOAD_FILE=master.conf
-curl -s https://raw.githubusercontent.com/extremeshok/clamav-unofficial-sigs/master/config/master.conf --output "$HOMEBREW_PATH"/etc/clamav-unofficial-sigs/master.conf
-if [[ $? -eq 0 ]]; then echo "successfully downloaded "$DOWNLOAD_FILE"..."; else echo "download of "$DOWNLOAD_FILE" unsuccessful, skipping..."; fi
-DOWNLOAD_FILE=os.macosx.conf
-curl -s https://raw.githubusercontent.com/extremeshok/clamav-unofficial-sigs/master/config/os/os.macosx.conf --output "$HOMEBREW_PATH"/etc/clamav-unofficial-sigs/os.conf
-if [[ $? -eq 0 ]]; then echo "successfully downloaded "$DOWNLOAD_FILE"..."; else echo "download of "$DOWNLOAD_FILE" unsuccessful, skipping..."; fi
+curl -s https://raw.githubusercontent.com/extremeshok/clamav-unofficial-sigs/master/config/"$DOWNLOAD_FILE" --output "$HOMEBREW_PATH"/etc/clamav-unofficial-sigs/master.conf
+if [[ $? -eq 0 ]]; then echo "successfully downloaded "$DOWNLOAD_FILE"..."; else echo "download of "$DOWNLOAD_FILE" unsuccessful, exiting..." && exit; fi
+DOWNLOAD_FILE=os.macos.conf
+curl -s https://raw.githubusercontent.com/extremeshok/clamav-unofficial-sigs/master/config/os/"$DOWNLOAD_FILE" --output "$HOMEBREW_PATH"/etc/clamav-unofficial-sigs/os.conf
+if [[ $? -eq 0 ]]; then echo "successfully downloaded "$DOWNLOAD_FILE"..."; else echo "download of "$DOWNLOAD_FILE" unsuccessful, exiting..." && exit; fi
 DOWNLOAD_FILE=user.conf
-curl -s https://raw.githubusercontent.com/extremeshok/clamav-unofficial-sigs/master/config/user.conf --output "$HOMEBREW_PATH"/etc/clamav-unofficial-sigs/user.conf
-if [[ $? -eq 0 ]]; then echo "successfully downloaded "$DOWNLOAD_FILE"..."; else echo "download of "$DOWNLOAD_FILE" unsuccessful, skipping..."; fi
+curl -s https://raw.githubusercontent.com/extremeshok/clamav-unofficial-sigs/master/config/"$DOWNLOAD_FILE" --output "$HOMEBREW_PATH"/etc/clamav-unofficial-sigs/user.conf
+if [[ $? -eq 0 ]]; then echo "successfully downloaded "$DOWNLOAD_FILE"..."; else echo "download of "$DOWNLOAD_FILE" unsuccessful, exiting..." && exit; fi
 
 # configuration
 echo "unofficial sigs configuration..."
@@ -203,7 +203,7 @@ then
 	do
 	    sleep 1
 	done
-	sleep 3
+	sleep 5
 else
 	echo "clamd is already running..."
 fi
