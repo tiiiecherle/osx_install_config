@@ -363,6 +363,12 @@ echo jameica
 #u	"$PATH_TO_APPS"/jameica.app
 u	~/Library/jameica
 
+# Java Plugin
+echo Java Plugin
+u	/Library/Internet Plug-Ins/JavaAppletPlugin.plugin
+u	/Library/PreferencesPanes/JavaControlPanel.prefPane
+u	~/Library/Application Support/Java
+
 # JDownloader
 #echo JDownloader
 #u	"$PATH_TO_APPS"/JDownloader2.app
