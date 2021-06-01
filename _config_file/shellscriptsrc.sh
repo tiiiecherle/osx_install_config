@@ -1404,6 +1404,12 @@ EOF
 env_add_path_to_shell() {
     echo "# homebrew PATH" >> "$SHELL_CONFIG"
     echo 'export PATH="'"$PATH_TO_SET"'"' >> "$SHELL_CONFIG"
+    if [[ "$SET_HOMEBREW_GITHUB_API_TOKEN" == "yes" ]]
+    then
+        echo 'export HOMEBREW_GITHUB_API_TOKEN=$(security find-generic-password -s "GitHub - https://api.github.com" -w)'
+    else
+        :
+    fi
 }
 
 env_set_path_for_shell() {
