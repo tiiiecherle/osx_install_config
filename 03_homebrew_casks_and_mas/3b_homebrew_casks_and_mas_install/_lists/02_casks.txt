@@ -1,6 +1,7 @@
 ### casks with long install times first
 xquartz
 adoptopenjdk
+macfuse
 #virtualbox         # is installed as a dependency of virtualbox-extension-pack
 virtualbox-extension-pack
 #libreoffice        # is installed as a dependency of libreoffice-language-pack
