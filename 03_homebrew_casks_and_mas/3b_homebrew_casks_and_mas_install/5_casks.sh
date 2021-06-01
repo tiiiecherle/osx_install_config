@@ -559,8 +559,8 @@ then
         #                   .quit
         #           if a firmware password is set deactivate the firmware password (needed to reset PRAM)
         #       reset PRAM by rebooting and pressing cmd+option+P+R (release after second time chime or logo comes up)
-        #       boot into macOS and uninstall and reinstall virtualbox and extension pack and osxfuse
-        #           brew reinstall --cask--force virtualbox virtualbox-extension-pack osxfuse
+        #       boot into macOS and uninstall and reinstall virtualbox and extension pack and macfuse
+        #           brew reinstall --cask--force virtualbox virtualbox-extension-pack macfuse
         #       open system preferences - security - general and accept extension
         #       open system preferences - sound and disable startup chime (if wanted)
         #       reboot if needed
@@ -572,16 +572,16 @@ then
         then
             echo ''
             echo "adding kext entry for virtualbox..."
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxDrv',1,'Oracle America, Inc.',1);"
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxUSB',1,'Oracle America, Inc.',1);"
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxNetFlt',1,'Oracle America, Inc.',1);"
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxNetAdp',1,'Oracle America, Inc.',1);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxDrv',1,'Oracle America, Inc.',5);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxUSB',1,'Oracle America, Inc.',5);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxNetFlt',1,'Oracle America, Inc.',5);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('VB5E2TV963','org.virtualbox.kext.VBoxNetAdp',1,'Oracle America, Inc.',5);"
             #echo ''
         fi
-        if [[ $(printf "%s\n" "${casks[@]}" | grep "^osxfuse$" ) != "" ]] || [[ $(printf "%s\n" "${casks[@]}" | grep "^veracrypt$" ) != "" ]]
+        if [[ $(printf "%s\n" "${casks[@]}" | grep "^macfuse$" ) != "" ]] || [[ $(printf "%s\n" "${casks[@]}" | grep "^veracrypt$" ) != "" ]]
         then
             echo "adding kext entry for macosfuse..."
-            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('3T5GSNBU6W','com.github.osxfuse.filesystems.osxfuse',1,'Benjamin Fleischer',1);"
+            sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy "REPLACE INTO kext_policy VALUES('3T5GSNBU6W','io.macfuse.filesystems.macfuse',1,'Benjamin Fleischer',5);"
             echo ''
         fi
         # installing casks
@@ -607,7 +607,7 @@ then
     then
         echo ''
         echo "updating macosfuse after virtualbox install..."
-        i="osxfuse"
+        i="macfuse"
         env_use_password | env_timeout 300 brew install --cask --force "$i" 2> /dev/null | grep "successfully installed"
         if [[ $? -eq 0 ]]
         then
