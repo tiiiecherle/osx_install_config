@@ -28,7 +28,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 # making sure mail is quit
 echo ''
 echo "quitting mail..."
-osascript -e "tell application \"Mail\" to quit"
+osascript -e "tell application \"Mail.app\" to quit"
 sleep 2
 
 
@@ -78,14 +78,15 @@ fi
 # opening mail and confirming rebuild
 echo ''
 echo "opening mail and confirming rebuilding of index..."
+open "$PATH_TO_SYSTEM_APPS"/Mail.app
 osascript <<EOF
-tell application "Mail"
-	activate
-end tell
+#tell application "Mail.app"
+#	activate
+#end tell
 delay 2
 try
 	tell application "System Events" 
-		tell process "Mail" 
+		tell process "Mail"
 			click button 1 of window 1
 		end tell
 	end tell
