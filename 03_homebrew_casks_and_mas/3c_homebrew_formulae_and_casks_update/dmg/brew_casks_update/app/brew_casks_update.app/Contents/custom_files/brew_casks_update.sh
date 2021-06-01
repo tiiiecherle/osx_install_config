@@ -694,6 +694,24 @@ casks_install_updates() {
             	sleep 2
                 env_active_source_app
             fi
+            if [[ "$CASK" == "jitsi-meet" ]]
+            then
+                local CASK_INFO=$(brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]')
+                #local CASK_INFO=$(brew info --cask "$CASK")
+                local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
+                #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
+                local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+                if [[ "$CASK_ARTIFACT_APP" != "" ]]
+                then
+                    local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
+                else
+                    :
+                fi
+    	        local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
+                env_set_open_on_first_run_permissions
+            else
+                :
+            fi
             
             # cleanup entries
             local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
@@ -736,7 +754,7 @@ post_cask_installations() {
 	then
 	    echo ''
         echo "updating macosfuse after virtualbox update..."
-        env_use_password | brew install --cask --force osxfuse
+        env_use_password | brew install --cask --force macfuse
     else
         :
     fi
@@ -867,7 +885,7 @@ else
     exit
 fi
 
-if [[ $(brew --version | grep homebrew-cask) != "" ]]
+if [[ $(brew tap | grep homebrew/cask) != "" ]]
 then
     echo "homebrew-cask is installed..."
 else
