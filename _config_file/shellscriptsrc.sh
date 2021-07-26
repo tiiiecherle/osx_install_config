@@ -712,6 +712,11 @@ env_get_path_to_app() {
         		break
         	fi
         done
+        if [[ "$APP_NAME" == "PVGuard" ]] && [[ -e ~/.cache/icedtea-web/jvm-cache/cache.json ]]
+        then 
+            JAVA_VERSION=$(jq -r '.runtimes | .[] | .version' ~/.cache/icedtea-web/jvm-cache/cache.json)
+            PATH_TO_APP=/Users/"$USER"/.cache/icedtea-web/jvm-cache/adopt_"$JAVA_VERSION"/bin/java
+        fi
     fi
 }
 
@@ -733,17 +738,83 @@ env_get_app_id() {
         # trying another way to get the app id without knowing the path to the .app
         APP_ID=$(osascript -e "id of app \"$APP_NAME\"") &> /dev/null
         if [[ "$APP_ID" == "" ]];then echo "PATH_TO_APP of "$APP_NAME" is empty, skipping entry..." && continue; fi
-    else         
-        APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APP"/Contents/Info.plist")
-        #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | sort -n | head -n1)")
-        # specifying app id in array
-        #local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    else  
+        if [[ "$APP_NAME" == "PVGuard" ]] && [[ -e ~/.cache/icedtea-web/jvm-cache/cache.json ]]
+        then 
+            JAVA_VERSION=$(jq -r '.runtimes | .[] | .version' ~/.cache/icedtea-web/jvm-cache/cache.json)
+            APP_ID=net.java.openjdk."$JAVA_VERSION".java
+        else       
+            APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APP"/Contents/Info.plist")
+            #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | sort -n | head -n1)")
+            # specifying app id in array
+            #local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+        fi
     fi
     #echo "PATH_TO_APP is "$PATH_TO_APP"..."
     #echo "APP_ID is "$APP_ID""
     if [[ "$APP_ID" == "" ]];then echo "APP_ID of "$APP_NAME" is empty, skipping entry..." && continue; fi
-
 }
+
+
+### startup-items
+env_get_autostart_items() {
+    if [[ "$MACOS_VERSION_MAJOR" == "12" ]]
+    then
+        # macos12 in latest beta hangs with a timeout after using an applescript for login items and afterwards no applescript for System Events is working until a reboot
+        :
+    else
+        AUTOSTART_ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    fi
+}
+
+env_delete_all_startup_items() {
+    if [[ "$MACOS_VERSION_MAJOR" == "12" ]]
+    then
+        # macos12 in latest beta hangs with a timeout after using an applescript for login items and afterwards no applescript for System Events is working until a reboot
+        :
+    else
+        if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') != "" ]]
+        then
+            while IFS= read -r line || [[ -n "$line" ]]        
+    		do
+    		    if [[ "$line" == "" ]]; then continue; fi
+                autostartapp="$line"
+            	echo "deleting autostartentry for $autostartapp..."
+            	osascript -e "tell application \"System Events\" to delete login item \"$autostartapp\""
+            done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')"
+        else
+            :
+        fi
+    fi
+}
+
+env_add_startup_items() {
+    if [[ "$MACOS_VERSION_MAJOR" == "12" ]]
+    then
+        # macos12 in latest beta hangs with a timeout after using an applescript for login items and afterwards no applescript for System Events is working until a reboot
+        :
+    else
+        while IFS= read -r line || [[ -n "$line" ]] 
+    	do
+    	    if [[ "$line" == "" ]]; then continue; fi
+            i="$line"
+            #echo "APP_PATH is "$APP_PATH"..."
+            local APP_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+           	#echo "APP_NAME is "$APP_NAME"..."
+    		local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+           	#echo "START_HIDDEN is "$START_HIDDEN"..."
+           	env_get_path_to_app
+    		if [[ "$PATH_TO_APP" != "" ]]
+    		then
+    		    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
+                osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$PATH_TO_APP'", hidden:"'$START_HIDDEN'"}'
+            else
+            	echo ""$APP_NAME" not found, skipping..."
+            fi
+    	done <<< "$(printf "%s\n" "${AUTOSTART_ITEMS[@]}")"
+	fi
+}
+
 
 ### apps security permissions
 env_set_apps_security_permissions() {
@@ -1069,7 +1140,8 @@ NOTIFICATIONS_PLIST_FILE="/Users/"$USER"/Library/Preferences/com.apple.ncprefs.p
 
 env_get_needed_notification_apps_entry() {
 
-	NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print apps" "$NOTIFICATIONS_PLIST_FILE" | awk '/^[[:blank:]]*bundle-id =/' | wc -l)
+	#NUMBER_OF_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print apps" "$NOTIFICATIONS_PLIST_FILE" | grep -a ".*" | awk '/^[[:blank:]]*bundle-id =/' | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
+	NUMBER_OF_ENTRIES=$(defaults read "$NOTIFICATIONS_PLIST_FILE" | awk '/^[[:blank:]]*"bundle-id" =/' | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
 	# -1 because counting of items starts with 0, not with 1
 	NUMBER_OF_ENTRIES_TO_LIST=$((NUMBER_OF_ENTRIES-1))
 	
@@ -1106,18 +1178,15 @@ env_set_check_apps_notifications() {
 	### setting apps notifications
 	for NOTIFICATION_APP in "${APPLICATIONS_TO_SET_NOTIFICATIONS[@]}"
 	do
-	
 		local APP_NAME=$(echo "$NOTIFICATION_APP" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	    local FLAGS_VALUE=$(echo "$NOTIFICATION_APP" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 	    
         env_get_app_id
         local BUNDLE_IDENTIFIER="$APP_ID"
-	    
 	    if [[ "$BUNDLE_IDENTIFIER" != "" ]]
 	    then
 	    			
 			env_get_needed_notification_apps_entry
-			
 			if [[ "$NEEDED_ENTRY" != "" ]]
 			then
 				# entry exists
@@ -1130,7 +1199,8 @@ env_set_check_apps_notifications() {
 			    		echo "flags for $BUNDLE_IDENTIFIER already set correctly..."
 			    	else    
 			    		echo "setting flags for $BUNDLE_IDENTIFIER..."
-			    		/usr/libexec/PlistBuddy -c "Set apps:"$NEEDED_ENTRY":flags "$FLAGS_VALUE"" "$NOTIFICATIONS_PLIST_FILE"
+			    		#/usr/libexec/PlistBuddy -c "Set apps:"$NEEDED_ENTRY":flags "$FLAGS_VALUE"" "$NOTIFICATIONS_PLIST_FILE"
+			    		plutil -replace apps."$NEEDED_ENTRY".flags -integer "$FLAGS_VALUE" "$NOTIFICATIONS_PLIST_FILE"
 			    		local RESTART_NOTIFICATION_CENTER="yes"
 			    	fi
 			    elif [[ "$CHECK_APPS_NOTIFICATIONS" == "yes" ]]
@@ -1158,10 +1228,13 @@ env_set_check_apps_notifications() {
 				if [[ "$SET_APPS_NOTIFICATIONS" == "yes" ]]
 			    then
 					echo "entry for $BUNDLE_IDENTIFIER does not exist, creating it..."
-			    	local NEW_ITEM=$(echo \'Item "$NUMBER_OF_ENTRIES"\')   	
-			   		/usr/libexec/PlistBuddy -c "Add apps:"$NEW_ITEM":bundle-id string "$BUNDLE_IDENTIFIER"" "$NOTIFICATIONS_PLIST_FILE"
+			    	#local NEW_ITEM=$(echo \'Item "$NUMBER_OF_ENTRIES"\')  
+			    	local NEW_ITEM=$(echo "$NUMBER_OF_ENTRIES") 
+			   		#/usr/libexec/PlistBuddy -c "Add apps:"$NEW_ITEM":bundle-id string "$BUNDLE_IDENTIFIER"" "$NOTIFICATIONS_PLIST_FILE"
+			   		plutil -insert apps."$NEW_ITEM" -xml "<dict><key>bundle-id</key><string>"$BUNDLE_IDENTIFIER"</string></dict>" /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist
 					env_get_needed_notification_apps_entry
-					/usr/libexec/PlistBuddy -c "Add apps:"$NEEDED_ENTRY":flags integer "$FLAGS_VALUE"" "$NOTIFICATIONS_PLIST_FILE"
+					#/usr/libexec/PlistBuddy -c "Add apps:"$NEEDED_ENTRY":flags integer "$FLAGS_VALUE"" "$NOTIFICATIONS_PLIST_FILE"
+					plutil -insert apps."$NEW_ITEM".flags -integer "$FLAGS_VALUE" /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist
 					local RESTART_NOTIFICATION_CENTER="yes"
 				elif [[ "$CHECK_APPS_NOTIFICATIONS" == "yes" ]]
 			    then
@@ -1406,7 +1479,7 @@ env_add_path_to_shell() {
     echo 'export PATH="'"$PATH_TO_SET"'"' >> "$SHELL_CONFIG"
     if [[ "$SET_HOMEBREW_GITHUB_API_TOKEN" == "yes" ]]
     then
-        echo 'export HOMEBREW_GITHUB_API_TOKEN=$(security find-generic-password -s "GitHub - https://api.github.com" -w)'
+        echo 'export HOMEBREW_GITHUB_API_TOKEN=$(security find-generic-password -s "GitHub - https://api.github.com" -w)' >> "$SHELL_CONFIG"
     else
         :
     fi
@@ -1783,6 +1856,70 @@ env_delete_tmp_batch_script_gpg_fifo() {
     else
         :
     fi
+}
+
+
+env_delete_tmp_sudo_mas_script_fifo() {
+    if [[ -e "/tmp/tmp_sudo_mas_script_fifo" ]]
+    then
+        rm -f "/tmp/tmp_sudo_mas_script_fifo"
+    else
+        :
+    fi
+}
+
+env_delete_tmp_appstore_mas_script_fifo() {
+    if [[ -e "/tmp/tmp_appstore_mas_script_fifo" ]]
+    then
+        rm -f "/tmp/tmp_appstore_mas_script_fifo"
+    else
+        :
+    fi
+}
+
+env_delete_tmp_mas_script_fifo() {
+    env_delete_tmp_sudo_mas_script_fifo
+    env_delete_tmp_appstore_mas_script_fifo
+}
+
+env_delete_tmp_casks_script_fifo() {
+    if [[ -e "/tmp/tmp_sudo_cask_script_fifo" ]]
+    then
+        rm -f "/tmp/tmp_sudo_cask_script_fifo"
+    else
+        :
+    fi
+}
+
+env_create_tmp_batch_script_fifo() {
+    env_delete_tmp_batch_script_fifo
+    mkfifo -m 600 "/tmp/tmp_batch_script_fifo"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_batch_script_fifo" &
+    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
+}
+
+env_create_tmp_batch_script_gpg_fifo() {
+    env_delete_tmp_batch_script_gpg_fifo
+    mkfifo -m 600 "/tmp/tmp_batch_script_gpg_fifo"
+    builtin printf "$GPG_PASSWORD\n" > "/tmp/tmp_batch_script_gpg_fifo" &
+    #echo "$GPG_PASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
+}
+
+env_create_tmp_mas_script_fifo() {
+    env_delete_tmp_mas_script_fifo
+    mkfifo -m 600 "/tmp/tmp_sudo_mas_script_fifo"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_sudo_mas_script_fifo" &
+    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_mas_script_fifo" &
+    mkfifo -m 600 "/tmp/tmp_appstore_mas_script_fifo"
+    builtin printf "$MAS_APPSTORE_PASSWORD\n" > "/tmp/tmp_appstore_mas_script_fifo" &
+    #echo "$MAS_APPSTORE_PASSWORD" > "/tmp/tmp_appstore_mas_script_fifo" &
+}
+
+env_create_tmp_casks_script_fifo() {
+    env_delete_tmp_casks_script_fifo
+    mkfifo -m 600 "/tmp/tmp_sudo_cask_script_fifo"
+    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_sudo_cask_script_fifo" &
+    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
 }
 
 
