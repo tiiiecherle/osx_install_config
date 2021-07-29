@@ -1213,8 +1213,7 @@ EOF
     "witchdaemon                                                              false" 
     "Quicksilver                                                              false" 
     "Better                                                                   false"
-    #"AdGuard for Safari                                                       true"
-    # autostart at login activated inside AdGuard for Safari app, this way the preferences window does not open when starting the app on login                      
+    "AdGuard for Safari                                                       true"
     #"Overflow 3                                                               true"                    
     # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
     )
