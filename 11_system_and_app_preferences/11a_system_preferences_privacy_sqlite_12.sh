@@ -365,6 +365,7 @@ CAMERAAPPS=(
 "Microsoft Remote Desktop                   kTCCServiceCamera                                           0"
 "Linphone                                   kTCCServiceCamera                                           1"
 "Jitsi Meet                                 kTCCServiceCamera                                           1"
+"Microsoft Teams                            kTCCServiceCamera                                           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CAMERAAPPS[@]}")
@@ -387,6 +388,7 @@ MICROPHONEAPPS=(
 "Jitsi Meet                                 kTCCServiceMicrophone                                       1"
 "Telephone                                  kTCCServiceMicrophone                                       1"
 "Signal                                     kTCCServiceMicrophone                                       1"
+"Microsoft Teams                            kTCCServiceMicrophone                                       1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${MICROPHONEAPPS[@]}")
@@ -406,6 +408,7 @@ SCREENCAPTUREAPPS=(
 "Bartender 4                                kTCCServiceScreenCapture                                    1"
 "TeamViewer                                 kTCCServiceScreenCapture                                    1"
 "Jitsi Meet                                 kTCCServiceScreenCapture                                    1"
+"Microsoft Teams                            kTCCServiceScreenCapture                                    1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${SCREENCAPTUREAPPS[@]}")
