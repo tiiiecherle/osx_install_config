@@ -91,7 +91,8 @@ do
 	chmod 755 "$BUILD_DIR"/app/"$APP_NAME".app
 	chmod 770 "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html
-	xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
+	#xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
+	xattr -d "$BUILD_DIR"/app/"$APP_NAME".app
 	env_set_custom_icon
 	
 	# this is to suppress warning on first start

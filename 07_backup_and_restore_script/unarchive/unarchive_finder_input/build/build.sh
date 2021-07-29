@@ -67,7 +67,8 @@ do
 	env_set_custom_icon
 	
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html
-	xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
+	#xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
+	xattr -d "$BUILD_DIR"/app/"$APP_NAME".app
 	# setting icon for files
 	/usr/libexec/PlistBuddy "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Info.plist -c 'Add CFBundleDocumentTypes:0:CFBundleTypeIconFile string document.icns'
 	# associating with open with dialog

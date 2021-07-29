@@ -28,7 +28,7 @@ if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
 then
     . "$SCRIPT_DIR"/1_script_frame.sh
     eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
-    trap_function_exit_start() { delete_tmp_casks_script_fifo; }
+    trap_function_exit_start() { env_delete_tmp_casks_script_fifo; }
 else
     echo ''
     echo "script for functions and prerequisits is missing, exiting..."
@@ -58,7 +58,7 @@ then
         unset SUDOPASSWORD
         SUDOPASSWORD=$(cat "/tmp/tmp_sudo_cask_script_fifo" | head -n 1)
         USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-        delete_tmp_casks_script_fifo
+        env_delete_tmp_casks_script_fifo
         #set +a
         :
     else
@@ -511,6 +511,7 @@ then
 	
 	# installing some casks that have to go first for compatibility reasons
 	casks_pre=$(cat "$SCRIPT_DIR"/_lists/00_casks_pre.txt | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
+	if [[ -e /tmp/casks_second_try.txt ]]; then rm -f /tmp/casks_second_try.txt; else :; fi
 	if [[ "$casks_pre" == "" ]]
     then
     	:
@@ -729,16 +730,73 @@ else
     :
 fi
 
-# listing installed homebrew packages
-#echo "the following top-level homebrew packages incl. dependencies are installed..."
-#brew leaves | tr "," "\n"
-# echo "the following homebrew packages are installed..."
-#brew list --formula | tr "," "\n"
-#echo ""
+# allow opening apps
+echo ''
+echo "allowing casks to open..."
+# list
+#ALLOWED_CASKS_LIST=(
+#jitsi-meet
+#chromium
+#)
+# all casks
+ALLOWED_CASKS_LIST=$(brew list --cask | tr "," "\n" | uniq)
+ALLOWED_CASKS=$(printf "%s\n" "${ALLOWED_CASKS_LIST[@]}")
 
-# listing installed casks
-#echo "the following casks are installed..."
-#brew list --cask | tr "," "\n"
+allow_opening_casks() {
+    line="$1"
+    if [[ $(brew list --cask | tr "," "\n" | grep "^$line$") != "" ]]
+    then
+        echo "$line"
+        local CASK_INFO=$(brew info --cask --json=v2 "$line" | jq -r '.casks | .[]')
+        #local CASK_INFO=$(brew info --cask "$CASK")
+        local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
+        #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
+        local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+        if [[ "$CASK_ARTIFACT_APP" != "" ]]
+        then
+            local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
+        else
+            local CASK_ARTIFACT_APP_NO_EXTENSION="$CASK_NAME"
+        fi
+        local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
+        #echo "$APP_NAME"
+        env_set_open_on_first_run_permissions
+    else
+        :
+    fi
+}
+
+if [[ "$INSTALLATION_METHOD" == "parallel" ]]
+then
+    # by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
+    # it is not neccessary to export variables or functions when using env_parallel
+    # zsh does not support exporting functions, thats why parallels is prefered over xargs (bash only)
+    if [[ "${ALLOWED_CASKS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "allow_opening_casks {}" ::: "${ALLOWED_CASKS[@]}"; fi
+else
+    while IFS= read -r line || [[ -n "$line" ]]
+    do
+        if [[ $(brew list --cask | tr "," "\n" | grep "^$line$") != "" ]]
+        then
+            echo "$line"
+            local CASK_INFO=$(brew info --cask --json=v2 "$line" | jq -r '.casks | .[]')
+            #local CASK_INFO=$(brew info --cask "$CASK")
+            local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
+            #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
+            local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+            if [[ "$CASK_ARTIFACT_APP" != "" ]]
+            then
+                local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
+            else
+                local CASK_ARTIFACT_APP_NO_EXTENSION="$CASK_NAME"
+            fi
+            local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
+            #echo "$APP_NAME"
+            env_set_open_on_first_run_permissions
+        else
+            :
+        fi
+    done <<< "$(printf "%s\n" "${ALLOWED_CASKS[@]}")"
+fi
 
 # if script is run standalone, not sourced or run from run_all script, clean up
 if [[ "$SCRIPT_IS_SOURCED" == "yes" ]] || [[ "$RUN_FROM_RUN_ALL_SCRIPT" == "yes" ]]

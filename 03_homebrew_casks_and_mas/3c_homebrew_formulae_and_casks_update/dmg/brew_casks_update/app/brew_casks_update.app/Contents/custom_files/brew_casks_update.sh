@@ -565,10 +565,10 @@ casks_show_updates_parallel() {
         
         # autostart
         # 10.15 is not opening autostart apps on next boot after install/update without explicitly granting permissions or opening manually before autostart
-        local AUTOSTART_APP_LIST=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-        if [[ "$AUTOSTART_APP_LIST" != "" ]] && [[ "$CHECK_RESULT" == "outdated" ]] && [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
+        env_get_autostart_items
+        if [[ "$AUTOSTART_ITEMS" != "" ]] && [[ "$CHECK_RESULT" == "outdated" ]] && [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
         then
-            if [[ $(printf '%s\n' "$AUTOSTART_APP_LIST" | grep -i "$CASK") != "" ]] || [[ $(printf '%s\n' "$AUTOSTART_APP_LIST" | grep -i "$CASK_ARTIFACT_APP_NO_EXTENSION") != "" ]]
+            if [[ $(printf '%s\n' "$AUTOSTART_ITEMS" | grep -i "$CASK") != "" ]] || [[ $(printf '%s\n' "$AUTOSTART_ITEMS" | grep -i "$CASK_ARTIFACT_APP_NO_EXTENSION") != "" ]]
             then
                 echo -e "$CASK\t\t$CASK_ARTIFACT_APP_NO_EXTENSION" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART"
             else
@@ -694,7 +694,8 @@ casks_install_updates() {
             	sleep 2
                 env_active_source_app
             fi
-            if [[ "$CASK" == "jitsi-meet" ]]
+            # allow opening app
+            if [[ "$CASK" == "jitsi-meet" ]] || [[ "$CASK" == "chromium" ]]
             then
                 local CASK_INFO=$(brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]')
                 #local CASK_INFO=$(brew info --cask "$CASK")
@@ -822,10 +823,10 @@ post_cask_installations() {
     	# file exists and is not empty
         echo ''
         echo "setting permissions for autostart apps..."
-        AUTOSTART_PERMISSIONS_ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+        env_get_autostart_items
         env_check_if_parallel_is_installed 1>/dev/null
         #echo ''
-        if [[ "${AUTOSTART_PERMISSIONS_ITEMS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "env_set_permissions_autostart_apps {}" ::: "${AUTOSTART_PERMISSIONS_ITEMS[@]}"; fi 1>/dev/null
+        if [[ "${AUTOSTART_ITEMS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "env_set_permissions_autostart_apps {}" ::: "${AUTOSTART_ITEMS[@]}"; fi 1>/dev/null
     fi
     
 }

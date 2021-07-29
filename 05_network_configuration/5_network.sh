@@ -536,6 +536,17 @@ echo ''
 
 getting_network_device_ids
 
+# check if wifi is connected
+# https://stackoverflow.com/questions/4481005/get-wireless-ssid-through-shell-script-on-mac-os-x
+WIFI_SSID=$(/System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport -I  | awk -F' SSID: '  '/ SSID: / {print $2}')
+if [[ "$WIFI_SSID" != "" ]]
+then
+    echo "wifi is connected to ssid "$WIFI_SSID"..."
+    echo ''
+else
+    :
+fi
+
 profile_based_config
 
 
@@ -662,6 +673,19 @@ then
     :
 else
     echo "no defined location found, not selecting one specifically..."
+fi
+
+# reconnect to wifi if it was connected on script start
+if [[ "$WIFI_SSID" != "" ]]
+then
+    sudo networksetup -setairportpower "$WLAN_DEVICE_ID" off
+    sleep 5
+    sudo networksetup -setairportpower "$WLAN_DEVICE_ID" on
+    sleep 5
+    sudo networksetup -setairportnetwork "$WLAN_DEVICE_ID" "$WIFI_SSID"
+    sleep 5
+else
+    :
 fi
 
 

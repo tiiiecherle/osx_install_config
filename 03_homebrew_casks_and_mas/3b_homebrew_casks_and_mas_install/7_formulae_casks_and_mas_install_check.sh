@@ -165,7 +165,7 @@ check_homebrew_formulae() {
 		:
 	fi
 	#if [[ $(brew info "$item" | grep "Not installed") == "" ]];
-	if [[ $(brew list --formula | grep "^$i$") != "" ]] || [[ $(brew list --formula | grep "^$i@.*$") != "" ]]
+	if [[ $(brew list --formula | tr "," "\n" | grep "^$i$") != "" ]] || [[ $(brew list --formula | tr "," "\n" | grep "^$i@.*$") != "" ]]
 	then 
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"
 	else
@@ -231,7 +231,7 @@ check_casks() {
 	else
 		:
 	fi
-	if [[ $(brew list --cask | grep "^$i$") != "" ]]; 
+	if [[ $(brew list --cask | tr "," "\n" | grep "^$i$") != "" ]]; 
 	then 
 		printf "%-50s\e[1;32mok\e[0m%-10s\n" "$i"; 
 	else 

@@ -47,16 +47,16 @@ chown $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_NAME".app
 chown -R $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/
 chmod 755 "$PATH_TO_APPS"/"$APP_NAME".app
 chmod 770 "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
-xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
+xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
 
 
 ### xattr for included app
 #open "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/pdf_shrink_done.app
 #open "$PATH_TO_APPS"/"$APP_NAME".app
-xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$APP_NAME"_done.app
-xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$APP_NAME"_found.app
-xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$APP_NAME"_stopped.app
-xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
+xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$APP_NAME"_done.app
+xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$APP_NAME"_found.app
+xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$APP_NAME"_stopped.app
+xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
 
 
 ### security permissions

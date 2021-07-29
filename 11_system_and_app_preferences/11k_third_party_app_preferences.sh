@@ -413,6 +413,16 @@ then
 	else
 		echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 	fi
+	
+	# quit app
+	pkill -15 java
+	
+	# notifications
+	APPLICATIONS_TO_SET_NOTIFICATIONS=(
+	"PVGuard																41943375"
+	)
+	SET_APPS_NOTIFICATIONS="yes" env_set_check_apps_notifications
+	CHECK_APPS_NOTIFICATIONS="yes" env_set_check_apps_notifications
 
 else
 	:

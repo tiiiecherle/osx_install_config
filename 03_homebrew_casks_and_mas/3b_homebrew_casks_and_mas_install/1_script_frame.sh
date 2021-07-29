@@ -17,17 +17,22 @@ if [[ "$SUDOPASSWORD" != "" ]]
 then
     #USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
     :
-elif [[ -e /tmp/tmp_sudo_cask_script_fifo ]] || [[ -e /tmp/tmp_appstore_mas_script_fifo ]]
-then
-    :
-elif [[ -e /tmp/tmp_batch_script_fifo ]]
-then
-    unset SUDOPASSWORD
-    SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-    env_delete_tmp_batch_script_fifo
 else
-    env_enter_sudo_password
+    if [[ -e /tmp/tmp_batch_script_fifo ]]
+    then
+        unset SUDOPASSWORD
+        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
+        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+        env_delete_tmp_batch_script_fifo
+    elif [[ -e /tmp/tmp_sudo_mas_script_fifo ]]
+    then
+        :
+    elif [[ -e /tmp/tmp_sudo_cask_script_fifo ]]
+    then
+        :
+    else
+        env_enter_sudo_password
+    fi
 fi
 
 
@@ -50,46 +55,7 @@ unset_variables() {
     unset KEEPINGYOUAWAKE
 }
 
-delete_tmp_mas_script_fifo() {
-    if [[ -e "/tmp/tmp_sudo_mas_script_fifo" ]]
-    then
-        rm -f "/tmp/tmp_sudo_mas_script_fifo"
-    else
-        :
-    fi
-    if [[ -e "/tmp/tmp_appstore_mas_script_fifo" ]]
-    then
-        rm -f "/tmp/tmp_appstore_mas_script_fifo"
-    else
-        :
-    fi
-}
-
-delete_tmp_casks_script_fifo() {
-    if [[ -e "/tmp/tmp_sudo_cask_script_fifo" ]]
-    then
-        rm -f "/tmp/tmp_sudo_cask_script_fifo"
-    else
-        :
-    fi
-}
-
-create_tmp_mas_script_fifo() {
-    delete_tmp_mas_script_fifo
-    mkfifo -m 600 "/tmp/tmp_sudo_mas_script_fifo"
-    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_sudo_mas_script_fifo" &
-    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_mas_script_fifo" &
-    mkfifo -m 600 "/tmp/tmp_appstore_mas_script_fifo"
-    builtin printf "$MAS_APPSTORE_PASSWORD\n" > "/tmp/tmp_appstore_mas_script_fifo" &
-    #echo "$MAS_APPSTORE_PASSWORD" > "/tmp/tmp_appstore_mas_script_fifo" &
-}
-
-create_tmp_casks_script_fifo() {
-    delete_tmp_casks_script_fifo
-    mkfifo -m 600 "/tmp/tmp_sudo_cask_script_fifo"
-    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_sudo_cask_script_fifo" &
-    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
-}
+# fifo functions are part of config file
 
 
 

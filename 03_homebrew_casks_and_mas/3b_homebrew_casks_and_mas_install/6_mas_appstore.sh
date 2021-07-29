@@ -28,7 +28,7 @@ if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
 then
     . "$SCRIPT_DIR"/1_script_frame.sh
     eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
-    trap_function_exit_start() { delete_tmp_mas_script_fifo; }
+    trap_function_exit_start() { env_delete_tmp_mas_script_fifo; }
 else
     echo ''
     echo "script for functions and prerequisits is missing, exiting..."
@@ -36,7 +36,7 @@ else
     exit
 fi
 
-
+        
 
 ###
 ### password
@@ -44,20 +44,33 @@ fi
 
 if [[ "$SUDOPASSWORD" == "" ]]
 then
-    if [[ -e /tmp/tmp_sudo_mas_script_fifo ]] || [[ -e /tmp/tmp_appstore_mas_script_fifo ]]
+    if [[ -e /tmp/tmp_sudo_mas_script_fifo ]]
     then
         unset SUDOPASSWORD
-        unset MAS_APPSTORE_PASSWORD
         SUDOPASSWORD=$(cat "/tmp/tmp_sudo_mas_script_fifo" | head -n 1)
         USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-        MAS_APPSTORE_PASSWORD=$(cat "/tmp/tmp_appstore_mas_script_fifo" | head -n 1)
-        delete_tmp_mas_script_fifo
+        env_delete_tmp_sudo_mas_script_fifo
         #set +a
     else
         env_enter_sudo_password
     fi
 else
     :
+fi
+
+### appstore password
+if [[ "$MAS_APPSTORE_PASSWORD" != "" ]]
+then
+    :
+else
+    if [[ -e /tmp/tmp_appstore_mas_script_fifo ]]
+    then
+        unset MAS_APPSTORE_PASSWORD
+        MAS_APPSTORE_PASSWORD=$(cat "/tmp/tmp_appstore_mas_script_fifo" | head -n 1)
+        env_delete_tmp_appstore_mas_script_fifo
+    else
+        :
+    fi
 fi
 
 
@@ -206,6 +219,7 @@ mas_login_applescript() {
         		set frontmost to true
         		delay 2
         		### on first run when installing the appstore asks for accepting privacy policy
+        		# to reset delete ASAcknowledgedOnboardingVersion from ~/Library/Preferences/com.apple.AppStore.plist
         		try
         		   if "$MACOS_VERSION_MAJOR" is equal to "10.14" then
             		    click button 2 of UI element 1 of sheet 1 of window 1
@@ -215,8 +229,8 @@ mas_login_applescript() {
             		    click button 2 of UI element 1 of sheet 1 of window 1
             		    #click button "Weiter" of UI element 1 of sheet 1 of window 1
                     end if
-                    if "$MACOS_VERSION_MAJOR" is equal to "11" then
-            		    click button 2  of UI element 1 of sheet 1 of window "App Store" 
+                    if "$MACOS_VERSION_MAJOR" greater than or equal to "11" then
+            		    click button 2 of UI element 1 of sheet 1 of window "App Store" 
                     end if
     			    delay 3
     		    end try
@@ -227,7 +241,7 @@ mas_login_applescript() {
                 if "$MACOS_VERSION_MAJOR" is equal to "10.15" then
         		    click menu item 16 of menu "Store" of menu bar item "Store" of menu bar 1
                 end if
-                if "$MACOS_VERSION_MAJOR" is equal to "11" then
+                if "$MACOS_VERSION_MAJOR" greater than or equal to "11" then
         		    click menu item 16 of menu "Store" of menu bar item "Store" of menu bar 1
                 end if
         		#click menu item "Anmelden" of menu "Store" of menu bar item "Store" of menu bar 1
@@ -238,7 +252,7 @@ mas_login_applescript() {
                 if "$MACOS_VERSION_MAJOR" is equal to "10.15" then
         		    set focused of text field "Apple-ID:" of sheet 1 of window 1 to true
                 end if
-                if "$MACOS_VERSION_MAJOR" is equal to "11" then
+                if "$MACOS_VERSION_MAJOR" greater than or equal to "11" then
                     try
         		        set focused of text field "Apple-ID:" of sheet 1 of sheet 1 of window "App Store" to true
         		    on error
@@ -254,7 +268,7 @@ mas_login_applescript() {
         		delay 2
         		tell application "System Events" to keystroke return
         		# leave two factor auth disabled if disabled before
-        		if "$MACOS_VERSION_MAJOR" is equal to "11" then
+                if "$MACOS_VERSION_MAJOR" greater than or equal to "11" then
             		try
             		    delay 12
             		    try

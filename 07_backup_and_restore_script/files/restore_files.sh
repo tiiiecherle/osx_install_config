@@ -166,19 +166,20 @@ restore_files() {
         else
         	# not a symlink
         	mkdir -p "$line"
-        	if [[ -e "$line" ]] && [[ -e "$RESTORE_TO_DIR"/"$BASENAME_LINE" ]]
+        	if [[ -e "$line" ]] && [[ -e "$RESTORE_TO_DIR"/"$BASENAME_LINE" ]] && [[ $(find "$RESTORE_TO_DIR"/"$BASENAME_LINE" -mindepth 1 -maxdepth 1 ! -name ".localized" ! -name ".DS_Store") != "" ]]
         	then
         		echo "restoring "$line"..."
-        		if find "$line" -mindepth 1 -maxdepth 1 ! -name ".localized" ! -name ".DS_Store" | read
+        		#if find "$line" -mindepth 1 -maxdepth 1 ! -name ".localized" ! -name ".DS_Store" | read
+        		if [[ $(find "$line" -mindepth 1 -maxdepth 1 ! -name ".localized" ! -name ".DS_Store") != "" ]]
                 then
                     # not empy
                     rm -rf "$line"/*
-                    mv -f /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
-        		    #cp -a /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
                 else
                     # empty
                     :
                 fi
+                mv -f /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
+        		#cp -a /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
         	else
         		echo "source or destination does not exist, skipping..."
         	fi

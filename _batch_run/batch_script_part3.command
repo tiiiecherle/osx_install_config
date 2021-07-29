@@ -35,13 +35,6 @@ fi
 ### functions
 ###
 
-create_tmp_batch_script_fifo() {
-    env_delete_tmp_batch_script_fifo
-    mkfifo -m 600 "/tmp/tmp_batch_script_fifo"
-    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_batch_script_fifo" &
-    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
-}
-
 env_active_source_app() {
 	sleep 0.5
 	osascript -e "tell application \"$SOURCE_APP_NAME\" to activate"
@@ -176,7 +169,7 @@ batch_run_all() {
 	### spotlight
 	# moved spotlight index behind finder sidebar cus deleting spotlight index led to non working automation permissions until spotlight was reindexed 
 	printf "\n${bold_text}###\nspotlight...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11d_system_preferences_spotlight.sh
 	env_active_source_app
 	
@@ -205,13 +198,13 @@ batch_run_all() {
 	
 	### third party app preferences
 	printf "\n${bold_text}###\nthird party app preferences...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11k_third_party_app_preferences.sh
 	
 	
 	### migrate internet accounts
 	printf "\n${bold_text}###\nmigrate internet accounts...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/13_apple_mail_and_accounts/13a_migrate_internet_accounts.sh
 
 	
@@ -223,7 +216,7 @@ batch_run_all() {
 
 	### samba
 	printf "\n${bold_text}###\nsamba...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/14_samba/14a_samba.sh
 
 

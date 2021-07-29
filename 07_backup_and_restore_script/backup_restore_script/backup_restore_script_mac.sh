@@ -112,7 +112,12 @@ install_update_dependency_apps() {
     cp -a "$WORKING_DIR"/gui_apps/"$APP_TO_INSTALL".app "$PATH_TO_APPS"/
     chown $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
-    #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    if [[ $(xattr -l "$PATH_TO_APPS"/"$APP_TO_INSTALL".app | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    else
+        :
+    fi
     
     ### vbox backup app
     #echo ''
@@ -129,8 +134,13 @@ install_update_dependency_apps() {
     chown -R $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
     chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     chmod 770 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
-    #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app  
-    
+    if [[ $(xattr -l "$PATH_TO_APPS"/"$APP_TO_INSTALL".app | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    else
+        :
+    fi
+        
     ### installing / updating homebrew update script
     #echo ''
     echo "updating homebrew formulae and casks app..."
@@ -146,8 +156,13 @@ install_update_dependency_apps() {
     chown -R $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
     chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
     chmod 770 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
-    #xattr -dr com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
-    
+    if [[ $(xattr -l "$PATH_TO_APPS"/"$APP_TO_INSTALL".app | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    else
+        :
+    fi
+        
     ### updating hosts script
 	if [[ -e "$WORKING_DIR"/update_hosts/hosts_file_generator.sh ]]
 	then

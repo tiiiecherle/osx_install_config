@@ -36,12 +36,6 @@ fi
 ### functions
 ###
 
-create_tmp_batch_script_fifo() {
-    env_delete_tmp_batch_script_fifo
-    mkfifo -m 600 "/tmp/tmp_batch_script_fifo"
-    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_batch_script_fifo" &
-    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
-}
 
 env_active_source_app() {
 	sleep 0.5
@@ -104,7 +98,7 @@ batch_run_all() {
 
 	### hosts file generator
 	printf "\n${bold_text}###\nhosts file generator...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/1_hosts_file/install_hosts_file_generator_and_launchdservice.sh
 	env_active_source_app		
 	
@@ -117,7 +111,7 @@ batch_run_all() {
     else
         # macos versions 10.15
     	printf "\n${bold_text}###\nlocal ssl certificate...\n###\n${default_text}"
-    	create_tmp_batch_script_fifo
+    	env_create_tmp_batch_script_fifo
     	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/2_cert_install_update/install_cert_install_update_launchdservice.sh
     	env_active_source_app
     fi
@@ -125,7 +119,7 @@ batch_run_all() {
     
 	### network locations
 	printf "\n${bold_text}###\nnetwork locations...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/3_network_select/install_network_select_and_launchdservice.sh
 	env_active_source_app
 	# waiting until online
@@ -158,13 +152,13 @@ batch_run_all() {
 	
 	### logout hook
 	printf "\n${bold_text}###\nlogout hook...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/09_launchd/9c_run_on_logout/install_run_on_logout_hook.sh
 	
 	
 	### login hook
 	printf "\n${bold_text}###\nlogin hook...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/system/install_run_on_login_hook.sh
 	
 		
@@ -192,7 +186,7 @@ batch_run_all() {
 	
 	### privacy database entries
 	printf "\n${bold_text}###\nprivacy database entries...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11a_system_preferences_privacy_sqlite_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
 	
 	
@@ -204,7 +198,7 @@ batch_run_all() {
 	
 	### macos and app preferences
 	printf "\n${bold_text}###\nmacos and app preferences...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11c_macos_preferences_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
 	
 	

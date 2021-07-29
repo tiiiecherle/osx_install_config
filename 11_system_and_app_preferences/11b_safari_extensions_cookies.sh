@@ -129,7 +129,7 @@ then
 		:
 	else
 		sleep 2
-		open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
+		open -a ""$PATH_TO_APPS"/Safari.app" "https://myaccount.google.com/intro/privacycheckup?utm_source=pp&utm_medium=Promo-in-product&utm_campaign=pp_intro&hl=de"
 		sleep 2
 	fi
 else

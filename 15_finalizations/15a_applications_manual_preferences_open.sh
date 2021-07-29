@@ -184,8 +184,13 @@ open_more_apps() {
 
 
 ### google consent
-open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
+# old
+#open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
 #open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a ""$PATH_TO_APPS"/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
+# google consent link update
+# google.de - Datenschutzerklärung - Privatsphärencheck
+open -a ""$PATH_TO_APPS"/Safari.app" "https://myaccount.google.com/intro/privacycheckup?utm_source=pp&utm_medium=Promo-in-product&utm_campaign=pp_intro&hl=de"
+
 
 ### open user specific apps
 if [[ "$APPLICATIONS_TO_OPEN_USER_SPECIFIC" != "" ]]
@@ -224,13 +229,13 @@ then
     	:
     fi
     
-    if [[ "$DISPLAY_WIREGUARD_DIALOG" == "yes" ]]
-	then
-    	# hint for signal
-    	osascript -e 'display dialog "please add wireguard ondemand settings manually after restoring the profiles..."' &
-    else
-    	:
-    fi
+    # no longer needed due to installing wireguard mobileconfig
+    #if [[ "$DISPLAY_WIREGUARD_DIALOG" == "yes" ]]
+	#then
+    #	osascript -e 'display dialog "please add wireguard ondemand settings manually after restoring the profiles..."' &
+    #else
+    #	:
+    #fi
 else
 	:
 fi

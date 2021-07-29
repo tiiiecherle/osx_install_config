@@ -31,7 +31,6 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 "${ENV_SET_TRAP_EXIT[@]}"
 
 
-
 ### wrap in function for getting time
 run_all() {
     
@@ -43,7 +42,7 @@ run_all() {
     if [[ -e "$SCRIPT_DIR"/1_script_frame.sh ]]
     then
         . "$SCRIPT_DIR"/1_script_frame.sh
-        trap_function_exit_start() { delete_tmp_mas_script_fifo; delete_tmp_casks_script_fifo; }
+        trap_function_exit_start() { env_delete_tmp_mas_script_fifo; env_delete_tmp_casks_script_fifo; }
         eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
     else
         echo ''
@@ -51,6 +50,22 @@ run_all() {
         echo ''
         exit
     fi
+    
+    ### appstore password
+    if [[ "$MAS_APPSTORE_PASSWORD" != "" ]]
+    then
+        :
+    else
+        if [[ -e /tmp/tmp_appstore_mas_script_fifo ]]
+        then
+            unset MAS_APPSTORE_PASSWORD
+            MAS_APPSTORE_PASSWORD=$(cat "/tmp/tmp_appstore_mas_script_fifo" | head -n 1)
+            env_delete_tmp_appstore_mas_script_fifo
+        else
+            :
+        fi
+    fi
+    
         
     ###
     ### script
@@ -109,12 +124,12 @@ run_all() {
         else
             #echo ''
             echo "MAS_APPLE_ID is "$MAS_APPLE_ID"..."
-            echo ''
+            #echo ''
         fi
         
         if [[ "$MAS_APPSTORE_PASSWORD" == "" ]]
         then
-            #echo ''
+            echo ''
             #echo "please enter appstore password..."
             MAS_APPSTORE_PASSWORD=""
         
@@ -185,7 +200,7 @@ run_all() {
     if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
     then
     
-        create_tmp_mas_script_fifo
+        env_create_tmp_mas_script_fifo
         env_identify_terminal
         UPDATE_HOMEBREW="no"
         RUN_FROM_RUN_ALL_SCRIPT="yes"
@@ -233,7 +248,7 @@ EOF
     if [[ "$CONT2_BREW" =~ ^(yes|y)$ ]]
     then
         sleep 5
-        create_tmp_casks_script_fifo
+        env_create_tmp_casks_script_fifo
         env_identify_terminal
         UPDATE_HOMEBREW="no"
         RUN_FROM_RUN_ALL_SCRIPT="yes"

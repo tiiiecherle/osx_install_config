@@ -1,19 +1,41 @@
 #!/bin/zsh
 
+
+###
+### script dir
+###
+
+if [[ -n "$BASH_SOURCE" ]]
+then
+	SCRIPT_PATH="$BASH_SOURCE"
+elif [[ -n "$ZSH_VERSION" ]]
+then
+	SCRIPT_PATH="${(%):-%x}"
+fi
+SCRIPT_DIR="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
+SCRIPT_DIR_ONE_BACK="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && cd .. && pwd)"
+SCRIPTS_FINAL_DIR="$SCRIPT_DIR_ONE_BACK"
+
+
+
 ###
 ### config file
 ###
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"
-
-
-###
-### sourcing config file
-###
-
-if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
-eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
-
+if [[ -e "$SCRIPTS_FINAL_DIR"/_config_file/install_config_file.sh ]]
+then
+	# installing again if local file is different from online file
+	printf "\n${bold_text}###\nconfig file...\n###\n${default_text}"
+	"$SCRIPTS_FINAL_DIR"/_config_file/install_config_file.sh
+	# re-sourcing config file
+	if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+	eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+else
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"
+	
+	if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
+	eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+fi
 
 
 
@@ -27,16 +49,14 @@ env_identify_terminal
 
 
 ###
-### config file 1
+### user config profile
 ###
 
-# installing again if local file is different from online file
-printf "\n${bold_text}###\nconfig file...\n###\n${default_text}"
-"$SCRIPTS_FINAL_DIR"/_config_file/install_config_file.sh
-
-# re-sourcing config file
-if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
-eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
+echo ''
+printf "\n${bold_text}###\nuser profile...\n###\n${default_text}"
+echo ''
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
 
 
 
@@ -44,6 +64,7 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### asking password upfront
 ###
 
+echo ''
 printf "\n${bold_text}###\nsudo password...\n###\n${default_text}"
 echo ''
 echo "please enter sudo password..."
@@ -53,24 +74,22 @@ env_enter_sudo_password
 # env_delete_tmp_batch_script_fifo and env_delete_tmp_batch_script_gpg_fifo are part of config file
 
 
+###
+### app store password
+###
+echo ''
+printf "\n${bold_text}###\napp store password...\n###\n${default_text}"
+echo ''
+echo "please enter app store password..."
+while [[ $MAS_APPSTORE_PASSWORD != $MAS_APPSTORE_PASSWORD2 ]] || [[ $MAS_APPSTORE_PASSWORD == "" ]]; do stty -echo && printf "appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD && printf "\n" && printf "re-enter appstore password: " && read -r "$@" MAS_APPSTORE_PASSWORD2 && stty echo && printf "\n" && USE_MAS_APPSTORE_PASSWORD='builtin printf '"$MAS_APPSTORE_PASSWORD\n"''; done
+
+
 
 ###
 ### functions
 ###
 
-create_tmp_batch_script_fifo() {
-    env_delete_tmp_batch_script_fifo
-    mkfifo -m 600 "/tmp/tmp_batch_script_fifo"
-    builtin printf "$SUDOPASSWORD\n" > "/tmp/tmp_batch_script_fifo" &
-    #echo "$SUDOPASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
-}
-
-create_tmp_batch_script_gpg_fifo() {
-    env_delete_tmp_batch_script_gpg_fifo
-    mkfifo -m 600 "/tmp/tmp_batch_script_gpg_fifo"
-    builtin printf "$GPG_PASSWORD\n" > "/tmp/tmp_batch_script_gpg_fifo" &
-    #echo "$GPG_PASSWORD" > "/tmp/tmp_sudo_cask_script_fifo" &
-}
+# fifo funtions are part of config file
 
 
 
@@ -89,7 +108,7 @@ env_activating_caffeinate
 ### trap
 ###
 
-trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; env_delete_tmp_batch_script_gpg_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_caffeinate; rm -f "/tmp/batch_script_in_progress" }
+trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; env_delete_tmp_batch_script_gpg_fifo; env_delete_tmp_mas_script_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_caffeinate; rm -f "/tmp/batch_script_in_progress" }
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
 
@@ -124,6 +143,18 @@ AUTOMATION_APPS=(
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 echo ''
 
+while IFS= read -r line || [[ -n "$line" ]] 
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    i="$line"
+    if [[ $(xattr -l "$i" | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$i"
+    else
+        :
+    fi
+done <<< "$(find "$SCRIPT_DIR_ONE_BACK" -mindepth 1 ! -path "*/*.app/*" -name "*.command")"
+
 
 ### homebrew install
 if command -v brew &> /dev/null
@@ -139,7 +170,7 @@ then
     echo ''
     if [[ "$UNINSTALL_HOMEBREW" =~ ^(yes|y)$ ]]
     then
-    	create_tmp_batch_script_fifo
+    	env_create_tmp_batch_script_fifo
 		"$SCRIPTS_FINAL_DIR"/03_homebrew_casks_and_mas/3a_homebrew_casks_and_command_line_tools_uninstall.sh
 		#echo ''
     else
@@ -201,9 +232,23 @@ batch_run_all() {
 	echo ''
 	
 	
+	### mobileconfig	
+	if [[ "$INSTALL_MOBILECONFIG" == "yes" ]]
+	then
+		printf "\n${bold_text}###\nmobile config...\n###\n${default_text}"
+		env_create_tmp_batch_script_fifo
+		"$SCRIPTS_FINAL_DIR"/_mobileconfig/install_mobileconfig_profiles.sh
+		env_active_source_app
+	else
+		:
+	fi
+	env_activating_caffeinate
+
+	
 	### homebrew and cask install
 	printf "\n${bold_text}###\nhomebrew cask...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
+	env_create_tmp_mas_script_fifo
 	open -a Terminal "$SCRIPTS_FINAL_DIR"/03_homebrew_casks_and_mas/3b_homebrew_casks_and_mas_install/0_run_all.command
 	sleep 3
 	
@@ -266,8 +311,8 @@ batch_run_all() {
 		:
 	else
 		printf "\n${bold_text}###\nunarchiving and restoring files...\n###\n${default_text}"
-		create_tmp_batch_script_fifo
-		create_tmp_batch_script_gpg_fifo
+		env_create_tmp_batch_script_fifo
+		env_create_tmp_batch_script_gpg_fifo
 		#time ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
 		ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
 		unset RESTORE_FILES_OPTION
@@ -296,13 +341,13 @@ batch_run_all() {
 	
 	### login shell customization
 	printf "\n${bold_text}###\nlogin shell customization...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/02_preparations/2d_login_shell_customization.sh
 	
 	
 	### nvram
 	printf "\n${bold_text}###\nnvram...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	"$SCRIPTS_FINAL_DIR"/01_recovery_settings_and_nvram/1b_nvram.sh
 	
 	
@@ -313,7 +358,7 @@ batch_run_all() {
 	
 	### network configuration
 	printf "\n${bold_text}###\nnetwork configuration...\n###\n${default_text}"
-	create_tmp_batch_script_fifo
+	env_create_tmp_batch_script_fifo
 	RUN_WITH_PROFILE="yes" "$SCRIPTS_FINAL_DIR"/05_network_configuration/5_network.sh
 	# waiting until online
 	ONLINE_STATUS=""
@@ -332,7 +377,7 @@ batch_run_all() {
 		:
 	else
 		printf "\n${bold_text}###\nrestoring apps, settings and preferences...\n###\n${default_text}"
-		create_tmp_batch_script_fifo
+		env_create_tmp_batch_script_fifo
 		if [[ "$RESTORE_DIR_FILES" != "" ]]
 		then
 		    echo ''
@@ -350,7 +395,7 @@ batch_run_all() {
 	if [[ "$BATCH_ONE_AND_TWO" =~ ^(yes|y)$ ]]
     then
     	printf "\n${bold_text}###\nbatch scripts...\n###\n${default_text}"
-        create_tmp_batch_script_fifo
+        env_create_tmp_batch_script_fifo
 	    open -a Terminal "$SCRIPTS_FINAL_DIR"/_batch_run/batch_script_part2.command
 	    ### waiting for running processes to finish
     	echo ''
@@ -396,7 +441,7 @@ cleanup_log() {
     sed -i '' '/Klone nach/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/Cloning into/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/^No updates/d' "$COMBINED_ERROR_LOG"
-    #sed -i '' 's/[[:blank:]]*$//' "$COMBINED_ERROR_LOG"
+    sed -i '' 's/[[:blank:]]*$//' "$COMBINED_ERROR_LOG"
     sed -i '' 's/[ \t]*$//' "$COMBINED_ERROR_LOG"
     sed -i '' '/^#.*#$/d' "$COMBINED_ERROR_LOG"
     sed -i '' -E '/^#.*[[:space:]]+$/d' "$COMBINED_ERROR_LOG"
@@ -414,15 +459,12 @@ cleanup_log() {
     sed -i '' '/Von https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/From https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/Warning.*already installed/d' "$COMBINED_ERROR_LOG"
-    sed -i '' '/Warning.*are using macOS/,/running this pre-release version/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/Warning.*are using macOS/,/pre-release version\./d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/You will encounter build failures/,/pre-release version\./d' "$COMBINED_ERROR_LOG"
     sed -i '' '/Creating client\/daemon connection/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/Please note that these warnings.*Homebrew maintainers/,/just ignore this\. Thanks/d' "$COMBINED_ERROR_LOG"
-    #sed -i '' '/Your CLT does not support macOS/,/delete it if no updates are available/d' "$COMBINED_ERROR_LOG"
     sed -i '' "/Already on 'release/d" "$COMBINED_ERROR_LOG"
-    #sed -i '' '/\[33mWarning.*Ruby version/,/supported Rubies/d' "$COMBINED_ERROR_LOG"
-    #awk '/./ { e=0 } /^$/ { e += 1 } e <= 2' "$COMBINED_ERROR_LOG" > /tmp/errorlog.txt
-    #cat /tmp/errorlog.txt > "$COMBINED_ERROR_LOG"
-    #rm -f /tmp/errorlog.txt
+    sed -i '' '/security\:\ SecKeychainSearchCopyNext\:\ The specified item could not be found in the keychain\./d' "$COMBINED_ERROR_LOG"
     perl -i -ane '$n=(@F==0) ? $n+1 : 0; print if $n<=2' "$COMBINED_ERROR_LOG"
 }
 sleep 1

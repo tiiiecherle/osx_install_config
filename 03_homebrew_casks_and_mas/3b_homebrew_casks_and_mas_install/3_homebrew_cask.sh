@@ -188,6 +188,9 @@ else
     #env_use_password | brew install --cask --force keepingyouawake 2> /dev/null | grep "successfully installed"
     env_use_password | brew install --cask --force keepingyouawake
     sleep 1
+    APP_NAME="KeepingYouAwake"
+    env_set_open_on_first_run_permissions
+    sleep 1
 fi
 
 
@@ -214,19 +217,31 @@ env_activating_caffeinate
 # brew style
 
 
-### installing parallel as dependency for the other scripts
-if command -v parallel &> /dev/null
-then
-    # installed
-    :
-else
-    # not installed
-    echo ''
-    echo "installing parallel..."
-    brew install parallel
-    #echo ''
-fi
+### installing dependenies for the other scripts
+echo ''
+echo "installing script dependencies..."
+HOMEBREW_SCRIPT_DEPENDENCIES_LIST=(
+parallel
+jq
+)
+HOMEBREW_SCRIPT_DEPENDENCIES=$(printf "%s\n" "${HOMEBREW_SCRIPT_DEPENDENCIES_LIST[@]}")
 
+while IFS= read -r line || [[ -n "$line" ]] 
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    i="$line"
+    if command -v "$i" &> /dev/null
+    then
+        # installed
+        :
+    else
+        # not installed
+        echo ''
+        echo "installing "$i"..."
+        brew install --formula "$i"
+        #echo ''
+    fi
+done <<< "$(printf "%s\n" "${HOMEBREW_SCRIPT_DEPENDENCIES[@]}")"
 
 ### cleaning up
 echo ''

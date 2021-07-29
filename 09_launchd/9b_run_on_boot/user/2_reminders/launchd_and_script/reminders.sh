@@ -411,11 +411,22 @@ EOF
     	:
     else
     	### enable
-    	APPLICATIONS_TO_SET_NOTIFICATIONS=(
-    	#"Reminders														        41951575"
-    	"Reminders														        310911319"
-    	)
-    	
+    	if [[ "$MACOS_VERSION_MAJOR" == "11" ]]
+    	then
+    	    # macos 11
+        	APPLICATIONS_TO_SET_NOTIFICATIONS=(
+        	"Reminders														        310911319"
+        	)
+    	elif [[ "$MACOS_VERSION_MAJOR" == "12" ]]
+    	then
+    	    # macos 12
+        	APPLICATIONS_TO_SET_NOTIFICATIONS=(
+        	"Reminders														        1652564311"
+        	)
+    	else
+    	    :
+    	fi
+
     	### setting notification preferences
     	CHECK_APPS_NOTIFICATIONS="yes" PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG="no" env_set_check_apps_notifications
     	#echo "$CHECK_RESULT_EXPORT"

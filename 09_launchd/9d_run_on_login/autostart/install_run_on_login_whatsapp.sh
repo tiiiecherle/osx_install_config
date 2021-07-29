@@ -35,14 +35,12 @@ chmod 750 /Users/"$USER"/Library/Scripts/"$APP_TO_INSTALL".app
 
 echo ''
 
-# add to autostart
-if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | grep ""$APP_TO_INSTALL"" ) == "" ]]
-then
-    osascript -e 'tell application "System Events" to make login item at end with properties {name:"'"$APP_TO_INSTALL"'", path:"/Users/'$USER'/Library/Scripts/'"$APP_TO_INSTALL"'.app", hidden:true}'
-else
-	osascript -e 'tell application "System Events" to delete login item "'"$APP_TO_INSTALL"'"'
-	osascript -e 'tell application "System Events" to make login item at end with properties {name:"'"$APP_TO_INSTALL"'", path:"/Users/'$USER'/Library/Scripts/'"$APP_TO_INSTALL"'.app", hidden:false}'
-fi
+# autostart
+AUTOSTART_ITEMS=(
+# name													                  start hidden
+""$APP_TO_INSTALL"                                                              false"                   
+)
+env_add_startup_items
 
 
 ### automation

@@ -161,7 +161,11 @@ install_finder_enhancement() {
 	    	defaults write com.apple.finder XtraFinder_XFOpenInNewWindowPlugin -bool true
 			
 			# autostart
-	    	osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$PATH_TO_APPS'/'$APP_NAME'.app", hidden:false}'
+			AUTOSTART_ITEMS=(
+		    # name													                  start hidden
+		    ""$APP_NAME"                                                              false"                   
+		    )
+		    env_add_startup_items
 	
 	    else
 	    	:

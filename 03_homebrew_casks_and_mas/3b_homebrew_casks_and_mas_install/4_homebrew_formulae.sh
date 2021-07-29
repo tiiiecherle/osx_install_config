@@ -85,10 +85,16 @@ else
 	do
 	    if [[ "$line" == "" ]]; then continue; fi
         homebre_formula_to_install="$line"
-	    echo "installing formula "$homebre_formula_to_install"..."
-		#env_use_password | brew install --formula "$homebre_formula_to_install" 2> /dev/null | grep "/Cellar/.*files,\|Installing.*dependency"
-		env_use_password | brew install --formula "$homebre_formula_to_install"
-	    echo ''
+        if [[ $(brew list --formulae | tr "," "\n" | grep "^$line$") == "" ]]
+        then
+            echo "installing formula "$homebre_formula_to_install"..."
+		    #env_use_password | brew install --formula "$homebre_formula_to_install" 2> /dev/null | grep "/Cellar/.*files,\|Installing.*dependency"
+		    env_use_password | brew install --formula "$homebre_formula_to_install"
+	        echo ''
+	    else
+	        echo "formula "$line" already installed..."
+	        echo ''
+	    fi
 	done <<< "$(printf "%s\n" "${homebrew_formulae[@]}")"
     
     ### ffmpeg 

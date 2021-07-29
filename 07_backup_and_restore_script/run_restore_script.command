@@ -21,7 +21,17 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 
 
 ### restoring
-find "$SCRIPT_DIR" -mindepth 1 ! -path "*/*.app/*" -name "*.app" -print0 | xargs -0 xattr -dr com.apple.quarantine
+while IFS= read -r line || [[ -n "$line" ]] 
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    i="$line"
+    if [[ $(xattr -l "$i" | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$i"
+    else
+        :
+    fi
+done <<< "$(find "$SCRIPT_DIR" -mindepth 1 ! -path "*/*.app/*" -name "*.app")"
 
 # to read the output file including formats do
 # cat ~/Desktop/backup_restore_log.txt
