@@ -8,6 +8,9 @@ reboot to recovery (cmd +R)
 
 open mail and keep open in background for indexing
 
+open safari - preferences - extensions
+make sure Google Analytics Plugin is activated
+
 virus scanner
 	check if virus scan is autostarted (symbol "B" in menu bar, eventually in bartender)
 	virus scan (menu bar) - open main window - deep scan
