@@ -712,7 +712,7 @@ env_get_path_to_app() {
         		break
         	fi
         done
-        if [[ "$APP_NAME" == "PVGuard" ]] && [[ -e ~/.cache/icedtea-web/jvm-cache/cache.json ]]
+        if [[ "$APP_NAME" == "PVGuard" ]] && [[ -e ~/.cache/icedtea-web/jvm-cache/cache.json ]] && [[ -e "$PATH_TO_APPS"/"$APP_NAME".app ]]
         then 
             JAVA_VERSION=$(jq -r '.runtimes | .[] | .version' ~/.cache/icedtea-web/jvm-cache/cache.json)
             PATH_TO_APP=/Users/"$USER"/.cache/icedtea-web/jvm-cache/adopt_"$JAVA_VERSION"/bin/java
@@ -739,7 +739,7 @@ env_get_app_id() {
         APP_ID=$(osascript -e "id of app \"$APP_NAME\"") &> /dev/null
         if [[ "$APP_ID" == "" ]];then echo "PATH_TO_APP of "$APP_NAME" is empty, skipping entry..." && continue; fi
     else  
-        if [[ "$APP_NAME" == "PVGuard" ]] && [[ -e ~/.cache/icedtea-web/jvm-cache/cache.json ]]
+        if [[ "$APP_NAME" == "PVGuard" ]] && [[ -e ~/.cache/icedtea-web/jvm-cache/cache.json ]] && [[ -e "$PATH_TO_APPS"/"$APP_NAME".app ]]
         then 
             JAVA_VERSION=$(jq -r '.runtimes | .[] | .version' ~/.cache/icedtea-web/jvm-cache/cache.json)
             APP_ID=net.java.openjdk."$JAVA_VERSION".java
@@ -758,61 +758,43 @@ env_get_app_id() {
 
 ### startup-items
 env_get_autostart_items() {
-    if [[ "$MACOS_VERSION_MAJOR" == "12" ]]
-    then
-        # macos12 in latest beta hangs with a timeout after using an applescript for login items and afterwards no applescript for System Events is working until a reboot
-        :
-    else
-        AUTOSTART_ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-    fi
+    AUTOSTART_ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
 }
 
 env_delete_all_startup_items() {
-    if [[ "$MACOS_VERSION_MAJOR" == "12" ]]
+    if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') != "" ]]
     then
-        # macos12 in latest beta hangs with a timeout after using an applescript for login items and afterwards no applescript for System Events is working until a reboot
-        :
+        while IFS= read -r line || [[ -n "$line" ]]        
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+            autostartapp="$line"
+        	echo "deleting autostartentry for $autostartapp..."
+        	osascript -e "tell application \"System Events\" to delete login item \"$autostartapp\""
+        done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')"
     else
-        if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g') != "" ]]
-        then
-            while IFS= read -r line || [[ -n "$line" ]]        
-    		do
-    		    if [[ "$line" == "" ]]; then continue; fi
-                autostartapp="$line"
-            	echo "deleting autostartentry for $autostartapp..."
-            	osascript -e "tell application \"System Events\" to delete login item \"$autostartapp\""
-            done <<< "$(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')"
-        else
-            :
-        fi
+        :
     fi
 }
 
 env_add_startup_items() {
-    if [[ "$MACOS_VERSION_MAJOR" == "12" ]]
-    then
-        # macos12 in latest beta hangs with a timeout after using an applescript for login items and afterwards no applescript for System Events is working until a reboot
-        :
-    else
-        while IFS= read -r line || [[ -n "$line" ]] 
-    	do
-    	    if [[ "$line" == "" ]]; then continue; fi
-            i="$line"
-            #echo "APP_PATH is "$APP_PATH"..."
-            local APP_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-           	#echo "APP_NAME is "$APP_NAME"..."
-    		local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-           	#echo "START_HIDDEN is "$START_HIDDEN"..."
-           	env_get_path_to_app
-    		if [[ "$PATH_TO_APP" != "" ]]
-    		then
-    		    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
-                osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$PATH_TO_APP'", hidden:"'$START_HIDDEN'"}'
-            else
-            	echo ""$APP_NAME" not found, skipping..."
-            fi
-    	done <<< "$(printf "%s\n" "${AUTOSTART_ITEMS[@]}")"
-	fi
+    while IFS= read -r line || [[ -n "$line" ]] 
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
+        i="$line"
+        #echo "APP_PATH is "$APP_PATH"..."
+        local APP_NAME=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+       	#echo "APP_NAME is "$APP_NAME"..."
+		local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+       	#echo "START_HIDDEN is "$START_HIDDEN"..."
+       	env_get_path_to_app
+		if [[ "$PATH_TO_APP" != "" ]]
+		then
+		    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
+            osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$PATH_TO_APP'", hidden:"'$START_HIDDEN'"}'
+        else
+        	echo ""$APP_NAME" not found, skipping..."
+        fi
+	done <<< "$(printf "%s\n" "${AUTOSTART_ITEMS[@]}")"
 }
 
 
@@ -1932,10 +1914,16 @@ env_set_open_on_first_run_permissions() {
     then
         :
     else
-        if [[ $(xattr -l "$PATH_TO_APP") != "" ]]
+        if [[ "$PATH_TO_APP" != "" ]]
         then
-            xattr -d com.apple.quarantine "$PATH_TO_APP" &> /dev/null
-            /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted "$PATH_TO_APP"
+            if [[ $(xattr -l "$PATH_TO_APP" | grep com.apple.quarantine) != "" ]]
+            then
+                #echo "$PATH_TO_APP"
+                xattr -d com.apple.quarantine "$PATH_TO_APP" &> /dev/null
+                /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted "$PATH_TO_APP"
+            else
+                :
+            fi
         else
             :
         fi
