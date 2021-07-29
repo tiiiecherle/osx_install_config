@@ -784,7 +784,7 @@ EOF
 	sleep 2
 
 }
-if [[ -e "/Users/"$USER"/virtualbox" ]] && [[ -e /Applications/VirtualBox.app ]]
+if [[ "$MACOS_VERSION_MAJOR" == "11" ]] && [[ -e "/Users/"$USER"/virtualbox" ]] && [[ -e /Applications/VirtualBox.app ]]
 then
 	vbox_workaround
 else
