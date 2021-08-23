@@ -449,6 +449,22 @@ APPS_SECURITY_ARRAY=$(printf "%s\n" "${DEVELOPER_TOOLS_APPS[@]}")
 PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
 
 
+### privacy - bluetooth
+
+echo ''
+tput bold; echo "bluetooth..." ; tput sgr0
+
+sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceBluetoothAlways';"
+
+MICROPHONEAPPS=(
+# app name								    security service										    allowed (1=yes, 0=no)
+"Stats                                      kTCCServiceBluetoothAlways                                  0"
+)
+
+APPS_SECURITY_ARRAY=$(printf "%s\n" "${MICROPHONEAPPS[@]}")
+PRINT_SECURITY_PERMISSIONS_ENTRIES="yes" env_set_apps_security_permissions
+
+
 ### privacy - automation
 # does not show in system preferences window, but works
 
