@@ -62,7 +62,7 @@ tell application "System Events"
 		delay 1
 		#click text field "Serveradresse:" of window "Mit Server verbinden"
 		#delay 1
-		#keystroke "smb://172.16.1.200"
+		#keystroke "$FINDER_FAVORITE1"
 		
 		set value of combo box 1 of window 1 to "$FINDER_FAVORITE1"
 		
