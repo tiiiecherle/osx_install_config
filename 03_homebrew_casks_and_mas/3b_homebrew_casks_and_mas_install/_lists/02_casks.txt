@@ -62,6 +62,7 @@ quicksilver
 sejda-pdf
 signal
 skype
+stats
 teamviewer
 textmate
 the-archive-browser
