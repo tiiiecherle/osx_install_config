@@ -29,6 +29,16 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 #echo ''
 
 
+###
+### run from batch script
+###
+
+
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_check_if_run_from_batch_script
+if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+
+
 
 ###
 ### check if archive exists

@@ -80,9 +80,7 @@ trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWO
 
 
 ### in addition to showing them in terminal write errors to logfile when run from batch script
-touch "/tmp/batch_script_in_progress"
-env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+env_force_start_error
 
 
 ### batch run all function

@@ -2049,6 +2049,13 @@ env_stop_error_log() {
     exec 2>&1
 }
 
+### in addition to showing them in terminal write errors to logfile when run from batch script
+env_force_start_error() {
+    touch "/tmp/batch_script_in_progress"
+    env_check_if_run_from_batch_script
+    if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+}
+
 
 ### user profiles
 env_check_for_user_profile() {
@@ -2075,28 +2082,40 @@ env_check_for_user_profile() {
 
 ### check if run from boot volume
 env_check_if_second_macos_volume_is_mounted() {
-    env_get_mounted_disks
-    if [[ $(printf "%s\n" "${LIST_OF_ALL_MOUNTED_VOLUMES_OUTSIDE_OF_BOOT_VOLUME[@]}" | grep "macintosh_hd") != "" ]]
+
+    env_get_mounted_disks 
+    if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd2" ]] && [[ $(printf "%s\n" "${LIST_OF_ALL_MOUNTED_VOLUMES_OUTSIDE_OF_BOOT_VOLUME[@]}" | grep -x "/Volumes/macintosh_hd") != "" ]]
     then
-        # second macos volume is mounted
-        output_mas_hint() {
-            echo ''
-            echo "${bold_text}${red_text}important info${default_text}"
-            echo "at least one more macos volume is mounted, due to this bug"
-            echo "https://github.com/mas-cli/mas/issues/250"
-            echo "mas will install appstore apps to first macos partition found, not necessarily to the mounted one..."
-            echo "as a workaround follow these steps:"
-            echo "1   make sure the scripts are stored on the currently booted macos volume,"
-            echo "    if not copy them"
-            echo "2   unmount all other macos volumes"
-            echo "3   run the script again"
-            echo "exiting..."
-            echo ''
-            exit
-        }
-        output_mas_hint >&2
+        #if [[ -e "/Volumes/macintosh_hd" ]]; then sudo diskutil unmount /Volumes/macintosh_hd; fi
+        #if [[ -e "/Volumes/macintosh_hd - Daten" ]]; then sudo diskutil unmount "/Volumes/macintosh_hd - Daten"; fi
+        if [[ -e "/Volumes/macintosh_hd" ]]; then sudo umount -f /Volumes/macintosh_hd; fi
+        if [[ -e "/Volumes/macintosh_hd - Daten" ]]; then sudo umount -f "/Volumes/macintosh_hd - Daten"; fi
+        sleep 5
+        env_get_mounted_disks
+        if [[ $(printf "%s\n" "${LIST_OF_ALL_MOUNTED_VOLUMES_OUTSIDE_OF_BOOT_VOLUME[@]}" | grep -x "/Volumes/macintosh_hd") != "" ]]
+        then
+            # second macos volume is mounted
+            output_mas_hint() {
+                echo ''
+                echo "${bold_text}${red_text}important info${default_text}"
+                echo "at least one more macos volume is mounted, due to this bug"
+                echo "https://github.com/mas-cli/mas/issues/250"
+                echo "mas will install appstore apps to first macos partition found, not necessarily to the mounted one..."
+                echo "as a workaround follow these steps:"
+                echo "1   make sure the scripts are stored on the currently booted macos volume,"
+                echo "    if not copy them"
+                echo "2   unmount all other macos volumes"
+                echo "3   run the script again"
+                echo "exiting..."
+                echo ''
+                exit
+            }
+            output_mas_hint >&2
+        else
+            # second macos volume is not mounted
+            :
+        fi
     else
-        # second macos volume is not mounted
         :
     fi
 }

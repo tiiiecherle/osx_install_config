@@ -115,14 +115,12 @@ trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; env_delete_tmp_b
 
 
 ###
-### batch script part 2
+### batch script part 1
 ###
 
 
 ### in addition to showing them in terminal write errors to logfile when run from batch script
-touch "/tmp/batch_script_in_progress"
-env_check_if_run_from_batch_script
-if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
+env_force_start_error
 
 
 ### security permissions
@@ -243,6 +241,7 @@ batch_run_all() {
 		:
 	fi
 	env_activating_caffeinate
+	env_force_start_error
 
 	
 	### homebrew and cask install
