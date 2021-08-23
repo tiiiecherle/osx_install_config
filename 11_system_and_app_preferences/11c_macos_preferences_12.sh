@@ -984,7 +984,7 @@ EOF
     	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.notifications")
     	#return tabnames
     	#display dialog tabnames
-    	reveal anchor "Main" of pane id "com.apple.preference.notifications"
+    	reveal anchor "Notifications" of pane id "com.apple.preference.notifications"
     	delay 4
     end tell
     
@@ -1566,24 +1566,18 @@ expect eof
     tell application "System Events"
     	tell process "System Preferences"
     		# resolution standard
-    		select row 19 of table 1 of scroll area 1 of tab group 1 of window 1
+    		select row 20 of table 1 of scroll area 1 of tab group 1 of window 1
     		delay 1
     	end tell
     end tell
     
     tell application "System Events"
     	tell process "System Preferences"
-    		# first checkbox in main window
-    		#click checkbox 1 of window 1
-    		# first checkbox of first group
-    		# set theCheckbox to checkbox "Helligkeit automatisch anpassen" of group 1 of tab group 1 of window 1
-    		if exists checkbox 1 of group 1 of tab group 1 of window 1 then
-    			set theCheckbox to (checkbox 1 of group 1 of tab group 1 of window 1)
-    			tell theCheckbox
-    				set checkboxStatus to value of theCheckbox as boolean
-    				if checkboxStatus is true then click theCheckbox
-    			end tell
-    		end if
+    		set theCheckbox to (checkbox 1 of group 1 of tab group 1 of window 1)
+    		tell theCheckbox
+    			set checkboxStatus to value of theCheckbox as boolean
+    			if checkboxStatus is true then click theCheckbox
+    		end tell
     		delay 0.2
     		#click checkbox 1 of group 1 of tab group 1 of window 1
     	end tell
@@ -2327,7 +2321,9 @@ EOF
     sudo systemsetup -setusingnetworktime on
     
     # set time server
-    sudo systemsetup -setnetworktimeserver "time.euro.apple.com"
+    #sudo systemsetup -getnetworktimeserver
+    # use default by not setting anything else
+    #sudo systemsetup -setnetworktimeserver time.apple.com
     
     
     ### timezone
