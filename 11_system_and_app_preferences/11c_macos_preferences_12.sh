@@ -175,7 +175,7 @@ setting_preferences() {
     # 1=small, 2=medium, 3=big
     defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 1
     
-    # desktop tinting
+    # background tinting
     # slightly translucent windows = true
     # not translucent windows = false
     defaults write NSGlobalDomain AppleReduceDesktopTinting -bool false
@@ -314,10 +314,10 @@ setting_preferences() {
     
     
     ###
-    ### preferences dock
+    ### preferences dock and menu bar
     ###
     
-    echo "preferences dock"
+    echo "preferences dock and menu bar"
     
     # enable highlight hover effect for the grid view of a stack (dock)
     #defaults write com.apple.dock mouse-over-hilite-stack -bool true
@@ -466,6 +466,7 @@ setting_preferences() {
     "WiFi                                no-option                                  yes"
     "Bluetooth                           no-option                                  yes"
     "AirDrop                             no-option                                  no"
+    "FocusModes                          no-option                                  if-active"
     "DoNotDisturb                        no-option                                  if-active"
     "KeyboardBrightness                  no-option                                  no"
     "AirPlay                             no-option                                  no"
@@ -479,9 +480,9 @@ setting_preferences() {
     )
     MENU_BAR_CONTROL_CENTER_ARRAY=$(printf "%s\n" "${MENU_BAR_AND_CONTROL_CENTER_ENTRIES[@]}")
     set_menu_bar_and_control_center
-
-    # siri menu bar icon
-    # see siri section below
+    
+    # clock in menu bar
+    # see date & time section below
     
     # spotlight menu bar icon
     # takes effect after logout or reboot
@@ -489,8 +490,11 @@ setting_preferences() {
     /usr/libexec/PlistBuddy ~/Library/Preferences/ByHost/com.apple.Spotlight."$uuid1".plist -c 'Add MenuItemHidden bool true' >/dev/null 2>&1
     # or hide or move with bartender
     
-    # input source menu bar icon
-    # see input source section below
+    # siri menu bar icon
+    # see siri section below
+    
+    # time machine menu bar icon
+    # see time machine section below
 
     #killall ControlCenter
     #killall SystemUIServer
@@ -594,7 +598,8 @@ EOF
     #
     defaults write com.apple.symbolichotkeys.plist AppleSymbolicHotKeys -dict-add 32 "
       <dict>
-        <key>enabled</key><true/>
+        <key>enabled</key>
+        <true/>
         <key>value</key>
         <dict>
           <key>type</key>
@@ -605,6 +610,8 @@ EOF
             <integer>101</integer>
             <integer>0</integer>
           </array>
+          <key>type</key>
+          <string>standard</string>
         </dict>
       </dict>
     "
@@ -667,6 +674,8 @@ EOF
             <integer>103</integer>
             <integer>0</integer>
           </array>
+          <key>type</key>
+          <string>standard</string>
         </dict>
       </dict>
     "
@@ -709,62 +718,13 @@ EOF
     
     
     ### if enabled (true), settings
+    # if enabled is set to false some of the following settings will not be set and not be shown correctly in the system preferences
     
     # listen to hey siri
     defaults write com.apple.Siri VoiceTriggerUserEnabled -bool false
     
     # allow hey siri on lock screen
-    defaults write com.apple.Siri LockscreenEnabled -bool false
-    
-    # language
-    defaults write com.apple.assistant.backedup "Session Language" -string de-DE
-    
-    # output voice language
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Custom" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
-    then
-        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Custom bool" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    	/usr/libexec/PlistBuddy -c "Set :'Output Voice':Custom YES" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    else
-    	/usr/libexec/PlistBuddy -c "Set :'Output Voice':Custom YES" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    fi
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Language" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
-    then
-        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Language string" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    	/usr/libexec/PlistBuddy -c "Set :'Output Voice':Language de-DE" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    else
-    	/usr/libexec/PlistBuddy -c "Set :'Output Voice':Language de-DE" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    fi
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Name" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
-    then
-        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Name string" ~/Library/Preferences/com.apple.assistant.backedup.plist
-        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Name com.apple.speech.synthesis.voice.custom.helena" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    else
-        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Name com.apple.speech.synthesis.voice.custom.helena" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    fi
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Gender" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
-    then
-        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Gender integer" ~/Library/Preferences/com.apple.assistant.backedup.plist
-        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Gender 2" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    else
-        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Gender 2" ~/Library/Preferences/com.apple.assistant.backedup.plist
-    fi
-    
-    # speech output
-    # 2 = yes, 3 = no
-    defaults write com.apple.assistant.backedup "Use device speaker for TTS" -integer 2
-    
-    # micro input (automatic)
-    if [[ -e ~/Library/Preferences/com.apple.Siri.plist ]]
-    then 
-    	if [[ -z $(/usr/libexec/PlistBuddy -c "Print :PreferredMicrophoneIdentifier" ~/Library/Preferences/com.apple.Siri.plist) ]] >/dev/null 2>&1
-    	then
-    		:
-    	else
-    		/usr/libexec/PlistBuddy -c "Delete :PreferredMicrophoneIdentifier" ~/Library/Preferences/com.apple.Siri.plist
-    	fi
-    else
-    	:
-    fi
+    #defaults write com.apple.Siri LockscreenEnabled -bool false
     
     # hotkey
     # 0 = off, 2 = hold cmd+space, 3 = hold option (alt)+space, 4 = hold fn+space
@@ -795,6 +755,68 @@ EOF
     #    </dict>
     #  </dict>
     #"
+    
+    # language
+    defaults write com.apple.assistant.backedup "Session Language" -string de-DE
+    
+    ## output voice (needs reboot)
+    # custom
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Custom" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
+    then
+        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Custom bool" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    	/usr/libexec/PlistBuddy -c "Set :'Output Voice':Custom YES" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    else
+    	/usr/libexec/PlistBuddy -c "Set :'Output Voice':Custom YES" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    fi
+    # footprint
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Footprint" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
+    then
+        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Footprint integer" ~/Library/Preferences/com.apple.assistant.backedup.plist
+        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Footprint 2" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    else
+        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Footprint 2" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    fi
+    # language
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Language" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
+    then
+        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Language string" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    	/usr/libexec/PlistBuddy -c "Set :'Output Voice':Language de-DE" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    else
+    	/usr/libexec/PlistBuddy -c "Set :'Output Voice':Language de-DE" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    fi
+    # gender
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Gender" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
+    then
+        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Gender integer" ~/Library/Preferences/com.apple.assistant.backedup.plist
+        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Gender 2" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    else
+        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Gender 2" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    fi
+    # name
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'Output Voice':Name" ~/Library/Preferences/com.apple.assistant.backedup.plist) ]] > /dev/null 2>&1
+    then
+        /usr/libexec/PlistBuddy -c "Add :'Output Voice':Name string" ~/Library/Preferences/com.apple.assistant.backedup.plist
+        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Name helena" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    else
+        /usr/libexec/PlistBuddy -c "Set :'Output Voice':Name helena" ~/Library/Preferences/com.apple.assistant.backedup.plist
+    fi
+    
+    # speech output
+    # 2 = yes, 3 = no
+    defaults write com.apple.assistant.backedup "Use device speaker for TTS" -integer 2
+    
+    # micro input (automatic)
+    if [[ -e ~/Library/Preferences/com.apple.Siri.plist ]]
+    then 
+    	if [[ -z $(/usr/libexec/PlistBuddy -c "Print :PreferredMicrophoneIdentifier" ~/Library/Preferences/com.apple.Siri.plist) ]] >/dev/null 2>&1
+    	then
+    		:
+    	else
+    		/usr/libexec/PlistBuddy -c "Delete :PreferredMicrophoneIdentifier" ~/Library/Preferences/com.apple.Siri.plist
+    	fi
+    else
+    	:
+    fi
     
     # menu bar icon
     defaults write com.apple.Siri StatusMenuVisible -bool false
@@ -849,14 +871,14 @@ EOF
     ##
     defaults write NSGlobalDomain AppleTemperatureUnit -string "Celsius"
     ##
+    defaults write NSGlobalDomain AppleLiveTextEnabled -bool true
+    ##
     defaults write NSGlobalDomain AppleLocale -string "de_DE@currency=EUR"
     ##
     defaults write NSGlobalDomain AppleMeasurementUnits -string "Centimeters"
     ##
     defaults write NSGlobalDomain AppleMetricUnits -bool true
     ##
-    # sort order phonebook german
-    #defaults write NSGlobalDomain AppleCollationOrder -string "de@collation=phonebook"
     # sort order default (universal)
     defaults write NSGlobalDomain AppleCollationOrder -string "de@collation=universal"
     # or
@@ -970,6 +992,7 @@ EOF
         #sleep 2
     }
     #disable_dnd
+    
     dnd_settings() {
     #osascript 2>/dev/null <<EOF
     osascript <<EOF
@@ -1042,7 +1065,8 @@ EOF
     }
     dnd_settings
     
-    # allow important notifications
+    ### focus
+    # share focus status (allow important notifications)
     # read values
     #jq '.' ~/Library/DoNotDisturb/DB/ModeConfigurations.json
     #jq '.data' ~/Library/DoNotDisturb/DB/ModeConfigurations.json
@@ -1052,6 +1076,12 @@ EOF
     # disable allow important notifications
     #sed -i '' 's|"minimumBreakthroughUrgency":1|"minimumBreakthroughUrgency":0|' ~/Library/DoNotDisturb/DB/ModeConfigurations.json
     
+    # share focus status on multiple devices (allow important notifications on multiple devices) - needs logout
+    # do not share = true
+    # share = false
+    defaults write com.apple.donotdisturbd disableCloudSync -bool true
+    
+    ### other apps
     # allow calls from everyone if do not disturb is active
     defaults write com.apple.messages.facetime FaceTimeFavoritesDNDEnabled -bool false
     
@@ -1064,6 +1094,9 @@ EOF
     
     ### per app notification settings
     # see seperate script
+    
+    
+    
     
     
     ### hidden notification center tweaks
