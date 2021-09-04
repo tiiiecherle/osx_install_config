@@ -300,12 +300,30 @@ then
 	
 	echo "$APP_NAME_FOR_PREFERENCES"
     
+    #launchctl kickstart -k gui/"$(id -u "$USER")"/com.bitdefender.VirusScannerHelper
+  	launchctl enable gui/"$(id -u "$USER")"/com.bitdefender.VirusScannerHelper
 	defaults write com.bitdefender.virusscannerplus continuous_run -bool true
 	defaults write com.bitdefender.virusscannerplus upd_automatic -bool true
 	defaults write com.bitdefender.virusscannerplus oas_scan -bool true
-	#defaults write com.bitdefender.virusscannerplus shouldShowTerms -bool false
-	#defaults write com.bitdefender.virusscannerplus termsOfUse -bool true
+	defaults write com.bitdefender.virusscannerplus shouldShowTerms -bool false
+	defaults write com.bitdefender.virusscannerplus termsOfUse -bool true
+	defaults write com.bitdefender.virusscannerplus isForeground -bool false
 	
+else
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+fi
+
+
+### adguard for safari
+echo ''
+APP_NAME_FOR_PREFERENCES="AdGuard for Safari"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
+then
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
+    
+	launchctl enable gui/"$(id -u "$USER")"/com.adguard.safari.AdGuard.login-helper
+
 else
 	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 fi
@@ -329,7 +347,7 @@ then
 	# reset quicklook and quicklook cache if neccessary
 	#qlmanage -r
 	#qlmanage -r cache
-	
+
 else
 	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 fi
