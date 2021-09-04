@@ -524,6 +524,15 @@ check_if_ethernet_is_active() {
     #echo ''
 }
 
+set_wifi_joinmodefallback() {
+    # ask to join new networks (JoinModeFallback)
+    # has to be done for every network profile, only works when the respective profile is active
+    # no = DoNothing
+    # yes = Prompt
+    # list options /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport
+    sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport "$WLAN_DEVICE_ID" prefs JoinModeFallback=DoNothing
+    sleep 2
+}
 
 
 ###
@@ -575,6 +584,7 @@ if [[ "$CREATE_LOCATION_AUTOMATIC" == "yes" ]]
 then
     echo ''
     create_location_automatic
+    set_wifi_joinmodefallback
 else
     :
 fi
@@ -585,6 +595,7 @@ if [[ "$CREATE_LOCATION_CUSTOM" == "yes" ]]
 then
     echo ''
     create_location_custom
+    set_wifi_joinmodefallback
 else
     :
 fi
@@ -595,6 +606,7 @@ if [[ "$CREATE_LOCATION_WLAN" == "yes" ]]
 then
     echo ''
     create_location_wlan
+    set_wifi_joinmodefallback
 else
     :
 fi
@@ -642,7 +654,17 @@ else
     echo "setting wlan auto hotspot mode..."
     sudo /usr/libexec/PlistBuddy -c "Add :AutoHotspotMode string" /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist &> /dev/null
     sudo /usr/libexec/PlistBuddy -c "Set :AutoHotspotMode 'Never'" /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist
-fi  
+fi
+
+###
+# ask to join new networks (JoinModeFallback)
+# has to be done for every network profile, only works when the respective profile is active
+# no = DoNothing
+# yes = Prompt
+# list options /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport
+# sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport en0 prefs JoinModeFallback=DoNothing
+
+
 
 
 ### locations created
