@@ -1246,7 +1246,9 @@ EOF
     "witchdaemon                                                              false" 
     "Quicksilver                                                              false" 
     "Better                                                                   false"
-    "AdGuard for Safari                                                       true"
+    # adguard and virusscanner helper are started via launchd in third party preferences script
+    #"AdGuard Login Helper                                                     true"
+    #"VirusScannerHelper                                                       true"
     #"Overflow 3                                                               true"                    
     # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
     )
@@ -1599,7 +1601,7 @@ expect eof
     tell application "System Events"
     	tell process "System Preferences"
     		# resolution standard
-    		select row 20 of table 1 of scroll area 1 of tab group 1 of window 1
+    		select row 21 of table 1 of scroll area 1 of tab group 1 of window 1
     		delay 1
     	end tell
     end tell
@@ -1767,12 +1769,350 @@ EOF
     defaults write NSGlobalDomain com.apple.sound.beep.feedback -integer 1
     
     # show sound in menu bar
-    # see "menu bar"    
+    # see "menu bar section above"    
     
     ### hidden sound tweaks
     
     # increase sound quality for Bluetooth headphones/headsets
     #defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
+    
+
+
+    ###
+    ### preferences keyboard
+    ###
+    
+    echo "preferences keyboard"
+    
+    
+    ### keyboard
+    
+    # Set keyboard repeat rate
+    defaults write NSGlobalDomain InitialKeyRepeat -int 25
+    defaults write NSGlobalDomain KeyRepeat -int 6
+    
+    # adjust keyboard brightness in low light
+    ##
+    sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Keyboard Enabled" -bool true
+    
+    # deactivate keyboard light if computer is inactive
+    # -1 = never
+    ##
+    sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Keyboard Dim Time" -int -1
+    
+    # if mac has touchbar, configure more settings
+    if [[ $(pgrep "ControlStrip") != "" ]]
+    then
+        #echo "touchbar is present"
+        
+        # touchbar without fn keys
+        # fullControlStrip
+        # app
+        # functionKeys
+        defaults write com.apple.touchbar.agent PresentationModeGlobal -string functionKeys
+        
+        # touchbar when pressing fn
+        # fullControlStrip
+        # app
+        defaults write com.apple.touchbar.agent PresentationModeFnModes -dict-add functionKeys -string fullControlStrip
+        
+        # activating settings
+        killall ControlStrip
+        
+    else
+        #echo "no touchbar present"
+        :
+    fi
+    
+    
+    # use all F1, F2, etc. keys as standard function keys
+    # 1=yes, 0=no
+    defaults write NSGlobalDomain com.apple.keyboard.fnState -int 1
+    
+    
+    ### text
+    
+    # auto-correct spelling
+    defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+    
+    # auto capitalization
+    defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
+    
+    # substitute double space with dot and space
+    defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+    
+    # touchbar suggestions
+    defaults write NSGlobalDomain NSAutomaticTextCompletionEnabled -bool false
+        
+    # smart quotes
+    defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+    
+    # smart dashes
+    defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
+    
+    
+    ### shortcuts
+    # enable switch focus with keyboard
+    # 2 = enable
+    # 0 = disable
+    defaults write NSGlobalDomain AppleKeyboardUIMode -int 2
+    
+    
+    ### input sources
+    update_keyboard_layout() {
+        while IFS= read -r line || [[ -n "$line" ]]
+        do
+            if [[ "$line" == "" ]]; then continue; fi
+            CONFIG_VALUE="$line"
+            ${PERMISSION} ${PLBUDDY} -c "Delete :"${CONFIG_VALUE}"" "$KEYBOARD_CONFIG_FILE" 2> /dev/null
+            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}" array" "$KEYBOARD_CONFIG_FILE"
+            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}":0 dict" "$KEYBOARD_CONFIG_FILE"
+            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}":0:InputSourceKind string 'Keyboard Layout'" "$KEYBOARD_CONFIG_FILE"
+            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}":0:'KeyboardLayout ID' integer "${KEYBOARD_LAYOUT}"" "$KEYBOARD_CONFIG_FILE"
+            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}":0:'KeyboardLayout Name' string '"${KEYBOARD_LOCALE}"'" "$KEYBOARD_CONFIG_FILE"
+        done <<< "$(printf "%s\n" "${KEYBOARD_CONFIG_VALUES[@]}")"
+    }
+    
+    # variables
+    KEYBOARD_LOCALE="German"
+    # 3 = QUERTZ
+    KEYBOARD_LAYOUT="3"
+    
+    # system
+    PERMISSION='sudo'
+    PLBUDDY='/usr/libexec/PlistBuddy'
+    KEYBOARD_CONFIG_FILE="/Library/Preferences/com.apple.HIToolbox.plist"
+    KEYBOARD_CONFIG_VALUES=(
+    "AppleDefaultAsciiInputSource"
+    "AppleEnabledInputSources"
+    )
+    update_keyboard_layout "$KEYBOARD_CONFIG_FILE" "${KEYBOARD_LOCALE}" "${KEYBOARD_LAYOUT}" 2>&1 | grep -v "Will Create"
+    #sudo chmod 644 "$KEYBOARD_CONFIG_FILE"
+    #sudo chown root:wheel "$KEYBOARD_CONFIG_FILE"
+
+    # user
+    PERMISSION=''
+    PLBUDDY='/usr/libexec/PlistBuddy'
+    KEYBOARD_CONFIG_FILE="/USERS/$USER/Library/Preferences/com.apple.HIToolbox.plist"
+    KEYBOARD_CONFIG_VALUES=(
+    "AppleEnabledInputSources" 
+    "AppleSelectedInputSources"
+    )
+    ${PERMISSION} ${PLBUDDY} -c "Delete :AppleCurrentKeyboardLayoutInputSourceID" "$KEYBOARD_CONFIG_FILE" 2> /dev/null
+    ${PERMISSION} ${PLBUDDY} -c "Add :AppleCurrentKeyboardLayoutInputSourceID string com.apple.keylayout."${KEYBOARD_LOCALE}"" "$KEYBOARD_CONFIG_FILE"
+    update_keyboard_layout "$KEYBOARD_CONFIG_FILE" "${KEYBOARD_LOCALE}" "${KEYBOARD_LAYOUT}"
+    #chmod 644 "$KEYBOARD_CONFIG_FILE"
+    #chown "$USER":staff "$KEYBOARD_CONFIG_FILE"
+    
+    # show input source in menu bar
+    defaults write com.apple.TextInputMenu visible -bool false
+
+    
+    ### dictation
+    defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs DictationIMMasterDictationEnabled -bool false
+    # advanced dictation
+    defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs DictationIMUseOnlyOfflineDictation -bool false
+    # hotkeys
+    # ~/Library/Preferences/com.apple.symbolichotkeys.plist
+    # see dashboard above
+    
+    
+    ### hidden keyboard tweaks
+    
+    # disable press-and-hold for keys in favor of key repeat
+    defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+    
+    # enable full keyboard access for all controls
+    # (e.g. enable tab in modal dialogs)
+    defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+
+
+
+    ###
+    ### preferences mouse & trackpad keyboard, bluetooth accessories, and input
+    ###
+    
+    echo "preferences mouse & trackpad"
+    
+    ### mouse
+    
+    # secondary mouse click
+    # possible values: OneButton, TwoButton, TwoButtonSwapped
+    if [[ "$MOUSE_BUTTON_MODE" != "" ]]
+    then
+        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string "$MOUSE_BUTTON_MODE"
+    else
+        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string OneButton
+    fi
+    
+    ### trackpad
+    # included in macbook is com.apple.AppleMultitouchTrackpad
+    # bluetooth trackpad would be com.apple.driver.AppleBluetoothMultitouch.trackpad
+    
+    # trackpad secondary click
+
+    # how to right click
+    defaults write NSGlobalDomain ContextMenuGesture -int 1
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true
+    # 0 = two finger click
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 0
+    # 1 = click left bottom corner of trackpad
+    #defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 1
+    # eventually this is needed to deactivate two finder click
+    #defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool false
+    # 2 = click right bottom corner of trackpad
+    #defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 2
+    # eventually this is needed to deactivate two finder click
+    #defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool false
+
+    # trackpad: enable tap to click for this user and for the login screen
+    #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+    #defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+    # 0 = disbled
+    # 1 = enabled
+    defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 0
+    
+    # haptic feedback for force touch
+    # 0 = light
+    # 1 = medium
+    # 2 = firm
+    defaults write com.apple.AppleMultitouchTrackpad FirstClickThreshold -int 1
+    defaults write com.apple.AppleMultitouchTrackpad SecondClickThreshold -int 1    
+    
+    # trackpad cursor speed
+    defaults write NSGlobalDomain com.apple.trackpad.scaling -float 0.875
+    
+    # mouse cursor speed
+    # 0-5 with 5 being the fastest
+    defaults write -g com.apple.mouse.scaling 0.875
+    # default mouse cursor speed
+    # defaults delete -g com.apple.mouse.scaling    
+    
+    # force click and haptic feedback
+    #defaults write NSGlobalDomain com.apple.trackpad.forceClick -bool true
+    #defaults write com.AppleMultitouchTrackpad ActuateDetents -bool true
+    # true = force klick off
+    # fallse = force klick on
+    defaults write com.apple.AppleMultitouchTrackpad ForceSuppressed -bool true
+    
+    # disable "natural" scrolling
+    defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
+    
+    # trackpad: map bottom right corner to right-click
+    #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick -int 2
+    #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick -bool true
+    #defaults -currentHost write NSGlobalDomain com.apple.trackpad.trackpadCornerClickBehavior -int 1
+    #defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true
+    
+    # use scroll gesture with the Ctrl (^) modifier key to zoom
+    #defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true
+    #defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144
+    # follow the keyboard focus while zoomed in
+    #defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true
+    
+    # disable smooth scrolling
+    #defaults write -g AppleScrollAnimationEnabled -bool false
+    #defaults write -g NSScrollAnimationEnabled -bool false
+            
+    
+    
+    ###
+    ### preferences - displays
+    ###
+    
+    echo "preferences displays"
+    
+    # nnable HiDPI display modes (requires restart) for non retina displays
+    #sudo defaults write /Library/Preferences/com.apple.windowserver DisplayResolutionEnabled -bool true
+    
+    # settings display scale factor (1 = 100%)
+    # does not work for me in 10.11
+    #defaults write NSGlobalDomain AppleDisplayScaleFactor 0.75
+    
+    # monitor preferences
+    monitor_preferences() {
+    #osascript 2>/dev/null <<EOF
+    osascript <<EOF
+    
+    tell application "System Preferences"
+    	activate
+    	#set paneids to (get the id of every pane)
+    	#display dialog paneids
+    	#return paneids
+    	#set current pane to pane "com.apple.preference.displays"
+    	#get the name of every anchor of pane id "com.apple.preference.displays"
+    	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.displays")
+    	#display dialog tabnames
+    	#return tabnames
+    	reveal anchor "displaysDisplayTab" of pane id "com.apple.preference.displays"
+    	delay 4
+    end tell
+    
+    tell application "System Events" to tell process "System Preferences" to set visible to true
+    delay 1
+    tell application "System Events" to tell process "System Preferences" to set frontmost to true
+    delay 1
+    
+    tell application "System Events"
+    	tell process "System Preferences"
+    		# resolution standard
+    		click radio button 1 of radio group 1 of group 1 of window 1
+    		delay 1
+    	end tell
+    end tell
+    
+    tell application "System Events"
+    	tell process "System Preferences"
+    		# enable adjust brightness automatically
+    		if exists checkbox 1 of group 1 of window 1 then
+    			set theCheckbox to (checkbox 1 of group 1 of window 1)
+    			tell theCheckbox
+    				set checkboxStatus to value of theCheckbox as boolean
+    				if checkboxStatus is false then click theCheckbox
+    			end tell
+    		end if
+    		delay 1
+    		# enable true tone
+    		if exists checkbox 2 of group 1 of window 1 then
+    			set theCheckbox to (checkbox 2 of group 1 of window 1)
+    			tell theCheckbox
+    				set checkboxStatus to value of theCheckbox as boolean
+    				if checkboxStatus is false then click theCheckbox
+    			end tell
+    		end if
+    		delay 1
+    	end tell
+    end tell
+    
+    delay 2
+    
+    tell application "System Preferences"
+    	quit
+    end tell
+    
+EOF
+    }
+    monitor_preferences
+    
+    # display - automatically adjust brightness
+    ##
+    #sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Display Enabled" -bool false
+    
+    # show monitor sync options in menu bar if available
+    ##
+    defaults write com.apple.airplay showInMenuBarIfPresent -bool true
+    
+    # night shift
+    # controlled in /S*/L*/PrivateFrameworks/CoreBrightness.framework/CoreBrightness
+    # https://github.com/jenghis/nshift
+    # https://github.com/leberwurstsaft/nshift      (binary)
+    # binary usage
+    # nshift.dms strength (0-100)
+    # nshift.dms on
+    # nshift.dms off
+    # nshift.dms reset
+    # or
+    # https://justgetflux.com
 
 
 
@@ -1885,337 +2225,6 @@ EOF
     else
     	echo ""$DEFAULTS_WRITE_DIR"/script_input_keep/printer/printer_data.sh not found, skipping reinstalling printer..."
     fi
-    
-
-
-    ###
-    ### preferences keyboard
-    ###
-    
-    echo "preferences keyboard"
-    
-    
-    ### keyboard
-    
-    # Set keyboard repeat rate
-    defaults write NSGlobalDomain InitialKeyRepeat -int 25
-    defaults write NSGlobalDomain KeyRepeat -int 6
-    
-    # adjust keyboard brightness in low light
-    ##
-    sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Keyboard Enabled" -bool true
-    
-    # deactivate keyboard light if computer is inactive
-    # -1 = never
-    ##
-    sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Keyboard Dim Time" -int -1
-    
-    # if mac has touchbar, configure more settings
-    if [[ $(pgrep "ControlStrip") != "" ]]
-    then
-        #echo "touchbar is present"
-        
-        # touchbar without fn keys
-        # fullControlStrip
-        # app
-        # functionKeys
-        defaults write com.apple.touchbar.agent PresentationModeGlobal -string functionKeys
-        
-        # touchbar when pressing fn
-        # fullControlStrip
-        # app
-        defaults write com.apple.touchbar.agent PresentationModeFnModes -dict-add functionKeys -string fullControlStrip
-        
-        # activating settings
-        killall ControlStrip
-        
-    else
-        #echo "no touchbar present"
-        :
-    fi
-    
-    
-    # use all F1, F2, etc. keys as standard function keys
-    # 1=yes, 0=no
-    defaults write NSGlobalDomain com.apple.keyboard.fnState -int 1
-    
-    # show input source in menu bar
-    defaults write com.apple.TextInputMenu visible -bool false
-    
-    
-    ### text
-    
-    # auto-correct spelling
-    defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
-    
-    # auto capitalization
-    defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
-    
-    # substitute double space with dot and space
-    defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
-    
-    # touchbar suggestions
-    defaults write NSGlobalDomain NSAutomaticTextCompletionEnabled -bool false
-        
-    # smart quotes
-    defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
-    
-    # smart dashes
-    defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
-    
-    
-    ### input sources
-    update_keyboard_layout() {
-        while IFS= read -r line || [[ -n "$line" ]]
-        do
-            if [[ "$line" == "" ]]; then continue; fi
-            CONFIG_VALUE="$line"
-            ${PERMISSION} ${PLBUDDY} -c "Delete :"${CONFIG_VALUE}"" "$KEYBOARD_CONFIG_FILE" 2> /dev/null
-            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}" array" "$KEYBOARD_CONFIG_FILE"
-            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}":0 dict" "$KEYBOARD_CONFIG_FILE"
-            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}":0:InputSourceKind string 'Keyboard Layout'" "$KEYBOARD_CONFIG_FILE"
-            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}":0:'KeyboardLayout ID' integer "${KEYBOARD_LAYOUT}"" "$KEYBOARD_CONFIG_FILE"
-            ${PERMISSION} ${PLBUDDY} -c "Add :"${CONFIG_VALUE}":0:'KeyboardLayout Name' string '"${KEYBOARD_LOCALE}"'" "$KEYBOARD_CONFIG_FILE"
-        done <<< "$(printf "%s\n" "${KEYBOARD_CONFIG_VALUES[@]}")"
-    }
-    
-    # variables
-    KEYBOARD_LOCALE="German"
-    # 3 = QUERTZ
-    KEYBOARD_LAYOUT="3"
-    
-    # system
-    PERMISSION='sudo'
-    PLBUDDY='/usr/libexec/PlistBuddy'
-    KEYBOARD_CONFIG_FILE="/Library/Preferences/com.apple.HIToolbox.plist"
-    KEYBOARD_CONFIG_VALUES=(
-    "AppleDefaultAsciiInputSource"
-    "AppleEnabledInputSources"
-    )
-    update_keyboard_layout "$KEYBOARD_CONFIG_FILE" "${KEYBOARD_LOCALE}" "${KEYBOARD_LAYOUT}" 2>&1 | grep -v "Will Create"
-    #sudo chmod 644 "$KEYBOARD_CONFIG_FILE"
-    #sudo chown root:wheel "$KEYBOARD_CONFIG_FILE"
-
-    # user
-    PERMISSION=''
-    PLBUDDY='/usr/libexec/PlistBuddy'
-    KEYBOARD_CONFIG_FILE="/USERS/$USER/Library/Preferences/com.apple.HIToolbox.plist"
-    KEYBOARD_CONFIG_VALUES=(
-    "AppleEnabledInputSources" 
-    "AppleSelectedInputSources"
-    )
-    ${PERMISSION} ${PLBUDDY} -c "Delete :AppleCurrentKeyboardLayoutInputSourceID" "$KEYBOARD_CONFIG_FILE" 2> /dev/null
-    ${PERMISSION} ${PLBUDDY} -c "Add :AppleCurrentKeyboardLayoutInputSourceID string com.apple.keylayout."${KEYBOARD_LOCALE}"" "$KEYBOARD_CONFIG_FILE"
-    update_keyboard_layout "$KEYBOARD_CONFIG_FILE" "${KEYBOARD_LOCALE}" "${KEYBOARD_LAYOUT}"
-    #chmod 644 "$KEYBOARD_CONFIG_FILE"
-    #chown "$USER":staff "$KEYBOARD_CONFIG_FILE"
-
-    
-    ### dictation
-    defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs DictationIMMasterDictationEnabled -bool false
-    # advanced dictation
-    defaults write com.apple.speech.recognition.AppleSpeechRecognition.prefs DictationIMUseOnlyOfflineDictation -bool false
-    # hotkeys
-    # ~/Library/Preferences/com.apple.symbolichotkeys.plist
-    # see dashboard above
-    
-    
-    ### hidden keyboard tweaks
-    
-    # disable press-and-hold for keys in favor of key repeat
-    defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
-    
-    # enable full keyboard access for all controls
-    # (e.g. enable tab in modal dialogs)
-    defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
-
-
-
-    ###
-    ### preferences mouse & trackpad keyboard, bluetooth accessories, and input
-    ###
-    
-    echo "preferences mouse & trackpad"
-    
-    ### mouse
-    
-    # secondary mouse click
-    # possible values: OneButton, TwoButton, TwoButtonSwapped
-    if [[ "$MOUSE_BUTTON_MODE" != "" ]]
-    then
-        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string "$MOUSE_BUTTON_MODE"
-    else
-        defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode -string OneButton
-    fi
-    
-    ### trackpad
-    # included in macbook is com.apple.AppleMultitouchTrackpad
-    # bluetooth trackpad would be com.apple.driver.AppleBluetoothMultitouch.trackpad
-    
-    # trackpad secondary click
-
-    # how to right click
-    defaults write NSGlobalDomain ContextMenuGesture -int 1
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true
-    # 0 = two finger click
-    defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 0
-    # 1 = click left bottom corner of trackpad
-    #defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 1
-    # eventually this is needed to deactivate two finder click
-    #defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool false
-    # 2 = click right bottom corner of trackpad
-    #defaults write com.apple.AppleMultitouchTrackpad TrackpadCornerSecondaryClick -int 2
-    # eventually this is needed to deactivate two finder click
-    #defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool false
-
-    # trackpad: enable tap to click for this user and for the login screen
-    #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
-    #defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
-    # 0 = disbled
-    # 1 = enabled
-    defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 0
-    
-    # haptic feedback for force touch
-    # 0 = light
-    # 1 = medium
-    # 2 = firm
-    defaults write com.apple.AppleMultitouchTrackpad FirstClickThreshold -int 1
-    defaults write com.apple.AppleMultitouchTrackpad SecondClickThreshold -int 1    
-    
-    # trackpad cursor speed
-    defaults write NSGlobalDomain com.apple.trackpad.scaling -float 0.875
-    
-    # mouse cursor speed
-    # 0-5 with 5 being the fastest
-    defaults write -g com.apple.mouse.scaling 0.875
-    # default mouse cursor speed
-    # defaults delete -g com.apple.mouse.scaling    
-    
-    # force click and haptic feedback
-    #defaults write NSGlobalDomain com.apple.trackpad.forceClick -bool true
-    #defaults write com.AppleMultitouchTrackpad ActuateDetents -bool true
-    # true = force klick off
-    # fallse = force klick on
-    defaults write com.apple.AppleMultitouchTrackpad ForceSuppressed -bool true
-    
-    # disable "natural" scrolling
-    defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
-    
-    # trackpad: map bottom right corner to right-click
-    #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick -int 2
-    #defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick -bool true
-    #defaults -currentHost write NSGlobalDomain com.apple.trackpad.trackpadCornerClickBehavior -int 1
-    #defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true
-    
-    # use scroll gesture with the Ctrl (^) modifier key to zoom
-    #defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true
-    #defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144
-    # follow the keyboard focus while zoomed in
-    #defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true
-    
-    # disable smooth scrolling
-    #defaults write -g AppleScrollAnimationEnabled -bool false
-    #defaults write -g NSScrollAnimationEnabled -bool false
-            
-    
-    
-    ###
-    ### preferences - monitor
-    ###
-    
-    echo "preferences monitor"
-    
-    # nnable HiDPI display modes (requires restart) for non retina displays
-    #sudo defaults write /Library/Preferences/com.apple.windowserver DisplayResolutionEnabled -bool true
-    
-    # settings display scale factor (1 = 100%)
-    # does not work for me in 10.11
-    #defaults write NSGlobalDomain AppleDisplayScaleFactor 0.75
-    
-    # monitor preferences
-    monitor_preferences() {
-    #osascript 2>/dev/null <<EOF
-    osascript <<EOF
-    
-    tell application "System Preferences"
-    	activate
-    	#set paneids to (get the id of every pane)
-    	#display dialog paneids
-    	#return paneids
-    	#set current pane to pane "com.apple.preference.displays"
-    	#get the name of every anchor of pane id "com.apple.preference.displays"
-    	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.displays")
-    	#display dialog tabnames
-    	#return tabnames
-    	reveal anchor "displaysDisplayTab" of pane id "com.apple.preference.displays"
-    	delay 4
-    end tell
-    
-    tell application "System Events" to tell process "System Preferences" to set visible to true
-    delay 1
-    tell application "System Events" to tell process "System Preferences" to set frontmost to true
-    delay 1
-    
-    tell application "System Events"
-    	tell process "System Preferences"
-    		# resolution standard
-    		click radio button 1 of radio group 1 of group 1 of window 1
-    		delay 1
-    	end tell
-    end tell
-    
-    tell application "System Events"
-    	tell process "System Preferences"
-    		# enable adjust brightness automatically
-    		if exists checkbox 1 of group 1 of window 1 then
-    			set theCheckbox to (checkbox 1 of group 1 of window 1)
-    			tell theCheckbox
-    				set checkboxStatus to value of theCheckbox as boolean
-    				if checkboxStatus is false then click theCheckbox
-    			end tell
-    		end if
-    		delay 1
-    		# enable true tone
-    		if exists checkbox 2 of group 1 of window 1 then
-    			set theCheckbox to (checkbox 2 of group 1 of window 1)
-    			tell theCheckbox
-    				set checkboxStatus to value of theCheckbox as boolean
-    				if checkboxStatus is false then click theCheckbox
-    			end tell
-    		end if
-    		delay 1
-    	end tell
-    end tell
-    
-    delay 2
-    
-    tell application "System Preferences"
-    	quit
-    end tell
-    
-EOF
-    }
-    monitor_preferences
-    
-    # display - automatically adjust brightness
-    ##
-    #sudo defaults write /Library/Preferences/com.apple.iokit.AmbientLightSensor "Automatic Display Enabled" -bool false
-    
-    # show monitor sync options in menu bar if available
-    ##
-    defaults write com.apple.airplay showInMenuBarIfPresent -bool true
-    
-    # night shift
-    # controlled in /S*/L*/PrivateFrameworks/CoreBrightness.framework/CoreBrightness
-    # https://github.com/jenghis/nshift
-    # https://github.com/leberwurstsaft/nshift      (binary)
-    # binary usage
-    # nshift.dms strength (0-100)
-    # nshift.dms on
-    # nshift.dms off
-    # nshift.dms reset
-    # or
-    # https://justgetflux.com
     
     
     
@@ -2356,7 +2365,7 @@ EOF
     # set time server
     #sudo systemsetup -getnetworktimeserver
     # use default by not setting anything else
-    #sudo systemsetup -setnetworktimeserver time.apple.com
+    sudo systemsetup -setnetworktimeserver time.apple.com
     
     
     ### timezone
@@ -2461,8 +2470,14 @@ EOF
     
     # screen sharing
     # enable
-    sudo launchctl enable system/com.apple.screensharing
-    sudo launchctl bootstrap system "/System/Library/LaunchDaemons/com.apple.screensharing.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+    if [[ $(sudo launchctl list | grep com.apple.screensharing) == "" ]] > /dev/null 2>&1
+    then
+        sudo launchctl enable system/com.apple.screensharing
+        sudo launchctl bootstrap system "/System/Library/LaunchDaemons/com.apple.screensharing.plist" 2>&1 | grep -v "in progress" | grep -v "already bootstrapped"
+    else
+        :
+    fi
+
     # ask for permission to share screen
     # enable
     sudo defaults write /Library/Preferences/com.apple.RemoteManagement.plist ScreenSharingReqPermEnabled -bool true
@@ -2664,7 +2679,101 @@ EOF
     # content caching
     #sudo AssetCacheManagerUtil activate
     #sudo AssetCacheManagerUtil deactivate
-       
+    
+    # airplay receiver
+    # enable/disable
+    defaults write ByHost/com.apple.controlcenter.${uuid1} AirplayRecieverEnabled -bool false
+    
+    # if enabled
+    # 1 = allow from same icloud user
+    # 2 = allow from complete same network
+    # 3 = allow from everyone
+    defaults write ByHost/com.apple.controlcenter.${uuid1} AirplayReceiverAdvertising -int 1
+
+    # disable airplay receiver with applescript
+    disable_airplay_receiver() {
+    #osascript 2>/dev/null <<EOF
+    osascript <<EOF
+    
+    tell application "System Preferences"
+    	activate
+    	#set paneids to (get the id of every pane)
+    	#display dialog paneids
+    	#return paneids
+    	#set current pane to pane "com.apple.preference.sharing"
+    	#get the name of every anchor of pane id "com.apple.preference.sharing"
+    	#set tabnames to (get the name of every anchor of pane id "com.apple.preferences.sharing")
+    	#return tabnames
+    	reveal anchor "Services_AirPlayReceiver" of pane id "com.apple.preferences.sharing"
+    	delay 4
+    end tell
+    
+    tell application "System Events" to tell process "System Preferences" to set visible to true
+    delay 1
+    tell application "System Events" to tell process "System Preferences" to set frontmost to true
+    delay 1
+    
+    tell application "System Events"
+    	tell process "System Preferences"
+    		try
+    			click button "Zum Bearbeiten auf das Schloss klicken." of window "Freigaben"
+    		on error
+    			click button 1 of window 1
+    		end try
+    		delay 2
+    		tell process "SecurityAgent"
+    			try
+    				tell application "System Events" to keystroke "$SUDOPASSWORD"
+    			end try
+    		end tell
+    		delay 2
+    	end tell
+    end tell
+    tell application "System Events"
+    	try
+    		tell application "System Events"
+    			try
+    				tell process "System Preferences"
+    					try
+    						click button "Schutz aufheben" of sheet 1 of window "Freigaben"
+    					end try
+    				end tell
+    			end try
+    		end tell
+    	on error
+    		tell application "System Events"
+    			try
+    				tell process "System Preferences"
+    					try
+    						click button 1 of sheet 1 of window 1
+    					end try
+    				end tell
+    			end try
+    		end tell
+    	end try
+    end tell
+    delay 2
+    
+    tell application "System Events"
+    	tell process "System Preferences"
+    		set theCheckbox to (checkbox 1 of row 11 of table 1 of scroll area 1 of group 1 of window 1)
+    		tell theCheckbox
+    			set checkboxStatus to value of theCheckbox as boolean
+    			if checkboxStatus is true then click theCheckbox
+    		end tell
+    		delay 0.2
+    	end tell
+    end tell
+    
+    delay 2
+    
+    tell application "System Preferences"
+    	quit
+    end tell
+    
+EOF
+    }
+    #disable_airplay_receiver
      
         
     ###
@@ -3050,8 +3159,73 @@ EOF
     ##
     defaults write com.apple.Safari NewTabBehavior -int 1
     
-    # set safaris home page to `about:blank` for faster loading
-    defaults write com.apple.Safari HomePage -string "about:blank"
+    # homepage
+    defaults write com.apple.Safari HomePage "about:blank"
+    defaults write com.apple.Safari DidMigrateDownloadFolderToSandbox -bool false
+    defaults write com.apple.Safari DidMigrateResourcesToSandbox -bool false
+    defaults read com.apple.Safari >/dev/null 2>&1
+    defaults write com.apple.Safari.SandboxBroker Homepage "about:blank"
+    defaults write com.apple.Safari.SandboxBroker DidMigrateDownloadFolderToSandbox -bool false
+    defaults write com.apple.Safari.SandboxBroker DidMigrateResourcesToSandbox -bool false
+    defaults read com.apple.Safari.SandboxBroker >/dev/null 2>&1
+    
+    # or directly in the data stream
+    # get current data and format
+    #plutil -extract Homepage xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.Safari.SandboxBroker.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o -
+    # write new data in variable
+    SAFARI_HOMEPAGE_DATA=$(echo '
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+    	<key>$archiver</key>
+    	<string>NSKeyedArchiver</string>
+    	<key>$objects</key>
+    	<array>
+    		<string>$null</string>
+    		<dict>
+    			<key>$class</key>
+    			<dict>
+    				<key>CF$UID</key>
+    				<integer>3</integer>
+    			</dict>
+    			<key>NS.base</key>
+    			<dict>
+    				<key>CF$UID</key>
+    				<integer>0</integer>
+    			</dict>
+    			<key>NS.relative</key>
+    			<dict>
+    				<key>CF$UID</key>
+    				<integer>2</integer>
+    			</dict>
+    		</dict>
+    		<string>about:blank</string>
+    		<dict>
+    			<key>$classes</key>
+    			<array>
+    				<string>NSURL</string>
+    				<string>NSObject</string>
+    			</array>
+    			<key>$classname</key>
+    			<string>NSURL</string>
+    		</dict>
+    	</array>
+    	<key>$top</key>
+    	<dict>
+    		<key>root</key>
+    		<dict>
+    			<key>CF$UID</key>
+    			<integer>1</integer>
+    		</dict>
+    	</dict>
+    	<key>$version</key>
+    	<integer>100000</integer>
+    </dict>
+    </plist>
+    ' | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
+    # write data
+    #defaults write com.apple.Safari.SandboxBroker Homepage -data "$SAFARI_HOMEPAGE_DATA"
     
     # days of keeping history
     defaults write com.apple.Safari HistoryAgeInDaysLimit -int 1
@@ -3064,40 +3238,31 @@ EOF
     # 1 = 12 sites
     # 2 = 24 sites
     defaults write com.apple.Safari TopSitesGridArrangement -int 0
-    
-    # set safari download path
-    if defaults read -app Safari AlwaysPromptForDownloadFolder &>/dev/null
-    then
-        defaults delete -app Safari AlwaysPromptForDownloadFolder
-    else
-        #defaults write -app Safari AlwaysPromptForDownloadFolder -bool false
-        :
-    fi
+        
+    ### safari download path
+    # ask on every download
+    defaults write com.apple.Safari.SandboxBroker AlwaysPromptForDownloadFolder -bool false
+
+    # download path
     if [[ "$SAFARI_DOWNLOADS_PATH" != "" ]]
     then
-        mkdir -p "$SAFARI_DOWNLOADS_PATH"
-        if [[ $(defaults read -app Safari | grep DownloadsPath) == "" ]]
-        then
-            defaults write -app Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
-        elif [[ $(defaults read -app Safari DownloadsPath) != "$SAFARI_DOWNLOADS_PATH" ]]
-        then
-            #defaults write com.apple.Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
-            defaults write -app Safari DownloadsPath -string "$SAFARI_DOWNLOADS_PATH"
-        else
-            :
-        fi
+        :
     else
-        if [[ $(defaults read -app Safari | grep DownloadsPath) == "" ]]
-        then
-            defaults write -app Safari DownloadsPath -string "~/Downloads"
-        elif [[ $(defaults read -app Safari DownloadsPath) != "~/Downloads" ]]
-        then
-            #defaults write com.apple.Safari DownloadsPath -string "~/Downloads"
-            defaults write -app Safari DownloadsPath -string "~/Downloads"
-        else
-            :
-        fi
+        SAFARI_DOWNLOADS_PATH="~/Downloads"
     fi
+    
+    defaults write com.apple.Safari DownloadsPath "/Users/"$USER"/Desktop/files"
+    defaults write com.apple.Safari DidMigrateDownloadFolderToSandbox -bool false
+    defaults write com.apple.Safari DidMigrateResourcesToSandbox -bool false
+    defaults read com.apple.Safari >/dev/null 2>&1
+    defaults write com.apple.Safari.SandboxBroker DownloadLocation "/Users/"$USER"/Desktop/files"
+    defaults write com.apple.Safari.SandboxBroker DidMigrateDownloadFolderToSandbox -bool false
+    defaults write com.apple.Safari.SandboxBroker DidMigrateResourcesToSandbox -bool false
+    defaults read com.apple.Safari.SandboxBroker >/dev/null 2>&1
+    
+    # or directly in the data stream (currently not working due to an output error)
+    # get current data and format
+    #plutil -extract Homepage xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.Safari.SandboxBroker.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o -
     
     # remove downloads list items
     # 0 = manually
@@ -3113,6 +3278,19 @@ EOF
     
     
     ### safari tabs
+    
+    # tabs layout
+    # false = compact
+    # true = separate
+    defaults write com.apple.Safari ShowStandaloneTabBar -bool true
+
+    # show color in tab bar
+    # false = show color
+    # true = do not show color
+    defaults write com.apple.Safari NeverUseBackgroundColorInToolbar -bool false
+    
+    # automatically resize tabs and make them smaller if more tabs are open (ff turned of tabs stay the same size and you have to scroll through them)
+    defaults write com.apple.Safari EnableNarrowTabs -bool true
     
     # open pages in tabs instead of windows
     # 0 = never
@@ -3133,9 +3311,7 @@ EOF
     ##
     defaults write com.apple.Safari Command1Through9SwitchesTabs -bool false
     
-    # show icons in tabs
-    ##
-    defaults write com.apple.Safari ShowIconsInTabs -bool false
+
     
     
     ### safari autofill
