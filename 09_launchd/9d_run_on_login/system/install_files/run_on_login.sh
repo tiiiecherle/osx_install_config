@@ -40,48 +40,6 @@ fi
 
 ###
 
-reset_safari_download_location() {
-
-    if sudo -H -u "$loggedInUser" defaults read -app Safari AlwaysPromptForDownloadFolder &>/dev/null
-    then
-        sudo -H -u "$loggedInUser" defaults delete -app Safari AlwaysPromptForDownloadFolder
-    else
-        #sudo -H -u "$loggedInUser" defaults write -app Safari AlwaysPromptForDownloadFolder -bool false
-        :
-    fi
-
-    if [[ -d "/Users/"$loggedInUser"/Desktop/files" ]]
-    then
-        if [[ $(sudo -H -u "$loggedInUser" defaults read -app Safari DownloadsPath) != "~/Desktop/files" ]]
-        then
-            #sudo -H -u "$loggedInUser" mkdir -p "/Users/$loggedInUser/Desktop/files"
-            #mkdir -p "~/Desktop/files"
-            sudo -H -u "$loggedInUser" defaults write -app Safari DownloadsPath -string "~/Desktop/files"
-            #sudo -H -u "$loggedInUser" defaults write -app Safari DownloadsPath -string "~/Desktop/files"
-            #sudo -H -u "$loggedInUser" defaults write /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist DownloadsPath -string "~/Desktop/files"
-            #/usr/libexec/PlistBuddy -c 'Set DownloadsPath "~/Desktop/files"' /Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist
-        else
-            :
-        fi
-    else
-        if [[ $(sudo -H -u "$loggedInUser" defaults read -app Safari DownloadsPath) != "~/Downloads" ]]
-        then
-            sudo -H -u "$loggedInUser" defaults write -app Safari DownloadsPath -string "~/Downloads"
-        else
-            :
-        fi
-    fi
-    
-    # testing
-    #echo "$loggedInUser" > /Users/"$loggedInUser"/Desktop/login_script.txt
-    
-    # activating changes
-    #sudo -H -u "$loggedInUser" defaults read com.apple.Safari &>/dev/null
-        
-}
-#reset_safari_download_location
-
-
 # workaround for macos bug that prevents /etc/fstab entries to work for encrypted apfs volumes
 # it seems there is another way of preventing macintosh_hd2 to auto-mount by adding apfs role D (data)
 # https://apple.stackexchange.com/questions/310574/how-to-prevent-auto-mounting-of-a-volume-in-macos-high-sierra
