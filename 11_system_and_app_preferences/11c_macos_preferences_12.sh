@@ -3251,11 +3251,11 @@ EOF
         SAFARI_DOWNLOADS_PATH="~/Downloads"
     fi
     
-    defaults write com.apple.Safari DownloadsPath "/Users/"$USER"/Desktop/files"
+    defaults write com.apple.Safari DownloadsPath "$SAFARI_DOWNLOADS_PATH"
     defaults write com.apple.Safari DidMigrateDownloadFolderToSandbox -bool false
     defaults write com.apple.Safari DidMigrateResourcesToSandbox -bool false
     defaults read com.apple.Safari >/dev/null 2>&1
-    defaults write com.apple.Safari.SandboxBroker DownloadLocation "/Users/"$USER"/Desktop/files"
+    defaults write com.apple.Safari.SandboxBroker DownloadLocation "$SAFARI_DOWNLOADS_PATH"
     defaults write com.apple.Safari.SandboxBroker DidMigrateDownloadFolderToSandbox -bool false
     defaults write com.apple.Safari.SandboxBroker DidMigrateResourcesToSandbox -bool false
     defaults read com.apple.Safari.SandboxBroker >/dev/null 2>&1
@@ -3310,8 +3310,6 @@ EOF
     # command+1 through 9 switches tabs
     ##
     defaults write com.apple.Safari Command1Through9SwitchesTabs -bool false
-    
-
     
     
     ### safari autofill
@@ -3376,12 +3374,6 @@ EOF
     ##
     defaults write com.apple.Safari WebKitJavaScriptEnabled -bool true
     defaults write com.apple.Safari WebKitPreferences.javaScriptEnabled -bool true
-    
-    # block pop-up windows
-    # option does no longer exist
-    # false = yes
-    ##
-    #defaults write com.apple.Safari WebKitJavaScriptCanOpenWindowsAutomatically -bool false
         
     
     ### safari privacy
@@ -3402,7 +3394,10 @@ EOF
     
     # allow websites to check if applepay is enabled
     defaults write com.apple.Safari WebKitPreferences.applePayCapabilityDisclosureAllowed -bool true
-        
+    
+    # allow web measurement
+    defaults write com.apple.Safari WebKitPreferences.privateClickMeasurementEnabled -bool false
+    
     
     ### safari websites
     
@@ -3767,6 +3762,9 @@ EOF
     # add invitations to calendar app automatically
     # adds entry to ~/Library/Mail/V6/MailData/UnsyncedRules.plist
     
+    # archive or delete suppressed messages
+    defaults write com.apple.mail ArchiveOrDeleteMutedMessagesKey -bool false
+    
     # try sending later automatically if server for sending is offline
     defaults write com.apple.mail SuppressDeliveryFailure -bool false
     
@@ -3803,6 +3801,11 @@ EOF
     defaults write com.apple.mail DraftsViewerAttributes -dict-add "SortedAscending" -string "yes"
     defaults write com.apple.mail DraftsViewerAttributes -dict-add "SortOrder" -string "received-date"
     
+    # move deleted emails to
+    # 0 = trash
+    # 1 = archive
+    defaults write com.apple.mail SwipeAction -int 0
+    
     # show from/to/cc label in mail list
     defaults write com.apple.mail EnableToCcInMessageList -bool false
     
@@ -3818,11 +3821,6 @@ EOF
     # copy email addresses as "foo@example.com" instead of "Foo Bar <foo@example.com>" in mail.app
     # false = copy without name
     defaults write com.apple.mail AddressesIncludeNameOnPasteboard -bool false
-    
-    # load content from remote urls (content and pictures)
-    # load content = false
-    # do not load content = true
-    defaults write com.apple.mail-shared DisableURLLoading -bool true
     
     # highlight non grouped messages from conversations
     defaults write com.apple.mail HighlightCurrentThread -bool true
@@ -3887,6 +3885,15 @@ EOF
     # ~/Library/Mail/V*/MailData/Signatures/AllSignatures.plist
     # ~/Library/Mail/V*/MailData/Signatures/SignaturesByAccount.plist  
 
+
+    ### privacy
+    # "/Users/"$USER"/Library/Group Containers/group.com.apple.mail/Library/Preferences/group.com.apple.mail.plist"
+    # 1 =       protect mail activity   on;      
+    # 9 =       protect mail activity   off;       hide ip  on;     block remote content    off
+    # 11 =      protect mail activity   off;       hide ip  on;     block remote content    on  
+    # 13 =      protect mail activity   off;       hide ip  off;     block remote content   off
+    defaults write "/Users/"$USER"/Library/Group Containers/group.com.apple.mail/Library/Preferences/group.com.apple.mail.plist" LoadRemoteContent-v2 -int 11
+    
 
     ### more mail tweaks
     
@@ -3977,8 +3984,8 @@ EOF
     
     echo "terminal"
     
-    # only use utf-8 in terminal
-    defaults write com.apple.terminal StringEncodings -array 4
+    # only use utf-16 in terminal
+    defaults write com.apple.terminal StringEncodings -array 10
     
     # enable "focus follows mouse" for Terminal.app and all X11 apps, i.e. hover over a window and start typing in it without clicking first
     #defaults write com.apple.terminal FocusFollowsMouse -bool true
@@ -4229,7 +4236,7 @@ EOF
     defaults write com.apple.iCal "display birthdays calendar" -bool true
     
     # display holiday calendar
-    defaults write com.apple.iCal "add holiday calendar" -bool false
+    defaults write com.apple.iCal "add holiday calendar" -bool true
         
     # show alternate calendar
     #defaults write com.apple.iCal "CALPrefOverlayCalendarIdentifier" -string "chinese"
