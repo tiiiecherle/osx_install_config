@@ -91,7 +91,18 @@ do
 	chmod 770 "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html
 	#xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
-	xattr -d "$BUILD_DIR"/app/"$APP_NAME".app
+	if [[ $(xattr -l "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
+    else
+        :
+    fi
+	if [[ $(xattr -l "$BUILD_DIR"/app/"$APP_NAME".app | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$BUILD_DIR"/app/"$APP_NAME".app
+    else
+        :
+    fi
 
 	echo copying app to build directory...
 	if [[ -e "$BUILD_DIR"/"$APP_NAME".app ]]; then rm -rf "$BUILD_DIR"/"$APP_NAME".app; else :; fi

@@ -92,8 +92,19 @@ do
 	chmod 770 "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html
 	#xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
-	xattr -d "$BUILD_DIR"/app/"$APP_NAME".app
-	env_set_custom_icon
+	if [[ $(xattr -l "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$BUILD_DIR"/app/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
+    else
+        :
+    fi
+	if [[ $(xattr -l "$BUILD_DIR"/app/"$APP_NAME".app | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$BUILD_DIR"/app/"$APP_NAME".app
+    else
+        :
+    fi
+    env_set_custom_icon
 	
 	# this is to suppress warning on first start
 	#echo opening app...
@@ -110,6 +121,18 @@ do
 	fi
 	cp -a "$BUILD_DIR"/app/"$APP_NAME".app "$BUILD_DIR"/dmg/"$APP_NAME"/app/"$APP_NAME".app
 	chmod 770 "$BUILD_DIR"/dmg/"$APP_NAME"/run_to_install.command
+	if [[ $(xattr -l "$BUILD_DIR"/dmg/"$APP_NAME"/run_to_install.command | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$BUILD_DIR"/dmg/"$APP_NAME"/run_to_install.command
+    else
+        :
+    fi
+    if [[ $(xattr -l "$BUILD_DIR"/dmg/"$APP_NAME"/install_script/install.sh | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$BUILD_DIR"/dmg/"$APP_NAME"/install_script/install.sh
+    else
+        :
+    fi
 	
 	echo building dmg...
 	if [[ -e "$BUILD_DIR"/"$APP_NAME".dmg ]]

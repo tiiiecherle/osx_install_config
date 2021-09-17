@@ -281,7 +281,7 @@ EOF
 		# if kill is used to stop the service kickstart is needed to restart it, bootstrap will not work
 		launchctl bootout gui/"$(id -u "$USER")"/com.apple.CalendarAgent 2>&1 | grep -v "in progress" | grep -v "No such process"
 		#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.CalendarAgent
-		sleep 2
+		sleep 3
 		# without this the changes will not take effect
 		deleting_cache
 		sleep 1
@@ -290,7 +290,7 @@ EOF
 		# if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
 		launchctl bootstrap gui/"$(id -u "$USER")" /System/Library/LaunchAgents/com.apple.CalendarAgent.plist
 		#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.CalendarAgent
-		sleep 2
+		sleep 3
 	}
 	restart_service
 	

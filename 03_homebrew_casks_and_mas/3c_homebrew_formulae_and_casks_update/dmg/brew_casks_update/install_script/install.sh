@@ -44,7 +44,19 @@ chown $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_NAME".app
 chown -R $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/
 chmod 755 "$PATH_TO_APPS"/"$APP_NAME".app
 chmod 770 "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
-xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
+
+if [[ $(xattr -l "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh | grep com.apple.quarantine) != "" ]]
+then
+    xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app/Contents/custom_files/"$SCRIPT_NAME".sh
+else
+    :
+fi
+if [[ $(xattr -l "$PATH_TO_APPS"/"$APP_NAME".app | grep com.apple.quarantine) != "" ]]
+then
+    xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_NAME".app
+else
+    :
+fi
 
 
 ### security permissions

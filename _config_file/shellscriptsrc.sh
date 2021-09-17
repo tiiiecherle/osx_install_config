@@ -787,13 +787,18 @@ env_add_startup_items() {
 		local START_HIDDEN=$(echo "$i" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
        	#echo "START_HIDDEN is "$START_HIDDEN"..."
        	env_get_path_to_app
-		if [[ "$PATH_TO_APP" != "" ]]
-		then
-		    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
-            osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$PATH_TO_APP'", hidden:"'$START_HIDDEN'"}'
-        else
-        	echo ""$APP_NAME" not found, skipping..."
-        fi
+       	if [[ $(osascript -e 'tell application "System Events" to get the name of every login item' | tr "," "\n" | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | grep -w "$APP_NAME") == "" ]]
+       	then
+           	if [[ "$PATH_TO_APP" != "" ]]
+    		then
+    		    # osascript -e 'tell application "System Events" to make login item at end with properties {name:"name", path:"/path/to/itemname", hidden:false}'
+                osascript -e 'tell application "System Events" to make login item at end with properties {name:"'$APP_NAME'", path:"'$PATH_TO_APP'", hidden:"'$START_HIDDEN'"}'
+            else
+            	echo ""$APP_NAME" not found, skipping..."
+            fi
+       	else
+       	    echo ""$APP_NAME" already in autostart entries, skipping..."
+       	fi       	     
 	done <<< "$(printf "%s\n" "${AUTOSTART_ITEMS[@]}")"
 }
 
@@ -1961,6 +1966,35 @@ env_set_permissions_autostart_apps_sequential() {
         env_set_permissions_autostart_apps "$autostartapp"
     done <<< "$(printf "%s\n" "${AUTOSTART_PERMISSIONS_ITEMS[@]}")"
 }
+
+
+### remove quarantine attribute
+env_remove_quarantine_attribute() {
+	while IFS= read -r line || [[ -n "$line" ]] 
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
+	    i="$line"
+	    if [[ $(xattr -l "$i" | grep com.apple.quarantine) != "" ]]
+	    then
+	        xattr -d com.apple.quarantine "$i"
+	    else
+	        :
+	    fi
+	done <<< "$(find "$DIRECTORY_TO_SEARCH_FOR_QUARANTINE" -mindepth 1 ! -path "*/*.app/*" -name "*.command")"
+	
+	while IFS= read -r line || [[ -n "$line" ]] 
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
+	    i="$line"
+	    if [[ $(xattr -l "$i" | grep com.apple.quarantine) != "" ]]
+	    then
+	        xattr -d com.apple.quarantine "$i"
+	    else
+	        :
+	    fi
+	done <<< "$(find "$DIRECTORY_TO_SEARCH_FOR_QUARANTINE" -mindepth 1 ! -path "*/*.app/*" -name "*.sh")"
+}
+
 
 ### caffeinate
 env_deactivating_caffeinate() {

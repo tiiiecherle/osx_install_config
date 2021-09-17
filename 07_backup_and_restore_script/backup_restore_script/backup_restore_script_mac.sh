@@ -61,6 +61,7 @@ unset_variables() {
     unset DESTINATION
     unset SUDOPASSWORD
     unset VBOXSAVEDIR
+    unset UTMSAVEDIR
     unset GUI_APP_TO_BACKUP
 }
 
@@ -140,6 +141,28 @@ install_update_dependency_apps() {
     else
         :
     fi
+    
+    ### utm backup app
+    #echo ''
+    echo "updating utm backup app..."    
+    APP_TO_INSTALL="utm_backup"
+    if [[ -e "$PATH_TO_APPS"/"$APP_TO_INSTALL".app ]]
+    then
+    	rm -rf "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    else
+    	:
+    fi
+    cp -a "$WORKING_DIR"/utm_backup/"$APP_TO_INSTALL".app "$PATH_TO_APPS"/
+    chown $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chown -R $(id -u "$USER"):admin "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/
+    chmod 755 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    chmod 770 "$PATH_TO_APPS"/"$APP_TO_INSTALL".app/Contents/custom_files/"$APP_TO_INSTALL".sh
+    if [[ $(xattr -l "$PATH_TO_APPS"/"$APP_TO_INSTALL".app | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$PATH_TO_APPS"/"$APP_TO_INSTALL".app
+    else
+        :
+    fi
         
     ### installing / updating homebrew update script
     #echo ''
@@ -181,14 +204,15 @@ give_apps_security_permissions() {
     
     ### security permissions
 	APPS_SECURITY_ARRAY=(
-    # app name									security service										    allowed (1=yes, 0=no)
-	"Script Editor                              kTCCServiceAccessibility                             	    1"
-	"brew_casks_update                          kTCCServiceAccessibility                                    1"
-	"gui_apps_backup                            kTCCServiceAccessibility                             	    1"
-	"gui_apps_backup                            kTCCServiceReminders                             	        1"
-	"gui_apps_backup                            kTCCServiceAddressBook                             	        1"
-	"gui_apps_backup                            kTCCServiceCalendar                             	        1"
-	"virtualbox_backup                          kTCCServiceAccessibility                             	    1"
+    # app name									security service										allowed (1=yes, 0=no)
+	"Script Editor                              kTCCServiceAccessibility                             	1"
+	"brew_casks_update                          kTCCServiceAccessibility                                1"
+	"gui_apps_backup                            kTCCServiceAccessibility                             	1"
+	"gui_apps_backup                            kTCCServiceReminders                             	    1"
+	"gui_apps_backup                            kTCCServiceAddressBook                             	    1"
+	"gui_apps_backup                            kTCCServiceCalendar                             	    1"
+	"virtualbox_backup                          kTCCServiceAccessibility                             	1"
+	"utm_backup                                 kTCCServiceAccessibility                             	1"
 	)
 	PRINT_SECURITY_PERMISSIONS_ENTRIES="no" env_set_apps_security_permissions
     
@@ -197,13 +221,15 @@ give_apps_security_permissions() {
     # macos versions 10.14 and up
     # source app name							automated app name										allowed (1=yes, 0=no)
 	AUTOMATION_APPS=(
-	"$SOURCE_APP_NAME						System Events                   						1"
-	"$SOURCE_APP_NAME						Finder                   						        1"
+	"$SOURCE_APP_NAME						    System Events                   						1"
+	"$SOURCE_APP_NAME						    Finder                   						        1"
 	"gui_apps_backup							System Events                   						1"
 	"brew_casks_update							System Events                   						1"
 	"brew_casks_update							Terminal                   						        1"
 	"virtualbox_backup							System Events                   						1"
 	"virtualbox_backup							Terminal                   						        1"
+	"utm_backup							        System Events                   						1"
+	"utm_backup							        Terminal                   						        1"
 	)
 	PRINT_AUTOMATING_PERMISSIONS_ENTRIES="no" env_set_apps_automation_permissions
     
@@ -612,6 +638,43 @@ backup_restore() {
                 :
             fi
             
+            # utm backup
+            if [[ "$BACKUP_UTM" == "no" ]]
+            then
+                :
+            elif [[ -e /Users/"$USER"/Library/Containers/com.utmapp.UTM/Data/Documents ]] || [[ "$BACKUP_UTM" == "yes" ]]
+            then
+                VARIABLE_TO_CHECK="$BACKUP_UTM"
+                QUESTION_TO_ASK="do you want to backup utm images (y/N)? "
+                env_ask_for_variable
+                BACKUP_UTM="$VARIABLE_TO_CHECK"
+                sleep 0.1
+                #
+                if [[ "$BACKUP_UTM" =~ ^(yes|y)$ ]]
+                then
+                    # opening applescript which will ask for saving location of compressed file
+                    echo "asking for directory to save the utm backup to..."
+                    UTMSAVEDIR=$(sudo -H -u "$loggedInUser" osascript "$WORKING_DIR"/utm_backup/ask_save_to_utm.scpt 2> /dev/null | sed s'/\/$//')
+                    sleep 0.5
+                    #echo ''
+                    # checking if valid path for backup was selected
+                    if [[ -e "$UTMSAVEDIR" ]]
+                    then
+                        echo "utm backup will be saved to "$UTMSAVEDIR""
+                        sleep 0.1
+                        #printf '\n'
+                        #sleep 0.1
+                    else
+                        echo "no valid path for saving the utm backup selected, exiting script..."
+                        exit
+                    fi
+                else
+                    :
+                fi
+            else
+                :
+            fi
+            
             # files backup
             VARIABLE_TO_CHECK="$FILES_BACKUP"
             QUESTION_TO_ASK="do you want to backup local files (y/N)? "
@@ -795,6 +858,19 @@ EOF
                     export VBOXSAVEDIR
                     #open "$WORKING_DIR"/vbox_backup/virtualbox_backup.app
                     open "$PATH_TO_APPS"/virtualbox_backup.app
+                else
+                    :
+                fi
+            }
+            
+            run_utm_backup() {
+                # utm
+                if [[ "$BACKUP_UTM" =~ ^(yes|y)$ ]]
+                then
+                    if [[ "$RUN_WITH_NO_OUTPUT_ON_START" == "yes" ]]; then :; else echo "running utm backup..."; fi
+                    export UTMSAVEDIR
+                    #open "$WORKING_DIR"/utm_backup/utm_backup.app
+                    open "$PATH_TO_APPS"/utm_backup.app
                 else
                     :
                 fi
@@ -1011,8 +1087,11 @@ EOF
             	sleep 5
             	RUN_WITH_NO_OUTPUT_ON_START="yes"
             	run_files_backup
+            	if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]]; then sleep 15; else :; fi
             	run_vbox_backup
-            	if [[ "$FILES_BACKUP" =~ ^(yes|y)$ ]] || [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]; then sleep 20; else :; fi
+            	if [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]; then sleep 15; else :; fi
+            	run_utm_backup
+            	if [[ "$BACKUP_UTM" =~ ^(yes|y)$ ]]; then sleep 15; else :; fi
             	run_gui_backups
             	wait
             	#if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then env_collapsing_elements_in_calendar_sidebar; else :; fi
@@ -1024,6 +1103,7 @@ EOF
         	    #if [[ "$CALENDARS_BACKUP" =~ ^(yes|y)$ ]]; then env_collapsing_elements_in_calendar_sidebar; else :; fi
         	    run_files_backup
             	run_vbox_backup
+            	run_utm_backup
                 run_backup_data
         	}
         	#run_backups_with_gui_first
@@ -1035,10 +1115,17 @@ EOF
             
             if [[ "$BACKUP_VBOX" =~ ^(yes|y)$ ]]
             then
-                #while ps aux | grep /compress_and_move_vbox_backup.sh | grep -v grep > /dev/null; do sleep 1; done
-                # or
-                #WAIT_PIDS=$(ps -A | grep -m1 /compress_and_move_vbox_backup.sh | awk '{print $1}')
                 WAIT_PIDS=$(ps aux | grep /virtualbox_backup.sh | grep -v grep | awk '{print $2;}')
+                #echo "$WAIT_PIDS"
+                #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
+                while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"            
+            else
+                :
+            fi
+            
+            if [[ "$BACKUP_UTM" =~ ^(yes|y)$ ]]
+            then
+                WAIT_PIDS=$(ps aux | grep /utm_backup.sh | grep -v grep | awk '{print $2;}')
                 #echo "$WAIT_PIDS"
                 #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
                 while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")"            

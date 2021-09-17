@@ -67,9 +67,11 @@ teamviewer
 textmate
 the-archive-browser
 the-unarchiver
+timer
 tnefs-enough
 ui-browser
 unified-remote
+utm
 veracrypt
 vlc
 vlc-webplugin

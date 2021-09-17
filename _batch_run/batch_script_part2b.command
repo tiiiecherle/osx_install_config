@@ -83,6 +83,15 @@ trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWO
 env_force_start_error
 
 
+### security permissions
+#echo ''
+printf "\n${bold_text}###\nsecurity permissions...\n###\n${default_text}"
+echo ''
+
+DIRECTORY_TO_SEARCH_FOR_QUARANTINE="$SCRIPT_DIR_ONE_BACK"
+env_remove_quarantine_attribute
+
+
 ### batch run all function
 batch_run_all() {
 
@@ -161,7 +170,7 @@ batch_run_all() {
 	
 		
 	### special autostart apps
-	for AUTOSTART_APP in whatsapp signal
+	for AUTOSTART_APP in whatsapp signal virusscannerplus
 	do
 	    AUTOSTART_APP_UPPER=$(echo "$AUTOSTART_APP" | tr '[:lower:]' '[:upper:]')
 	    AUTOSTART_APP_LOWER=$(echo "$AUTOSTART_APP" | tr '[:upper:]' '[:lower:]')
@@ -169,7 +178,7 @@ batch_run_all() {
         if [[ $(eval "echo \"\$$AUTOSTART_VARIABLE_TO_CHECK\"") == "yes" ]]
         then
         	printf "\n${bold_text}###\nspecial autostart app $AUTOSTART_APP_LOWER...\n###\n${default_text}"
-        	"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_"$AUTOSTART_APP_LOWER".sh	
+        	. "$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_"$AUTOSTART_APP_LOWER".sh	
         	echo ''
         else
         	:
@@ -192,6 +201,12 @@ batch_run_all() {
 	printf "\n${bold_text}###\nsafari...\n###\n${default_text}"
 	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11b_safari_extensions_cookies.sh
 	env_active_source_app
+	
+	
+	### third party app preferences
+	printf "\n${bold_text}###\nthird party app preferences...\n###\n${default_text}"
+	env_create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11k_third_party_app_preferences.sh
 	
 	
 	### macos and app preferences

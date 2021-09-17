@@ -141,17 +141,8 @@ AUTOMATION_APPS=(
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 echo ''
 
-while IFS= read -r line || [[ -n "$line" ]] 
-do
-    if [[ "$line" == "" ]]; then continue; fi
-    i="$line"
-    if [[ $(xattr -l "$i" | grep com.apple.quarantine) != "" ]]
-    then
-        xattr -d com.apple.quarantine "$i"
-    else
-        :
-    fi
-done <<< "$(find "$SCRIPT_DIR_ONE_BACK" -mindepth 1 ! -path "*/*.app/*" -name "*.command")"
+DIRECTORY_TO_SEARCH_FOR_QUARANTINE="$SCRIPT_DIR_ONE_BACK"
+env_remove_quarantine_attribute
 
 
 ### homebrew install
@@ -224,6 +215,12 @@ batch_run_all() {
 	if [[ "$RESTORE_DIR_VBOX" == "" ]]
 	then
 		echo "no directory for restoring vbox selected, respective scripts will be skipped..."
+	else
+		:
+	fi
+	if [[ "$RESTORE_DIR_UTM" == "" ]]
+	then
+		echo "no directory for restoring utm selected, respective scripts will be skipped..."
 	else
 		:
 	fi
@@ -313,7 +310,7 @@ batch_run_all() {
 		env_create_tmp_batch_script_fifo
 		env_create_tmp_batch_script_gpg_fifo
 		#time ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
-		ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
+		ASK_FOR_RESTORE_DIRS="no" RESTORE_FILES_OPTION="unarchive" RESTORE_DIR_FILES="$RESTORE_DIR_FILES" RESTORE_DIR_VBOX="$RESTORE_DIR_VBOX" RESTORE_VBOX="$RESTORE_VBOX" RESTORE_DIR_UTM="$RESTORE_DIR_UTM" RESTORE_UTM="$RESTORE_UTM" "$SCRIPTS_FINAL_DIR"/07_backup_and_restore_script/files/restore_files.sh
 		unset RESTORE_FILES_OPTION
 		sleep 1
 		env_active_source_app
@@ -499,9 +496,9 @@ ask_for_reboot() {
 	if [[ "$REBOOT_NOW" =~ ^(yes|y)$ ]]
 	then
 	    #echo ''
-		osascript -e 'tell app "loginwindow" to Â«event aevtrrstÂ»'           # reboot
-		#osascript -e 'tell app "loginwindow" to Â«event aevtrsdnÂ»'          # shutdown
-		#osascript -e 'tell app "loginwindow" to Â«event aevtrlgoÂ»'          # logout
+		osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot
+		#osascript -e 'tell app "loginwindow" to «event aevtrsdn»'          # shutdown
+		#osascript -e 'tell app "loginwindow" to «event aevtrlgo»'          # logout
 	    #echo ''
 	else
 		:
@@ -516,5 +513,4 @@ defaults write com.apple.loginwindow TALLogoutSavesState -bool true
 ask_for_reboot
 
 if [[ -e "/tmp/batch_script_in_progress" ]]; then rm -f "/tmp/batch_script_in_progress"; else :; fi
-
 

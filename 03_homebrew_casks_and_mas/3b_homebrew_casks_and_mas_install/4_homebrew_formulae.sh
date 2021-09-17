@@ -81,21 +81,53 @@ else
     ### installations
     # no parallel installs supported for formulae due to dependencies and brew requirements
     # parallel brew processes sometimes not finish install, give errors or hang
-    while IFS= read -r line || [[ -n "$line" ]]
-	do
-	    if [[ "$line" == "" ]]; then continue; fi
-        homebre_formula_to_install="$line"
-        if [[ $(brew list --formulae | tr "," "\n" | grep "^$line$") == "" ]]
-        then
-            echo "installing formula "$homebre_formula_to_install"..."
-		    #env_use_password | brew install --formula "$homebre_formula_to_install" 2> /dev/null | grep "/Cellar/.*files,\|Installing.*dependency"
-		    env_use_password | brew install --formula "$homebre_formula_to_install"
-	        echo ''
-	    else
-	        echo "formula "$line" already installed..."
-	        echo ''
-	    fi
-	done <<< "$(printf "%s\n" "${homebrew_formulae[@]}")"
+    
+    # does not work as of 2021-09-13 du to this issue
+    # https://github.com/Homebrew/brew/issues/12034#issuecomment-917261527
+    install_formulae() {
+	    while IFS= read -r line || [[ -n "$line" ]]
+		do
+		    if [[ "$line" == "" ]]; then continue; fi
+	        homebre_formula_to_install="$line"
+	        if [[ $(brew list --formulae | tr "," "\n" | grep "^$line$") == "" ]]
+	        then
+	            echo "installing formula "$homebre_formula_to_install"..."
+			    #env_use_password | brew install --formula "$homebre_formula_to_install" 2> /dev/null | grep "/Cellar/.*files,\|Installing.*dependency"
+			    #env_use_password | brew install --formula "$homebre_formula_to_install"
+			    brew install --formula "$homebre_formula_to_install"
+		        echo ''
+		    else
+		        echo "formula "$line" already installed..."
+		        echo ''
+		    fi
+		done <<< "$(printf "%s\n" "${homebrew_formulae[@]}")"
+	}
+	#install_formulae
+	
+	if [[ "$INSTALLATION_METHOD" == "parallel" ]]
+	then
+		# workaround with parallel
+		install_formulae_parallel() {
+	        homebre_formula_to_install="$1"
+	        if [[ $(brew list --formulae | tr "," "\n" | grep "^$line$") == "" ]]
+	        then
+	            echo "installing formula "$homebre_formula_to_install"..."
+			    # preserver colored output using script
+	            script -q /dev/null brew install --formula "$homebre_formula_to_install"
+	            # the following is should not be needed and is showing the password in clear text as of 2021-09-12
+	            #builtin printf "$SUDOPASSWORD\n" | script -q /dev/null brew install --formula "$homebre_formula_to_install"
+		        echo ''
+		    else
+		        echo "formula "$line" already installed..."
+		        echo ''
+		    fi
+		}
+		if [[ "$(printf "%s\n" "${homebrew_formulae[@]}")" != "" ]]; then env_parallel --will-cite -j"1" --line-buffer -k "install_formulae_parallel {}" ::: "$(printf "%s\n" "${homebrew_formulae[@]}")"; fi
+	else
+		# workaround without parallel
+		brew install --formula $(printf "%s\n" "${homebrew_formulae[@]}")
+	fi
+    
     
     ### ffmpeg 
     # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more

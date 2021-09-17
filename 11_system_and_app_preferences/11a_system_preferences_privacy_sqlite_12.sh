@@ -295,6 +295,7 @@ ACCESSIBILITYAPPS=(
 "Unified Remote                                                      kTCCServiceAccessibility           1"
 "TeamViewer                                                          kTCCServiceAccessibility           1"
 "UI Browser                                                          kTCCServiceAccessibility           1"
+"run_on_login_virusscannerplus                                       kTCCServiceAccessibility           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
@@ -497,6 +498,7 @@ AUTOMATION_APPS=(
 "virtualbox_backup                                                          Terminal                    1"
 "run_on_login_signal                                                        System Events               1"
 "run_on_login_whatsapp                                                      System Events               1"
+"run_on_login_virusscannerplus                                      System Events               1"
 "run_on_login_reminders                                                     System Events               1"
 "iTerm                                                                      System Events               1"
 "XtraFinder                                                                 Finder                      1"

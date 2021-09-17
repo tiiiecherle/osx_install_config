@@ -38,7 +38,7 @@ echo ''
 # autostart
 AUTOSTART_ITEMS=(
 # name													                  start hidden
-""$APP_TO_INSTALL"                                                              false"                   
+""$APP_TO_INSTALL"                                                        true"                   
 )
 env_add_startup_items
 

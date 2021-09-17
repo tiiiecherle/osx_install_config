@@ -65,6 +65,26 @@ ask_for_restore_dir_vbox() {
     fi
 }
 
+ask_for_restore_dir_utm() {
+    if [[ $(echo "$RESTORE_DIR_UTM") == "" ]] && [[ "$ASK_FOR_RESTORE_DIRS" != "no" ]]
+    then
+        if [[ "$RESTORE_UTM_FILES" == "yes" ]]
+        then
+            echo "please select restore directory for utm..."
+            RESTORE_DIR_UTM=$(sudo -H -u "$loggedInUser" osascript "$SCRIPT_DIR"/restore_ask_dir_utm.scpt 2> /dev/null | sed s'/\/$//')
+            sleep 0.5
+            osascript -e "tell application \"$SOURCE_APP_NAME\" to activate"
+            #osascript -e "tell application \"$SOURCE_APP_NAME.app\" to activate"
+            sleep 0.5
+            if [[ "$RESTORE_DIR_UTM" != "" ]]; then RESTORE_UTM="yes"; else :; fi
+        else
+            :
+        fi
+    else
+        :
+    fi
+}
+
 
 ###
 ### options
@@ -77,6 +97,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 
 ask_for_restore_dir_files
 ask_for_restore_dir_vbox
+ask_for_restore_dir_utm
 
 if [[ "$RESTORE_FILES_OPTION" == "ask_for_restore_directories" ]]
 then
@@ -145,6 +166,10 @@ env_activating_caffeinate
 #"/Users/"$USER"/vbox_dir_name/vbox_name"
 #)
 
+#BACKUPDIR_UTM=(
+#"/Users/"$USER"/Library/Containers/com.utmapp.UTM/Data/Documents/utm_box_name.utm"
+#)
+
 
 ### restore files function
 restore_files() {
@@ -181,7 +206,7 @@ restore_files() {
                 mv -f /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
         		#cp -a /"$RESTORE_TO_DIR"/"$BASENAME_LINE"/* "$line"/
         	else
-        		echo "source or destination does not exist, skipping..."
+        		echo "for "$line" source or destination does not exist, skipping..." >&2
         	fi
         fi
     	# cleaning up
@@ -218,6 +243,40 @@ else
     else
         :
     fi
+fi
+
+
+### restoring utm machines
+if [[ "$RESTORE_UTM" == "yes" ]]
+then
+    if [[ ! -L ~/Library/Containers/com.utmapp.UTM/Data/Documents ]]
+    then
+        if [[ $(echo "$RESTORE_DIR_UTM") == "" ]]
+        then
+            #echo ''
+            echo "restoredir for utm restore is empty, skipping..."
+            echo ''
+        else
+            #echo ''
+            echo "restoredir for utm restore is "$RESTORE_DIR_UTM"..."
+            echo ''
+            
+            RESTORE_TO_DIR="$RESTORE_DIR_UTM"
+            unset RESTORE_DIRS
+            RESTORE_DIRS="$(printf "%s\n" "${BACKUPDIR_UTM[@]}")"
+            if [[ "$RESTORE_DIRS" != "" ]]
+            then
+                restore_files
+            else
+                :
+            fi
+        fi
+    else
+        :
+    fi
+    
+else
+    :
 fi
 
 

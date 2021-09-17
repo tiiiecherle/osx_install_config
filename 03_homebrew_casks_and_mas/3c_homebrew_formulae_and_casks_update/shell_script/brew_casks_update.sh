@@ -400,7 +400,8 @@ formulae_install_updates() {
                 else
                     :
                 fi
-                env_use_password | brew upgrade "$FORMULA"
+                env_use_password | brew upgrade --formula "$FORMULA"
+                #brew upgrade --formula "$FORMULA"
                 #
             #fi
             echo 'removing old installed versions of '"$FORMULA"'...'
@@ -418,6 +419,99 @@ formulae_install_updates() {
             	#echo "only one version installed..."
             fi
         done <<< "$(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE")"
+        
+        # special ffmpeg
+        # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more
+        if [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "ffmpeg") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "fdk-aac") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "sdl2") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "freetype") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "libass") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "libvorbis") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "libvpx") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "opus") != "" ]] || [[ $(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" | grep "x265") != "" ]]
+        then
+            #env_use_password | brew reinstall ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+            if [[ $(ffmpeg -codecs 2>&1 | grep "\-\-enable-libx265") == "" ]]
+            then
+                #echo "rebuilding ffmpeg due to components updates..."
+                #env_use_password | HOMEBREW_DEVELOPER=1 brew reinstall --build-from-source ffmpeg --with-fdk-aac --with-sdl2 --with-freetype --with-libass --with-libvorbis --with-libvpx --with-opus --with-x265
+                :
+            else
+                :
+            fi
+        else
+            :
+        fi
+        
+        echo "installing formulae updates finished ;)"
+        
+    fi
+}
+
+formulae_install_updates_parallel() {
+    echo "installing brew formulae updates..."
+    
+    if [[ ! -s "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" ]]
+    then
+    	# file is empty or does not exist
+    	echo "no formulae updates available..."
+    else
+    	# file exists and is not empty
+        
+        # sorting the outdated casks file after using parallel which can change output order
+        sort "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE" -o "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE"
+            
+        formulae_install_updates_parallel_inside() {
+            FORMULA="$1"
+            echo 'updating '"$FORMULA"'...'            
+            #if [[ $(brew outdated --quiet | grep "^$FORMULA$") == "" ]] && [[ $(brew outdated --quiet | grep "/$FORMULA$") == "" ]]
+            #[[ $(brew outdated --verbose | grep "^$FORMULA[[:space:]]") == "" ]]
+            #then
+            #    echo "$FORMULA"" already up-to-date..."
+            #else
+                if [[ "$FORMULA" == "qtfaststart" ]]
+                then
+                    if [[ $(brew list --formula | grep "^ffmpeg$") != "" ]]
+                    then
+                        brew unlink qtfaststart
+                        brew unlink ffmpeg && brew link ffmpeg
+                        brew link --overwrite qtfaststart
+                    else
+                        :
+                    fi
+                elif [[ "$FORMULA" == "^ffmpeg$" ]]
+                then
+                    if [[ $(brew list --formula | grep "^qtfaststart$") != "" ]]
+                    then
+                        brew unlink ffmpeg
+                        brew unlink qtfaststart && brew link qtfaststart
+                        brew link --overwrite ffmpeg
+                    else
+                        :
+                    fi
+                else
+                    :
+                fi
+                # preserver colored output using script
+                script -q /dev/null brew upgrade --formula "$FORMULA"
+                # the following is should not be needed and is showing the password in clear text as of 2021-09-12
+                #builtin printf "$SUDOPASSWORD\n" | script -q /dev/null brew upgrade --formula "$FORMULA"
+                #
+            #fi
+            echo 'removing old installed versions of '"$FORMULA"'...'
+            env_use_password | brew cleanup "$FORMULA"
+            echo ''
+            
+            # cleanup entries
+            local INSTALLED_VERSIONS=$(ls -1 "$BREW_FORMULAE_PATH"/"$FORMULA" | sort -V)
+            local NUMBER_OF_INSTALLED_VERSIONS=$(printf '%s\n' "$INSTALLED_VERSIONS" | wc -l | sed -e 's/^[ \t]*//')
+            if [[ "$NUMBER_OF_INSTALLED_VERSIONS" -gt "1" ]]
+            then
+                echo -e "$NUMBER_OF_INSTALLED_VERSIONS\t$FORMULA" >> "$TMP_DIR_FORMULAE_VERSIONS"/"$DATE_LIST_FILE_FORMULAE_VERSIONS"
+            else
+                :
+            	#echo "only one version installed..."
+            fi
+        }
+        
+        # by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
+        # it is not neccessary to export variables or functions when using env_parallel
+        # zsh does not support exporting functions, thats why parallels is prefered over xargs (bash only)
+        if [[ "$(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE")" != "" ]]; then env_parallel --will-cite -j"1" --line-buffer -k "formulae_install_updates_parallel_inside {}" ::: "$(cat "$TMP_DIR_FORMULAE"/"$DATE_LIST_FILE_FORMULAE")"; fi
         
         # special ffmpeg
         # versions > 4.0.2_1 include h265 by default, so rebuilding does not seem to be needed any more
@@ -695,8 +789,8 @@ casks_install_updates() {
                 env_active_source_app
             fi
             # allow opening app
-            if [[ "$CASK" == "jitsi-meet" ]] || [[ "$CASK" == "chromium" ]]
-            then
+            #if [[ "$CASK" == "jitsi-meet" ]] || [[ "$CASK" == "chromium" ]]
+            #then
                 local CASK_INFO=$(brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]')
                 #local CASK_INFO=$(brew info --cask "$CASK")
                 local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
@@ -710,9 +804,9 @@ casks_install_updates() {
                 fi
     	        local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
                 env_set_open_on_first_run_permissions
-            else
-                :
-            fi
+            #else
+            #    :
+            #fi
             
             # cleanup entries
             local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
@@ -830,6 +924,53 @@ post_cask_installations() {
     fi
     
 }
+
+allow_opening_casks() {
+    # allow opening apps
+    echo ''
+    echo "allowing casks to open..."
+    # list
+    #ALLOWED_CASKS_LIST=(
+    #jitsi-meet
+    #chromium
+    #)
+    # all casks
+    ALLOWED_CASKS_LIST=$(brew list --cask | tr "," "\n" | uniq)
+    ALLOWED_CASKS=$(printf "%s\n" "${ALLOWED_CASKS_LIST[@]}")
+    
+    allow_opening_casks_inside() {
+        line="$1"
+        if [[ $(brew list --cask | tr "," "\n" | grep "^$line$") != "" ]]
+        then
+            #echo "$line"
+            local CASK_INFO=$(brew info --cask --json=v2 "$line" | jq -r '.casks | .[]')
+            #local CASK_INFO=$(brew info --cask "$CASK")
+            local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
+            #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
+            local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+            if [[ "$CASK_ARTIFACT_APP" != "" ]]
+            then
+                local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
+            else
+                local CASK_ARTIFACT_APP_NO_EXTENSION="$CASK_NAME"
+            fi
+            local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
+            #echo "$APP_NAME"
+            env_set_open_on_first_run_permissions
+        else
+            :
+        fi
+    }
+    
+    # by sourcing the respective env_parallel.SHELL the command itself can be used cross-shell
+    # it is not neccessary to export variables or functions when using env_parallel
+    # zsh does not support exporting functions, thats why parallels is prefered over xargs (bash only)
+    if [[ "${ALLOWED_CASKS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "allow_opening_casks_inside {}" ::: "${ALLOWED_CASKS[@]}"; fi
+    
+    echo ''
+
+}
+
 
 ###
 ### running script
@@ -1013,7 +1154,10 @@ then
     fi
     #
     echo ''
-    formulae_install_updates
+    #formulae_install_updates
+    # workaround for issue with brew upgrade command
+    # https://github.com/Homebrew/brew/issues/12034#issuecomment-917261527
+    formulae_install_updates_parallel
     #
     if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
     then
@@ -1030,6 +1174,7 @@ then
     then
         cleanup_formulae & pids+=($!)
         cleanup_casks & pids+=($!)
+        #allow_opening_casks
     else
         cleanup_formulae & pids+=($!)
     fi

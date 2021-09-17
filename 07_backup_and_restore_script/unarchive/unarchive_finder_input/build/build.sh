@@ -68,7 +68,12 @@ do
 	
 	# https://developer.apple.com/library/archive/qa/qa1940/_index.html
 	#xattr -cr "$BUILD_DIR"/app/"$APP_NAME".app
-	xattr -d "$BUILD_DIR"/app/"$APP_NAME".app
+	if [[ $(xattr -l "$BUILD_DIR"/app/"$APP_NAME".app | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$BUILD_DIR"/app/"$APP_NAME".app
+    else
+        :
+    fi
 	# setting icon for files
 	/usr/libexec/PlistBuddy "$BUILD_DIR"/app/"$APP_NAME".app/Contents/Info.plist -c 'Add CFBundleDocumentTypes:0:CFBundleTypeIconFile string document.icns'
 	# associating with open with dialog

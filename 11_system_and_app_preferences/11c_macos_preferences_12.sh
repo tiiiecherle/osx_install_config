@@ -1601,7 +1601,7 @@ expect eof
     tell application "System Events"
     	tell process "System Preferences"
     		# resolution standard
-    		select row 21 of table 1 of scroll area 1 of tab group 1 of window 1
+    		select row 20 of table 1 of scroll area 1 of tab group 1 of window 1
     		delay 1
     	end tell
     end tell
@@ -3144,6 +3144,27 @@ EOF
 
     SAFARI_PREFERENCES_FILE="/Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.plist"
     
+    # function to open and quit safari in background
+    open_and_quit_safari_in_background() {
+    if [[ -e "$WEBSITE_SAFARI_DATABASE" ]]
+    then
+        :
+    else
+        echo "opening and quitting safari in background..."
+        open -j -a ""$PATH_TO_APPS"/Safari.app" "https://google.com"
+	    
+	    osascript <<EOF
+    		try
+        		tell application "Safari"
+        			#run
+        			delay 6
+        			quit
+        			delay 3
+        		end tell
+        	end try
+EOF
+    fi
+    }
     
     ### safari general
     
@@ -3168,6 +3189,7 @@ EOF
     defaults write com.apple.Safari.SandboxBroker DidMigrateDownloadFolderToSandbox -bool false
     defaults write com.apple.Safari.SandboxBroker DidMigrateResourcesToSandbox -bool false
     defaults read com.apple.Safari.SandboxBroker >/dev/null 2>&1
+    open_and_quit_safari_in_background
     
     # or directly in the data stream
     # get current data and format
@@ -3259,6 +3281,7 @@ EOF
     defaults write com.apple.Safari.SandboxBroker DidMigrateDownloadFolderToSandbox -bool false
     defaults write com.apple.Safari.SandboxBroker DidMigrateResourcesToSandbox -bool false
     defaults read com.apple.Safari.SandboxBroker >/dev/null 2>&1
+    open_and_quit_safari_in_background
     
     # or directly in the data stream (currently not working due to an output error)
     # get current data and format
@@ -3404,25 +3427,8 @@ EOF
     WEBSITE_SAFARI_DATABASE="/Users/"$USER"/Library/Safari/PerSitePreferences.db"
 
     # on a clean install (without restoring some data or preferences, e.g. PerSitePreferences.db) Safari has to be opened at least one time before the files will be created
-    # opening wihtout loading a website does not trigger creating the files, so "run" is not enough, opening and loading a first website is needed
-    if [[ -e "$WEBSITE_SAFARI_DATABASE" ]]
-    then
-        :
-    else
-        echo "opening and quitting safari in background..."
-        open -j -a ""$PATH_TO_APPS"/Safari.app" "https://google.com"
-	    
-	    osascript <<EOF
-    		try
-        		tell application "Safari"
-        			#run
-        			delay 6
-        			quit
-        			delay 3
-        		end tell
-        	end try
-EOF
-    fi
+    # opening without loading a website does not trigger creating the files, so "run" is not enough, opening and loading a first website is needed
+    open_and_quit_safari_in_background
     
     # general preferences
     # /Users/$USER/Library/Safari/PerSitePreferences.db

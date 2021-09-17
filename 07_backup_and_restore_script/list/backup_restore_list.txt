@@ -792,6 +792,10 @@ u	~/Library/Preferences/org.virtualbox.app.VirtualBox.plist
 u	~/Library/Preferences/org.virtualbox.app.VirtualBoxVM.plist
 u	~/Library/VirtualBox
 
+# UTM
+echo UTM
+u	~/Library/Containers/com.utmapp.UTM/Data/Library/Preferences/com.utmapp.UTM.plist
+
 # VirtualBox Menulet
 echo VirtualBox Menulet
 u	"$PATH_TO_APPS"/VirtualBox Menulet.app

@@ -72,6 +72,15 @@ trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWO
 env_force_start_error
 
 
+### security permissions
+#echo ''
+printf "\n${bold_text}###\nsecurity permissions...\n###\n${default_text}"
+echo ''
+
+DIRECTORY_TO_SEARCH_FOR_QUARANTINE="$SCRIPT_DIR_ONE_BACK"
+env_remove_quarantine_attribute
+
+
 ### batch run all function
 batch_run_all() {
 
@@ -195,9 +204,10 @@ batch_run_all() {
 	
 	
 	### third party app preferences
-	printf "\n${bold_text}###\nthird party app preferences...\n###\n${default_text}"
-	env_create_tmp_batch_script_fifo
-	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11k_third_party_app_preferences.sh
+	# moved to batch script 2
+	#printf "\n${bold_text}###\nthird party app preferences...\n###\n${default_text}"
+	#env_create_tmp_batch_script_fifo
+	#"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11k_third_party_app_preferences.sh
 	
 	
 	### migrate internet accounts

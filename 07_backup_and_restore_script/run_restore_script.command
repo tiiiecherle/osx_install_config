@@ -33,6 +33,18 @@ do
     fi
 done <<< "$(find "$SCRIPT_DIR" -mindepth 1 ! -path "*/*.app/*" -name "*.app")"
 
+while IFS= read -r line || [[ -n "$line" ]] 
+do
+    if [[ "$line" == "" ]]; then continue; fi
+    i="$line"
+    if [[ $(xattr -l "$i" | grep com.apple.quarantine) != "" ]]
+    then
+        xattr -d com.apple.quarantine "$i"
+    else
+        :
+    fi
+done <<< "$(find "$SCRIPT_DIR" -mindepth 1 ! -path "*/*.app/*" -name "*.sh")"
+
 # to read the output file including formats do
 # cat ~/Desktop/backup_restore_log.txt
 #export OPTION=RESTORE; time script -q ~/Desktop/backup_restore_log.txt "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
