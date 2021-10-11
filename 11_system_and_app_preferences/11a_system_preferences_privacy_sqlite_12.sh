@@ -296,6 +296,7 @@ ACCESSIBILITYAPPS=(
 "TeamViewer                                                          kTCCServiceAccessibility           1"
 "UI Browser                                                          kTCCServiceAccessibility           1"
 "run_on_login_virusscannerplus                                       kTCCServiceAccessibility           1"
+"BetterTouchTool                                                     kTCCServiceAccessibility           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
@@ -501,8 +502,8 @@ AUTOMATION_APPS=(
 "run_on_login_virusscannerplus                                      System Events               1"
 "run_on_login_reminders                                                     System Events               1"
 "iTerm                                                                      System Events               1"
-"XtraFinder                                                                 Finder                      1"
-"TotalFinder                                                                Finder                      1"
+#"XtraFinder                                                                 Finder                      1"
+#"TotalFinder                                                                Finder                      1"
 "EagleFiler                                                                 Mail                        1"
 "EagleFiler                                                                 Finder                      1"
 "witchdaemon                                                                Mail                        0"

@@ -26,7 +26,7 @@ if [[ -e "$SCRIPTS_FINAL_DIR"/_config_file/install_config_file.sh ]]
 then
 	# installing again if local file is different from online file
 	printf "\n${bold_text}###\nconfig file...\n###\n${default_text}"
-	"$SCRIPTS_FINAL_DIR"/_config_file/install_config_file.sh
+	ENABLE_SELF_UPDATE="no" "$SCRIPTS_FINAL_DIR"/_config_file/install_config_file.sh
 	# re-sourcing config file
 	if [[ -f ~/.shellscriptsrc ]]; then . ~/.shellscriptsrc; else echo '' && echo -e '\033[1;31mshell script config file not found...\033[0m\nplease install by running this command in the terminal...\n\n\033[1;34msh -c "$(curl -fsSL https://raw.githubusercontent.com/tiiiecherle/osx_install_config/master/_config_file/install_config_file.sh)"\033[0m\n' && exit 1; fi
 	eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_variables
@@ -108,7 +108,7 @@ env_activating_caffeinate
 ### trap
 ###
 
-trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; env_delete_tmp_batch_script_gpg_fifo; env_delete_tmp_mas_script_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_caffeinate; rm -f "/tmp/batch_script_in_progress" }
+trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; env_delete_tmp_batch_script_gpg_fifo; env_delete_tmp_sudo_mas_script_fifo; env_delete_tmp_appstore_mas_script_fifo; unset SUDOPASSWORD; unset USE_PASSWORD; env_deactivating_caffeinate; rm -f "/tmp/batch_script_in_progress" }
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
 

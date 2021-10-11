@@ -1864,11 +1864,6 @@ env_delete_tmp_appstore_mas_script_fifo() {
     fi
 }
 
-env_delete_tmp_mas_script_fifo() {
-    env_delete_tmp_sudo_mas_script_fifo
-    env_delete_tmp_appstore_mas_script_fifo
-}
-
 env_delete_tmp_casks_script_fifo() {
     if [[ -e "/tmp/tmp_sudo_cask_script_fifo" ]]
     then
@@ -1876,6 +1871,11 @@ env_delete_tmp_casks_script_fifo() {
     else
         :
     fi
+}
+
+env_delete_tmp_mas_script_fifo() {
+    env_delete_tmp_sudo_mas_script_fifo
+    env_delete_tmp_appstore_mas_script_fifo
 }
 
 env_create_tmp_batch_script_fifo() {

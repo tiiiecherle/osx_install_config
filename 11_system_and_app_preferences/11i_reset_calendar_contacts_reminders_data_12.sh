@@ -287,7 +287,7 @@ EOF
 			launchctl bootout gui/"$(id -u "$USER")"/com.apple.remindd 2>&1 | grep -v "in progress" | grep -v "No such process"
 			#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.CalendarAgent
 			#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.remindd
-			sleep 3
+			sleep 5
 			#deleting_cache
 			#sleep 1
 			echo ''

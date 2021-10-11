@@ -117,7 +117,7 @@ check_files_parallel() {
     fi
 }
 
-if [[ "$(find "$UTMTARGZSAVEDIR" -type f -name "*.tar.gz")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$UTMTARGZSAVEDIR" -type f -name "*.tar.gz")"; fi
+if [[ "$(find "$UTMTARGZSAVEDIR" -type f -name "*_utm_*.tar.gz")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$UTMTARGZSAVEDIR" -type f -name "*_utm_*.tar.gz")"; fi
 wait
 
 # done

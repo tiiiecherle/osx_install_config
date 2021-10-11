@@ -184,12 +184,12 @@ open_more_apps() {
 
 
 ### google consent
-# old
-#open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
-#open ""$PATH_TO_APPS"/Firefox.app" && sleep 2 && open -a ""$PATH_TO_APPS"/Firefox.app" "https://consent.google.com/ui/?continue=https%3A%2F%2Fwww.google.com%2F&origin=https%3A%2F%2Fwww.google.com&m=1&wp=47&gl=DE&hl=de&pc=s&uxe=4133096&ae=1"
+
 # google consent link update
+open -a ""$PATH_TO_APPS"/Safari.app" "https://consent.google.com/d?continue=https://www.google.com/search?client%3Dsafari%26rls%3Den%26q%3Dtest%26ie%3DUTF-8%26oe%3DUTF-8&gl=DE&m=0&pc=srp&uxe=none&hl=de&src=2"
+# check here 
 # google.de - Datenschutzerklärung - Privatsphärencheck
-open -a ""$PATH_TO_APPS"/Safari.app" "https://myaccount.google.com/intro/privacycheckup?utm_source=pp&utm_medium=Promo-in-product&utm_campaign=pp_intro&hl=de"
+#open -a ""$PATH_TO_APPS"/Safari.app" "https://myaccount.google.com/intro/privacycheckup?utm_source=pp&utm_medium=Promo-in-product&utm_campaign=pp_intro&hl=de"
 
 
 ### open user specific apps

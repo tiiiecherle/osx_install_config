@@ -114,6 +114,11 @@ echo Bartender
 #u	"$PATH_TO_APPS"/Bartender 3.app
 u	~/Library/Preferences/com.surteesstudios.Bartender.plist
 
+# BetterTouchTool
+echo BetterTouchTool
+u	~/Library/Application Support/BetterTouchTool
+u	~/Library/Preferences/com.hegenberg.BetterTouchTool.plist
+
 # BBEdit
 echo BBEdit
 #u	"$PATH_TO_APPS"/BBEdit.app
@@ -624,9 +629,11 @@ u	~/Library/Preferences/sekn.ResizeIt.plist
 
 # Safari
 echo Safari
-u	~/Library/Safari/Extensions
+#u	~/Library/Safari/Extensions
+u	~/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions
+u	~/Library/Containers/com.apple.Safari/Data/Library/Safari/WebExtensions
 #u	~/Library/Preferences/com.apple.Safari.Extensions.plist
-u	~/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist
+#u	~/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist
 u	~/Library/Safari/Bookmarks.plist
 u	~/Library/Group Containers/better.fyi.mac
 u	~/Library/Group Containers/*.ghostery.lite
@@ -807,6 +814,11 @@ echo Virus Scanner Plus
 u	~/Library/Containers/com.bitdefender.virusscannerplus/Data/Library/Preferences/com.bitdefender.virusscannerplus.plist
 u	~/Library/Containers/com.bitdefender.virusscannerplus/Data/Library/Application Support/Bitdefender Virus Scanner Plus/antivirus.bundle/exclusions.plist
 u	~/Library/Containers/com.bitdefender.virusscannerplus/Data/Documents/access_rights
+
+# Visual Studio Code
+echo Visual Studio Code
+u	~/.vscode
+u	~/Library/Application Support/Code/User
 
 # VLC
 echo VLC

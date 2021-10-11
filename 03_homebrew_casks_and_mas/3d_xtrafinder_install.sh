@@ -54,20 +54,21 @@ install_finder_enhancement() {
 	    
 	    
 	    ### installation
-		if [[ "$MACOS_VERSION_MAJOR" != 10.15 ]]
-		then
-		    # macos versions other than 10.15
-			echo ''
-		    echo "this script is only compatible with macos 10.15 exiting..."
-		    echo ''
-		    exit
-		else
+	    VERSION_TO_CHECK_AGAINST=10.15
+	    if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+        then
 		    # macos versions 10.15
 	        # in 10.15 /System default gets mounted read-only
 	        # can only be mounted read/write with according SIP settings
 	        sudo mount -uw /
 	        # stays mounted rw until next reboot
-	        sleep 0.5
+	        sleep 0.5 
+		else
+		    # macos versions other than 10.15
+			echo ''
+		    echo "this script is only compatible with macos 10.15 and newer, exiting..."
+		    echo ''
+		    exit
 		fi
 		
 		# as "$APP_NAME" is no longer installable by cask let`s install it that way ;)

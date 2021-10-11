@@ -54,6 +54,15 @@ env_identify_terminal
 
 
 ###
+### user config profile
+###
+
+SCRIPTS_DIR_USER_PROFILES="$SCRIPT_DIR_ONE_BACK"/_user_profiles
+env_check_for_user_profile
+
+
+
+###
 ### trap
 ###
 
@@ -247,6 +256,23 @@ batch_run_all() {
 	printf "\n${bold_text}###\napple id dock notification...\n###\n${default_text}"
 	CONT1="no" "$SCRIPTS_FINAL_DIR"/15_finalizations/15f_remove_dock_notifications.sh
 	
+	
+	### setting self update for scripts config file
+	printf "\n${bold_text}###\nself update for scripts config file...\n###\n${default_text}"
+	SHELL_SCRIPTS_CONFIG_FILE="shellscriptsrc"
+	SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH=~/."$SHELL_SCRIPTS_CONFIG_FILE"
+	# variable is set in user profile and deactivated for batch install scripts in batch_script_part1
+	if [[ "$ENABLE_SELF_UPDATE" == "no" ]]
+    then
+        # deactivating self-update
+        echo "deactivating self-update..."
+        sed -i '' '/env_config_file_self_update$/s/^#*/#/g' "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+    else
+        # activating self-update
+        echo "activating self-update..."
+        sed -i '' '/env_config_file_self_update$/s/^#*//g' "$SHELL_SCRIPTS_CONFIG_FILE_INSTALL_PATH"
+    fi
+    echo ''
 	
 	### batch script done
 	printf "\n${bold_text}###\nbatch script done...\n###\n${default_text}"

@@ -1241,16 +1241,17 @@ EOF
     "Alfred 4                                                                 false" 
     "GeburtstagsChecker                                                       false" 
     "AppCleaner SmartDelete                                                   true" 
-    "TotalFinder                                                              false" 
-    "XtraFinder                                                               false" 
+    #"TotalFinder                                                              false" 
+    #"XtraFinder                                                               false"
+    #"Quicksilver                                                              false" 
+    "BetterTouchTool                                                          false" 
     "witchdaemon                                                              false" 
-    "Quicksilver                                                              false" 
     "Better                                                                   false"
     # adguard and virusscanner helper are started via launchd in third party preferences script
     #"AdGuard Login Helper                                                     true"
     #"VirusScannerHelper                                                       true"
+    # overflow autostart is activated at login inside the app preferences, this way the overflow window does not open when starting the app on login                 
     #"Overflow 3                                                               true"                    
-    # autostart at login activated inside overflow 3 app, this way the overflow window does not open when starting the app on login                      
     )
     AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_ALL_USERS[@]}")
     env_add_startup_items
@@ -3310,7 +3311,7 @@ EOF
     # show color in tab bar
     # false = show color
     # true = do not show color
-    defaults write com.apple.Safari NeverUseBackgroundColorInToolbar -bool false
+    defaults write com.apple.Safari NeverUseBackgroundColorInToolbar -bool true
     
     # automatically resize tabs and make them smaller if more tabs are open (ff turned of tabs stay the same size and you have to scroll through them)
     defaults write com.apple.Safari EnableNarrowTabs -bool true

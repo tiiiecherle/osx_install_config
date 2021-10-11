@@ -15,6 +15,7 @@ angry-ip-scanner
 appcleaner
 bartender
 bbedit
+bettertouchtool
 brackets
 burn
 coconutbattery
@@ -58,7 +59,7 @@ prefs-editor
 profilecreator
 progressive-downloader
 quickhash
-quicksilver
+#quicksilver
 sejda-pdf
 signal
 skype
@@ -73,6 +74,7 @@ ui-browser
 unified-remote
 utm
 veracrypt
+visual-studio-code
 vlc
 vlc-webplugin
 vnc-viewer
@@ -84,4 +86,4 @@ xnconvert
 # no longer installable by cask, installed with separate install script
 # correct name in uppercase and lowercase letters is needed
 #XtraFinder
-TotalFinder
+#TotalFinder

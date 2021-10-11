@@ -119,13 +119,17 @@ run_cleaning2 () {
 	sudo -H -u "$loggedInUser" rm -rf /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/*
 
 	# restoring basic cookies
-	if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
-	then
-		sudo -H -u "$loggedInUser" mkdir -p /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/
-		sudo -H -u "$loggedInUser" cp -a /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies
-	else
-		:
-	fi
+	# deprecated, use super agent browser extension instead
+	restore_basic_cookies() {
+		if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
+		then
+			sudo -H -u "$loggedInUser" mkdir -p /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/
+			sudo -H -u "$loggedInUser" cp -a /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies
+		else
+			:
+		fi
+	}
+	#restore_basic_cookies
 	
 	# cleaning dnscaches
 	dns_caches () {
