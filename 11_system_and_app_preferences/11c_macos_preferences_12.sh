@@ -1243,8 +1243,9 @@ EOF
     "AppCleaner SmartDelete                                                   true" 
     #"TotalFinder                                                              false" 
     #"XtraFinder                                                               false"
-    #"Quicksilver                                                              false" 
-    "BetterTouchTool                                                          false" 
+    #"Quicksilver                                                              false"
+    # bettertouchtool is started in third party preferences script 
+    #"BetterTouchTool                                                          false" 
     "witchdaemon                                                              false" 
     "Better                                                                   false"
     # adguard and virusscanner helper are started via launchd in third party preferences script
@@ -1602,7 +1603,8 @@ expect eof
     tell application "System Events"
     	tell process "System Preferences"
     		# resolution standard
-    		select row 20 of table 1 of scroll area 1 of tab group 1 of window 1
+    		#select row 21 of table 1 of scroll area 1 of tab group 1 of window 1
+    		select last row of table 1 of scroll area 1 of tab group 1 of window 1
     		delay 1
     	end tell
     end tell

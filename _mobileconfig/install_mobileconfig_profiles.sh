@@ -153,7 +153,7 @@ do
         	#reveal anchor "Profile" of pane id "com.apple.preferences.configurationprofiles"
         	try
         		reveal pane id "com.apple.preferences.configurationprofiles"
-        		delay 3
+        		delay 4
         	end try
         end tell
         
@@ -164,20 +164,20 @@ do
         
         tell application "System Events"
         	select row 2 of table 1 of scroll area 2 of window "Profile" of process "System Preferences"
-        	delay 2
+        	delay 4
         	tell process "System Preferences"
         		try
         			click button "Installieren …" of scroll area 1 of window "Profile"
         		on error
         		    click button 1 of sheet 1 of window 1
         		end try
-        		delay 2
+        		delay 4
         		try
         			click button "Installieren" of sheet 1 of window "Profile"
         		on error
         		    click button 1 of sheet 1 of window 1    			
         		end try
-        		delay 2
+        		delay 4
         		try
         			tell application "System Events" to keystroke "$SUDOPASSWORD"
         		end try
@@ -199,30 +199,42 @@ do
             	        end try
             		end tell            	
         		end try
-        		delay 2
+        		delay 4
         		try
         			click button "Installieren" of sheet 1 of window "Profile"
+        			delay 4
         		on error
         		    try
         		        click button 1 of sheet 1 of window 1
+        		        delay 4
         		    end try
         		end try
-        		delay 2
+        		try
+        		    repeat until (exists window "Profile")
+		                delay 1
+		            end repeat
+		        on error
+        		    repeat until (exists window 1)
+		                delay 1
+		            end repeat
+		        end try
+
         	end tell
         end tell
         
-        delay 1
-        
+        delay 4
+
         tell application "System Preferences" to quit
         
 EOF
     
-    if [[ $(echo "$i" | grep -i "wifi") != "" ]]
-    then
-        sleep 10
-    else
-        sleep 5
-    fi
+    #if [[ $(echo "$i" | grep -i "wifi") != "" ]]
+    #then
+    #    sleep 10
+    #else
+    #    sleep 5
+    #fi
+    sleep 4
     
 done <<< "$(find "$MOBILECONFIG_INPUT_PATH" -type f -name "*.mobileconfig")"
 

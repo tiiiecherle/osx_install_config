@@ -121,6 +121,15 @@ then
     else
         :
     fi
+    sleep 3
+    if [[ "$RESTORE_DIR_UTM" != "" ]]
+    then
+        cp "$BACKUP_RESTORE_SCRIPTS_DIR"/unarchive/unarchive_tar_gz_progress_all_in_folder.command "$RESTORE_DIR_UTM"/
+        #"$RESTORE_DIR_VBOX"/unarchive_tar_gz_progress_all_in_folder.command &
+        open ""$RESTORE_DIR_UTM"/unarchive_tar_gz_progress_all_in_folder.command"
+    else
+        :
+    fi
     
     echo ''
     echo "waiting for unarchiving to finish..."

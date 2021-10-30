@@ -761,6 +761,21 @@ allow_opening_casks() {
         local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
         #echo "$APP_NAME"
         env_set_open_on_first_run_permissions
+        # allow additional apps inside of other apps
+        if [[ "$line" == "bettertouchtool" ]]
+        then
+            local APP_NAME="BTTRelaunch"
+            env_set_open_on_first_run_permissions
+        else
+            :
+        fi
+        if [[ "$line" == "alfred" ]]
+        then
+            local APP_NAME="Alfred Preferences"
+            env_set_open_on_first_run_permissions
+        else
+            :
+        fi
     else
         :
     fi
@@ -792,6 +807,21 @@ else
             local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
             #echo "$APP_NAME"
             env_set_open_on_first_run_permissions
+            # allow additional apps inside of other apps
+            if [[ "$line" == "bettertouchtool" ]]
+            then
+                local APP_NAME="BTTRelaunch"
+                env_set_open_on_first_run_permissions
+            else
+                :
+            fi
+            if [[ "$line" == "alfred" ]]
+            then
+                local APP_NAME="Alfred Preferences"
+                env_set_open_on_first_run_permissions
+            else
+                :
+            fi
         else
             :
         fi

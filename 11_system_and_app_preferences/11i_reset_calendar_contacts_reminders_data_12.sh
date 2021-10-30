@@ -439,7 +439,7 @@ EOF
 		opening_calendar
 		
 		waiting_and_quitting_calendar() {
-			WAITING_TIME=60
+			WAITING_TIME=90
 			NUM1=0
 			#echo ''
 			echo ''

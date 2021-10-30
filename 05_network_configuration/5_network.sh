@@ -701,11 +701,13 @@ fi
 if [[ "$WIFI_SSID" != "" ]]
 then
     sudo networksetup -setairportpower "$WLAN_DEVICE_ID" off
-    sleep 5
+    sleep 3
     sudo networksetup -setairportpower "$WLAN_DEVICE_ID" on
+    sleep 3
+    /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s
     sleep 5
     sudo networksetup -setairportnetwork "$WLAN_DEVICE_ID" "$WIFI_SSID"
-    sleep 5
+    sleep 3
 else
     :
 fi

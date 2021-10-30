@@ -309,7 +309,7 @@ formulae_show_updates_parallel() {
         #echo NUMBER_OF_INSTALLED_VERSIONS is "$NUMBER_OF_INSTALLED_VERSIONS"
         local NEWEST_INSTALLED_VERSION=$(printf '%s\n' "$INSTALLED_VERSIONS" | tail -n 1)
         #echo NEWEST_INSTALLED_VERSION is "$NEWEST_INSTALLED_VERSION"
-        local CHECK_RESULT=$(printf '%s\n' "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo ok || echo outdated)
+        local CHECK_RESULT=$(printf '%s\n' "$INSTALLED_VERSIONS" | grep -q "^$NEW_VERSION$" 2>&1 && echo ok || echo outdated)
         #echo CHECK_RESULT is $CHECK_RESULT
         local NAME_PRINT=$(printf '%s\n' "$FORMULA" | awk -v len=20 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         local CURRENT_INSTALLED_VERSION_PRINT=$(printf '%s\n' "$NEWEST_INSTALLED_VERSION" | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
@@ -572,9 +572,9 @@ casks_show_updates_parallel() {
     export DATE_LIST_FILE_CASKS
     touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
     
-    DATE_LIST_FILE_CASKS_AUTOSTART=$(echo "casks_update_autostart"_$(date +%Y-%m-%d_%H-%M-%S).txt)
-    export DATE_LIST_FILE_CASKS_AUTOSTART
-    touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART"
+    #DATE_LIST_FILE_CASKS_AUTOSTART=$(echo "casks_update_autostart"_$(date +%Y-%m-%d_%H-%M-%S).txt)
+    #export DATE_LIST_FILE_CASKS_AUTOSTART
+    #touch "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART"
     
     # cleanup formulae preparation
     TMP_DIR_CASK_VERSIONS=/tmp/cask_versions
@@ -623,7 +623,7 @@ casks_show_updates_parallel() {
         local NEWEST_INSTALLED_VERSION=$(printf '%s\n' "$INSTALLED_VERSIONS" | head -n 1)
         #local NEWEST_INSTALLED_VERSION="$NEW_VERSION"
         #echo NEWEST_INSTALLED_VERSION is "$NEWEST_INSTALLED_VERSION"
-        local CHECK_RESULT=$(printf '%s\n' "$INSTALLED_VERSIONS" | grep -q "$NEW_VERSION" 2>&1 && echo ok || echo outdated)
+        local CHECK_RESULT=$(printf '%s\n' "$INSTALLED_VERSIONS" | grep -q "^$NEW_VERSION$" 2>&1 && echo ok || echo outdated)
         #echo CHECK_RESULT is $CHECK_RESULT
         local CASK_NAME_PRINT=$(printf '%s\n' "$CASK" | awk -v len=20 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
         local CURRENT_INSTALLED_VERSION_PRINT=$(printf '%s\n' "$NEWEST_INSTALLED_VERSION" | awk -v len=15 '{ if (length($0) > len) print substr($0, 1, len-3) "..."; else print; }')
@@ -659,18 +659,21 @@ casks_show_updates_parallel() {
         
         # autostart
         # 10.15 is not opening autostart apps on next boot after install/update without explicitly granting permissions or opening manually before autostart
-        env_get_autostart_items
-        if [[ "$AUTOSTART_ITEMS" != "" ]] && [[ "$CHECK_RESULT" == "outdated" ]] && [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
-        then
-            if [[ $(printf '%s\n' "$AUTOSTART_ITEMS" | grep -i "$CASK") != "" ]] || [[ $(printf '%s\n' "$AUTOSTART_ITEMS" | grep -i "$CASK_ARTIFACT_APP_NO_EXTENSION") != "" ]]
+        add_cask_to_autostart_list() {
+            env_get_autostart_items
+            if [[ "$AUTOSTART_ITEMS" != "" ]] && [[ "$CHECK_RESULT" == "outdated" ]] && [[ "$CASK_ARTIFACT_APP_NO_EXTENSION" != "" ]]
             then
-                echo -e "$CASK\t\t$CASK_ARTIFACT_APP_NO_EXTENSION" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART"
+                if [[ $(printf '%s\n' "$AUTOSTART_ITEMS" | grep -i "$CASK") != "" ]] || [[ $(printf '%s\n' "$AUTOSTART_ITEMS" | grep -i "$CASK_ARTIFACT_APP_NO_EXTENSION") != "" ]]
+                then
+                    echo -e "$CASK\t\t$CASK_ARTIFACT_APP_NO_EXTENSION" >> "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS_AUTOSTART"
+                else
+                    :
+                fi
             else
                 :
             fi
-        else
-            :
-        fi
+        }
+        #add_cask_to_autostart_list
     	
     	if [[ "$CONT_LATEST" =~ ^(yes|y)$ ]]
         then
@@ -909,19 +912,22 @@ post_cask_installations() {
     #autostart_permissions_cask_specific
     
     # if casks were updated ensure permissions for all autostart apps
-    if [[ ! -s "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" ]]
-    then
-    	# file is empty or does not exist
-        :
-    else
-    	# file exists and is not empty
-        echo ''
-        echo "setting permissions for autostart apps..."
-        env_get_autostart_items
-        env_check_if_parallel_is_installed 1>/dev/null
-        #echo ''
-        if [[ "${AUTOSTART_ITEMS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "env_set_permissions_autostart_apps {}" ::: "${AUTOSTART_ITEMS[@]}"; fi 1>/dev/null
-    fi
+    set_permissions_autostart_apps() {
+        if [[ ! -s "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" ]]
+        then
+        	# file is empty or does not exist
+            :
+        else
+        	# file exists and is not empty
+            echo ''
+            echo "setting permissions for autostart apps..."
+            env_get_autostart_items
+            env_check_if_parallel_is_installed 1>/dev/null
+            #echo ''
+            if [[ "${AUTOSTART_ITEMS[@]}" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer -k "env_set_permissions_autostart_apps {}" ::: "${AUTOSTART_ITEMS[@]}"; fi 1>/dev/null
+        fi
+    }
+    #set_permissions_autostart_apps
     
 }
 
@@ -929,14 +935,22 @@ allow_opening_casks() {
     # allow opening apps
     echo ''
     echo "allowing casks to open..."
-    # list
-    #ALLOWED_CASKS_LIST=(
-    #jitsi-meet
-    #chromium
-    #)
-    # all casks
-    ALLOWED_CASKS_LIST=$(brew list --cask | tr "," "\n" | uniq)
+    
+    if [[ "$WHICH_CASKS_TO_ALLOW" == "list" ]]
+    then
+        # only updated casks
+        ALLOWED_CASKS_LIST=$(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS")
+        # list
+        #ALLOWED_CASKS_LIST=(
+        #jitsi-meet
+        #chromium
+        #)
+    else
+        # all installed casks
+        ALLOWED_CASKS_LIST=$(brew list --cask | tr "," "\n" | uniq)
+    fi
     ALLOWED_CASKS=$(printf "%s\n" "${ALLOWED_CASKS_LIST[@]}")
+
     
     allow_opening_casks_inside() {
         line="$1"
@@ -946,6 +960,7 @@ allow_opening_casks() {
             local CASK_INFO=$(brew info --cask --json=v2 "$line" | jq -r '.casks | .[]')
             #local CASK_INFO=$(brew info --cask "$CASK")
             local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
+            #echo "$CASK_NAME"
             #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
             local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
             if [[ "$CASK_ARTIFACT_APP" != "" ]]
@@ -957,6 +972,21 @@ allow_opening_casks() {
             local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
             #echo "$APP_NAME"
             env_set_open_on_first_run_permissions
+            # allow additional apps inside of other apps
+            if [[ "$line" == "bettertouchtool" ]]
+            then
+                local APP_NAME="BTTRelaunch"
+                env_set_open_on_first_run_permissions
+            else
+                :
+            fi
+            if [[ "$line" == "alfred" ]]
+            then
+                local APP_NAME="Alfred Preferences"
+                env_set_open_on_first_run_permissions
+            else
+                :
+            fi
         else
             :
         fi
@@ -1139,7 +1169,7 @@ then
     CONT_LATEST="no"
     
     env_homebrew_update
-    #
+    
     echo ''
     export INSTALLED_FORMULAE=$(brew list --formula | cat)
     formulae_show_updates_parallel
@@ -1152,7 +1182,7 @@ then
     else
         :
     fi
-    #
+    
     echo ''
     #formulae_install_updates
     # workaround for issue with brew upgrade command
@@ -1166,15 +1196,23 @@ then
     else
         :
     fi
-    #
-    echo ''
+    
+    # allowing casks to open
+    if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
+    then
+        WHICH_CASKS_TO_ALLOW=list allow_opening_casks
+    else
+        echo ''
+    fi
+    
+    # cleaning up
+    #echo ''
     echo "cleaning up..."
     env_cleanup_all_homebrew & pids+=($!)
     if [[ $(echo "$HOMEBREW_CASK_IS_INSTALLED") == "yes" ]]
     then
         cleanup_formulae & pids+=($!)
         cleanup_casks & pids+=($!)
-        #allow_opening_casks
     else
         cleanup_formulae & pids+=($!)
     fi

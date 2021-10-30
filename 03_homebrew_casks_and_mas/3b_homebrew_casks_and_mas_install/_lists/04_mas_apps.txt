@@ -9,25 +9,26 @@
 881418622	Affinity Publisher
 595374522	VirusScannerPlus
 1209754386	eDrawings
-477670270       2Do
-1295203466 	Microsoft Remote Desktop
+477670270	2Do
+1295203466	Microsoft Remote Desktop
 483820530	QR Journal
 1292198261	iMazing HEIC Converter
 #509182449	Photo Transfer App
 #456624497	Brightness Slider
 #507257563	Sip
-561712678       AudioSwitcher
+561712678	AudioSwitcher
 888806818	Password Factory
 #509148961	SMARTReporter
-1436953057	GhosteryLite
-1121192229	Better
+#1436953057	GhosteryLite
+#1121192229	Better
 1440147259	AdGuard for Safari
 1451685025	WireGuard
 1387766656	Overflow 3
 1197662954	HashBox
 #1055555711	fHash
 1294126402	HEIC Converter
-1037126344 	Apple Configurator 2
+1037126344	Apple Configurator 2
 1520204499	Vectorize
 406825478	Telephone
-1568262835	Super Agent 
+1568262835	Super Agent
+413969927	AudioBookBinder

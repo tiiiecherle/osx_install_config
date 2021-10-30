@@ -635,8 +635,8 @@ u	~/Library/Containers/com.apple.Safari/Data/Library/Safari/WebExtensions
 #u	~/Library/Preferences/com.apple.Safari.Extensions.plist
 #u	~/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari.Extensions.plist
 u	~/Library/Safari/Bookmarks.plist
-u	~/Library/Group Containers/better.fyi.mac
-u	~/Library/Group Containers/*.ghostery.lite
+#u	~/Library/Group Containers/better.fyi.mac
+#u	~/Library/Group Containers/*.ghostery.lite
 u	~/Library/Group Containers/*.com.adguard.safari.AdGuard
 u	~/Library/Containers/com.adguard.safari.AdGuard/Data/Library/Application Support/AdGuardSafariApp/config.json
 u	~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions

@@ -1,6 +1,5 @@
 #!/bin/zsh
 
-
 ###
 ### script dir
 ###
@@ -496,9 +495,9 @@ ask_for_reboot() {
 	if [[ "$REBOOT_NOW" =~ ^(yes|y)$ ]]
 	then
 	    #echo ''
-		osascript -e 'tell app "loginwindow" to «event aevtrrst»'           # reboot
-		#osascript -e 'tell app "loginwindow" to «event aevtrsdn»'          # shutdown
-		#osascript -e 'tell app "loginwindow" to «event aevtrlgo»'          # logout
+		osascript -e 'tell app "loginwindow" to Â«event aevtrrstÂ»'           # reboot
+		#osascript -e 'tell app "loginwindow" to Â«event aevtrsdnÂ»'          # shutdown
+		#osascript -e 'tell app "loginwindow" to Â«event aevtrlgoÂ»'          # logout
 	    #echo ''
 	else
 		:
