@@ -659,6 +659,10 @@ u	~/Library/Services/dial_snom.workflow
 u	~/Library/Services/split_pdfs.workflow
 # /System/Library/CoreServices/pbs -flush
 
+# Shortcuts
+echo Shortcuts
+u	~/Library/Shortcuts
+
 # Signal
 echo Signal
 #u	"$PATH_TO_APPS"/Signal.app

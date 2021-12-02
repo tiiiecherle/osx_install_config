@@ -238,11 +238,11 @@ setting_config() {
     fi
 }
 
-check_dnd_status() {
+check_dnd_status_macos11() {
     DND_STATUS=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | xmllint --xpath 'boolean(//key[text()="userPref"]/following-sibling::dict/key[text()="enabled"])' -)
 }
 
-enable_dnd() {
+enable_dnd_macos11() {
 	defaults read /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist >/dev/null
     DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -insert userPref -xml "
     <dict>
@@ -274,7 +274,7 @@ enable_dnd() {
     sleep 2
 }
 
-disable_dnd() {
+disable_dnd_macos11() {
 	defaults read /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist >/dev/null
     DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -remove userPref - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
     defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
@@ -296,6 +296,38 @@ disable_dnd() {
 		fi
     done <<< "$(printf "%s\n" "${PROCESS_LIST[@]}")"
     sleep 2
+}
+
+check_dnd_status() {
+	# check dnd state
+	# 0 = off
+	# 1 = on
+	DND_STATUS=$(defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes")
+}
+
+# enable dnd
+enable_dnd() {
+	echo "enabling dnd..."
+	if [[ -e "/System/Applications/Shortcuts.app" ]] && [[ $(shortcuts list | grep -x "dnd-on") != "" ]] 
+	then
+		shortcuts run dnd-on
+		sleep 1
+		defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes"
+	else
+		echo "shortcuts app or shortcuts name not found..."
+	fi
+}
+
+disable_dnd() {
+    echo "disabling dnd..."
+	if [[ -e "/System/Applications/Shortcuts.app" ]] && [[ $(shortcuts list | grep -x "dnd-off") != "" ]] 
+	then
+		shortcuts run dnd-off
+		sleep 1
+		defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes"
+	else
+		echo "shortcuts app or shortcuts name not found..."
+	fi
 }
 
 
@@ -421,7 +453,7 @@ EOF
     	then
     	    # macos 12
         	APPLICATIONS_TO_SET_NOTIFICATIONS=(
-        	"Reminders														        1652564311"
+        	"Reminders														        1921524055"
         	)
     	else
     	    :
@@ -433,16 +465,33 @@ EOF
     	if [[ "$CHECK_RESULT_EXPORT" == "wrong" ]]
     	then
     		echo ''
-    		echo "enabling..."
+    		echo "enabling app notifications..."
     		# disable dnd
-    		check_dnd_status
-    		if [[ "$DND_STATUS" == "true" ]]
-    		then
-    			echo "disabling dnd..."
-                disable_dnd
-            else
-            	:
-            fi
+            if [[ "$MACOS_VERSION_MAJOR" == "11" ]]
+        	then
+        	    # macos 11
+        		check_dnd_status_macos11
+        		if [[ "$DND_STATUS" == "true" ]]
+        		then
+        			echo "disabling dnd..."
+                    disable_dnd_macos11
+                else
+                	:
+                fi
+        	elif [[ "$MACOS_VERSION_MAJOR" -ge "12" ]]
+        	then
+        		check_dnd_status
+        		if [[ "$DND_STATUS" == "1" ]]
+        		then
+        			echo "disabling dnd..."
+                    disable_dnd
+                else
+                	:
+                fi
+        	else
+        	    :
+        	fi
+    	
             # usernoted gets killed in env_set_check_apps_notifications and ControlCenter after REMINDER_STATUS
             echo "enabling reminder notifications..."
             # enable reminder notifications
@@ -450,17 +499,33 @@ EOF
     		APP_SETTING_CHANGED="yes"
     		REMINDER_STATUS="on"
     	else
-    	    echo "already enabled..."
+    	    echo "app notifications already enabled..."
     	    echo ''
-    		# disable dnd
-    		check_dnd_status
-    		if [[ "$DND_STATUS" == "true" ]]
-    		then
-    			echo "disabling dnd..."
-                disable_dnd
-            else
-            	:
-            fi
+    		# make sure dnd is disabled
+            if [[ "$MACOS_VERSION_MAJOR" == "11" ]]
+        	then
+        	    # macos 11
+        		check_dnd_status_macos11
+        		if [[ "$DND_STATUS" == "true" ]]
+        		then
+        			echo "disabling dnd..."
+                    disable_dnd_macos11
+                else
+                	:
+                fi
+        	elif [[ "$MACOS_VERSION_MAJOR" -ge "12" ]]
+        	then
+        		check_dnd_status
+        		if [[ "$DND_STATUS" == "1" ]]
+        		then
+        			echo "disabling dnd..."
+                    disable_dnd
+                else
+                	:
+                fi
+        	else
+        	    :
+        	fi
     	fi
     fi
     

@@ -926,72 +926,70 @@ EOF
 	#sleep 2
         
     ### do not disturb
-    # /usr/libexec/PlistBuddy -x -c 'Print "dnd_prefs"' /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o -
-    # or
-    # plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o -
+    
+    # from macos 12 on the easiest way to toggle dnd on the command line seems to be the shortcuts.app
+    # https://github.com/sindresorhus/do-not-disturb/issues/9#issuecomment-981590804
+    # https://github.com/vitorgalvao/tiny-scripts/issues/206#issuecomment-974747114
+    
+    # open shortcuts
+    # add shortcut - name dnd-on
+    # add action focus on until switched off
+    # add shortcut - name dnd-off
+    # add action focus off until switched on
     
     check_dnd_status() {
-        DND_STATUS=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | xmllint --xpath 'boolean(//key[text()="userPref"]/following-sibling::dict/key[text()="enabled"])' -)
+    	# check dnd state
+    	# 0 = off
+    	# 1 = on
+    	DND_STATUS=$(defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes")
     }
-    #check_dnd_status
     
+    # enable dnd
     enable_dnd() {
-    	defaults read /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist >/dev/null
-        DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -insert userPref -xml "
-        <dict>
-            <key>date</key>
-            <date>$(date -u +"%Y-%m-%dT%H:%M:%SZ")</date>
-            <key>enabled</key>
-            <true/>
-            <key>reason</key>
-            <integer>1</integer>
-        </dict> " - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
-        defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
-        PROCESS_LIST=(
-        #cfprefsd
-        usernoted
-        #NotificationCenter
-        )
-        while IFS= read -r line || [[ -n "$line" ]] 
-    	do
-    	    if [[ "$line" == "" ]]; then continue; fi
-            i="$line"
-            #echo "$i"
-            if [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') != "" ]]
-            then
-            	killall "$i" && sleep 0.1 && while [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
-    		else
-    			:
-    		fi
-        done <<< "$(printf "%s\n" "${PROCESS_LIST[@]}")"
-        #sleep 2
+        echo "enabling dnd..."
+    	if [[ -e "/System/Applications/Shortcuts.app" ]] && [[ $(shortcuts list | grep -x "dnd-on") != "" ]] 
+    	then
+    		shortcuts run dnd-on
+    		sleep 1
+    		defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes"
+    	else
+    		echo "shortcuts app or shortcuts name not found..."
+    	fi
     }
     #enable_dnd
     
+    #check_dnd_status
+    #if [[ "$DND_STATUS" == "0" ]]
+    #then
+    #    enable_dnd
+    #else
+    # 	:
+    #fi
+    
+    # wait to apply changes
+    #sleep 3
+    
+    # disable dnd
     disable_dnd() {
-    	defaults read /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist >/dev/null
-        DND_HEX_DATA=$(plutil -extract dnd_prefs xml1 -o - /Users/"$USER"/Library/Preferences/com.apple.ncprefs.plist | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o - | plutil -remove userPref - -o - | plutil -convert binary1 - -o - | xxd -p | tr -d '\n')
-        defaults write com.apple.ncprefs.plist dnd_prefs -data "$DND_HEX_DATA"
-        PROCESS_LIST=(
-        #cfprefsd
-        usernoted
-        #NotificationCenter
-        )
-        while IFS= read -r line || [[ -n "$line" ]] 
-    	do
-    	    if [[ "$line" == "" ]]; then continue; fi
-            i="$line"
-            #echo "$i"
-            if [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') != "" ]]
-            then
-            	killall "$i" && sleep 0.1 && while [[ $(ps aux | grep "$i" | grep -v grep | awk '{print $2;}') == "" ]]; do sleep 0.5; done
-    		else
-    			:
-    		fi
-        done <<< "$(printf "%s\n" "${PROCESS_LIST[@]}")"
-        #sleep 2
+        echo "disabling dnd..."
+    	if [[ -e "/System/Applications/Shortcuts.app" ]] && [[ $(shortcuts list | grep -x "dnd-off") != "" ]] 
+    	then
+    		shortcuts run dnd-off
+    		sleep 1
+    		defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes"
+    	else
+    		echo "shortcuts app or shortcuts name not found..."
+    	fi
     }
     #disable_dnd
+    
+    #check_dnd_status
+    #if [[ "$DND_STATUS" == "1" ]]
+    #then
+    #    disable_dnd
+    #else
+    #	:
+    #fi
     
     dnd_settings() {
     #osascript 2>/dev/null <<EOF
