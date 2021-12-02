@@ -62,8 +62,8 @@ fi
 # macos displays a red dot notification if a system software update is available
 # reaaperas after search for new software in gui
 # "com.apple.preferences.softwareupdate" = 1;
-#defaults write com.apple.systempreferences AttentionPrefBundleIDs -dict-add com.apple.preferences.softwareupdate -integer 0
-#/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.systempreferences.plist -c 'Delete AttentionPrefBundleIDs:com.apple.preferences.softwareupdate'
+defaults write com.apple.systempreferences AttentionPrefBundleIDs -dict-add com.apple.preferences.softwareupdate -integer 0
+/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.systempreferences.plist -c 'Delete AttentionPrefBundleIDs:com.apple.preferences.softwareupdate'
 #killall Dock
 
 
