@@ -366,6 +366,40 @@ set_vbox_network_device() {
     fi
 }
 
+set_utm_network_device() {
+    if [[ -e "/Applications/UTM.app" ]]
+    then
+        # installed
+        if [[ $(find /Users/"$loggedInUser"/Library/Containers/com.utmapp.UTM/Data/Documents -mindepth 1 -maxdepth 1 -name "*.utm" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d') -gt "0" ]]
+        then
+            if [[ "$DEVICE_ID" =~ ^en[0-9]$ ]]
+            then
+                while IFS= read -r line || [[ -n "$line" ]]
+        		do
+        		    if [[ "$line" == "" ]]; then continue; fi
+                    UTM_VM="$line"
+                    echo "setting utm network to "$DEVICE_ID" for vm $(basename "$UTM_VM")..."
+                    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :Networking:NetworkBridgeInterface" "$UTM_VM/config.plist") ]] > /dev/null 2>&1
+                    then
+                        /usr/libexec/PlistBuddy -c "Add :Networking:NetworkBridgeInterface string" "$UTM_VM/config.plist"
+                    	/usr/libexec/PlistBuddy -c "Set :Networking:NetworkBridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
+                    else
+                        /usr/libexec/PlistBuddy -c "Set :Networking:NetworkBridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
+                    fi  
+        			#echo ''
+                done <<< "$(find /Users/"$loggedInUser"/Library/Containers/com.utmapp.UTM/Data/Documents -mindepth 1 -maxdepth 1 -name "*.utm")"
+            else
+                echo ""$DEVICE"_DEVICE_ID is empty or has a wrong format..."
+            fi
+        else
+            echo "no utm vms found, skipping..."
+        fi
+    else
+        # virtualbox is not installed
+        echo "utm is not installed..."
+    fi
+}
+
 setting_config() {
     ### sourcing .$SHELLrc or setting PATH
     # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
@@ -534,16 +568,18 @@ network_select() {
         DEVICE="ETHERNET"
         DEVICE_ID="$ETHERNET_DEVICE_ID"
         echo ''
-        echo "enabling "$DEVICE" for vbox..."
+        echo "enabling "$DEVICE" for vms..."
         set_vbox_network_device
+        set_utm_network_device
     else
         change_to_location_custom
         enable_wlan_device
         DEVICE="WLAN"
         DEVICE_ID="$WLAN_DEVICE_ID"
         echo ''
-        echo "enabling "$DEVICE" for vbox..."
+        echo "enabling "$DEVICE" for vms..."
         set_vbox_network_device
+        set_utm_network_device
     fi
         
     # loading and disabling other launchd services
