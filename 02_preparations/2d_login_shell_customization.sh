@@ -144,10 +144,14 @@ echo "customizing ~/.zshrc..."
 # changes
 sed -i '' 's|^ZSH_THEME=.*|ZSH_THEME=""|' ~/.zshrc
 sed -i '' 's|^plugins=.*|plugins=()|' ~/.zshrc
-sed -i '' '/DISABLE_AUTO_TITLE=/s/^#*//g' ~/.zshrc
-sed -i '' '/DISABLE_AUTO_TITLE=/s/^ *//g' ~/.zshrc
-sed -i '' '/DISABLE_AUTO_UPDATE=/s/^#*//g' ~/.zshrc
-sed -i '' '/DISABLE_AUTO_UPDATE=/s/^ *//g' ~/.zshrc
+# disable auto update of oh-my-zsh old
+#sed -i '' '/DISABLE_AUTO_TITLE=/s/^#*//g' ~/.zshrc
+#sed -i '' '/DISABLE_AUTO_TITLE=/s/^ *//g' ~/.zshrc
+#sed -i '' '/DISABLE_AUTO_UPDATE=/s/^#*//g' ~/.zshrc
+#sed -i '' '/DISABLE_AUTO_UPDATE=/s/^ *//g' ~/.zshrc
+# disable auto update of oh-my-zsh new
+sed -i '' '/zstyle.*mode disabled/s/^#*//g' ~/.zshrc
+sed -i '' '/zstyle.*mode disabled/s/^ *//g' ~/.zshrc
 # additions
 # promtp
 echo '' >> ~/.zshrc
@@ -170,6 +174,8 @@ echo "export EDITOR=nano" >> ~/.zshrc
 echo '' >> ~/.zshrc
 echo "# time command output format" >> ~/.zshrc
 echo "export TIMEFMT=$'%U user %S system %P cpu %*E total'" >> ~/.zshrc
+
+
 
 
 ### path
