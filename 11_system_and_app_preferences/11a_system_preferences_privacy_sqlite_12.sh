@@ -508,6 +508,7 @@ AUTOMATION_APPS=(
 "EagleFiler                                                                 Finder                      1"
 "witchdaemon                                                                Mail                        0"
 "Linphone                                                                   System Events               1"
+"BetterTouchTool                                                            Shortcuts                   1"
 )
         
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
