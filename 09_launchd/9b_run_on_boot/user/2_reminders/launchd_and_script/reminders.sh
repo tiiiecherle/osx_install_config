@@ -302,7 +302,12 @@ check_dnd_status() {
 	# check dnd state
 	# 0 = off
 	# 1 = on
-	DND_STATUS=$(defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes")
+	if [[ $(defaults read com.apple.controlcenter | grep "NSStatusItem Visible FocusModes") != "" ]]
+	then
+	    DND_STATUS=$(defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes")
+	else
+	    DND_STATUS=""
+	fi
 }
 
 # enable dnd
@@ -312,7 +317,7 @@ enable_dnd() {
 	then
 		shortcuts run dnd-on
 		sleep 1
-		defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes"
+		#defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes"
 	else
 		echo "shortcuts app or shortcuts name not found..."
 	fi
@@ -324,7 +329,7 @@ disable_dnd() {
 	then
 		shortcuts run dnd-off
 		sleep 1
-		defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes"
+		#defaults read com.apple.controlcenter "NSStatusItem Visible FocusModes"
 	else
 		echo "shortcuts app or shortcuts name not found..."
 	fi
