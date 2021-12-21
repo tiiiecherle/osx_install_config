@@ -23,7 +23,8 @@ archiving_tar_gz() {
     echo "archiving "$(dirname "$DESKTOPBACKUPFOLDER")"/"$(basename "$DESKTOPBACKUPFOLDER")"/"
     printf "%-10s" "to" "$TARGZFILE" && echo
     #echo "to "$(echo "$TARGZFILE")""
-    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz > "$TARGZFILE"; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZFILE")... " && unpigz -c "$TARGZFILE" | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
+    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz > "$TARGZFILE" && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m" >&2; popd 1> /dev/null
+    #echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZFILE")... " && unpigz -c "$TARGZFILE" | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
     #echo ''
 
 }
@@ -39,7 +40,8 @@ archiving_tar_gz_gpg() {
     echo "archiving "$(dirname "$DESKTOPBACKUPFOLDER")"/"$(basename "$DESKTOPBACKUPFOLDER")"/"
     printf "%-10s" "to" "$TARGZGPGFILE" && echo
     #echo "to "$(echo "$TARGZGPGFILE")""
-    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz | gpg --batch --yes --quiet --passphrase="$SUDOPASSWORD" --symmetric --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65536 --compress-algo 0 -o "$TARGZGPGFILE" 1> /dev/null; popd 1> /dev/null && echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZGPGFILE")... " && env_use_password | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$TARGZGPGFILE" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
+    pushd "$(dirname "$DESKTOPBACKUPFOLDER")" 1> /dev/null; sudo gtar -cpf - "$(basename "$DESKTOPBACKUPFOLDER")" | pv -s "$PVSIZE" | pigz | gpg --batch --yes --quiet --passphrase="$SUDOPASSWORD" --symmetric --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65536 --compress-algo 0 -o "$TARGZGPGFILE" 1> /dev/null && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m" >&2; popd 1> /dev/null
+    #echo '' && echo 'testing integrity of file(s)' && printf "%-45s" "$(basename "$TARGZGPGFILE")... " && env_use_password | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$TARGZGPGFILE" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e 'file is \033[1;32mOK\033[0m' || echo -e 'file is \033[1;31mINVALID\033[0m'
     #echo ''
 
 }

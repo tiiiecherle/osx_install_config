@@ -183,7 +183,7 @@ targz_and_progress() {
     echo archiving "$DIRS" 
     printf "%-10s" "to" "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" && echo
     #echo to "$FILESSAVEDIR"/"$(basename "$DIRS")".tar.gz
-    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz > "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION"; popd 1> /dev/null
+    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz > "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m" >&2; popd 1> /dev/null
     echo "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" >> "$FILESLOG"
     echo ""
 
@@ -195,7 +195,7 @@ tar_gz_gpg_and_progress() {
     echo archiving "$DIRS" 
     printf "%-10s" "to" "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" && echo
     #echo to "$FILESSAVEDIR"/"$(basename "$DIRS")".tar.gz.gpg
-    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz | gpg --batch --yes --quiet --passphrase="$SUDOPASSWORD" --symmetric --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65536 --compress-algo 0 -o "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" 1> /dev/null; popd 1> /dev/null
+    pushd "$(dirname "$DIRS")" 1> /dev/null; gtar --exclude='dccrecv' -cpf - "$(basename "$DIRS")" | pv -s "$BACKUPSIZE" | pigz | gpg --batch --yes --quiet --passphrase="$SUDOPASSWORD" --symmetric --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 65536 --compress-algo 0 -o "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" 1> /dev/null && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m" >&2; popd 1> /dev/null
     echo "$FILESSAVEDIR"/"$(basename "$DIRS")"."$FILE_EXTENSION" >> "$FILESLOG"
     echo ""
 
@@ -274,38 +274,41 @@ done
 
 ### checking integrity
 #echo ''
-echo "testing integrity of file(s) in "$FILESSAVEDIR"/..."
-echo ''
-
-NUMBER_OF_CORES=$(parallel --number-of-cores)
-NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-#echo $NUMBER_OF_MAX_JOBS
-NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-#echo $NUMBER_OF_MAX_JOBS_ROUNDED
-
-check_files_parallel() {
-    file="$1"
-    if [[ -f "$file" ]]
-    then
-        if [[ "$file" == *.tar.gz.gpg ]]
+testing_files_integrity() {
+    echo "testing integrity of file(s) in "$FILESSAVEDIR"/..."
+    echo ''
+    
+    NUMBER_OF_CORES=$(parallel --number-of-cores)
+    NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
+    #echo $NUMBER_OF_MAX_JOBS
+    NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
+    #echo $NUMBER_OF_MAX_JOBS_ROUNDED
+    
+    check_files_parallel() {
+        file="$1"
+        if [[ -f "$file" ]]
         then
-            printf "%-45s" ""$(basename "$file")"..." && builtin printf "$SUDOPASSWORD" | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$file" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
-        elif [[ "$file" == *.tar.gz ]]
-        then
-            printf "%-45s" ""$(basename "$file")"..." && unpigz -c "$file" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+            if [[ "$file" == *.tar.gz.gpg ]]
+            then
+                printf "%-45s" ""$(basename "$file")"..." && builtin printf "$SUDOPASSWORD" | gpg --batch --no-tty --yes --quiet --passphrase-fd 0 -d "$file" | unpigz | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+            elif [[ "$file" == *.tar.gz ]]
+            then
+                printf "%-45s" ""$(basename "$file")"..." && unpigz -c "$file" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+            else
+                echo ""$file" does not have a recognized file extension, skipping..."
+            fi
         else
-            echo ""$file" does not have a recognized file extension, skipping..."
+            :
         fi
-    else
-        :
-    fi
+    }
+    
+    if [[ "$(cat "$FILESLOG")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(cat "$FILESLOG")"; fi
+    #if [[ "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')"; fi
+    wait
+    echo ''
 }
+#testing_files_integrity
 
-if [[ "$(cat "$FILESLOG")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(cat "$FILESLOG")"; fi
-#if [[ "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$FILESSAVEDIR" -mindepth 1 -maxdepth 1 -type f -name '*.tar.gz.gpg' -o -name '*.tar.gz')"; fi
-wait
-
-echo ''
 echo 'backing up files done ;)'
 echo ''
 

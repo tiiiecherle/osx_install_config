@@ -69,7 +69,7 @@ do
         echo "archiving "$(dirname "$UTMMACHINE")"/"$(basename "$UTMMACHINE")"/"
         printf "%-10s" "to" "$UTMTARGZFILE" && echo
         #echo "to "$(echo "$UTMTARGZFILE")""
-        pushd "$(dirname "$UTMMACHINE")" 1> /dev/null; gtar -cpf - "$(basename "$UTMMACHINE")" | pv -s "$PVSIZE" | pigz > "$UTMTARGZFILE"; popd 1> /dev/null
+        pushd "$(dirname "$UTMMACHINE")" 1> /dev/null; gtar -cpf - "$(basename "$UTMMACHINE")" | pv -s "$PVSIZE" | pigz > "$UTMTARGZFILE" && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mFAILED\033[0m" >&2; popd 1> /dev/null
     
     }
     
@@ -97,31 +97,34 @@ done
 echo ''
 
 #echo ""
-echo "testing integrity of file(s) in "$UTMTARGZSAVEDIR"/..."
-#echo ""
-#
+testing_files_integrity() {
+    echo "testing integrity of file(s) in "$UTMTARGZSAVEDIR"/..."
+    #echo ""
+    #
+        
+    NUMBER_OF_CORES=$(parallel --number-of-cores)
+    NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
+    #echo $NUMBER_OF_MAX_JOBS
+    NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
+    #echo $NUMBER_OF_MAX_JOBS_ROUNDED
+    #
+    check_files_parallel() {
+        file="$1"
+        if [[ -f "$file" ]];
+        then
+            printf "%-45s" ""$(basename "$file")"..." && unpigz -c "$file" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
+        else
+            :
+        fi
+    }
     
-NUMBER_OF_CORES=$(parallel --number-of-cores)
-NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-#echo $NUMBER_OF_MAX_JOBS
-NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-#echo $NUMBER_OF_MAX_JOBS_ROUNDED
-#
-check_files_parallel() {
-    file="$1"
-    if [[ -f "$file" ]];
-    then
-        printf "%-45s" ""$(basename "$file")"..." && unpigz -c "$file" | gtar -tvv >/dev/null 2>&1 && echo -e "\033[1;32mOK\033[0m" || echo -e "\033[1;31mINVALID\033[0m"
-    else
-        :
-    fi
+    if [[ "$(find "$UTMTARGZSAVEDIR" -type f -name "*_utm_*.tar.gz")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$UTMTARGZSAVEDIR" -type f -name "*_utm_*.tar.gz")"; fi
+    wait
+    echo ''
 }
-
-if [[ "$(find "$UTMTARGZSAVEDIR" -type f -name "*_utm_*.tar.gz")" != "" ]]; then env_parallel --will-cite -j"$NUMBER_OF_MAX_JOBS_ROUNDED" --line-buffer "check_files_parallel {}" ::: "$(find "$UTMTARGZSAVEDIR" -type f -name "*_utm_*.tar.gz")"; fi
-wait
+#testing_files_integrity
 
 # done
-echo ''
 echo 'virtualbox backup done ;)'
 echo ''
 
