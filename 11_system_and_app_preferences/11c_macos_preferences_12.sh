@@ -365,10 +365,14 @@ setting_preferences() {
     # also done in script 10_dock
     defaults write com.apple.dock show-recents -bool false
     
-    # autohide menu bar
+    # autohide menu bar on desktop
     # 0=no, 1=yes
     ##
     defaults write NSGlobalDomain _HIHideMenuBar -int 0
+    
+    # autohide menu bar in full scrren mode
+    # 0=yes, 1=no
+    defaults write NSGlobalDomain AppleMenuBarVisibleInFullscreen -int 1
     
     
     ### hidden dock tweaks    
@@ -1602,7 +1606,8 @@ expect eof
     	tell process "System Preferences"
     		# resolution standard
     		#select row 21 of table 1 of scroll area 1 of tab group 1 of window 1
-    		select last row of table 1 of scroll area 1 of tab group 1 of window 1
+    		#select last row of table 1 of scroll area 1 of tab group 1 of window 1
+    		select row -2 of table 1 of scroll area 1 of tab group 1 of window 1
     		delay 1
     	end tell
     end tell
