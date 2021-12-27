@@ -1237,7 +1237,8 @@ EOF
     # adding startup-items
     AUTOSTART_ITEMS_ALL_USERS=(
     # name													                  start hidden
-    "Bartender 4                                                              false"
+    # bartender is started in third party preferences script 
+    #"Bartender 4                                                              false"
     "AudioSwitcher                                                            false"   
     "KeepingYouAwake                                                          false" 
     "Alfred 4                                                                 false" 

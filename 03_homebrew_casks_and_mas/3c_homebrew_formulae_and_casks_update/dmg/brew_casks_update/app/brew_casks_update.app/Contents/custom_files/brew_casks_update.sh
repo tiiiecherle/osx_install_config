@@ -987,6 +987,13 @@ allow_opening_casks() {
             else
                 :
             fi
+            if [[ "$line" == "bartender" ]]
+            then
+                local APP_NAME="BartenderStartAtLoginHelper"
+                env_set_open_on_first_run_permissions
+            else
+                :
+            fi
         else
             :
         fi

@@ -370,29 +370,34 @@ set_utm_network_device() {
     if [[ -e "/Applications/UTM.app" ]]
     then
         # installed
-        if [[ $(find /Users/"$loggedInUser"/Library/Containers/com.utmapp.UTM/Data/Documents -mindepth 1 -maxdepth 1 -name "*.utm" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d') -gt "0" ]]
+        if [[ -e /Users/"$loggedInUser"/Library/Containers/com.utmapp.UTM/Data/Documents ]]
         then
-            if [[ "$DEVICE_ID" =~ ^en[0-9]$ ]]
+            if [[ $(find /Users/"$loggedInUser"/Library/Containers/com.utmapp.UTM/Data/Documents -mindepth 1 -maxdepth 1 -name "*.utm" | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d') -gt "0" ]]
             then
-                while IFS= read -r line || [[ -n "$line" ]]
-        		do
-        		    if [[ "$line" == "" ]]; then continue; fi
-                    UTM_VM="$line"
-                    echo "setting utm network to "$DEVICE_ID" for vm $(basename "$UTM_VM")..."
-                    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :Networking:NetworkBridgeInterface" "$UTM_VM/config.plist") ]] > /dev/null 2>&1
-                    then
-                        /usr/libexec/PlistBuddy -c "Add :Networking:NetworkBridgeInterface string" "$UTM_VM/config.plist"
-                    	/usr/libexec/PlistBuddy -c "Set :Networking:NetworkBridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
-                    else
-                        /usr/libexec/PlistBuddy -c "Set :Networking:NetworkBridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
-                    fi  
-        			#echo ''
-                done <<< "$(find /Users/"$loggedInUser"/Library/Containers/com.utmapp.UTM/Data/Documents -mindepth 1 -maxdepth 1 -name "*.utm")"
+                if [[ "$DEVICE_ID" =~ ^en[0-9]$ ]]
+                then
+                    while IFS= read -r line || [[ -n "$line" ]]
+            		do
+            		    if [[ "$line" == "" ]]; then continue; fi
+                        UTM_VM="$line"
+                        echo "setting utm network to "$DEVICE_ID" for vm $(basename "$UTM_VM")..."
+                        if [[ -z $(/usr/libexec/PlistBuddy -c "Print :Networking:NetworkBridgeInterface" "$UTM_VM/config.plist") ]] > /dev/null 2>&1
+                        then
+                            /usr/libexec/PlistBuddy -c "Add :Networking:NetworkBridgeInterface string" "$UTM_VM/config.plist"
+                        	/usr/libexec/PlistBuddy -c "Set :Networking:NetworkBridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
+                        else
+                            /usr/libexec/PlistBuddy -c "Set :Networking:NetworkBridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
+                        fi  
+            			#echo ''
+                    done <<< "$(find /Users/"$loggedInUser"/Library/Containers/com.utmapp.UTM/Data/Documents -mindepth 1 -maxdepth 1 -name "*.utm")"
+                else
+                    echo ""$DEVICE"_DEVICE_ID is empty or has a wrong format..."
+                fi
             else
-                echo ""$DEVICE"_DEVICE_ID is empty or has a wrong format..."
+                echo "no utm vms found, skipping..."
             fi
         else
-            echo "no utm vms found, skipping..."
+            echo "directory for utm vms not found, skipping..."
         fi
     else
         # virtualbox is not installed

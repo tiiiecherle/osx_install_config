@@ -467,10 +467,10 @@ u	~/Library/Group Containers/UBF8T346G9.Office
 # relinking ~/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg is done in 11k_third_party_app_preferences.sh
 
 # MonKey Office
-echo MonKey Office 2021
-u	"$PATH_TO_APPS"/MonKey Office 2021.app
+echo MonKey Office 2022
+u	"$PATH_TO_APPS"/MonKey Office 2022.app
 u	~/Library/Application Support/ProSaldo
-#u	~/Library/Preferences/com.prosaldo.monkeyoffice2021.plist
+#u	~/Library/Preferences/com.prosaldo.monkeyoffice2022.plist
 
 # muCommander
 echo muCommander

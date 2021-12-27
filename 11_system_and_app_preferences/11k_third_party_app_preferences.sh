@@ -362,6 +362,22 @@ else
 fi
 
 
+### bartender
+echo ''
+APP_NAME_FOR_PREFERENCES="Bartender 4"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
+then
+	
+	echo "$APP_NAME_FOR_PREFERENCES"
+    
+	launchctl enable gui/"$(id -u "$USER")"/com.surteesstudios.BartenderStartAtLoginHelper
+	sleep 3
+
+else
+	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+fi
+
+
 ### textmate
 echo ''
 APP_NAME_FOR_PREFERENCES="TextMate"
