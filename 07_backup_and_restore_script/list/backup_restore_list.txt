@@ -204,15 +204,15 @@ u	~/Library/Group Containers/G69SCX94XU.duck
 u	~/Library/Preferences/ch.sudo.cyberduck.plist
 
 # Dashboard
-echo Dashboard
-u	~/Library/Preferences/com.apple.dashboard.client.plist
-u	~/Library/Preferences/com.apple.dashboard.plist
-u	~/Library/Preferences/widget-com.apple.widget.calendar.plist
+#echo Dashboard
+#u	~/Library/Preferences/com.apple.dashboard.client.plist
+#u	~/Library/Preferences/com.apple.dashboard.plist
+#u	~/Library/Preferences/widget-com.apple.widget.calendar.plist
 #u	~/Library/Preferences/widget-com.apple.widget.stocks.plist
 #u	~/Library/Preferences/widget-com.apple.widget.translation.plist
 #u	~/Library/Preferences/widget-com.apple.widget.unitconverter.plist
-u	~/Library/Preferences/widget-com.apple.widget.weather.plist
-u	~/Library/Preferences/widget-ws.merl.widget.wetter.plist
+#u	~/Library/Preferences/widget-com.apple.widget.weather.plist
+#u	~/Library/Preferences/widget-ws.merl.widget.wetter.plist
 
 # Defaults open with
 echo Defaults open with
@@ -381,6 +381,7 @@ u	~/Library/Application Support/Java
 # Jitsi Meet
 echo Jitsi Meet
 u	~/Library/Application Support/Jitsi Meet/config.json
+u	~/Library/Application Support/Jitsi Meet/Local Storage
 u	~/Library/Application Support/Jitsi Meet/Preferences
 u	~/Library/Application Support/Jitsi Meet/window-state.json
 
@@ -424,7 +425,7 @@ u	~/Library/Application Support/LibreOffice/4/user/registrymodifications.xcu
 # Linphone
 echo Linphone
 #u	"$PATH_TO_APPS"/Linphone.app
-u	~/Library/Preferences/org.linphone.linphone.linphone.plist
+u	~/Library/Preferences/com.linphone.linphone.plist
 u	~/Library/Preferences/linphone/linphonerc
 u	~/Library/Application Support/linphone
 u	~/Library/Sounds/incomingCall.wav
@@ -488,6 +489,12 @@ u	~/Library/Preferences/muCommander
 # Nextcloud
 echo Nextcloud
 u	~/Library/Application Support/Nextcloud
+
+# Notification Center Widgets
+echo Notification Center Widgets
+u	/Library/Containers/com.apple.weather.WeatherIntents/Data/Library/SyncedPreferences/com.apple.kvs/ChangeTokens/EndToEndEncryption/WeatherIntents/com.apple.weather
+u	~/Library/Containers/com.apple.weather.WeatherIntents/Data/Library/SyncedPreferences/com.apple.kvs/ChangeTokens/NoEncryption/WeatherIntents/com.apple.weather
+u	~/Library/Containers/com.apple.notificationcenterui/Data/Library/Preferences/com.apple.notificationcenterui.plist
 
 # Ondesoft AudioBook Converter
 echo Ondesoft AudioBook Converter
@@ -637,7 +644,8 @@ u	~/Library/Containers/com.apple.Safari/Data/Library/Safari/WebExtensions
 u	~/Library/Safari/Bookmarks.plist
 #u	~/Library/Group Containers/better.fyi.mac
 #u	~/Library/Group Containers/*.ghostery.lite
-u	~/Library/Group Containers/*.com.adguard.safari.AdGuard
+#u	~/Library/Group Containers/*.com.adguard.safari.AdGuard
+u	~/Library/Group Containers/TC3Q7MAJXF.com.adguard.safari.AdGuard
 u	~/Library/Containers/com.adguard.safari.AdGuard/Data/Library/Application Support/AdGuardSafariApp/config.json
 u	~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions
 #u	~/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies
@@ -657,6 +665,7 @@ u	~/Library/Preferences/pbs.plist
 u	~/Library/Services/Tag Orange.workflow
 u	~/Library/Services/dial_snom.workflow
 u	~/Library/Services/split_pdfs.workflow
+u	~/Library/Services/copy_number_contacts.workflow
 # /System/Library/CoreServices/pbs -flush
 
 # Shortcuts
