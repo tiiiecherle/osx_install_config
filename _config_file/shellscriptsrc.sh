@@ -302,22 +302,6 @@ env_ask_for_variable() {
 	#echo VARIABLE_TO_CHECK is "$VARIABLE_TO_CHECK"...
 }
 
-#echo ''
-#VARIABLE_TO_CHECK="$PHP_TESTFILES"
-# single line
-#QUESTION_TO_ASK="do you want to install php testfiles? (y/N) "
-# multi line
-#QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')"
-#env_ask_for_variable
-#PHP_TESTFILES="$VARIABLE_TO_CHECK"
-
-#if [[ "$PHP_TESTFILES" =~ ^(yes|y)$ ]]
-#then
-#	"echo do it"
-#else
-#	echo "do NOT do it"
-#fi
-
 
 ### updating config file
 env_config_file_self_update() {
@@ -463,8 +447,13 @@ fi
 #/bin/ls -l /dev/console | /usr/bin/awk '{ print $3 }'
 #stat -f%Su /dev/console
 #defaults read /Library/Preferences/com.apple.loginwindow.plist lastUserName
-# recommended way
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+
+# recommended way, but it seems apple deprecated python2 in macOS 12.3.0
+# to keep on using the python command, a python module is needed
+#pip3 install pyobjc-framework-SystemConfiguration
+#loggedInUser=$(python3 -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }')
+
 #UNIQUE_USER_ID="$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2;}')"
 UNIQUE_USER_ID=$(id -u "$loggedInUser")
 
@@ -1448,7 +1437,14 @@ env_stop_sudo() {
 
 ### homebrew
 # including homebrew commands in PATH
-PATH_TO_SET='/usr/local/bin:/usr/local/sbin:/usr/local/opt/openssl@1.1/bin:$PATH'
+if [[ $(uname -m | grep arm) != "" ]]
+then
+	# arm mac
+	PATH_TO_SET='/opt/homebrew/bin:/opt/homebrew/sbin:$PATH'
+else
+	# intel mac
+	PATH_TO_SET='/usr/local/bin:/usr/local/sbin:/usr/local/opt/openssl@1.1/bin:$PATH'
+fi
 
 env_set_default_paths() { 
     echo "setting default paths in /etc/paths/..."   
@@ -1466,7 +1462,7 @@ env_add_path_to_shell() {
     echo 'export PATH="'"$PATH_TO_SET"'"' >> "$SHELL_CONFIG"
     if [[ "$SET_HOMEBREW_GITHUB_API_TOKEN" == "yes" ]]
     then
-        echo 'export HOMEBREW_GITHUB_API_TOKEN=$(security find-generic-password -s "GitHub - https://api.github.com" -w)' >> "$SHELL_CONFIG"
+        echo 'export HOMEBREW_GITHUB_API_TOKEN=$(security find-generic-password -s "GitHub - https://api.github.com" -w) >/dev/null 2>&1' >> "$SHELL_CONFIG"
     else
         :
     fi
@@ -1606,6 +1602,26 @@ env_command_line_tools_install_shell() {
         
         # choosing command line tools as default
         sudo xcode-select --switch /Library/Developer/CommandLineTools
+    fi
+    
+    # installing rosetta on arm macs
+    if [[ $(uname -m | grep arm) != "" ]]
+    then
+        # arm mac
+        if pgrep oahd >/dev/null 2>&1
+        then 
+            # installed
+            :
+        else
+            # not installed
+            echo ''
+            echo "installing rosetta..."
+            softwareupdate --install-rosetta --agree-to-license
+            echo ''
+        fi
+    else
+        # intel mac
+        :
     fi
 }
 
