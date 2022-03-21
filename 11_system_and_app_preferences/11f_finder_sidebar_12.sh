@@ -57,41 +57,61 @@ AUTOMATION_APPS=(
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 
 
+### checking homebrew
+if command -v brew &> /dev/null
+then
+    # installed
+    :
+else
+    # not installed      
+    echo ''
+    echo "homebrew is not installed, exiting..." &>2
+    echo ''
+    exit
+fi
+
 ### sfltool
 # sfltool restore|add-item|save-lists|test|archive|enable-modern|dump-server-state|clear|disable-modern|dump-storage|list-info [options]
 
 
-### alternative to mysides
+### alternative to mysides (works on intel and arm macs)
 # https://github.com/robperc/FinderSidebarEditor
 
 
-### mysides
-# installs to /usr/local/bin/mysides
+### mysides (as of 2022-03 only works on intel macs)
+# BREW_PATH_PREFIX=$(brew --prefix)
+# installs to "$BREW_PATH_PREFIX"/bin/mysides
 # -rwxr-xr-x    1 root  wheel  47724 14 Apr 02:07 mysides
 # https://github.com/mosen/mysides
 # newer version here
 # https://github.com/Tatsh/mysides
 
 echo ''
-if command -v mysides &> /dev/null
+if [[ $(uname -m | grep arm) != "" ]]
 then
-    # installed
-    echo "mysides is installed..."
-else
-    # not installed
-    echo "mysides is not installed, trying via homebrew cask..."
-    if command -v brew &> /dev/null
+	# arm mac
+	if command -v python3 &> /dev/null
     then
         # installed
-        echo ''
-        brew install --cask --force mysides
-        echo ''
+        echo "python3 is installed..."
     else
-        # not installed      
-        echo ''
-        echo "homebrew and mysides are not installed, exiting..." &>2
-        echo ''
-        exit
+        # not installed
+        echo "python3 is not installed, downloading via homebrew..."
+        brew install --formula --force python3
+	fi
+	echo "installing finder-sidebar-editor..."
+	pip3 install finder-sidebar-editor
+	pip3 install pip-autoremove
+else
+	# intel mac
+    if command -v mysides &> /dev/null
+    then
+        # installed
+        echo "mysides is installed..."
+    else
+        # not installed
+        echo "mysides is not installed, downloading via homebrew..."
+        brew install --cask --force mysides
     fi
 fi
 
@@ -107,10 +127,11 @@ echo "clearing and setting finder sidebar items..."
 
 # currently only working with latest git version, not with 1.0.0
 # disable sip
-# copy build file to /usr/local/bin/mysides
-# sudo chown root:wheel "/usr/local/bin/mysides"
-# sudo chmod 755 "/usr/local/bin/mysides"
-mysides remove all
+# BREW_PATH_PREFIX=$(brew --prefix)
+# copy build file to "$BREW_PATH_PREFIX"/bin/mysides
+# sudo chown root:wheel ""$BREW_PATH_PREFIX"/bin/mysides"
+# sudo chmod 755 ""$BREW_PATH_PREFIX"/bin/mysides"
+#mysides remove all
 #
 #mysides remove "Alle meine Dateien"
 #mysides remove myDocuments.cannedSearch
@@ -133,6 +154,25 @@ mysides remove all
 #else
 #	:
 #fi
+
+if [[ $(uname -m | grep arm) != "" ]]
+then
+	# arm mac
+    PYTHON_CODE=$(cat <<EOF
+# python code start
+from finder_sidebar_editor import FinderSidebar                # Import the module
+sidebar = FinderSidebar()                                      # Create a Finder sidebar instance to act on.
+sidebar.remove_all()
+
+# python code end
+EOF
+)
+    python3 -c "$PYTHON_CODE"
+
+else
+	# intel mac
+	mysides remove all
+fi
 
 
 ### settings and functions
@@ -249,17 +289,59 @@ close_finder_preferences 1>/dev/null
 SCRIPT_NAME="finder_sidebar_"$USER""
 SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
 SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
-if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
+
+if [[ $(uname -m | grep arm) != "" ]]
 then
-    echo ''
-    echo "user specific sidebar customization script found..."
-    USER_ID=`id -u`
-    chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-    chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
-    . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+	# arm mac
+    if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".py ]]
+    then
+        echo ''
+        echo "user specific sidebar customization script found..."
+        echo ''
+        
+        # checking if mounting network volume is needed
+        NETWORK_VOLUME_DATA="/Volumes/office"
+        if [[ $(cat "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".py | sed '/^#/ d' | grep "$NETWORK_VOLUME_DATA") != "" ]]
+		then
+            VARIABLE_TO_CHECK="$NETWORK_CONNECTED"
+            QUESTION_TO_ASK="$(echo -e 'to add entries form a network volume you have to be connected to the volume as the user that uses the links later.\nplease connect to /Volumes/office/ as the respective user.\nare you connected to /Volumes/office/ as the user that uses the links later? (Y/n) ')"
+            env_ask_for_variable
+            NETWORK_CONNECTED="$VARIABLE_TO_CHECK"
+        else
+            :
+        fi
+        
+        # running script
+        USER_ID=`id -u`
+        chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".py
+        chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".py
+        # python dependencies
+        pip3 install pyobjc-framework-SystemConfiguration
+        python3 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".py
+        
+        # uninstalling finder-sidebar-editor including dependecies as the installation are some python modules and no longer needed
+        echo''
+        echo "uninstalling python modules..."
+        pip-autoremove finder-sidebar-editor -y
+        #pip3 uninstall -y pip-autoremove
+    else
+        echo ''
+        echo "user specific sidebar customization script not found......"
+    fi
 else
-    echo ''
-    echo "user specific sidebar customization script not found......"
+	# intel mac
+    if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
+    then
+        echo ''
+        echo "user specific sidebar customization script found..."
+        USER_ID=`id -u`
+        chown "$USER_ID":staff "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+        chmod 700 "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+        . "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh
+    else
+        echo ''
+        echo "user specific sidebar customization script not found......"
+    fi
 fi
 
 

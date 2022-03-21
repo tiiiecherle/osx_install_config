@@ -774,8 +774,8 @@ casks_install_updates() {
             if [[ "$CASK" == "libreoffice-language-pack" ]]
             then
                 SKIP_ENV_GET_PATH_TO_APP="yes"
-                LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-                PATH_TO_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+                LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 "$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+                PATH_TO_APP=""$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
                 env_set_open_on_first_run_permissions
                 PATH_TO_APP=""$PATH_TO_APPS"/LibreOffice.app"
                 env_set_open_on_first_run_permissions
@@ -861,8 +861,8 @@ post_cask_installations() {
 	then
 	    echo ''
         echo "installing libreoffice language pack..."
-        LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-        open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"	
+        LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 "$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+        open ""$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"	
         #echo ''
     else
 	    :
@@ -1046,23 +1046,24 @@ trap_function_exit_middle() { env_stop_sudo; unset SUDOPASSWORD; unset USE_PASSW
 echo "checking directory structure and permissions..."
 echo ''
 
-if [[ ! -d /usr/local ]]; 
-then
-    sudo mkdir /usr/local
-fi
-#sudo chown -R "$USER":staff /usr/local
-sudo chown -R $(whoami) /usr/local
-
 # checking if homebrew is installed
 if command -v brew &> /dev/null
 then
     # installed
     echo "homebrew is installed..."
+    BREW_PATH_PREFIX=$(brew --prefix)
 else
     # not installed
     echo "homebrew not installed, exiting script..."
     exit
 fi
+
+if [[ ! -d "$BREW_PATH_PREFIX" ]]; 
+then
+    sudo mkdir "$BREW_PATH_PREFIX"
+fi
+#sudo chown -R "$USER":staff "$BREW_PATH_PREFIX"
+sudo chown -R $(whoami) "$BREW_PATH_PREFIX"
 
 if [[ $(brew tap | grep homebrew/cask) != "" ]]
 then
@@ -1134,6 +1135,7 @@ then
     
     # more variables
     echo ''
+    
     BREW_PATH=$(brew --repository)
     export BREW_PATH
     if [[ $(echo "$BREW_PATH") == "" || ! -e "$BREW_PATH" ]]

@@ -158,12 +158,12 @@ install_casks_parallel() {
                 # waiting for libreoffice to be detectable by language pack
                 sleep 120
                 # installung libreoffice language pack
-                LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
-                PATH_TO_FIRST_RUN_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+                LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 "$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+                PATH_TO_FIRST_RUN_APP=""$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
                 env_set_open_on_first_run_permissions
                 PATH_TO_FIRST_RUN_APP=""$PATH_TO_APPS"/LibreOffice.app"
                 env_set_open_on_first_run_permissions
-                open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
+                open ""$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
                 sleep 2
                 env_active_source_app
             fi
@@ -226,6 +226,7 @@ install_casks_parallel() {
 ###
 
 checking_homebrew
+BREW_PATH_PREFIX=$(brew --prefix)
 env_homebrew_update
 
 
@@ -255,19 +256,19 @@ then
         :
     else
         VARIABLE_TO_CHECK="$CONT_CASKROOM"
-        QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')"
+        QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to $(brew --prefix)/Caskroom/' '(Y/n)? ')"
         env_ask_for_variable
         CONT_CASKROOM="$VARIABLE_TO_CHECK"
         
         if [[ "$CONT_CASKROOM" =~ ^(yes|y)$ ]]
         then
             #echo ''
-            echo "restoring /tmp/Caskroom/. to /usr/local/Caskroom/..."
-            if [[ -e "/usr/local/Caskroom" ]]
+            echo "restoring /tmp/Caskroom/. to "$BREW_PATH_PREFIX"/Caskroom/..."
+            if [[ -e ""$BREW_PATH_PREFIX"/Caskroom" ]]
             then
-                cp -a /tmp/Caskroom/. /usr/local/Caskroom/
+                cp -a /tmp/Caskroom/. "$BREW_PATH_PREFIX"/Caskroom/
             else
-                echo "/usr/local/Caskroom/ not found, skipping restore..."
+                echo ""$BREW_PATH_PREFIX"/Caskroom/ not found, skipping restore..."
             fi
         else
             :

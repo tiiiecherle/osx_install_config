@@ -177,11 +177,21 @@ backup_restore_permissions() {
     #fi
     
     # mysides
-    FILE_OR_FOLDER_TO_CHECK_FOR="/usr/local/bin/mysides"
+    if command -v brew &> /dev/null
+    then
+        # installed
+        BREW_PATH_PREFIX=$(brew --prefix)
+    else
+        # not installed
+        echo "homebrew is not installed, exiting..."
+        echo ''
+        exit
+    fi
+    FILE_OR_FOLDER_TO_CHECK_FOR=""$BREW_PATH_PREFIX"/bin/mysides"
     if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]  
     then
-        sudo chown root:wheel "/usr/local/bin/mysides"
-        sudo chmod 755 "/usr/local/bin/mysides"
+        sudo chown root:wheel ""$BREW_PATH_PREFIX"/bin/mysides"
+        sudo chmod 755 ""$BREW_PATH_PREFIX"/bin/mysides"
     else
         echo ''
         echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2

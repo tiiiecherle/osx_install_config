@@ -205,16 +205,26 @@ fi
 ### moved to manual install script so that auto reboot after batch_script1 and therefore restoring keychain works
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
+	if command -v brew &> /dev/null
+	then
+	    # installed
+	    BREW_PATH_PREFIX=$(brew --prefix)
+	else
+	    # not installed
+	    echo "homebrew is not installed, exiting..."
+	    echo ''
+	    exit
+	fi
 	if [[ $(brew list --cask | grep "^libreoffice-language-pack$") != "" ]] 
 	then
 	    # installung libreoffice language pack
-	    LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 /usr/local/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
+	    LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK=$(ls -1 "$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack | sort -V | head -n 1)
 	    SKIP_ENV_GET_PATH_TO_APP="yes"
-	    PATH_TO_APP="/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
+	    PATH_TO_APP=""$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app"
 	    env_set_open_on_first_run_permissions
 	    PATH_TO_APP=""$PATH_TO_APPS"/LibreOffice.app"
 	    env_set_open_on_first_run_permissions
-	    open "/usr/local/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
+	    open ""$BREW_PATH_PREFIX"/Caskroom/libreoffice-language-pack/$LATEST_INSTALLED_LIBREOFFICE_LANGUAGE_PACK/LibreOffice Language Pack.app" &
 	    unset SKIP_ENV_GET_PATH_TO_APP
 	    sleep 5
 	else

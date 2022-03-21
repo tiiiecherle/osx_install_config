@@ -478,10 +478,6 @@ echo muCommander
 #u	"$PATH_TO_APPS"/muCommander.app
 u	~/Library/Preferences/muCommander
 
-# mysides
-#echo mysides
-#u	/usr/local/bin/mysides
-
 # NameChanger
 #echo NameChanger
 #u	"$PATH_TO_APPS"/NameChanger.app

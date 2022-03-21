@@ -135,8 +135,11 @@ then
     echo "waiting for unarchiving to finish..."
     sleep 3
     WAIT_PIDS=()
-    WAIT_PIDS+=$(ps aux | grep /unarchive_tar_gz_gpg_perms_progress_all_in_folder.command | grep -v grep | awk '{print $2;}')
-    WAIT_PIDS+=$(ps aux | grep /unarchive_tar_gz_progress_all_in_folder.command | grep -v grep | awk '{print $2;}')
+    WAIT_PIDS+=$(ps -A | grep -v grep | grep /unarchive_tar_gz_gpg_perms_progress_all_in_folder.command | awk '{print $1}')
+    WAIT_PIDS+=$(ps -A | grep -v grep | grep /unarchive_tar_gz_progress_all_in_folder.command | awk '{print $1}')
+    # older version gives waring during batch install "awk: newline in string [...]"
+    #WAIT_PIDS+=$(ps aux | grep /unarchive_tar_gz_gpg_perms_progress_all_in_folder.command | grep -v grep | awk '{print $2;}')
+    #WAIT_PIDS+=$(ps aux | grep /unarchive_tar_gz_progress_all_in_folder.command | grep -v grep | awk '{print $2;}')
     #echo "$WAIT_PIDS"
     #if [[ "$WAIT_PIDS" == "" ]]; then :; else lsof -p "$WAIT_PIDS" +r 1 &> /dev/null; fi
     while IFS= read -r line || [[ -n "$line" ]]; do if [[ "$line" == "" ]]; then continue; fi; lsof -p "$line" +r 1 &> /dev/null; done <<< "$(printf "%s\n" "${WAIT_PIDS[@]}")" 

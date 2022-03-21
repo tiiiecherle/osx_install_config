@@ -41,6 +41,7 @@ check_homebrew_and_python_versions() {
         echo "homebrew is installed..."
         # do not autoupdate homebrew
         export HOMEBREW_NO_AUTO_UPDATE=1
+        export BREW_PATH_PREFIX=$(brew --prefix)
     else
         # not installed
         echo ''
@@ -179,7 +180,7 @@ then
             echo "installing python module "$i"..."
             echo ''
             echo "installing python module "$i"..."
-            if [[ $(sudo -H -u "$loggedInUser" command -v "$PIP_VERSION" | grep "/usr/local") == "" ]]
+            if [[ $(sudo -H -u "$loggedInUser" command -v "$PIP_VERSION" | grep "$BREW_PATH_PREFIX") == "" ]]
             then
                 sudo "$PIP_VERSION" install "$i"
             else

@@ -163,7 +163,7 @@ run_all() {
     if [[ -e "/tmp/Caskroom" ]] && [[ "$CONT2_BREW" =~ ^(y|yes)$ ]]
     then
         VARIABLE_TO_CHECK="$CONT_CASKROOM"
-        QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')"
+        QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to $(brew --prefix)/Caskroom/' '(Y/n)? ')"
         env_ask_for_variable
         CONT_CASKROOM="$VARIABLE_TO_CHECK"
         

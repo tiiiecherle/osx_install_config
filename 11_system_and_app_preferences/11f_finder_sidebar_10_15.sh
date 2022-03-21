@@ -66,7 +66,8 @@ PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 
 
 ### mysides
-# installs to /usr/local/bin/mysides
+# BREW_PATH_PREFIX=$(brew --prefix)
+# installs to "$BREW_PATH_PREFIX"/bin/mysides
 # -rwxr-xr-x    1 root  wheel  47724 14 Apr 02:07 mysides
 # https://github.com/mosen/mysides
 # newer version here
@@ -111,9 +112,10 @@ echo "clearing and setting finder sidebar items..."
 
 # currently only working with latest git version, not with 1.0.0
 # disable sip
-# copy build file to /usr/local/bin/mysides
-# sudo chown root:wheel "/usr/local/bin/mysides"
-# sudo chmod 755 "/usr/local/bin/mysides"
+# BREW_PATH_PREFIX=$(brew --prefix)
+# copy build file to "$BREW_PATH_PREFIX"/bin/mysides
+# sudo chown root:wheel ""$BREW_PATH_PREFIX"/bin/mysides"
+# sudo chmod 755 ""$BREW_PATH_PREFIX"/bin/mysides"
 #mysides remove all
 #
 #mysides remove "Alle meine Dateien"

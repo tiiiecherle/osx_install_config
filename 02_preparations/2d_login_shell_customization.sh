@@ -181,6 +181,7 @@ echo "export TIMEFMT=$'%U user %S system %P cpu %*E total'" >> ~/.zshrc
 ### path
 # documentation
 # three different locations/ways to set PATH
+# currently used is version 2 and PATH is defined in .shellscriptsrc
 #
 # 1		/etc/paths
 # 		used by all shells, all users and gui applications
@@ -191,18 +192,20 @@ echo "export TIMEFMT=$'%U user %S system %P cpu %*E total'" >> ~/.zshrc
 #		does only work for shells, not for gui applications
 #		works to manage the correct order of PATH, even in front of entries from /etc/paths if required
 #		example entry
-#		export PATH="/usr/local/bin:$PATH"
+#		BREW_PATH_PREFIX=$(brew --prefix)
+#		export PATH=""$BREW_PATH_PREFIX"/bin:$PATH"
 #		
 # 3		sudo launchctl config user/system path
 #		user path		used by all user shells, launchdscripts and user gui apps
 #		system path		used by all root/system shells, launchdscripts and gui apps
 #		does not work for putting entries in order before entries from /etc/paths
 #		if this is used solely entries from /etc/paths would have to be commented out to achive the given order		
-#		examples	
+#		examples
 # 		all system users except root
-# 		sudo launchctl config user path "/usr/local/bin:/usr/local/sbin:/usr/local/opt/openssl@1.1/bin:$PATH"
+#		BREW_PATH_PREFIX=$(brew --prefix)
+# 		sudo launchctl config user path ""$BREW_PATH_PREFIX"/bin:"$BREW_PATH_PREFIX"/sbin:"$BREW_PATH_PREFIX"/opt/openssl@1.1/bin:$PATH"
 # 		system/root
-# 		sudo launchctl config system path "/usr/local/bin:/usr/local/sbin:/usr/local/opt/openssl@1.1/bin:$PATH"
+# 		sudo launchctl config system path ""$BREW_PATH_PREFIX"/bin:"$BREW_PATH_PREFIX"/sbin:"$BREW_PATH_PREFIX"/opt/openssl@1.1/bin:$PATH"
 # 		unset
 # 		sudo launchctl config user path ''
 # 		sudo launchctl config system path ''
@@ -224,7 +227,7 @@ echo ''
 echo "setting PATH..."
 
 # default value of variable is set in .shellscriptsrc, can be overwritten here, e.g.
-# PATH_TO_SET='/usr/local/bin:$PATH'
+# PATH_TO_SET='"$BREW_PATH_PREFIX"/bin:$PATH'
 
 # setting default paths in /etc/paths
 #env_start_sudo			# already started above
@@ -249,15 +252,37 @@ sudo launchctl config system path ''
 
 
 ### avoiding [oh-my-zsh] Insecure completion-dependent directories detected
-sudo chmod 755 /usr/local/share/zsh
-sudo chmod 755 /usr/local/share/zsh/site-functions
-
-	
-### sourcing config file if script is run from zsh for changes to take effect
-# will be sourced when opening a new terminal session automatically
-if [[ $(echo "$SHELL") == "/bin/zsh" ]]
+if command -v brew &> /dev/null
 then
-	"$SHELL" -c "source "/Users/$(logname)/.zshrc""
+    # installed
+    BREW_PATH_PREFIX=$(brew --prefix)
+    sudo chmod 755 "$BREW_PATH_PREFIX"/share/zsh
+	sudo chmod 755 "$BREW_PATH_PREFIX"/share/zsh/site-functions
+else
+    # not installed
+    #echo "homebrew is not installed, exiting..."
+    #echo ''
+    #exit
+    :
+fi
+
+
+### allowing comments in interactive mode to work like in bash
+echo '' >> ~/.zshrc
+echo "# allowing comments in interactive mode to work like in bash" >> ~/.zshrc
+echo "setopt interactivecomments" >> ~/.zshrc
+
+
+### sourcing config file for changes made in other shells to take effect
+# will be sourced when opening a new terminal session automatically
+#if [[ $(echo "$SHELL") == "/bin/zsh" ]]
+if [[ $(echo "$0") == "-zsh" ]]
+then
+    source "/Users/$(logname)/.zshrc"
+#elif [[ $(echo "$SHELL") == "/bin/bash" ]]
+elif [[ $(echo "$0") == "bash" ]]
+then
+    source "/Users/$(logname)/.bashrc"
 else
     :
 fi

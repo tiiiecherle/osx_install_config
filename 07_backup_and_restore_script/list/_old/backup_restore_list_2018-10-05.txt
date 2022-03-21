@@ -388,10 +388,6 @@ echo muCommander
 #m	/Applications/muCommander.app
 m	~/Library/Preferences/muCommander
 
-# mysides
-echo mysides
-m	/usr/local/bin/mysides
-
 # NameChanger
 #echo NameChanger
 #m	/Applications/NameChanger.app

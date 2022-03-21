@@ -12,9 +12,36 @@ fi
 # that`s why $USER will not work, use the current logged in user instead
 # every command that does not have sudo -H -u "$loggedInUser" upfront has to be run as root, but sudo is not needed here
 
-loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+# recommended way, but it seems apple deprecated python2 in macOS 12.3.0
+# to keep on using the python command, a python module is needed
+#pip3 install pyobjc-framework-SystemConfiguration
+#loggedInUser=$(python3 -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }')
+NUM=0
+MAX_NUM=30
+SLEEP_TIME=3
+# waiting for loggedInUser to be available
+while [[ "$loggedInUser" == "" ]] && [[ "$NUM" -lt "$MAX_NUM" ]]
+do
+    sleep "$SLEEP_TIME"
+    NUM=$((NUM+1))
+    # recommended way, but it seems apple deprecated python2 in macOS 12.3.0
+    # to keep on using the python command, a python module is needed
+    #pip3 install pyobjc-framework-SystemConfiguration
+    #loggedInUser=$(python3 -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+    loggedInUser=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }')
+done
+#echo ''
+#echo "NUM is $NUM..."
 echo "loggedInUser is $loggedInUser..."
-#echo "loggedInUser is $loggedInUser" > /Users/"$loggedInUser"/Desktop/loggedInUser.txt
+if [[ "$loggedInUser" == "" ]]
+then
+    WAIT_TIME=$((MAX_NUM*SLEEP_TIME))
+    echo "loggedInUser could not be set within "$WAIT_TIME"s, exiting..."
+    exit
+else
+    :
+fi
 
 # getting sum of number of reboots and shutdowns since installation
 NUM1=$(last reboot | grep reboot | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')

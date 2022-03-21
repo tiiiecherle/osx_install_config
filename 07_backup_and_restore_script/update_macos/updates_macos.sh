@@ -216,7 +216,17 @@ please reboot after finishing the script - thanks ;)" buttons "OK"'
     set +e
     echo ''
     # resetting homebrew path 
-    echo 'export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"' > /Users/$(logname)/.bash_profile
+    if command -v brew &> /dev/null
+    then
+        # installed
+        BREW_PATH_PREFIX=$(brew --prefix)
+    else
+        # not installed
+        echo "homebrew is not installed, exiting..."
+        echo ''
+        exit
+    fi
+    echo 'export PATH="'"$BREW_PATH_PREFIX"'/bin:'"$BREW_PATH_PREFIX"'/sbin:~/bin:$PATH"' > /Users/$(logname)/.bash_profile
     source /Users/$(logname)/.bash_profile
     
     echo ''

@@ -73,21 +73,32 @@ UNINSTALL_HOMEBREW="$VARIABLE_TO_CHECK"
 ###
 ###
 
+if command -v brew &> /dev/null
+then
+    # installed
+    BREW_PATH_PREFIX=$(brew --prefix)
+else
+    # not installed
+    echo "homebrew is not installed, exiting..."
+    echo ''
+    exit
+fi
+
 # casks zap
 if [[ "$ZAP_CASKS" =~ ^(no|n)$ ]]
 then
-    if [[ -e "/usr/local/Caskroom" ]]
+    if [[ -e ""$BREW_PATH_PREFIX"/Caskroom" ]]
     then
         # backing up specifications of latest installed casks
         echo ''
-        echo "backing up /usr/local/Caskroom/. to /tmp/Caskroom/..."
-        #ls -la /usr/local/Caskroom/
+        echo "backing up "$BREW_PATH_PREFIX"/Caskroom/. to /tmp/Caskroom/..."
+        #ls -la "$BREW_PATH_PREFIX"/Caskroom/
         mkdir -p /tmp/Caskroom
-        cp -a /usr/local/Caskroom/. /tmp/Caskroom/
+        cp -a "$BREW_PATH_PREFIX"/Caskroom/. /tmp/Caskroom/
         #ls -la /tmp/Caskroom/
     else
         echo ''
-        echo "/usr/local/Caskroom/ not found, skipping backup..."
+        echo ""$BREW_PATH_PREFIX"/Caskroom/ not found, skipping backup..."
     fi
 else
     #env_start_sudo
@@ -137,11 +148,11 @@ then
     #
     cleanup_files_and_folders=(
         "/opt/homebrew-cask"
-        "/usr/local/Caskroom"
-        "/usr/local/lib/librtmp.dylib"
-        "/usr/local/var/homebrew/"
-        "/usr/local/var/cache/"
-        "/usr/local/Homebrew/"
+        ""$BREW_PATH_PREFIX"/Caskroom"
+        ""$BREW_PATH_PREFIX"/lib/librtmp.dylib"
+        ""$BREW_PATH_PREFIX"/var/homebrew/"
+        ""$BREW_PATH_PREFIX"/var/cache/"
+        ""$BREW_PATH_PREFIX"/Homebrew/"
     )
     for i in "${cleanup_files_and_folders[@]}"
     do
@@ -152,12 +163,12 @@ then
             :
         fi
     done
-    sudo chmod 0755 /usr/local
-    sudo chown root:wheel /usr/local
+    sudo chmod 0755 "$BREW_PATH_PREFIX"
+    sudo chown root:wheel "$BREW_PATH_PREFIX"
     for CONFIG_FILE in ~/.bash_profile ~/.bashrc ~/.zshrc
     do
         if [[ -e "$CONFIG_FILE" ]]; then :; else continue; fi
-        sed -i '' '\|/usr/local/sbin:$PATH|d' "$CONFIG_FILE"
+        sed -i '' '\|/bin:$PATH|d' "$CONFIG_FILE"
         sed -i '' '\|# homebrew PATH|d' "$CONFIG_FILE"
         sed -i '' '${/^$/d;}' "$CONFIG_FILE"
     done

@@ -107,9 +107,18 @@ batch_run_all() {
 	SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
 	SCRIPT_DIR_INPUT_KEEP="$SCRIPT_DIR_DEFAULTS_WRITE"/_scripts_input_keep
 	NETWORK_VOLUME_DATA="/Volumes/office"
-	if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh ]]
+	if [[ $(uname -m | grep arm) != "" ]]
 	then
-		if [[ $(cat "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME".sh | grep "file://"$NETWORK_VOLUME_DATA"") != "" ]]
+		# arm mac
+		SCRIPT_SUFFIX="py"
+	else
+		# intel mac
+		SCRIPT_SUFFIX="sh"
+	fi	
+	
+	if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME"."$SCRIPT_SUFFIX" ]]
+	then
+		if [[ $(cat "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME"."$SCRIPT_SUFFIX" | sed '/^#/ d' | grep "file://"$NETWORK_VOLUME_DATA"") != "" ]]
 		then
 			printf "\n${bold_text}###\nnetwork connection...\n###\n${default_text}"
 			CONNECTION_TIMEOUT=120
@@ -193,6 +202,8 @@ batch_run_all() {
 	### finder favorites
 	printf "\n${bold_text}###\nfinder favorites...\n###\n${default_text}"
 	#echo ''
+	# python dependencies
+    pip3 install pyobjc-framework-SystemConfiguration
 	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11g_finder_favorites.py
 	#echo ''
 	

@@ -104,13 +104,23 @@ uninstall_formulae
 
 ### uninstall clamav
 #brew uninstall clamav
-rm -rf "/usr/local/etc/clamav"
-rm -rf "/usr/local/bin/clamav-unofficial-sigs.sh"
-rm -rf "/usr/local/var/db/clamav-unofficial-sigs"
-rm -rf "/usr/local/var/run/clamav"
-rm -rf "/usr/local/opt/clamav"
-rm -rf "/usr/local/etc/clamav-unofficial-sigs"
-rm -rf "/usr/local/var/log/clamav-unofficial-sigs.log"
+if command -v brew &> /dev/null
+then
+    # installed
+    BREW_PATH_PREFIX=$(brew --prefix)
+else
+    # not installed
+    echo "homebrew is not installed, exiting..."
+    echo ''
+    exit
+fi
+rm -rf ""$BREW_PATH_PREFIX"/etc/clamav"
+rm -rf ""$BREW_PATH_PREFIX"/bin/clamav-unofficial-sigs.sh"
+rm -rf ""$BREW_PATH_PREFIX"/var/db/clamav-unofficial-sigs"
+rm -rf ""$BREW_PATH_PREFIX"/var/run/clamav"
+rm -rf ""$BREW_PATH_PREFIX"/opt/clamav"
+rm -rf ""$BREW_PATH_PREFIX"/etc/clamav-unofficial-sigs"
+rm -rf ""$BREW_PATH_PREFIX"/var/log/clamav-unofficial-sigs.log"
 #dscl . list /Users UniqueID | tr -s ' ' | sort -n -t ' ' -k2,2 | grep clamav
 #dscl . list /Groups PrimaryGroupID | tr -s ' ' | sort -n -t ' ' -k2,2 | grep clamav
 #sudo -v

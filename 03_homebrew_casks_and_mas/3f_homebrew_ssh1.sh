@@ -34,6 +34,17 @@ then
         # activating caffeinate
         env_activating_caffeinate
         
+        if command -v brew &> /dev/null
+        then
+            # installed
+            BREW_PATH_PREFIX=$(brew --prefix)
+        else
+            # not installed
+            echo "homebrew is not installed, exiting..."
+            echo ''
+            exit
+        fi
+        
         # updating homebrew
         echo ''
         echo "updating homebrew..."
@@ -55,7 +66,7 @@ then
         # installing patch and older openssh version that is compatible with ssh1
         echo ''
         echo "installing patch and older openssh version that is compatible with ssh1..."
-        curl -fsSL https://raw.githubusercontent.com/boltomli/MyMacScripts/master/homebrew/homebrew-core.openssh.diff | patch /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/openssh.rb
+        curl -fsSL https://raw.githubusercontent.com/boltomli/MyMacScripts/master/homebrew/homebrew-core.openssh.diff | patch "$BREW_PATH_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/openssh.rb
         echo ''
         brew install openssh --with-ssh1
         
@@ -77,12 +88,12 @@ then
         # checking openssh version and ssh1 compatibility
         echo ''
         echo "checking openssh version and ssh1 compatibility..."
-        echo "should be /usr/local/bin/ssh to be ssh1 compatible..."
+        echo "should be "$BREW_PATH_PREFIX"/bin/ssh to be ssh1 compatible..."
         which ssh
         $(which ssh) -1 -V
             
         # using ssh1
-        #/usr/local/bin/ssh -1 ADDRESS -L PORT:IP:PORT
+        #"$BREW_PATH_PREFIX"/bin/ssh -1 ADDRESS -L PORT:IP:PORT
         
     elif [[ "$CONT_SSH_BREW" == "u" || "$CONT1_BREW" == "uninstall" ]]
     then

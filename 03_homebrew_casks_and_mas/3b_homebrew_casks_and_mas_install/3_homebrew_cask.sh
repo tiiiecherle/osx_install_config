@@ -62,57 +62,6 @@ else
     :
 fi
 
-### installing homebrew without pressing enter or entering the password again
-echo ''
-if command -v brew &> /dev/null
-then
-    # installed
-    echo "homebrew already installed, skipping..."   
-else
-    # not installed
-    echo "installing homebrew..."
-    # homebrew installation
-    #env_start_sudo
-    # ruby homebrew installer is deprecated
-    #yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-    # rewritten in bash
-    yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" 2>&1
-    #env_stop_sudo
-fi
-
-
-### homebrew permissions
-# homebrew cache
-#sudo chown -R "$USER":staff $(brew --cache)
-sudo chown -R "$USER" $(brew --cache)
-
-#if [ -e "$(brew --prefix)" ] 
-#then
-#	echo "setting ownerships and permissions for homebrew..."
-#	BREWGROUP="admin"
-#	BREWPATH=$(brew --prefix)
-#	sudo chown -R $(id -u "$USER"):"$BREWGROUP" "$BREWPATH"
-#	sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
-#	sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
-#else
-#	:
-#fi
-
-#echo ''
-
-# use xcode if installed
-if [[ -e "/Applications/Xcode-beta.app" ]]
-then
-	echo ''
-	echo "changing to xcode command line tools..."
-	sudo rm -rf /Library/Developer/CommandLineTools
-    sudo xcode-select --switch /Applications/Xcode-beta.app
-	sudo xcodebuild -license accept
-	sudo xcodebuild -runFirstLaunch
-else
-	:
-fi
-
 
 ### including homebrew commands in PATH
 # path documentation
@@ -123,7 +72,8 @@ echo ''
 echo "setting PATH..."
 
 # default value of variable is set in .shellscriptsrc, can be overwritten here, e.g.
-# PATH_TO_SET='/usr/local/bin:$PATH'
+# BREW_PATH_PREFIX=$(brew --prefix)
+# PATH_TO_SET='"$BREW_PATH_PREFIX"/bin:$PATH'
 
 # setting default paths in /etc/paths
 #env_start_sudo			# already started above
@@ -147,13 +97,66 @@ sudo launchctl config system path ''
 #env_stop_sudo			# done in trap
 
 
+### installing homebrew without pressing enter or entering the password again
+echo ''
+if command -v brew &> /dev/null
+then
+    # installed
+    echo "homebrew already installed, skipping..."   
+else
+    # not installed
+    echo "installing homebrew..."
+    # homebrew installation
+    #env_start_sudo
+    # ruby homebrew installer is deprecated
+    #yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    # rewritten in bash
+    yes | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" 2>&1
+    #env_stop_sudo
+fi
+
+# use xcode if installed
+if [[ -e "/Applications/Xcode-beta.app" ]]
+then
+	echo ''
+	echo "changing to xcode command line tools..."
+	sudo rm -rf /Library/Developer/CommandLineTools
+    sudo xcode-select --switch /Applications/Xcode-beta.app
+	sudo xcodebuild -license accept
+	sudo xcodebuild -runFirstLaunch
+else
+	:
+fi
+
+
+### homebrew permissions
+# homebrew cache
+#sudo chown -R "$USER":staff $(brew --cache)
+sudo chown -R "$USER" $(brew --cache)
+
+#if [ -e "$(brew --prefix)" ] 
+#then
+#	echo "setting ownerships and permissions for homebrew..."
+#	BREWGROUP="admin"
+#	BREWPATH=$(brew --prefix)
+#	sudo chown -R $(id -u "$USER"):"$BREWGROUP" "$BREWPATH"
+#	sudo find "$BREWPATH" -type f -print0 | sudo xargs -0 chmod g+rw
+#	sudo find "$BREWPATH" -type d -print0 | sudo xargs -0 chmod g+rwx
+#else
+#	:
+#fi
+
+#echo ''
+
+
 ### updating homebrew
 echo ''
 echo "updating and checking homebrew..."
 # checking installation and updating homebrew
 brew analytics on
 #brew analytics off
-#cd /usr/local/Library && git stash && git clean -d -f
+#BREW_PATH_PREFIX=$(brew --prefix)
+#cd "$BREW_PATH_PREFIX"/Library && git stash && git clean -d -f
 brew update
 brew upgrade
 # temporarily updating to the latest git status / commits, git update / upgrade will update to latest stable version when released

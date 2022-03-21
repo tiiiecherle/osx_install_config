@@ -59,7 +59,11 @@ SCRIPT_INSTALL_NAME=clamav_monitor
 ### functions
 wait_for_loggedinuser() {
     ### waiting for logged in user
-    loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+    # recommended way, but it seems apple deprecated python2 in macOS 12.3.0
+    # to keep on using the python command, a python module is needed
+    #pip3 install pyobjc-framework-SystemConfiguration
+    #loggedInUser=$(python3 -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+    loggedInUser=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }')
     NUM=0
     MAX_NUM=30
     SLEEP_TIME=3
@@ -68,7 +72,11 @@ wait_for_loggedinuser() {
     do
         sleep "$SLEEP_TIME"
         NUM=$((NUM+1))
-        loggedInUser=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+        # recommended way, but it seems apple deprecated python2 in macOS 12.3.0
+        # to keep on using the python command, a python module is needed
+        #pip3 install pyobjc-framework-SystemConfiguration
+        #loggedInUser=$(python3 -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+        loggedInUser=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }')
     done
     #echo ''
     #echo "NUM is $NUM..."
@@ -260,6 +268,7 @@ check_homebrew() {
         echo "homebrew is installed..."
         # do not autoupdate homebrew
         export HOMEBREW_NO_AUTO_UPDATE=1
+        export BREW_PATH_PREFIX=$(brew --prefix)
     else
         # not installed
         echo ''
@@ -273,18 +282,29 @@ setting_config() {
     ### sourcing .$SHELLrc or setting PATH
     # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
     # needed if binary is installed in a special directory
-    if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'PATH=.*/usr/local/bin:') != "" ]]
+    if command -v brew &> /dev/null
     then
-        echo "sourcing .bashrc..."
-        . /Users/"$loggedInUser"/.bashrc
-    elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'PATH=.*/usr/local/bin:') != "" ]]
-    then
-        echo "sourcing .zshrc..."
-        ZSH_DISABLE_COMPFIX="true"
-        . /Users/"$loggedInUser"/.zshrc
+        # installed
+        BREW_PATH_PREFIX=$(brew --prefix)
+        if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'PATH=.*'"$BREW_PATH_PREFIX"'/bin:') != "" ]]
+        then
+            echo "sourcing .bashrc..."
+            . /Users/"$loggedInUser"/.bashrc
+        elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'PATH=.*'"$BREW_PATH_PREFIX"'/bin:') != "" ]]
+        then
+            echo "sourcing .zshrc..."
+            ZSH_DISABLE_COMPFIX="true"
+            . /Users/"$loggedInUser"/.zshrc
+        else
+            echo "setting path for script..."
+            export PATH=""$BREW_PATH_PREFIX"/bin:"$BREW_PATH_PREFIX"/sbin:$PATH"
+        fi
     else
-        echo "setting path for script..."
-        export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+        # not installed
+        #echo "homebrew is not installed, exiting..."
+        #echo ''
+        #exit
+        :
     fi
 }
 
@@ -560,11 +580,13 @@ clamav_monitor() {
     fi
     
     ### monitoring and scanning
+    BREW_PATH_PREFIX=$(brew --prefix)
+    
     # directories to monitor
     MONITOR_DIRS=(
         "/Users/"$loggedInUser"/"
         "/System/Volumes/Data/Applications/"
-        "/usr/local/"
+        ""$BREW_PATH_PREFIX"/"
     )
     
     # directories to exclude from monitoring
@@ -581,7 +603,7 @@ clamav_monitor() {
         "^/Applications/Rambox.app"
         "^/Users/"$loggedInUser"/Library/Containers/com.adguard.safari.AdGuard/Data/Library/Application Support/AdGuardSafariApp/config.json"
         "^/Users/"$loggedInUser"/Library/Group Containers/UBF8T346G9.Office/User Content.localized/Queries/"
-        "^/usr/local/Caskroom/joplin/"
+        "^"$BREW_PATH_PREFIX"/Caskroom/joplin/"
         "^/Users/"$loggedInUser"/Library/Caches/Homebrew/downloads/.*Joplin.*dmg"
         "^/Applications/Joplin.app"
     )
