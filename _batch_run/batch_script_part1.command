@@ -135,6 +135,7 @@ echo "setting security and automation permissions..."
 AUTOMATION_APPS=(
 # source app name							automated app name										    allowed (1=yes, 0=no)
 "$SOURCE_APP_NAME                           System Events                                               1"
+"$SOURCE_APP_NAME                           System Preferences                                               1"
 "$SOURCE_APP_NAME                           Finder                                                      1"
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
@@ -238,6 +239,12 @@ batch_run_all() {
 	fi
 	env_activating_caffeinate
 	env_force_start_error
+    
+    
+    ### login shell customization
+	printf "\n${bold_text}###\nlogin shell customization...\n###\n${default_text}"
+	env_create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/02_preparations/2d_login_shell_customization.sh
 
 	
 	### homebrew and cask install
@@ -291,8 +298,24 @@ batch_run_all() {
 	while [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
 	do
 		sleep 30
+		
+		### sourcing config file for changes made in other shells to take effect
+		# will be sourced when opening a new terminal session automatically
+		#if [[ $(echo "$SHELL") == "/bin/zsh" ]]
+		if [[ $(echo "$0") == "-zsh" ]]
+		then
+			source "/Users/$(logname)/.zshrc"
+		#elif [[ $(echo "$SHELL") == "/bin/bash" ]]
+		elif [[ $(echo "$0") == "bash" ]]
+		then
+			source "/Users/$(logname)/.bashrc"
+		else
+			:
+		fi
+		
 		checking_dependencies
 	done
+	echo "done"
 	
 	
 	### creating symlinks
@@ -332,12 +355,6 @@ batch_run_all() {
 	sleep 1
 	env_active_source_app
 	env_activating_caffeinate
-	
-	
-	### login shell customization
-	printf "\n${bold_text}###\nlogin shell customization...\n###\n${default_text}"
-	env_create_tmp_batch_script_fifo
-	"$SCRIPTS_FINAL_DIR"/02_preparations/2d_login_shell_customization.sh
 	
 	
 	### nvram
