@@ -1,7 +1,5 @@
 # before starting batch_script_part2b.command
 
-macos 10.15
-
 0	delete old icloud account
 	in preferences - internet accounts
 
