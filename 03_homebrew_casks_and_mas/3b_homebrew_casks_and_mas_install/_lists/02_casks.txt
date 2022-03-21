@@ -1,10 +1,10 @@
 ### casks with long install times first
 xquartz
-adoptopenjdk
+temurin		   		# jdk from the eclipse foundation (adoptium), official successor of adoptopenjdk
 macfuse
-#virtualbox         # is installed as a dependency of virtualbox-extension-pack
-virtualbox-extension-pack
-#libreoffice        # is installed as a dependency of libreoffice-language-pack
+#virtualbox         		# is installed as a dependency of virtualbox-extension-pack
+#virtualbox-extension-pack	# using utm now
+#libreoffice        		# is installed as a dependency of libreoffice-language-pack
 libreoffice-language-pack
 
 ### alphabetical
