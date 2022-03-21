@@ -1,0 +1,12 @@
+clean install
+
+
+### boot from usb
+
+# intel mac
+reboot and press alt until options appear
+
+# silicon mac
+reboot and press power button until options appear
+
+
