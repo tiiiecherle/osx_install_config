@@ -111,7 +111,7 @@ VARIABLE_TO_CHECK="$CONT1"
 # single line
 QUESTION_TO_ASK="do you want completely reset firefox? script will run hardened only option when answerded with no... (y/N)? "
 # multi line
-#QUESTION_TO_ASK="$(echo -e 'found a backup of cask specifications in /tmp/Caskroom \ndo you wanto to restore /tmp/Caskroom/* to /usr/local/Caskroom/' '(Y/n)? ')"
+# see restore Caskroom
 env_ask_for_variable
 CONT1="$VARIABLE_TO_CHECK"
 #echo ''
