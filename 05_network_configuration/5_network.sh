@@ -90,11 +90,11 @@ fi
 
 getting_network_device_ids() {
     # get device names
-    WLAN_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: AirPort" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
-    ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep -v "Bluetooth" | grep -v "Bridge")
-    #ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018 and newer
-    #ETHERNET_DEVICE="Ethernet"                 # imacs
     HARDWARE_TYPE=$(system_profiler SPHardwareDataType | grep "Model Name" | awk -F":" '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed -e 's/ //g') 
+    WLAN_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: AirPort" | head -n 1 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/:$//g')
+    #ETHERNET_DEVICE="USB 10/100/1000 LAN"      # macbook pro 2018 and newer
+    #ETHERNET_DEVICE="Ethernet"                         # imacs
+    ETHERNET_DEVICE=""
     if [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "macbookpro" ]]
     then
         ETHERNET_DEVICE="USB 10/100/1000 LAN"
@@ -102,7 +102,7 @@ getting_network_device_ids() {
     then
         ETHERNET_DEVICE="Ethernet"
     else
-        :
+            ETHERNET_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep -v "Bluetooth" | grep -v "Bridge")
     fi
     BLUETOOTH_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep "Bluetooth")
     THUNDERBOLT_BRIDGE_DEVICE=$(system_profiler SPNetworkDataType | grep -B2 "Type: Ethernet" | sed 's/^[ \t]*//' | sed 's/\:$//g' | grep -v "^--" | grep -v "^Type:" | sed '/^$/d' | grep "Bridge")
@@ -304,34 +304,46 @@ create_location_custom() {
 }
 
 show_vpn_in_menu_bar() {
-    ### adding entry
-    # show vpn in the menu bar
-    if [[ $(defaults read com.apple.systemuiserver menuExtras | grep "vpn.menu") == "" ]]
-    then
-        defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/vpn.menu" >/dev/null 2>&1
-        # do not show vpm connection time in menu bar
-        # 0 = no
-        # 1 = yes
-        defaults write com.apple.networkConnect VPNShowTime 0
-        # make changes take effect
-        killall SystemUIServer -HUP
-    else
-        :
-    fi
-
-    ### deleting entry
-    # it seems deleting entries needs a reboot for the changes to take effect
-    # killall SystemUIServer -HUP is not enough
-
-    #NotPreferredMenuExtras=(
-    #"/System/Library/CoreServices/Menu Extras/vpn.menu"
-    #)
     
-    #for varname in "${NotPreferredMenuExtras[@]}"; 
-    #do
-    #    /usr/libexec/PlistBuddy -c "Delete 'menuExtras:$(defaults read ~/Library/Preferences/com.apple.systemuiserver.plist menuExtras | cat -n | grep "$varname" | awk '{print SUM $1-2}') string'" ~/Library/Preferences/com.apple.systemuiserver.plist >/dev/null 2>&1
-    #    :
-    #done
+    ### enabling icon in menu bar/adding entry
+    show_vpn_menu_bar_icon() {
+        if [[ $(defaults read com.apple.systemuiserver menuExtras | grep "vpn.menu") == "" ]]
+        then
+            defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/vpn.menu" >/dev/null 2>&1
+            # do not show vpm connection time in menu bar
+            # 0 = no
+            # 1 = yes
+            defaults write com.apple.networkConnect VPNShowTime 0
+            # make changes take effect
+            killall SystemUIServer -HUP
+        else
+            :
+        fi
+    }
+    show_vpn_machine_menu_bar_icon
+
+    ### disabling icon in menu bar/deleting entry
+    hide_vpn_menu_bar_icon() {
+        defaults write ~/Library/Preferences/ByHost/com.apple.systemuiserver.$uuid1.plist dontAutoLoad -array "/System/Library/CoreServices/Menu Extras/vpn.menu" >/dev/null 2>&1
+        
+        NotPreferredMenuExtras=(
+        "/System/Library/CoreServices/Menu Extras/vpn.menu"
+        )
+        
+        for varname in "${NotPreferredMenuExtras[@]}"; 
+        do
+            /usr/libexec/PlistBuddy -c "Delete 'menuExtras:$(defaults read ~/Library/Preferences/com.apple.systemuiserver.plist menuExtras | cat -n | grep "$varname" | awk '{print SUM $1-2}') string'" ~/Library/Preferences/com.apple.systemuiserver.plist >/dev/null 2>&1 | grep -v "Does Not Exist" | grep -v "does not exist"
+            :
+        done
+        
+        # make changes take effect
+        sleep 2
+        killall cfprefsd -HUP
+        killall SystemUIServer -HUP
+        sleep 5
+    }
+    #hide_vpn_menu_bar_icon
+    
 }
 
 configure_fritz_vpn() {

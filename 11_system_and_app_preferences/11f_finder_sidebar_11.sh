@@ -24,7 +24,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ### compatibility
 ###
 
-# macos 11 only
+# specific macos version only
 if [[ "$MACOS_VERSION_MAJOR" != "11" ]]
 then
     echo ''

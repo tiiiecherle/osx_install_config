@@ -88,49 +88,98 @@ fi
 
 sleep 5
 
+
+VERSION_TO_CHECK_AGAINST=12
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos until and including 12
+
 #osascript 2>/dev/null <<EOF
 osascript <<EOF
-
-tell application "System Preferences"
-	activate
-	set current pane to pane "com.apple.preference.spotlight"
-	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.spotlight")
-	#display dialog tabnames
-	get the name of every anchor of pane id "com.apple.preference.spotlight"
-	reveal anchor "searchResults" of pane id "com.apple.preference.spotlight"
-end tell
-
-delay 2
-
-tell application "System Events"
-	tell process "System Preferences"
-		# first checkbox in main window
-		#click checkbox 1 of tab group 1 of window 1
-		# first checkbox of first row in table in window
-		#click checkbox 1 of row 1 of table 1 of scroll area 1 of tab group 1 of window 1
-		set theCheckbox to (checkbox 1 of row 1 of table 1 of scroll area 1 of tab group 1 of window 1)
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is false then click theCheckbox
-		end tell
-		delay 1
-		tell theCheckbox
-			set checkboxStatus to value of theCheckbox as boolean
-			if checkboxStatus is true then click theCheckbox
-		end tell
-		delay 1
+	
+	tell application "System Preferences"
+	    reopen
+	    delay 3
+		#activate
+		#delay 2
+		set current pane to pane "com.apple.preference.spotlight"
+		#set tabnames to (get the name of every anchor of pane id "com.apple.preference.spotlight")
+		#display dialog tabnames
+		get the name of every anchor of pane id "com.apple.preference.spotlight"
+		reveal anchor "searchResults" of pane id "com.apple.preference.spotlight"
 	end tell
-end tell
-
-delay 2
-
-tell application "System Preferences"
-	quit
-end tell
+	
+	# do not use visible as it makes the window un-clickable
+	#tell application "System Events" to tell process "System Settings" to set visible to true
+    #delay 1
+    tell application "System Events" to tell process "System Preferences" to set frontmost to true
+    delay 1
+	
+	tell application "System Events"
+		tell process "System Preferences"
+			# first checkbox in main window
+			#click checkbox 1 of tab group 1 of window 1
+			# first checkbox of first row in table in window
+			#click checkbox 1 of row 1 of table 1 of scroll area 1 of tab group 1 of window 1
+			set theCheckbox to (checkbox 1 of row 1 of table 1 of scroll area 1 of tab group 1 of window 1)
+			tell theCheckbox
+				set checkboxStatus to value of theCheckbox as boolean
+				if checkboxStatus is false then click theCheckbox
+			end tell
+			delay 1
+			tell theCheckbox
+				set checkboxStatus to value of theCheckbox as boolean
+				if checkboxStatus is true then click theCheckbox
+			end tell
+			delay 1
+		end tell
+	end tell
+	
+	delay 2
+	
+	tell application "System Preferences"
+		quit
+	end tell
 
 EOF
 
+else
+    # macos versions 13 and up
+	# ls -la /System/Library/PreferencePanes/
+	# if there is no prefpane in this directory, see defaults_write/_scripts_final/_mobileconfig/install_profiles_13.scpt
+	# for using applescript to open prefpane
+  	open /System/Library/PreferencePanes/Spotlight.prefPane
+  	
+  	sleep 2
+
+	osascript <<EOF  	
+  		tell application "System Events"
+		tell process "System Settings"
+			set theCheckbox to (checkbox 1 of UI element 1 of row 1 of table 1 of scroll area 1 of group 3 of scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1)
+			tell theCheckbox
+				set checkboxStatus to value of theCheckbox as boolean
+				if checkboxStatus is false then click theCheckbox
+			end tell
+			delay 1
+			tell theCheckbox
+				set checkboxStatus to value of theCheckbox as boolean
+				if checkboxStatus is true then click theCheckbox
+			end tell
+			delay 1
+		end tell
+	end tell
+	
+	delay 2
+	
+	tell application "System Preferences"
+		quit
+	end tell
+EOF
+  	
+fi
+
 # waiting for the applescript settings to be applied to the preferences file to make the script work
+echo "waiting for the applescript settings to be applied to the preferences file to make the script work..."
 sleep 10
 
 }

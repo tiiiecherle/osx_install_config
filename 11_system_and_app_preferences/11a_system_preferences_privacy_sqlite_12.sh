@@ -24,7 +24,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ### compatibility
 ###
 
-# macos 10.15 only
+# specific macos version only
 if [[ "$MACOS_VERSION_MAJOR" != "12" ]]
 then
     echo ''
@@ -313,7 +313,7 @@ sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBo
 CONTACTSAPPS=(
 # app name									security service										    allowed (1=yes, 0=no)
 "gui_apps_backup                            kTCCServiceAddressBook                                      1"
-"Alfred 4                                   kTCCServiceAddressBook                                      1"
+"Alfred 5                                   kTCCServiceAddressBook                                      1"
 "GeburtstagsChecker                         kTCCServiceAddressBook                                      1"
 "Telephone                                  kTCCServiceAddressBook                                      1"
 )
@@ -499,7 +499,7 @@ AUTOMATION_APPS=(
 "virtualbox_backup                                                          Terminal                    1"
 "run_on_login_signal                                                        System Events               1"
 "run_on_login_whatsapp                                                      System Events               1"
-"run_on_login_virusscannerplus                                      System Events               1"
+"run_on_login_virusscannerplus                                              System Events               1"
 "run_on_login_reminders                                                     System Events               1"
 "iTerm                                                                      System Events               1"
 #"XtraFinder                                                                 Finder                      1"
@@ -509,6 +509,7 @@ AUTOMATION_APPS=(
 "witchdaemon                                                                Mail                        0"
 "Linphone                                                                   System Events               1"
 "BetterTouchTool                                                            Shortcuts                   1"
+"BetterTouchTool                                                            Shortcuts Events            1"
 )
         
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions

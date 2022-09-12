@@ -177,25 +177,31 @@ backup_restore_permissions() {
     #fi
     
     # mysides
-    if command -v brew &> /dev/null
-    then
-        # installed
-        BREW_PATH_PREFIX=$(brew --prefix)
-    else
-        # not installed
-        echo "homebrew is not installed, exiting..."
-        echo ''
-        exit
-    fi
-    FILE_OR_FOLDER_TO_CHECK_FOR=""$BREW_PATH_PREFIX"/bin/mysides"
-    if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]  
-    then
-        sudo chown root:wheel ""$BREW_PATH_PREFIX"/bin/mysides"
-        sudo chmod 755 ""$BREW_PATH_PREFIX"/bin/mysides"
-    else
-        echo ''
-        echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
-    fi
+    # currently not used, using finder-sidebar-editor instead
+    check_mysides() {
+        if command -v brew &> /dev/null
+        then
+            # installed
+            BREW_PATH_PREFIX=$(brew --prefix)
+        else
+            # not installed
+            echo "homebrew is not installed, exiting..."
+            echo ''
+            exit
+        fi
+        FILE_OR_FOLDER_TO_CHECK_FOR=""$BREW_PATH_PREFIX"/bin/mysides"
+        if [[ -e "$FILE_OR_FOLDER_TO_CHECK_FOR" ]]  
+        then
+            sudo chown root:wheel ""$BREW_PATH_PREFIX"/bin/mysides"
+            sudo chmod 755 ""$BREW_PATH_PREFIX"/bin/mysides"
+        else
+            echo ''
+            # mysides currently not used, therefor no entry to error log necessary
+            #echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
+            echo ""$FILE_OR_FOLDER_TO_CHECK_FOR" not found, skipping setting permissions..." >&2
+        fi
+    }
+    #check_mysides
     
     # cups printer
     FILE_OR_FOLDER_TO_CHECK_FOR="/etc/cups/printers.conf"

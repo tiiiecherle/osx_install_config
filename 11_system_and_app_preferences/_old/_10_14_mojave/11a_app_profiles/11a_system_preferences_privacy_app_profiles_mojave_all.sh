@@ -43,7 +43,7 @@ PasswordWallet
 "Ondesoft AudioBook Converter"
 "VNC Viewer"
 "Commander One"
-"Alfred 4"
+"Alfred 5"
 GeburtstagsChecker
 pdf_200dpi_shrink
 iTunes

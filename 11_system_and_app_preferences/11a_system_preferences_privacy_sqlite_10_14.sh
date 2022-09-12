@@ -65,7 +65,7 @@ SCRIPT_DIR_PROFILES="$SCRIPT_DIR"/11a_app_profiles
 ### compatibility
 ###
 
-# macos 10.14 only
+# specific macos version only
 if [[ "$MACOS_VERSION_MAJOR" != "10.14" ]]
 then
     echo ''
@@ -274,7 +274,7 @@ sqlite3 "$DATABASE_USER" "delete from access where service='kTCCServiceAddressBo
 CONTACTSAPPS=(
 # app name									security service										    allowed (1=yes, 0=no)
 "gui_apps_backup                            kTCCServiceAddressBook                                      1"
-"Alfred 4                                   kTCCServiceAddressBook                                      1"
+"Alfred 5                                   kTCCServiceAddressBook                                      1"
 "GeburtstagsChecker                         kTCCServiceAddressBook                                      1"
 )
 

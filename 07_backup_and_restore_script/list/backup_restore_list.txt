@@ -160,9 +160,14 @@ u	~/Library/Calendars
 
 # Chromium
 echo Chromium
-#u	"$PATH_TO_APPS"/Chromium.app
-#u	"$PATH_TO_APPS"/chromium
-#u	~/Library/Application Support/Chromium
+u	~/Library/Application Support/Chromium/Local State
+u	~/Library/Application Support/Chromium/Default/Extension Rules
+u	~/Library/Application Support/Chromium/Default/Extension Scripts
+u	~/Library/Application Support/Chromium/Default/Extension State
+u	~/Library/Application Support/Chromium/Default/Extensions
+u	~/Library/Application Support/Chromium/Default/Local Extension Settings
+u	~/Library/Application Support/Chromium/Default/Preferences
+u	~/Library/Application Support/Chromium/Default/Secure Preferences
 
 # clamav scan
 echo clamav scan
@@ -271,6 +276,10 @@ echo Firefox
 u	"$PATH_TO_APPS"/Firefox_ESR.app
 u	~/Library/Application Support/Firefox
 u	~/Library/Preferences/org.mozilla.firefox.plist
+
+# Firewall Temp Off App
+echo Firewall Temp Off App
+u	"$PATH_TO_APPS"/firewall_temp_off.app
 
 # Fonts
 echo Fonts
@@ -384,6 +393,10 @@ u	~/Library/Application Support/Jitsi Meet/config.json
 u	~/Library/Application Support/Jitsi Meet/Local Storage
 u	~/Library/Application Support/Jitsi Meet/Preferences
 u	~/Library/Application Support/Jitsi Meet/window-state.json
+
+# JLohn
+echo JLohn
+u	/Applications/JLohnMacOS.app
 
 # KeePassX
 echo KeePassX

@@ -12,7 +12,7 @@
 477670270	2Do
 1295203466	Microsoft Remote Desktop
 483820530	QR Journal
-#1292198261	iMazing HEIC Converter
+1292198261	iMazing HEIC Converter
 #509182449	Photo Transfer App
 #456624497	Brightness Slider
 #507257563	Sip

@@ -721,27 +721,32 @@ env_get_app_id() {
     #    :
     #fi
     
-    env_get_path_to_app
-    if [[ "$PATH_TO_APP" == "" ]]
+    if [[ "$APP_NAME" == "com.apple.screensharing.agent" ]]
     then
-        # trying another way to get the app id without knowing the path to the .app
-        APP_ID=$(osascript -e "id of app \"$APP_NAME\"") &> /dev/null
-        if [[ "$APP_ID" == "" ]];then echo "PATH_TO_APP of "$APP_NAME" is empty, skipping entry..." && continue; fi
-    else  
-        if [[ "$APP_NAME" == "PVGuard" ]] && [[ -e ~/.cache/icedtea-web/jvm-cache/cache.json ]] && [[ -e "$PATH_TO_APPS"/"$APP_NAME".app ]]
-        then 
-            JAVA_VERSION=$(jq -r '.runtimes | .[] | .version' ~/.cache/icedtea-web/jvm-cache/cache.json)
-            APP_ID=net.java.openjdk."$JAVA_VERSION".java
-        else       
-            APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APP"/Contents/Info.plist")
-            #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | sort -n | head -n1)")
-            # specifying app id in array
-            #local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+        APP_ID="com.apple.screensharing.agent"
+    else
+        env_get_path_to_app
+        if [[ "$PATH_TO_APP" == "" ]]
+        then
+            # trying another way to get the app id without knowing the path to the .app
+            APP_ID=$(osascript -e "id of app \"$APP_NAME\"") &> /dev/null
+            if [[ "$APP_ID" == "" ]];then echo "PATH_TO_APP of "$APP_NAME" is empty, skipping entry..." && continue; fi
+        else  
+            if [[ "$APP_NAME" == "PVGuard" ]] && [[ -e ~/.cache/icedtea-web/jvm-cache/cache.json ]] && [[ -e "$PATH_TO_APPS"/"$APP_NAME".app ]]
+            then 
+                JAVA_VERSION=$(jq -r '.runtimes | .[] | .version' ~/.cache/icedtea-web/jvm-cache/cache.json)
+                APP_ID=net.java.openjdk."$JAVA_VERSION".java
+            else       
+                APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APP"/Contents/Info.plist")
+                #local APP_ID=$(APP_NAME2="${APP_NAME//\'/\'}.app"; APP_NAME2=${APP_NAME2//"/\\"}; APP_NAME2=${APP_NAME2//\\/\\\\}; mdls -name kMDItemCFBundleIdentifier -raw "$(mdfind 'kMDItemContentType==com.apple.application-bundle&&kMDItemFSName=="'"$APP_NAME2"'"' | sort -n | head -n1)")
+                # specifying app id in array
+                #local APP_ID=$(echo "$APP_ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            fi
         fi
+        #echo "PATH_TO_APP is "$PATH_TO_APP"..."
+        #echo "APP_ID is "$APP_ID""
+        if [[ "$APP_ID" == "" ]];then echo "APP_ID of "$APP_NAME" is empty, skipping entry..." && continue; fi
     fi
-    #echo "PATH_TO_APP is "$PATH_TO_APP"..."
-    #echo "APP_ID is "$APP_ID""
-    if [[ "$APP_ID" == "" ]];then echo "APP_ID of "$APP_NAME" is empty, skipping entry..." && continue; fi
 }
 
 
@@ -816,7 +821,7 @@ env_set_apps_security_permissions() {
 
         APP_NAME="$APP_NAME"
         env_get_app_id
-
+            
         # app csreq
         #local APP_CSREQ=$(cat "$SCRIPT_DIR_PROFILES"/"$APP_NAME".txt | sed -n '3p' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')    
         #echo "$APP_CSREQ"
@@ -832,7 +837,7 @@ env_set_apps_security_permissions() {
         #echo "$PERMISSION_GRANTED"
 
         # setting permissions
-        if [[ "$INPUT_SERVICE" == "kTCCServiceAccessibility" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceScreenCapture" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceSystemPolicyAllFiles" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceDeveloperTool" ]]
+        if [[ "$INPUT_SERVICE" == "kTCCServiceAccessibility" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceScreenCapture" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceSystemPolicyAllFiles" ]] || [[ "$INPUT_SERVICE" == "kTCCServiceDeveloperTool" ]] || [[ "$INPUT_SERVICE" == "kTCCServicePostEvent" ]]
         then
             # delete entry before resetting
             sudo sqlite3 "$DATABASE_SYSTEM" "delete from access where (service='$INPUT_SERVICE' and client='$APP_ID');" 2>&1 | grep -v '^$'
@@ -1507,35 +1512,12 @@ env_get_current_command_line_tools_version() {
 }
 
 env_check_for_software_updates_gui() {
-    # getting ids of all system preferences panes
-    #osascript <<EOF
-    #tell application "System Preferences"
-    #	id of panes
-    #end tell
-#EOF
-    
-    # getting id of currently active system preference pane
-    #osascript <<EOF
-    #tell application "System Preferences"
-    #	set CurrentPane to the id of the current pane
-    #	display dialog CurrentPane
-    #end tell
-#EOF
+
+    open /System/Library/PreferencePanes/SoftwareUpdate.prefPane
+    sleep 30
     
     osascript <<EOF
-        tell application "System Preferences"
-        	# activate opens in foreground, run in background
-        	#activate
-        	run
-        	delay 1
-        	set current pane to pane "com.apple.preferences.softwareupdate"
-        end tell
-        #delay 5
-        #tell application "System Events"
-    	#    set visible of process "System Preferences" to false
-        #end tell
-        delay 30
-        tell application "System Preferences" to quit
+        tell application "System Settings" to quit
 EOF
 }
 
@@ -1616,6 +1598,8 @@ env_command_line_tools_install_shell() {
             # not installed
             echo ''
             echo "installing rosetta..."
+            #sudo rm -rf /Library/Apple/usr/share/rosetta
+            #sudo rm -rf /Library/Apple/usr/libexec/oah
             softwareupdate --install-rosetta --agree-to-license
             echo ''
         fi
@@ -2171,7 +2155,94 @@ env_check_if_second_macos_volume_is_mounted() {
 }
 
 
-### calendar
+### services
+
+env_stopping_services() {
+	echo ''
+	echo "stopping services..."
+	
+	if [[ "$STOP_CALENDAR_REMINDER_SERVICES" == "yes" ]]
+	then
+		echo "services calendar & reminders..."
+		#osascript -e 'tell application "System Events" to log out'
+		#killall Calendar &> /dev/null
+		#killall dataaccess.dataaccessd
+		#killall remindd
+		#killall calaccessd
+		# launchctl list
+		# already done at the beginnning of the script
+		# bootout works, but prints "Boot-out failed: 36: Operation now in progress"
+		# if kill is used to stop the service kickstart is needed to restart it, bootstrap will not work
+		launchctl bootout gui/"$(id -u "$USER")"/com.apple.dataaccess.dataaccessd 2>&1 | grep -v "in progress" | grep -v "No such process"
+		launchctl bootout gui/"$(id -u "$USER")"/com.apple.remindd 2>&1 | grep -v "in progress" | grep -v "No such process"
+		launchctl bootout gui/"$(id -u "$USER")"/com.apple.calaccessd 2>&1 | grep -v "in progress" | grep -v "No such process"
+		#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.dataaccess.dataaccessd
+		#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.remindd
+		#launchctl kill 15 gui/"$(id -u "$USER")"/com.apple.CalendarAgent
+	else
+		:
+	fi
+	
+	if [[ "$STOP_ACCOUNTSD" == "yes" ]]
+	then
+		echo "services accountsd..."
+		launchctl bootout gui/"$(id -u "$USER")"/com.apple.accountsd 2>&1 | grep -v "in progress" | grep -v "No such process"
+	else
+		:
+	fi
+	
+	if [[ "$STOP_CUPSD" == "yes" ]]
+	then
+		echo "services cupsd..."		
+		sudo launchctl bootout system/org.cups.cupsd 2>&1 | grep -v "in progress" | grep -v "No such process"
+	else
+		:
+	fi
+	
+	sleep 5
+}
+
+env_starting_services() {
+	echo ''
+	echo "starting services..."
+	
+	if [[ "$START_CALENDAR_REMINDER_SERVICES" == "yes" ]]
+	then
+		echo "services calendar & reminders..."
+		# if kill was used to stop the service kickstart is needed to restart it, bootstrap will not work
+		# dataaccessd is needed to be restared for calendar to reconize the internet accounts and re-download the data
+		launchctl bootstrap gui/"$(id -u "$USER")" /System/Library/LaunchAgents/com.apple.dataaccess.dataaccessd.plist
+		launchctl bootstrap gui/"$(id -u "$USER")" /System/Library/LaunchAgents/com.apple.remindd.plist
+		launchctl bootstrap gui/"$(id -u "$USER")" /System/Library/LaunchAgents/com.apple.calaccessd.plist
+		#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.dataaccess.dataaccessd
+		#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.remindd
+		launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.calaccessd
+	else
+		:
+	fi
+
+	if [[ "$START_ACCOUNTSD" == "yes" ]]
+	then
+		echo "services accountsd..."		
+		launchctl bootstrap gui/"$(id -u "$USER")" /System/Library/LaunchAgents/com.apple.accountsd.plist
+		#launchctl kickstart -k gui/"$(id -u "$USER")"/com.apple.accountsd
+	else
+		:
+	fi
+
+	if [[ "$START_CUPSD" == "yes" ]]
+	then
+		echo "services cupsd..."		
+		sudo launchctl bootstrap system /System/Library/LaunchDaemons/org.cups.cupsd.plist
+	else
+		:
+	fi
+	
+	sleep 5
+}
+
+
+### calendar - deprectaed for macos 13 and higher
 env_collapsing_elements_in_calendar_sidebar() {
     # collapsing (specified) elements in the sidebar
     # delegates

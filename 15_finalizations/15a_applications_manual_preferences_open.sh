@@ -44,6 +44,7 @@ echo "setting security and automation permissions..."
 AUTOMATION_APPS=(
 # source app name							automated app name										    allowed (1=yes, 0=no)
 "$SOURCE_APP_NAME                           System Events                                               1"
+#"$SOURCE_APP_NAME                           Calendar                                               		1"
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 #echo ''
@@ -53,6 +54,48 @@ PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
 ###
 ### opening apps for applying manual preferences
 ###
+
+center_frontmost_window() {
+
+	osascript <<EOF
+	tell application "System Events"
+		set activeApps to name of application processes whose frontmost is true
+		set currentApplication to item 1 of activeApps
+		-- DEBUG -- currentApplication seems to be the correct application
+		-- display notification currentApplication
+		-- activate currentApplication
+		-- Get the front window and its measurements
+		set frontWindow to the first window of application process currentApplication
+		set windowSize to size of frontWindow
+		set windowPosition to position of frontWindow
+	end tell
+	
+	-- Get the bounds of the screen
+	tell application "Finder"
+		set screenBounds to bounds of window of desktop
+	end tell
+	
+	--calculate the center of the current window (without menu bar)
+	set windowSizeX to item 1 of windowSize
+	set windowSizeY to item 2 of windowSize - 30
+	set windowCenterX to windowSizeX / 2
+	set windowCenterY to windowSizeY / 2
+	
+	-- calculate the center of the screen
+	set screenCenterX to (item 3 of screenBounds) / 2
+	set screenCenterY to (item 4 of screenBounds) / 2
+	
+	--calculate the new window position
+	set newWindowPositionX to screenCenterX - windowCenterX
+	set newWindowPositionY to screenCenterY - windowCenterY
+	
+	-- set the new window position
+	tell application "System Events"
+		set position of frontWindow to {newWindowPositionX, newWindowPositionY}
+	end tell
+
+EOF
+}
 
 open_applications() {
 
@@ -70,9 +113,18 @@ open_applications() {
 			then		
 osascript <<EOF
 tell application "Reminders"
-	activate
+	launch
+	delay 3
+	#activate
+	#delay 2
 end tell
-delay 2
+
+# do not use visible as it makes the window un-clickable
+#tell application "System Events" to tell process "Reminders" to set visible to true
+#delay 1
+tell application "System Events" to tell process "Reminders" to set frontmost to true
+delay 1
+	
 try
 	tell application "System Events" 
 		tell process "Reminders" 
@@ -84,45 +136,132 @@ end try
 tell application "System Events" to tell process "Reminders"
 	#return position of window 1
 	#return size of window 1
-    set position of window 1 to {440, 130}
+    #set position of window 1 to {440, 130}
     set size of window 1 to {860, 850}
     delay 2
 end tell
 EOF
+center_frontmost_window
+
 			fi
 
 			if [[ "$APP_NAME" == "Calendar" ]]
 			then		
 osascript <<EOF
 tell application "Calendar"
-	activate
+	launch
+	delay 3
+	#activate
+	#delay 2
 end tell
-delay 2
+
+# do not use visible as it makes the window un-clickable
+#tell application "System Events" to tell process "Calendar" to set visible to true
+#delay 1
+tell application "System Events" to tell process "Calendar" to set frontmost to true
+delay 1
+
 tell application "System Events" to tell process "Calendar"
 	#return position of window 1
 	#return size of window 1
-    set position of window 1 to {50, 50}
+    #set position of window 1 to {50, 50}
     set size of window 1 to {1700, 1000}
     delay 2
 end tell
 EOF
+
+center_frontmost_window
+
+# disable default holiday calendar
+osascript <<EOF
+tell application "System Events"
+	tell process "Calendar"
+		
+		set frontmost to true
+		
+		delay 1
+		
+		#click menu item "Einstellungen …" of menu "Calendar" of menu bar item "Calendar" of menu bar 1
+		keystroke "," using {command down}
+		
+		delay 1
+		
+		# general tab
+		#click button "Allgemein" of toolbar 1 of window "Allgemein"
+		click button 1 of toolbar 1 of window 1
+		
+		delay 1
+		
+		#click checkbox "Feiertagskalender einblenden" of window "Allgemein"
+		set theCheckbox to checkbox 2 of window 1
+		tell theCheckbox
+			#click theCheckbox
+			#delay 0.2
+			set checkboxStatus to value of theCheckbox as boolean
+			if checkboxStatus is true then click theCheckbox
+		end tell
+		
+		delay 1
+		
+		# notifications tab
+		#click button "Hinweise" of toolbar 1 of window "Allgemein"
+		click button 3 of toolbar 1 of window 1
+		
+		delay 1
+		
+		# notifications for events
+		tell pop up button 1 of group 1 of window 1
+			perform action "AXShowMenu"
+			#click menu item 6 of menu 1
+			click menu item "30 Minuten vorher" of menu 1
+		end tell
+		
+		delay 1
+		
+		# notifications for birthdays
+		tell pop up button 1 of window 1
+			perform action "AXShowMenu"
+			#click menu item 2 of menu 1
+			click menu item "Gleicher Tag (9 Uhr)" of menu 1
+		end tell
+		
+		delay 1
+		
+		#tell application "System Events" to close window 1
+		keystroke "w" using command down
+		
+	end tell
+end tell
+EOF
+
 			fi
 
 			if [[ "$APP_NAME" == "Contacts" ]]
 			then		
 osascript <<EOF
 tell application "Contacts"
-	activate
+	launch
+	delay 3
+	#activate
+	#delay 2
 end tell
-delay 2
+
+# do not use visible as it makes the window un-clickable
+#tell application "System Events" to tell process "Contacts" to set visible to true
+#delay 1
+tell application "System Events" to tell process "Contacts" to set frontmost to true
+delay 1
+	
 tell application "System Events" to tell process "Contacts"
 	#return position of window 1
 	#return size of window 1
-    set position of window 1 to {400, 150}
+    #set position of window 1 to {400, 150}
     set size of window 1 to {1000, 800}
     delay 2
 end tell
 EOF
+center_frontmost_window
+
 			fi
 		else
 			echo "$APP_NAME not found, skipping..."
@@ -134,23 +273,43 @@ EOF
 echo ''
 echo "opening apps for applying preferences manually..."
 
-# confirm kext extensions
-# allowing kext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
-osascript <<EOF
-tell application "System Preferences"
-	activate
-	#set paneids to (get the id of every pane)
-	#display dialog paneids
-	#return paneids
-	#set current pane to pane "com.apple.preference.security"
-	#get the name of every anchor of pane id "com.apple.preference.security"
-	#set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")
-	#display dialog tabnames
-	#return tabnames
-	reveal anchor "General" of pane id "com.apple.preference.security"
-end tell
+
+VERSION_TO_CHECK_AGAINST=12
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos until and including 12
+    
+	# confirm kext extensions
+	# allowing kext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
+	osascript <<EOF
+	tell application "System Settings"
+		reopen
+		delay 3
+		#activate
+		#delay 2	
+		#set paneids to (get the id of every pane)
+		#display dialog paneids
+		#return paneids
+		#set current pane to pane "com.apple.preference.security"
+		#get the name of every anchor of pane id "com.apple.preference.security"
+		#set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")
+		#display dialog tabnames
+		#return tabnames
+		reveal anchor "General" of pane id "com.apple.preference.security"
+	end tell
+	
+	# do not use visible as it makes the window un-clickable
+	#tell application "System Events" to tell process "System Settings" to set visible to true
+	#delay 1
+	tell application "System Events" to tell process "System Settings" to set frontmost to true
+	delay 1	
 EOF
-sleep 2
+	sleep 2
+
+else
+	# macos versions 13 and up
+	:
+fi
 
 
 ### opening apps
@@ -160,10 +319,13 @@ applications_to_open=(
 "Calendar"
 "Contacts"
 "Reminders"
-"Overflow 3"
 "BresinkSoftwareUpdater"
-"VirusScannerPlus"
-"BetterTouchTool"
+"Wireguard"
+"WhatsApp"
+"Signal"
+#"Overflow 3"
+#"VirusScannerPlus"
+#"BetterTouchTool"
 )
 open_applications
 
@@ -174,7 +336,6 @@ open_more_apps() {
 	"AppCleaner"
 	"iStat Menus"
 	"Microsoft Excel"
-	"iMazing"
 	"MacPass"
 	"The Unarchiver"
 	)
@@ -231,13 +392,14 @@ then
 		:
 	fi
     
-    if [[ "$DISPLAY_SIGNAL_DIALOG" == "yes" ]]
-	then
-    	# hint for signal
-    	osascript -e 'display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
-    else
-    	:
-    fi
+    # no longer needed with according cleaning settings in restore script
+    #if [[ "$DISPLAY_SIGNAL_DIALOG" == "yes" ]]
+	#then
+    #	# hint for signal
+    #	osascript -e 'display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+    #else
+    #	:
+    #fi
     
     # no longer needed due to installing wireguard mobileconfig
     #if [[ "$DISPLAY_WIREGUARD_DIALOG" == "yes" ]]
@@ -251,25 +413,44 @@ else
 fi
 
 
-### opening system preferences for the monitor
-open_system_prefs_monitor() {
-#osascript 2>/dev/null <<EOF
-osascript <<EOF
+VERSION_TO_CHECK_AGAINST=12
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos until and including 12
 
-tell application "System Preferences"
-	activate
-	set current pane to pane "com.apple.preference.displays"
-	set tabnames to (get the name of every anchor of pane id "com.apple.preference.displays")
-	#display dialog tabnames
-	#get the name of every anchor of pane id "com.apple.preference.displays"
-	reveal anchor "displaysDisplayTab" of pane id "com.apple.preference.displays"
-end tell
-
-delay 2
-
+	### opening system preferences for the monitor
+	open_system_prefs_monitor() {
+	#osascript 2>/dev/null <<EOF
+	osascript <<EOF
+	
+	tell application "System Preferences"
+		reopen
+		delay 3
+		#activate
+		#delay 2
+		set current pane to pane "com.apple.preference.displays"
+		set tabnames to (get the name of every anchor of pane id "com.apple.preference.displays")
+		#display dialog tabnames
+		#get the name of every anchor of pane id "com.apple.preference.displays"
+		reveal anchor "displaysDisplayTab" of pane id "com.apple.preference.displays"
+	end tell
+	
+	# do not use visible as it makes the window un-clickable
+	#tell application "System Events" to tell process "System Settings" to set visible to true
+	#delay 1
+	tell application "System Events" to tell process "System Settings" to set frontmost to true
+	delay 1
+	
+	delay 2
+	
 EOF
-}
-#open_system_prefs_monitor
+	}
+	#open_system_prefs_monitor
+
+else
+	# macos versions 13 and up
+	:
+fi
 
 
 ### testing ssh connection

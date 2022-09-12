@@ -263,6 +263,7 @@ if [[ "$RESTORE_UTM" == "yes" ]]
 then
     if [[ ! -L ~/Library/Containers/com.utmapp.UTM/Data/Documents ]]
     then
+        echo "RESTORE_DIR_UTM is "$RESTORE_DIR_UTM"..."
         if [[ $(echo "$RESTORE_DIR_UTM") == "" ]]
         then
             #echo ''
@@ -272,7 +273,6 @@ then
             #echo ''
             echo "restoredir for utm restore is "$RESTORE_DIR_UTM"..."
             echo ''
-            
             RESTORE_TO_DIR="$RESTORE_DIR_UTM"
             unset RESTORE_DIRS
             RESTORE_DIRS="$(printf "%s\n" "${BACKUPDIR_UTM[@]}")"

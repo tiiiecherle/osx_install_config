@@ -194,56 +194,8 @@ run_all() {
     ### updating homebrew
     UPDATE_HOMEBREW="yes"
     env_homebrew_update
-    
-    
-    ### mas
-    if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
-    then
-    
-        env_create_tmp_mas_script_fifo
-        env_identify_terminal
-        UPDATE_HOMEBREW="no"
-        RUN_FROM_RUN_ALL_SCRIPT="yes"
-    
-        #osascript 2>/dev/null <<EOF
-        osascript <<EOF
-        tell application "Terminal"
-        	if it is running then
-        		#if not (exists window 1) then
-        		if (count of every window) is 0 then
-        			reopen
-        			activate
-        			set Window1 to front window
-        			set runWindow to front window
-        		else
-        			activate
-        			delay 2
-        			set Window1 to front window
-        			#
-        			tell application "System Events" to keystroke "t" using command down
-        			delay 2
-        			set Window2 to front window
-        			set runWindow to front window
-        		end if
-        	else
-        		activate
-        		set Window1 to front window
-        		set runWindow to front window
-        	end if
-        	#delay 2
-            #    	
-            do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export MAS_APPLE_ID=\"$MAS_APPLE_ID\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; echo ''; (time \"$SCRIPT_DIR/6_mas_appstore.sh\"; echo '')" in runWindow
-        	#
-        	delay 60
-            set frontmost of Window1 to true
-        end tell
-EOF
-    
-    else 
-        CHECK_IF_MASAPPS_INSTALLED="no"
-    fi
-    
-    
+
+
     ### casks
     if [[ "$CONT2_BREW" =~ ^(yes|y)$ ]]
     then
@@ -289,6 +241,54 @@ EOF
     
     else 
         CHECK_IF_CASKS_INSTALLED="no"
+    fi    
+    
+    
+    ### mas
+    if [[ "$CONT3_BREW" == "y" || "$CONT3_BREW" == "yes" || "$CONT3_BREW" == "" ]]
+    then
+    
+        env_create_tmp_mas_script_fifo
+        env_identify_terminal
+        UPDATE_HOMEBREW="no"
+        RUN_FROM_RUN_ALL_SCRIPT="yes"
+    
+        #osascript 2>/dev/null <<EOF
+        osascript <<EOF
+        tell application "Terminal"
+        	if it is running then
+        		#if not (exists window 1) then
+        		if (count of every window) is 0 then
+        			reopen
+        			activate
+        			set Window1 to front window
+        			set runWindow to front window
+        		else
+        			activate
+        			delay 2
+        			set Window1 to front window
+        			#
+        			tell application "System Events" to keystroke "t" using command down
+        			delay 2
+        			set Window2 to front window
+        			set runWindow to front window
+        		end if
+        	else
+        		activate
+        		set Window1 to front window
+        		set runWindow to front window
+        	end if
+        	#delay 2
+            #    	
+            do script "export SCRIPT_DIR=\"$SCRIPT_DIR\"; export UPDATE_HOMEBREW=\"$UPDATE_HOMEBREW\"; export MAS_APPLE_ID=\"$MAS_APPLE_ID\"; export RUN_FROM_RUN_ALL_SCRIPT=\"$RUN_FROM_RUN_ALL_SCRIPT\"; echo ''; (time \"$SCRIPT_DIR/6_mas_appstore.sh\"; echo '')" in runWindow
+        	#
+        	delay 120
+            set frontmost of Window1 to true
+        end tell
+EOF
+    
+    else 
+        CHECK_IF_MASAPPS_INSTALLED="no"
     fi
     
     

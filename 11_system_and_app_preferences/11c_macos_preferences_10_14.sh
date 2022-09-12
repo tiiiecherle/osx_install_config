@@ -41,7 +41,7 @@ env_enter_sudo_password
 ### compatibility
 ###
 
-# macos 10.14 only
+# specific macos version only
 if [[ "$MACOS_VERSION_MAJOR" != "10.14" ]]
 then
     echo ''
@@ -1860,7 +1860,7 @@ EOF
     "Bartender 3                                                              false"
     "AudioSwitcher                                                            false"   
     "KeepingYouAwake                                                          false" 
-    "Alfred 4                                                                 false" 
+    "Alfred 5                                                                 false" 
     "GeburtstagsChecker                                                       false" 
     "AppCleaner SmartDelete                                                   true" 
     "TotalFinder                                                              false" 

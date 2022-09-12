@@ -55,7 +55,7 @@ fi
 ### compatibility
 ###
 
-# macos 11 only
+# specific macos version only
 if [[ "$MACOS_VERSION_MAJOR" != "12" ]]
 then
     echo ''
@@ -1241,7 +1241,7 @@ EOF
     #"Bartender 4                                                              false"
     "AudioSwitcher                                                            false"   
     "KeepingYouAwake                                                          false" 
-    "Alfred 4                                                                 false" 
+    "Alfred 5                                                                 false" 
     "GeburtstagsChecker                                                       false" 
     "AppCleaner SmartDelete                                                   true" 
     #"TotalFinder                                                              false" 

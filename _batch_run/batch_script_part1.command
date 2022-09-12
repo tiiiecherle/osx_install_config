@@ -232,7 +232,7 @@ batch_run_all() {
 	then
 		printf "\n${bold_text}###\nmobile config...\n###\n${default_text}"
 		env_create_tmp_batch_script_fifo
-		"$SCRIPTS_FINAL_DIR"/_mobileconfig/install_mobileconfig_profiles.sh
+		"$SCRIPTS_FINAL_DIR"/_mobileconfig/install_mobileconfig_profiles_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
 		env_active_source_app
 	else
 		:
@@ -291,31 +291,44 @@ batch_run_all() {
 		    # not installed
 		    MISSING_SCRIPT_DEPENDENCY="yes"
 		fi
+		#echo "MISSING_SCRIPT_DEPENDENCY is "$MISSING_SCRIPT_DEPENDENCY""
 	}
-	
+
+	setting_config() {
+	    #echo ''
+	    ### sourcing .$SHELLrc or setting PATH
+	    # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
+	    # needed if binary is installed in a special directory
+	    if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$USER"/.bashrc ]] && [[ $(cat /Users/"$USER"/.bashrc | grep 'export PATH=.*:$PATH"') != "" ]]
+	    then
+	        echo "sourcing .bashrc..."
+	        #. /Users/"$USER"/.bashrc
+	        # avoiding oh-my-zsh errors for root by only sourcing export PATH
+	        source <(sed -n '/^export\ PATH\=/p' /Users/"$USER"/.bashrc)
+	    elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$USER"/.zshrc ]] && [[ $(cat /Users/"$USER"/.zshrc | grep 'export PATH=.*:$PATH"') != "" ]]
+	    then
+	        echo "sourcing .zshrc..."
+	        ZSH_DISABLE_COMPFIX="true"
+	        #. /Users/"$USER"/.zshrc
+	        # avoiding oh-my-zsh errors for root by only sourcing export PATH
+	        source <(sed -n '/^export\ PATH\=/p' /Users/"$USER"/.zshrc)
+	    else
+	        echo "PATH was not set continuing with default value..."
+	    fi
+	    echo "using PATH..." 
+	    echo "$PATH"
+	    echo ''
+	}
+	setting_config
+		
 	MISSING_SCRIPT_DEPENDENCY=""
 	checking_dependencies
 	while [[ "$MISSING_SCRIPT_DEPENDENCY" == "yes" ]]
 	do
 		sleep 30
-		
-		### sourcing config file for changes made in other shells to take effect
-		# will be sourced when opening a new terminal session automatically
-		#if [[ $(echo "$SHELL") == "/bin/zsh" ]]
-		if [[ $(echo "$0") == "-zsh" ]]
-		then
-			source "/Users/$(logname)/.zshrc"
-		#elif [[ $(echo "$SHELL") == "/bin/bash" ]]
-		elif [[ $(echo "$0") == "bash" ]]
-		then
-			source "/Users/$(logname)/.bashrc"
-		else
-			:
-		fi
-		
 		checking_dependencies
 	done
-	echo "done"
+	echo "no missing dependencies, continuing..."
 	
 	
 	### creating symlinks
@@ -364,8 +377,8 @@ batch_run_all() {
 	
 	
 	### system update
-	printf "\n${bold_text}###\nsystem update...\n###\n${default_text}"
-	"$SCRIPTS_FINAL_DIR"/02_preparations/2a_system_update.sh
+	#printf "\n${bold_text}###\nsystem update...\n###\n${default_text}"
+	#"$SCRIPTS_FINAL_DIR"/02_preparations/2a_system_update.sh
 	
 	
 	### network configuration
@@ -463,11 +476,16 @@ cleanup_log() {
     sed -i '' '/^Tapped.*commands.*\(.*\)$/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/\[new tag\]/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/\[new branch\]/d' "$COMBINED_ERROR_LOG"
+    sed -i '' "/Switched to a new branch 'master'/d" "$COMBINED_ERROR_LOG"
+    sed -i '' '/\[neuer Branch\]/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/^script -q/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/\[.*\].*\[=.*\].*\%.*ETA/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/\[.*\].*\[=.*\].*100\%/d' "$COMBINED_ERROR_LOG"
     sed -i '' "/Already on 'master'/d" "$COMBINED_ERROR_LOG"
+    sed -i '' "/Bereits auf 'master'/d" "$COMBINED_ERROR_LOG"
     sed -i '' '/reinstall.*brew reinstall/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/^To reinstall.*run\:/d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/brew reinstall.*/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/Von https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/From https\:\/\/github\.com/d' "$COMBINED_ERROR_LOG"
     sed -i '' '/Warning.*already installed/d' "$COMBINED_ERROR_LOG"

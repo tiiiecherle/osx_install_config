@@ -24,7 +24,7 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ### compatibility
 ###
 
-# macos 11 only
+# specific macos version only
 if [[ "$MACOS_VERSION_MAJOR" != "12" ]]
 then
     echo ''
@@ -68,7 +68,7 @@ APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "Microsoft Excel														41943375"
 "Microsoft PowerPoint													41943375"
 "Microsoft Remote Desktop												41943375"
-"Alfred 4																41943375"
+"Alfred 5																41943375"
 #"Better																    41943375"
 "BresinkSoftwareUpdater												    41943375"
 "Commander One															41943375"
@@ -98,6 +98,7 @@ APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "Telephone  													        41943375"
 "PVGuard																41943375"
 "Chromium																41943375"
+"App Store																41943375"
 )
 
 

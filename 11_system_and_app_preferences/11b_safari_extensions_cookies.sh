@@ -24,7 +24,6 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ### safari extensions
 ###
 
-
 ### opening safari
 # on a clean install (without restoring some data or preferences, e.g. PerSitePreferences.db) Safari has to be opened at least one time before the files will be created
 # opening wihtout loading a website does not trigger creating the files, so "run" is not enough, opening and loading a first website is needed
@@ -33,7 +32,9 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]] || [[ ! -e "$WEBSITE_SAFARI_DATABASE"
 then
 	echo ''
     echo "opening and quitting safari..."
-    open -a ""$PATH_TO_APPS"/Safari.app" "https://google.com"
+    APP_NAME=Safari
+    env_get_path_to_app
+    open -a "$PATH_TO_APP" "https://google.com"
     osascript <<EOF
 		try
     		tell application "Safari"
@@ -55,27 +56,38 @@ fi
 # are restored by the restore script if they were present at backup
 
 # allow better to start correctly
-defaults write better.fyi.mac dontShowMigrationCancelMessageAgain -bool true
-defaults write better.fyi.mac IntroductionComplete -bool true
+#echo ''
+APP_NAME_FOR_PREFERENCES="Better"
+if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
+then
+	defaults write better.fyi.mac dontShowMigrationCancelMessageAgain -bool true
+	defaults write better.fyi.mac IntroductionComplete -bool true
+else
+	:
+	#echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
+fi
 
 # opening extensions
 echo ''
 echo "opening safari apps that include extensions..."
 # should already be enabled by restoring ~/Library/Containers/com.apple.Safari/Data/Library/WebKit/ContentExtensions
 applications_safari=(
-""$PATH_TO_APPS"/Better.app"
-""$PATH_TO_APPS"/GhosteryLite.app"
-""$PATH_TO_APPS"/AdGuard for Safari.app"
-""$PATH_TO_APPS"/Google Analytics Opt Out.app"
+Better
+GhosteryLite
+"AdGuard for Safari"
+"Google Analytics Opt Out"
 )
 
 for i in "${applications_safari[@]}"
 do
-	if [[ -e "$i" ]]
+	APP_NAME="$i"
+	env_get_path_to_app
+	if [[ "$PATH_TO_APP" != "" ]]
 	then
-	    #echo "opening $(basename "$i")"
-		open "$i" &
-		sleep 1
+	    echo "opening $(basename "$PATH_TO_APP")"
+		open "$PATH_TO_APP"
+		sleep 5
+		osascript -e "tell application \"$(basename "$PATH_TO_APP")\" to quit"
 	else
 		:
 	fi
@@ -110,32 +122,38 @@ while ps aux | grep 'Safari.app/Contents/MacOS/Safari$' | grep -v grep > /dev/nu
 
 
 ### restoring basic cookies
-if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
-then
-	sleep 2
-	echo ''
-	echo "restoring basic cookies..."
-	if [[ -e /Users/"$loggedInUser"/Library/Cookies ]]
+# deprecated, use super agent browser extension instead
+restoring_basic_cookies() {
+	APP_NAME=Safari
+	env_get_path_to_app
+	if [[ -e /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies ]]
 	then
-		#rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
-		rm -rf /Users/"$loggedInUser"/Library/Cookies
-	else
-		:
-	fi
-	mkdir -p /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies
-	cp -a /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies
-	if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
-	then
-		:
-	else
 		sleep 2
-		open -a ""$PATH_TO_APPS"/Safari.app" "https://myaccount.google.com/intro/privacycheckup?utm_source=pp&utm_medium=Promo-in-product&utm_campaign=pp_intro&hl=de"
-		sleep 2
+		echo ''
+		echo "restoring basic cookies..."
+		if [[ -e /Users/"$loggedInUser"/Library/Cookies ]]
+		then
+			#rm -f /Users/"$loggedInUser"/Library/Cookies/Cookies.binarycookies
+			rm -rf /Users/"$loggedInUser"/Library/Cookies
+		else
+			:
+		fi
+		mkdir -p /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies
+		cp -a /Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies /Users/"$loggedInUser"/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies
+		if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+		then
+			:
+		else
+			sleep 2
+			open -a "$PATH_TO_APP" "https://myaccount.google.com/intro/privacycheckup?utm_source=pp&utm_medium=Promo-in-product&utm_campaign=pp_intro&hl=de"
+			sleep 2
+		fi
+	else
+		echo ''
+		echo "/Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies not found, skipping..."
 	fi
-else
-	echo ''
-	echo "/Users/"$loggedInUser"/Documents/backup/cookies/Cookies.binarycookies not found, skipping..."
-fi
+}
+#restoring_basic_cookies
 
 
 ### stopping the error output redirecting

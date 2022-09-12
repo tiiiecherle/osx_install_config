@@ -118,10 +118,17 @@ env_check_if_parallel_is_installed
 ### accepting privacy policy
 defaults write ~/Library/Preferences/com.apple.AppStore.plist ASAcknowledgedOnboardingVersion -int 1
 
+### setting notifications
+APPLICATIONS_TO_SET_NOTIFICATIONS=(
+"App Store																41943375"
+)
+SET_APPS_NOTIFICATIONS="yes" env_set_check_apps_notifications
+CHECK_APPS_NOTIFICATIONS="yes" env_set_check_apps_notifications
+sleep 1
+echo ''
+
+
 ### mas login
-
-
-
 mas_login() {
     
     mas signout
@@ -208,18 +215,22 @@ mas_login_applescript() {
     
     	osascript <<EOF
         tell application "App Store"
-            try
-        	    activate
-        	    delay 5
-        	end try
+            launch
+            delay 3
+            #activate
+            #delay 2
         end tell
+        
+        ## do not use visible as it makes the window un-clickable
+        #tell application "System Events" to tell process "App Store" to set visible to true
+    	#delay 1
+    	tell application "System Events" to tell process "App Store" to set frontmost to true
+    	delay 1
     
         tell application "System Events"
         	tell process "App Store"
-        		set frontmost to true
-        		delay 2
         		### on first run when installing the appstore asks for accepting privacy policy
-        		# to reset delete ASAcknowledgedOnboardingVersion from ~/Library/Preferences/com.apple.AppStore.plist
+        		# to reset delete ASAcknowledgedOnboardingVersion from ~/Library/Preferences/com.apple.AppStore.plist and reboot
         		try
         		   if "$MACOS_VERSION_MAJOR" is equal to "10.14" then
             		    click button 2 of UI element 1 of sheet 1 of window 1
@@ -232,8 +243,12 @@ mas_login_applescript() {
                     if "$MACOS_VERSION_MAJOR" greater than or equal to "11" then
             		    click button 2 of UI element 1 of sheet 1 of window "App Store" 
                     end if
-    			    delay 3
     		    end try
+                delay 5
+                
+    		    ### on clean install on first run the appstore asks for enabling notifications
+    		    # set before login by adding preferences for app store for notification center
+    		    
     		    ### login
     		    if "$MACOS_VERSION_MAJOR" is equal to "10.14" then
         		    click menu item 15 of menu "Store" of menu bar item "Store" of menu bar 1

@@ -236,11 +236,19 @@ give_apps_security_permissions() {
 }
 
 number_of_max_processes() {
-    NUMBER_OF_CORES=$(parallel --number-of-cores)
-    NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
-    #echo $NUMBER_OF_MAX_JOBS
-    NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
-    #echo $NUMBER_OF_MAX_JOBS_ROUNDED
+    if [[ $(brew list --formula | grep "^parallel$") == '' ]]
+	then
+		#echo parallel is NOT installed..."
+		#NUMBER_OF_MAX_JOBS_ROUNDED=1
+		:
+	else
+        NUMBER_OF_CORES=$(parallel --number-of-cores)
+        NUMBER_OF_MAX_JOBS=$(echo "$NUMBER_OF_CORES * 1.0" | bc -l)
+        #echo $NUMBER_OF_MAX_JOBS
+        NUMBER_OF_MAX_JOBS_ROUNDED=$(awk 'BEGIN { printf("%.0f\n", '"$NUMBER_OF_MAX_JOBS"'); }')
+        #echo $NUMBER_OF_MAX_JOBS_ROUNDED
+	fi
+
 }
 
 
@@ -1030,13 +1038,16 @@ EOF
             
                 ulimit -n 4096
                 
-                if [[ $(brew list --formula | grep "^parallel$") == '' ]]
+                if [[ $(sysctl hw.model | grep "iMac11,2") != "" ]] || [[ $(sysctl hw.model | grep "iMac12,1") != "" ]] || [[ $(sysctl hw.model | grep "iMac13,1") != "" ]]
             	then
-            		#echo parallel is NOT installed..."
             		backup_data_sequential
+            	elif command -v parallel &> /dev/null
+            	then
+            	    # installed
+            	    backup_data_parallel
             	else
-            		#echo parallel is installed..."
-            		backup_data_parallel
+            		# not installed
+            		backup_data_sequential
             	fi
                 
                 # resetting terminal settings or further input will not work
@@ -1326,9 +1337,14 @@ EOF
             #sleep 0.1
             
             # stopping services and backing up files
-            sudo launchctl stop org.cups.cupsd
-        
+            STOP_CALENDAR_REMINDER_SERVICES="yes" STOP_ACCOUNTSD="yes" STOP_CUPSD="yes" env_stopping_services
+            echo ''
+            
+            
             ### running restore
+            echo "restoring..."
+            echo ''
+            
             BACKUP_RESTORE_LIST="$WORKING_DIR"/list/backup_restore_list.txt
             #STTY_ORIG=$(stty -g)
             #TERMINALWIDTH=$(echo $COLUMNS)
@@ -1534,10 +1550,13 @@ EOF
                 done <<< "$(cat "$BACKUP_RESTORE_LIST")"
             }
             
-            if command -v parallel &> /dev/null
+            if [[ $(sysctl hw.model | grep "iMac11,2") != "" ]] || [[ $(sysctl hw.model | grep "iMac12,1") != "" ]] || [[ $(sysctl hw.model | grep "iMac13,1") != "" ]]
         	then
-        		# installed
-        		restore_data_parallel
+        		restore_data_sequential
+        	elif command -v parallel &> /dev/null
+        	then
+        	    # installed
+        	    restore_data_parallel
         	else
         		# not installed
         		restore_data_sequential
@@ -1679,9 +1698,10 @@ EOF
             WHATSAPP_DIR="/Users/"$USER"/Library/Application Support/WhatsApp/"
             if [[ -e "$WHATSAPP_DIR" ]]
             then
-                find ""$WHATSAPP_DIR"/" -name "main-process.log*" -print0 | xargs -0 rm -rf
-                sudo rm -rf ""$WHATSAPP_DIR"/IndexedDB/"
-                sudo rm -rf ""$WHATSAPP_DIR"/WhatsApp/Cache/"
+                #:
+                #find ""$WHATSAPP_DIR"/" -name "main-process.log*" -print0 | xargs -0 rm -rf
+                #sudo rm -rf ""$WHATSAPP_DIR"/WhatsApp/Cache/"
+                sudo rm -rf "$WHATSAPP_DIR"
             else
                 :
             fi
@@ -1704,6 +1724,7 @@ EOF
             # signal
             if [[ -e "/Users/"$USER"/Library/Application Support/Signal/" ]]
             then
+                :
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/__update__"
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/attachments.noindex"
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/Cache/"
@@ -1717,14 +1738,15 @@ EOF
                 #
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/"
                 #
-                find "/Users/"$USER"/Library/Application Support/Signal/" ! -name "sql" ! -name "config.json" ! -name "ephemeral.json" ! -name "attachments.noindex" -print0 -mindepth 1 -maxdepth 1 | xargs -0 rm -rf
+                #find "/Users/"$USER"/Library/Application Support/Signal/" ! -name "IndexedDB" ! -name "sql" ! -name "config.json" ! -name "ephemeral.json" ! -name "attachments.noindex" -print0 -mindepth 1 -maxdepth 1 | xargs -0 rm -rf
                 #
-                if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
-                then
-                    :
-                else
-                    osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
-                fi
+                # not needed if no files are deleted above
+                #if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
+                #then
+                #    :
+                #else
+                #    osascript -e 'tell app "System Events" to display dialog "please unlink all devices from signal on ios before opening the macos desktop app..."' &
+                #fi
             else
                 :
             fi
@@ -1734,8 +1756,40 @@ EOF
             # post restore operations
             echo ''
             echo "running post restore operations..."
-            sudo launchctl start org.cups.cupsd
+            
+            # update services menu entries in all apps
             /System/Library/CoreServices/pbs -flush
+            
+            # enabling services
+            START_ACCOUNTSD="yes" START_CUPSD="yes" env_starting_services
+            # accountsd needs to run before re-enabling the calendar services in order for all calendars to appear
+            # env_starting_services includes an additional a 5s waiting time
+            sleep 5
+            START_CALENDAR_REMINDER_SERVICES="yes" env_starting_services
+            # giving macos time to convert calendars to new format
+            if [[ "$MACOS_VERSION_MAJOR" == "13" ]]
+            then
+                WAITING_TIME=60
+            	NUM1=0
+            	#echo ''
+            	echo ''
+            	while [[ "$NUM1" -le "$WAITING_TIME" ]]
+            	do 
+            		NUM1=$((NUM1+1))
+            		if [[ "$NUM1" -le "$WAITING_TIME" ]]
+            		then
+            			#echo "$NUM1"
+            			sleep 1
+            			tput cuu 1 && tput el
+            			echo "waiting $((WAITING_TIME-NUM1)) to give macos time to convert calendars to new format..."
+            		else
+            			:
+            		fi
+            	done
+            else
+                :
+            fi
+            echo ''
             
             ### casks install
             if [[ "$INSTALL_CASKS" =~ ^(yes|y)$ ]]

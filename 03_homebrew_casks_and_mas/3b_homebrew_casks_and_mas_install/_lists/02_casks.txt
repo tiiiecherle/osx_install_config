@@ -25,6 +25,7 @@ cyberduck
 disk-inventory-x
 eaglefiler
 easyfind
+eloston-chromium
 #flash-npapi
 firefox
 geburtstagschecker

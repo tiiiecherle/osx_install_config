@@ -50,6 +50,53 @@ else
 fi
 
 
+###
+### functions
+###
+
+# for macos 13 and newer running helper apps on login by using
+# launchctl enable gui/"$(id -u "$USER")"/APP_IDENTIFIER
+# does no longer work
+
+# it seems an entry in the BackgroundItems file is needed
+# plutil -p /private/var/db/com.apple.backgroundtaskmanagement/BackgroundItems-v3.btm
+# there is no known tool to do that as of 2022-07
+
+# as a workaround a launchagent is working
+create_user_launch_agent() {
+
+	if [[ "$USER_LAUNCH_AGENT_NAME" != "" ]] && [[ "$USER_LAUNCH_AGENT_LOGIN_HELPER" != "" ]] && [[ -e "$USER_LAUNCH_AGENT_LOGIN_HELPER" ]]
+	then
+		cat > "/Users/"$USER"/Library/LaunchAgents/"$USER_LAUNCH_AGENT_NAME".plist" << EOF
+		<?xml version="1.0" encoding="UTF-8"?>
+		<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+		<plist version="1.0">
+		<dict>
+			<key>Label</key>
+			<string>$USER_LAUNCH_AGENT_NAME</string>
+			<key>ProgramArguments</key>
+			<array>
+				<string>zsh</string>
+				<string>-c</string>
+				<string>"$USER_LAUNCH_AGENT_LOGIN_HELPER"</string>
+			</array>
+			<key>RunAtLoad</key>
+			<true/>
+		</dict>
+		</plist>
+EOF
+	else
+		echo ''
+		echo "user launch agent "$USER_LAUNCH_AGENT_NAME" could not be created, skipping..." &>2
+		echo ''
+	fi
+	
+}
+#USER_LAUNCH_AGENT_NAME="com.APPNAME_login_helper.custom"
+#USER_LAUNCH_AGENT_LOGIN_HELPER="PATH_TO_LOGIN_HELPER_SCRIPT_NOT_TO_APP"
+#create_user_launch_agent
+
+
 
 ###
 ### setting some non apple third party app preferences
@@ -57,7 +104,6 @@ fi
 
 
 ### totalfinder
-
 totalfinder_settings() {
 	echo ''
 	APP_NAME_FOR_PREFERENCES="TotalFinder"
@@ -275,7 +321,7 @@ else
 fi
 
 
-### appcleaner
+### the unarchiver
 echo ''
 APP_NAME_FOR_PREFERENCES="The Unarchiver"
 if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
@@ -302,8 +348,13 @@ then
     
     #launchctl kickstart -k gui/"$(id -u "$USER")"/com.bitdefender.VirusScannerHelper
     #sleep 3
-  	launchctl enable gui/"$(id -u "$USER")"/com.bitdefender.VirusScannerHelper
-  	sleep 3
+  	#launchctl enable gui/"$(id -u "$USER")"/com.bitdefender.VirusScannerHelper
+  	#sleep 3
+  	
+  	USER_LAUNCH_AGENT_NAME="com.bitdefender_virusscanner_login_helper.custom"
+	USER_LAUNCH_AGENT_LOGIN_HELPER="/Applications/VirusScannerPlus.app/Contents/Library/LoginItems/VirusScannerHelper.app/Contents/MacOS/VirusScannerHelper"
+	create_user_launch_agent
+  	
 	defaults write com.bitdefender.virusscannerplus continuous_run -bool true
 	defaults write com.bitdefender.virusscannerplus upd_automatic -bool true
 	defaults write com.bitdefender.virusscannerplus oas_scan -bool true
@@ -315,6 +366,7 @@ else
 	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
 fi
 
+
 ### adguard for safari
 echo ''
 APP_NAME_FOR_PREFERENCES="AdGuard for Safari"
@@ -323,8 +375,26 @@ then
 	
 	echo "$APP_NAME_FOR_PREFERENCES"
     
-	launchctl enable gui/"$(id -u "$USER")"/com.adguard.safari.AdGuard.login-helper
-	sleep 3
+    #launchctl print gui/$(id -u)
+    #launchctl print-disabled "user/$(id -u)"
+    #launchctl list | grep -i adguard
+	#launchctl enable gui/"$(id -u "$USER")"/com.adguard.safari.AdGuard.login-helper
+	#launchctl enable user/"$(id -u "$USER")"/com.adguard.safari.AdGuard.login-helper
+	#launchctl start gui/"$(id -u "$USER")"/com.adguard.safari.AdGuard.login-helper
+	#launchctl kickstart -k gui/"$(id -u "$USER")"/com.adguard.safari.AdGuard.login-helper
+	
+	# defaults read /private/var/db/com.apple.xpc.launchd/loginitems.501.plist
+	# open /private/var/db/com.apple.xpc.launchd/loginitems.501.plist
+	#/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -dump
+	
+	#launchctl remove gui/"$(id -u "$USER")"/com.adguard.safari.AdGuard.login-helper
+	#launchctl remove gui/"$(id -u "$USER")"/com.adguard.safari.AdGuard
+	
+	#sleep 3
+	
+	USER_LAUNCH_AGENT_NAME="com.adguard_login_helper.custom"
+	USER_LAUNCH_AGENT_LOGIN_HELPER="/Applications/AdGuard for Safari.app/Contents/Library/LoginItems/AdGuard Login Helper.app/Contents/MacOS/AdGuard Login Helper"
+	create_user_launch_agent
 
 else
 	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
@@ -370,8 +440,13 @@ then
 	
 	echo "$APP_NAME_FOR_PREFERENCES"
     
-	launchctl enable gui/"$(id -u "$USER")"/com.surteesstudios.BartenderStartAtLoginHelper
-	sleep 3
+    #launchctl enable user/"$(id -u "$USER")"/com.surteesstudios.BartenderStartAtLoginHelper
+	#launchctl enable gui/"$(id -u "$USER")"/com.surteesstudios.BartenderStartAtLoginHelper
+	#sleep 3
+	
+	USER_LAUNCH_AGENT_NAME="com.bartender_login_helper.custom"
+	USER_LAUNCH_AGENT_LOGIN_HELPER="/Applications/Bartender 4.app/Contents/Library/LoginItems/BartenderStartAtLoginHelper.app/Contents/MacOS/BartenderStartAtLoginHelper"
+	create_user_launch_agent
 
 else
 	echo ""$APP_NAME_FOR_PREFERENCES" not found, skipping setting preferences..." >&2
@@ -502,7 +577,7 @@ fi
 #defaults write ~/Library/Preferences/org.gpgtools.gpgmail SignNewEmailsByDefault -bool false
 
 
-### office 2019
+### office
 echo ''
 if [[ $(find ""$PATH_TO_APPS"/" -mindepth 1 -maxdepth 1 -name "Microsoft *.app") != "" ]]
 then
@@ -834,18 +909,34 @@ vbox_workaround() {
 	# open System Preferences - Privacy - General
 	# accept extensions
 	# allowing kext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
+	osascript <<EOF	
+	tell application "System Settings"
+		reopen
+		delay 3
+		#activate
+		#delay 2
+	end tell
+	
+	# do not use visible as it makes the window un-clickable
+	#tell application "System Events" to tell process "System Settings" to set visible to true
+	#delay 1
+	tell application "System Events" to tell process "System Settings" to set frontmost to true
+	delay 1
+EOF
+
 	osascript <<EOF
-	tell application "System Preferences"
-		activate
-		#set paneids to (get the id of every pane)
-		#display dialog paneids
-		#return paneids
-		#set current pane to pane "com.apple.preference.security"
-		#get the name of every anchor of pane id "com.apple.preference.security"
-		#set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")
-		#display dialog tabnames
-		#return tabnames
-		reveal anchor "General" of pane id "com.apple.preference.security"
+	tell application "System Events"
+		tell process "System Settings"
+			#set paneids to (get the id of every pane)
+			#display dialog paneids
+			#return paneids
+			#set current pane to pane "com.apple.preference.security"
+			#get the name of every anchor of pane id "com.apple.preference.security"
+			#set tabnames to (get the name of every anchor of pane id "com.apple.preference.security")
+			#display dialog tabnames
+			#return tabnames
+			reveal anchor "General" of pane id "com.apple.preference.security"
+		end tell
 	end tell
 EOF
 	sleep 3

@@ -81,7 +81,7 @@ echo "opening mail and confirming rebuilding of index..."
 open "$PATH_TO_SYSTEM_APPS"/Mail.app
 osascript <<EOF
 #tell application "Mail.app"
-#	activate
+#	reopen
 #end tell
 delay 2
 try

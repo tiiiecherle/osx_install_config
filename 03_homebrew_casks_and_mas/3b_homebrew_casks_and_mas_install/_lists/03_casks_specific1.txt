@@ -1,4 +1,3 @@
-chromium
 #audiobookbinder		# no more cask, only available in appstore
 paragon-extfs
 deluge

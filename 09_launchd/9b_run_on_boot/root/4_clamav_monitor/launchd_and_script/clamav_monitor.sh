@@ -279,33 +279,29 @@ check_homebrew() {
 }
 
 setting_config() {
+    echo ''
     ### sourcing .$SHELLrc or setting PATH
     # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
     # needed if binary is installed in a special directory
-    if command -v brew &> /dev/null
+    if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'export PATH=.*:$PATH"') != "" ]]
     then
-        # installed
-        BREW_PATH_PREFIX=$(brew --prefix)
-        if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'PATH=.*'"$BREW_PATH_PREFIX"'/bin:') != "" ]]
-        then
-            echo "sourcing .bashrc..."
-            . /Users/"$loggedInUser"/.bashrc
-        elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'PATH=.*'"$BREW_PATH_PREFIX"'/bin:') != "" ]]
-        then
-            echo "sourcing .zshrc..."
-            ZSH_DISABLE_COMPFIX="true"
-            . /Users/"$loggedInUser"/.zshrc
-        else
-            echo "setting path for script..."
-            export PATH=""$BREW_PATH_PREFIX"/bin:"$BREW_PATH_PREFIX"/sbin:$PATH"
-        fi
+        echo "sourcing .bashrc..."
+        #. /Users/"$loggedInUser"/.bashrc
+        # avoiding oh-my-zsh errors for root by only sourcing export PATH
+        source <(sed -n '/^export\ PATH\=/p' /Users/"$loggedInUser"/.bashrc)
+    elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'export PATH=.*:$PATH"') != "" ]]
+    then
+        echo "sourcing .zshrc..."
+        ZSH_DISABLE_COMPFIX="true"
+        #. /Users/"$loggedInUser"/.zshrc
+        # avoiding oh-my-zsh errors for root by only sourcing export PATH
+        source <(sed -n '/^export\ PATH\=/p' /Users/"$loggedInUser"/.zshrc)
     else
-        # not installed
-        #echo "homebrew is not installed, exiting..."
-        #echo ''
-        #exit
-        :
+        echo "PATH was not set continuing with default value..."
     fi
+    echo "using PATH..." 
+    echo "$PATH"
+    echo ''
 }
 
 ownership_permissions_structure() {  
@@ -542,12 +538,13 @@ wait_for_network_select
 echo ''
 wait_for_getting_online
 # run before main function, e.g. for time format
-setting_config &> /dev/null
 
 clamav_monitor() {
+
+    setting_config
     
     ### loggedInUser
-    echo ''
+    #echo ''
     echo "loggedInUser is $loggedInUser..."
     #echo ''
 

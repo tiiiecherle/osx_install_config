@@ -184,7 +184,14 @@ check_homebrew_and_python_versions() {
     # listing installed python versions
     echo ''
     echo "installed python versions..."
-    APPLE_PYTHON_VERSION=$(python --version 2>&1)
+    if sudo -H -u "$loggedInUser" command -v python &> /dev/null
+    then
+        # installed
+        APPLE_PYTHON_VERSION=$(python --version 2>&1)
+    else
+        # not installed
+        APPLE_PYTHON_VERSION="not installed"
+    fi
     printf "%-15s %-20s %-15s\n" "python" "$APPLE_PYTHON_VERSION" "apple"
     if [[ $PYTHON2_HOMEBREW_INSTALLED == "yes" ]]
     then
@@ -225,33 +232,29 @@ check_homebrew_and_python_versions() {
 }
 
 setting_config() {
+    echo ''
     ### sourcing .$SHELLrc or setting PATH
     # as the script is run from a launchd it would not detect the binary commands and would fail checking if binaries are installed
     # needed if binary is installed in a special directory
-    if command -v brew &> /dev/null
+    if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'export PATH=.*:$PATH"') != "" ]]
     then
-        # installed
-        BREW_PATH_PREFIX=$(brew --prefix)
-        if [[ -n "$BASH_SOURCE" ]] && [[ -e /Users/"$loggedInUser"/.bashrc ]] && [[ $(cat /Users/"$loggedInUser"/.bashrc | grep 'PATH=.*'"$BREW_PATH_PREFIX"'/bin:') != "" ]]
-        then
-            echo "sourcing .bashrc..."
-            . /Users/"$loggedInUser"/.bashrc
-        elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'PATH=.*'"$BREW_PATH_PREFIX"'/bin:') != "" ]]
-        then
-            echo "sourcing .zshrc..."
-            ZSH_DISABLE_COMPFIX="true"
-            . /Users/"$loggedInUser"/.zshrc
-        else
-            echo "setting path for script..."
-            export PATH=""$BREW_PATH_PREFIX"/bin:"$BREW_PATH_PREFIX"/sbin:$PATH"
-        fi
+        echo "sourcing .bashrc..."
+        #. /Users/"$loggedInUser"/.bashrc
+        # avoiding oh-my-zsh errors for root by only sourcing export PATH
+        source <(sed -n '/^export\ PATH\=/p' /Users/"$loggedInUser"/.bashrc)
+    elif [[ -n "$ZSH_VERSION" ]] && [[ -e /Users/"$loggedInUser"/.zshrc ]] && [[ $(cat /Users/"$loggedInUser"/.zshrc | grep 'export PATH=.*:$PATH"') != "" ]]
+    then
+        echo "sourcing .zshrc..."
+        ZSH_DISABLE_COMPFIX="true"
+        #. /Users/"$loggedInUser"/.zshrc
+        # avoiding oh-my-zsh errors for root by only sourcing export PATH
+        source <(sed -n '/^export\ PATH\=/p' /Users/"$loggedInUser"/.zshrc)
     else
-        # not installed
-        #echo "homebrew is not installed, exiting..."
-        #echo ''
-        #exit
-        :
+        echo "PATH was not set continuing with default value..."
     fi
+    echo "using PATH..." 
+    echo "$PATH"
+    echo ''
 }
 
 
@@ -262,16 +265,13 @@ wait_for_loggedinuser
 env_check_if_run_from_batch_script
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else start_log; fi
 # run before main function, e.g. for time format
-setting_config &> /dev/null
 
 screen_resolution() {
     
+    setting_config
+    
     ### loggedInUser
     echo "loggedInUser is $loggedInUser..."
-    
-    
-    ### sourcing .$SHELLrc or setting PATH
-    #setting_config
     
 
     ### homebrew and python versions
@@ -303,10 +303,11 @@ screen_resolution() {
     DISPLAY_TO_SET="EV2785"
     SYSTEM_PROFILER_DISPLAY_DATA=$(system_profiler SPDisplaysDataType -xml)
     #DISPLAYS=$(system_profiler SPDisplaysDataType -xml | grep -A2 "</data>" | awk -F'>|<' '/_name/{getline; print $3}')
-    DISPLAYS=$(echo "$SYSTEM_PROFILER_DISPLAY_DATA" | grep -A2 "</data>" | awk -F'>|<' '/_name/{getline; print $3}')
+    DISPLAYS=$(echo "$SYSTEM_PROFILER_DISPLAY_DATA" | awk -F'>|<' '/_name/{getline; print $3}' | sed '/^[[:space:]]*$/d')
     #echo "$DISPLAYS"
     #NUMBER_OF_CONNECTED_DISPLAYS=$(system_profiler SPDisplaysDataType -xml | grep -A2 "</data>" | awk -F'>|<' '/_name/{getline; print $3}' | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-    NUMBER_OF_CONNECTED_DISPLAYS=$(echo "$SYSTEM_PROFILER_DISPLAY_DATA" | grep -A2 "</data>" | awk -F'>|<' '/_name/{getline; print $3}' | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')  
+    #NUMBER_OF_CONNECTED_DISPLAYS=$(echo "$SYSTEM_PROFILER_DISPLAY_DATA" | grep -A2 "</data>" | awk -F'>|<' '/_name/{getline; print $3}' | wc -l | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+    NUMBER_OF_CONNECTED_DISPLAYS=$(system_profiler SPDisplaysDataType | grep Resolution: | wc -l | sed '/^#/ d' | awk '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d')
     #DISPLAY_RESOLUTION=$(system_profiler SPDisplaysDataType -xml | awk -F'>|<' '/_spdisplays_resolution/{getline; print $3}')
     #DISPLAY_RESOLUTION=$(echo "$SYSTEM_PROFILER_DISPLAY_DATA" | awk -F'>|<' '/_spdisplays_resolution/{getline; print $3}')
     #echo "$DISPLAY_RESOLUTION"
@@ -352,7 +353,7 @@ screen_resolution() {
                 fi
             fi
         else
-            echo "more than one display available, not making any changes..."
+            echo "not exactly one display available, not making any changes..."
         fi
     else
         echo ''

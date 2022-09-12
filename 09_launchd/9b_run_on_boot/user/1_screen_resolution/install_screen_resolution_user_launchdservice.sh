@@ -74,7 +74,14 @@ check_homebrew_and_python_versions() {
     # listing installed python versions
     echo ''
     echo "installed python versions..."
-    APPLE_PYTHON_VERSION=$(python --version 2>&1)
+    if sudo -H -u "$loggedInUser" command -v python &> /dev/null
+    then
+        # installed
+        APPLE_PYTHON_VERSION=$(python --version 2>&1)
+    else
+        # not installed
+        APPLE_PYTHON_VERSION="not installed"
+    fi
     printf "%-15s %-20s %-15s\n" "python" "$APPLE_PYTHON_VERSION" "apple"
     if [[ $PYTHON2_HOMEBREW_INSTALLED == "yes" ]]
     then
