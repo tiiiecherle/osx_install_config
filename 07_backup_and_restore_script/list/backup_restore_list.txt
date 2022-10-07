@@ -492,8 +492,9 @@ echo muCommander
 u	~/Library/Preferences/muCommander
 
 # NameChanger
-#echo NameChanger
+echo NameChanger
 #u	"$PATH_TO_APPS"/NameChanger.app
+u	~/Library/Application Support/NameChanger
 
 # Nextcloud
 echo Nextcloud
@@ -566,6 +567,10 @@ u	"$PATH_TO_APPS"/pdf_200dpi_shrink.app
 #u	"$PATH_TO_APPS"/pdf_ebook_shrink.app
 #u	"$PATH_TO_APPS"/pdf_printer_shrink.app
 
+# pages_to_print_pdf
+echo pages to print pdf
+u	"$PATH_TO_APPS"/pages_to_pdf_print_droplet.app
+
 # PDF Unlock
 #echo PDF Unlock
 #u	"$PATH_TO_APPS"/PDF Unlock.app
@@ -634,8 +639,8 @@ echo Remote Desktop
 u	~/Library/Containers/com.microsoft.rdc.macos/Data/Library/Preferences/com.microsoft.rdc.macos.plist
 
 # rename_photos
-echo rename_photos
-u	"$PATH_TO_APPS"/rename_date_photos.app
+#echo rename_photos
+#u	"$PATH_TO_APPS"/rename_date_photos.app
 #u	"$PATH_TO_APPS"/rename_number_photos.app
 
 # ResizeIt

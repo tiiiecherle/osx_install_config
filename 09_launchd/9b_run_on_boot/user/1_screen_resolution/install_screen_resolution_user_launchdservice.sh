@@ -41,7 +41,6 @@ check_homebrew_and_python_versions() {
         echo "homebrew is installed..."
         # do not autoupdate homebrew
         export HOMEBREW_NO_AUTO_UPDATE=1
-        export BREW_PATH_PREFIX=$(brew --prefix)
     else
         # not installed
         echo ''
@@ -49,56 +48,68 @@ check_homebrew_and_python_versions() {
         exit
     fi
     
-    # homebrew python versions
+    ### checking python versions
     # homebrew python2
     #if [[ $(sudo -H -u "$loggedInUser" brew list --formula | grep "^python@2$") == '' ]]
-    if sudo -H -u "$loggedInUser" command -v python2 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
+    #if sudo -H -u "$loggedInUser" which -a python2 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
+    if sudo -H -u "$loggedInUser" command -v $(sudo -H -u "$loggedInUser" brew --prefix)/bin/python2 &> /dev/null
     then
         echo "python2 is installed via homebrew..."
         PYTHON2_HOMEBREW_INSTALLED="yes"
+        PYTHON2_VERSION=$($(sudo -H -u "$loggedInUser" brew --prefix)/bin/python2 --version 2>&1)
     else
         echo "python2 is not installed via homebrew..."
         PYTHON2_HOMEBREW_INSTALLED="no"
     fi
     # homebrew python3
     #if [[ $(sudo -H -u "$loggedInUser" brew list --formula | grep "^python$") == '' ]]
-    if sudo -H -u "$loggedInUser" command -v python3 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
+    #if sudo -H -u "$loggedInUser" which -a python3 | grep $(sudo -H -u "$loggedInUser" brew --prefix) &> /dev/null
+    if sudo -H -u "$loggedInUser" command -v $(sudo -H -u "$loggedInUser" brew --prefix)/bin/python3 &> /dev/null
     then
         echo "python3 is installed via homebrew..."
         PYTHON3_HOMEBREW_INSTALLED="yes"
+        PYTHON3_VERSION=$($(sudo -H -u "$loggedInUser" brew --prefix)/bin/python3 --version 2>&1)
     else
         echo "python3 is not installed via homebrew..."
         PYTHON3_HOMEBREW_INSTALLED="no"
     fi
+    # apple python
+    #if sudo -H -u "$loggedInUser" which -a python3 | grep "/usr/bin" &> /dev/null
+    if sudo -H -u "$loggedInUser" command -v /usr/bin/python3 &> /dev/null
+    then
+        echo "apple python is installed..."
+        APPLE_PYTHON_VERSION_INSTALLED="yes"
+        APPLE_PYTHON_VERSION=$(/usr/bin/python3 --version 2>&1)
+    else
+        echo "apple python is not installed..."
+        APPLE_PYTHON_VERSION_INSTALLED="no"
+    fi
+    
 
-    # listing installed python versions
+    ### listing installed python versions
     echo ''
     echo "installed python versions..."
-    if sudo -H -u "$loggedInUser" command -v python &> /dev/null
+    if [[ $APPLE_PYTHON_VERSION_INSTALLED == "yes" ]]
     then
-        # installed
-        APPLE_PYTHON_VERSION=$(python --version 2>&1)
+        printf "%-20s %-25s\n" "$APPLE_PYTHON_VERSION" "apple"
     else
-        # not installed
-        APPLE_PYTHON_VERSION="not installed"
+        :
     fi
-    printf "%-15s %-20s %-15s\n" "python" "$APPLE_PYTHON_VERSION" "apple"
     if [[ $PYTHON2_HOMEBREW_INSTALLED == "yes" ]]
     then
-        PYTHON2_VERSION=$(python2 --version 2>&1)
-        printf "%-15s %-20s %-15s\n" "python2" "$PYTHON2_VERSION" "homebrew"
+        printf "%-20s %-25s\n" "$PYTHON2_VERSION" "homebrew"
     else
         :
     fi
     if [[ $PYTHON3_HOMEBREW_INSTALLED == "yes" ]]
     then
-        PYTHON3_VERSION=$(python3 --version 2>&1)
-        printf "%-15s %-20s %-15s\n" "python3" "$PYTHON3_VERSION" "homebrew"
+        printf "%-20s %-25s\n" "$PYTHON3_VERSION" "homebrew"
     else
         :
     fi
     
-    # the project is python3 only (from 2018-09), so make sure python3 is used
+    
+    ### the project is python3 only (from 2018-09), so make sure python3 is used
     # python2 deprecated 2020-01, only use python3
     # macos sip limits installing pip and installing/updating python modules - as a consequence only support homebrew python3
     echo ''
@@ -106,10 +117,10 @@ check_homebrew_and_python_versions() {
     then
         # installed
         # should be enough to use python3 here as $PYTHON3_INSTALLED checks if it is installed via homebrew
-        PYTHON_VERSION='python3'
-        PIP_VERSION='pip3'
-        #PYTHON_VERSION="$(sudo -H -u "$loggedInUser" brew --prefix)/bin/python3"
-        #PIP_VERSION="$(sudo -H -u "$loggedInUser" brew --prefix)/bin/pip3"
+        #PYTHON_VERSION='python3'
+        #PIP_VERSION='pip3'
+        PYTHON_VERSION="$(sudo -H -u "$loggedInUser" brew --prefix)/bin/python3"
+        PIP_VERSION="$(sudo -H -u "$loggedInUser" brew --prefix)/bin/pip3"
     else
         # not installed
         echo "only python3 via homebrew is supported, exiting..."

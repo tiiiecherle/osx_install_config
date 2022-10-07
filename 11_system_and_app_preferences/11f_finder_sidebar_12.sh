@@ -90,18 +90,20 @@ echo ''
 if [[ $(uname -m | grep arm) != "" ]]
 then
 	# arm mac
-	if command -v python3 &> /dev/null
+	if command -v $(brew --prefix)/bin/python3 &> /dev/null
     then
         # installed
-        echo "python3 is installed..."
+        echo "python3 is installed via homebrew..."
     else
         # not installed
-        echo "python3 is not installed, downloading via homebrew..."
+        echo "python3 is not installed via homebrew, downloading via homebrew..."
         brew install --formula --force python3
 	fi
+	PYTHON_VERSION="$(brew --prefix)/bin/python3"
+    PIP_VERSION="$(brew --prefix)/bin/pip3"
 	echo "installing finder-sidebar-editor..."
-	pip3 install finder-sidebar-editor
-	pip3 install pip-autoremove
+	"${PIP_VERSION}" install finder-sidebar-editor
+	"${PIP_VERSION}" install pip-autoremove
 else
 	# intel mac
     if command -v mysides &> /dev/null
@@ -167,7 +169,7 @@ sidebar.remove_all()
 # python code end
 EOF
 )
-    python3 -c "$PYTHON_CODE"
+    "${PYTHON_VERSION}" -c "$PYTHON_CODE"
 
 else
 	# intel mac

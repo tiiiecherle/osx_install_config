@@ -45,7 +45,7 @@ do
 	echo "ICON_NAME is "$ICON_NAME"..."
 	
 	# checking dependencies
-	for i in brew python3
+	for i in brew $(brew --prefix)/bin/python3
 	do
 		if command -v "$i" &> /dev/null
     	then

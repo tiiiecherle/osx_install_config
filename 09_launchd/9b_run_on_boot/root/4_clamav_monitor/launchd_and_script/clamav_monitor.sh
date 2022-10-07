@@ -649,7 +649,7 @@ clamav_monitor() {
     	    :
     	else
         	END_TIME=$(date +%s)
-        	END_TIME_MILLI=$(python -c "import time; print(int(time.time()*1000))")
+        	END_TIME_MILLI=$(python3 -c "import time; print(int(time.time()*1000))")
         	ELAPSED=$(expr $END_TIME - $START_TIME)
         	ELAPSED_MILLI=$(expr $END_TIME_MILLI - $START_TIME_MILLI)
         fi
@@ -672,7 +672,7 @@ clamav_monitor() {
     	fi
     	LAST_LINE="$line"
     	START_TIME=$(date +%s)
-    	START_TIME_MILLI=$(python -c "import time; print(int(time.time()*1000))")
+    	START_TIME_MILLI=$(python3 -c "import time; print(int(time.time()*1000))")
     	# avoiding socket errors
     	#sleep 0.1
     done >> "$CLAMD_MONITOR_LOG" 2>&1 &
