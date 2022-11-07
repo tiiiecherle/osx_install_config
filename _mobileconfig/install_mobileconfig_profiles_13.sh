@@ -171,7 +171,8 @@ tell application "System Events"
 		# use name
 		#set SystemSettingsToOpen to "Allgemein"
 		# use AXIdentifier
-		set SystemSettingsToOpen to "com.apple.systempreferences.GeneralSettings"
+		#set SystemSettingsToOpen to "com.apple.systempreferences.GeneralSettings"
+		set SystemSettingsToOpen to "com.apple.settings.PrivacySecurity.extension"
 		set RowNumberToCheck to 0
 		set UiPositionOfRows to outline 1 of scroll area 1 of group 1 of splitter group 1 of group 1 of window 1
 		repeat with aRow in row of UiPositionOfRows
@@ -211,39 +212,37 @@ tell application "System Events"
 		#return name of every button of every group of every scroll area of every group of every group of every splitter group of every group of window 1
 		
 		# solution 1: specify button directly
-		#set UiPositionOfGeneralSettings to scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1
-		#set ButtonGroup to 4
-		#click button 1 of group ButtonGroup of UiPositionOfGeneralSettings
+		set UiPositionOfGeneralSettings to scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1
+		set ButtonGroup to 7
+		click button 2 of group ButtonGroup of UiPositionOfGeneralSettings
 		#click button ButtonName of group ButtonGroup of UiPositionOfGeneralSettings
 		
 		# solution 2: cycle through buttons by name (no need to specify ButtonGroup or UiPositionOfGeneralSettings)
-		repeat with ButtonInSettings in (every button of every group of every scroll area of every group of every group of every splitter group of every group of window 1)
-			try
-				if name of ButtonInSettings is ButtonName then click ButtonInSettings
-			end try
-		end repeat
+		#repeat with ButtonInSettings in (every button of group 7 of every scroll area of every group of every group of every splitter group of every group of window 1)
+		#	try
+		#		if name of ButtonInSettings is ButtonName then click ButtonInSettings
+		#	end try
+		#end repeat
 	end tell
 end tell
 
 delay 2
-EOF
 
-    osascript <<EOF
-	# open install dialog 
-	# installing profile
-	# open install dialog 
-	# if run from shell script the path variable does not work, so check if variable is already set in shell
-	set ScriptDir to quoted form of POSIX path of (do shell script "echo $SCRIPT_DIR" & "/")
-	# if not set, set from applescript (only works if run as applescript, not from shell)
-	if ScriptDir is equal to "'/'" then
-		set ScriptDir to quoted form of POSIX path of ((path to me as text) & "::")
-	end if
+# open install dialog 
+# installing profile
+# open install dialog 
+# if run from shell script the path variable does not work, so check if variable is already set in shell
+set ScriptDir to quoted form of POSIX path of (do shell script "echo $SCRIPT_DIR" & "/")
+# if not set, set from applescript (only works if run as applescript, not from shell)
+if ScriptDir is equal to "'/'" then
+	set ScriptDir to quoted form of POSIX path of ((path to me as text) & "::")
+end if
 tell application "System Events"
-	tell UI element 1 of row 2 of table 1 of scroll area 1 of group 1 of scroll area 1 of group 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1 of process "System Settings"
+	tell UI element 1 of row 1 of table 1 of scroll area 1 of group 1 of scroll area 1 of group 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1 of process "System Settings"
 		set {xPosition, yPosition} to position
-		set {xSize, ySize} to size	
+		set {xSize, ySize} to size
 	end tell
-	-- modify offsets if hot spot is not centered:
+	#modify offsets if hot spot is not centered:
 	set xClick to xPosition + (xSize div 2)
 	set yClick to yPosition + (ySize div 2)
 	tell process "Finder"
