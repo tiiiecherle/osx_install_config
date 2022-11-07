@@ -602,7 +602,10 @@ casks_show_updates_parallel() {
         #local CASK_INFO=$(brew info --cask "$CASK")
         local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
         #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
-        local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+        #local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+        #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[] | .artifacts | .[] | .app | .[]?'
+        local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts | .[] | .app | .[]?')
+        #echo "$CASK_ARTIFACT_APP"
         if [[ "$CASK_ARTIFACT_APP" != "" ]]
         then
             local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
@@ -791,14 +794,16 @@ casks_install_updates() {
             	sleep 2
                 env_active_source_app
             fi
+            
             # allow opening app
-            #if [[ "$CASK" == "jitsi-meet" ]] || [[ "$CASK" == "chromium" ]]
-            #then
+            allow_opening_app() {
                 local CASK_INFO=$(brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]')
                 #local CASK_INFO=$(brew info --cask "$CASK")
                 local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
                 #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
-                local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+                #local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+                #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[] | .artifacts | .[] | .app | .[]?'
+                local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts | .[] | .app | .[]?')
                 if [[ "$CASK_ARTIFACT_APP" != "" ]]
                 then
                     local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})
@@ -807,9 +812,9 @@ casks_install_updates() {
                 fi
     	        local APP_NAME="$CASK_ARTIFACT_APP_NO_EXTENSION"
                 env_set_open_on_first_run_permissions
-            #else
-            #    :
-            #fi
+            }
+            # done in allow_opening_casks
+            #allow_opening_app
             
             # cleanup entries
             local INSTALLED_VERSIONS=$(ls -1tc "$BREW_CASKS_PATH"/"$CASK")
@@ -962,7 +967,10 @@ allow_opening_casks() {
             local CASK_NAME=$(printf '%s\n' "$CASK_INFO" | jq -r '.name | .[]')
             #echo "$CASK_NAME"
             #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[]|(.artifacts|map(.[]?|select(type=="string")|select(test(".app$"))))|.[]'
-            local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+            #local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts|map(.[]?|select(type=="string")|select(test(".app$")))|.[]')
+            #brew info --cask --json=v2 "$CASK" | jq -r '.casks | .[] | .artifacts | .[] | .app | .[]?'
+            local CASK_ARTIFACT_APP=$(printf '%s\n' "$CASK_INFO" | jq -r '.artifacts | .[] | .app | .[]?')
+            #echo "$CASK_ARTIFACT_APP"
             if [[ "$CASK_ARTIFACT_APP" != "" ]]
             then
                 local CASK_ARTIFACT_APP_NO_EXTENSION=$(echo ${$(basename $CASK_ARTIFACT_APP)%.*})

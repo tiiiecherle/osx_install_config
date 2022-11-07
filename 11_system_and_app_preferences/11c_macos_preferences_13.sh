@@ -546,8 +546,7 @@ setting_preferences() {
     # adding startup-items
     AUTOSTART_ITEMS_ALL_USERS=(
     # name													                  start hidden
-    # bartender is started in third party preferences script 
-    #"Bartender 4                                                              false"
+    "Bartender 4                                                              false"
     "AudioSwitcher                                                            false"   
     "KeepingYouAwake                                                          false" 
     "Alfred 5                                                                 false" 

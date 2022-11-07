@@ -1913,6 +1913,8 @@ env_create_tmp_casks_script_fifo() {
 ### permissions for opening on first run
 env_set_open_on_first_run_permissions() {
     env_get_path_to_app
+    echo "$APP_NAME"
+    echo "$PATH_TO_APP"
     #echo "PATH_TO_APP is "$PATH_TO_APP""
     APP_NAME_EXTENSION=$([[ "$APP_NAME" = *.* ]] && echo "${APP_NAME##*.}" || echo '')
     if [[ "$APP_NAME_EXTENSION" == "jar" ]]
