@@ -389,12 +389,12 @@ set_utm_network_device() {
             		    if [[ "$line" == "" ]]; then continue; fi
                         UTM_VM="$line"
                         echo "setting utm network to "$DEVICE_ID" for vm $(basename "$UTM_VM")..."
-                        if [[ -z $(/usr/libexec/PlistBuddy -c "Print :Networking:NetworkBridgeInterface" "$UTM_VM/config.plist") ]] > /dev/null 2>&1
+                        if [[ -z $(/usr/libexec/PlistBuddy -c "Print :Network:BridgeInterface:BridgeInterface" "$UTM_VM/config.plist") ]] > /dev/null 2>&1
                         then
-                            /usr/libexec/PlistBuddy -c "Add :Networking:NetworkBridgeInterface string" "$UTM_VM/config.plist"
-                        	/usr/libexec/PlistBuddy -c "Set :Networking:NetworkBridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
+                            /usr/libexec/PlistBuddy -c "Add :Network:BridgeInterface:BridgeInterface string" "$UTM_VM/config.plist"
+                        	/usr/libexec/PlistBuddy -c "Set :Network:BridgeInterface:BridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
                         else
-                            /usr/libexec/PlistBuddy -c "Set :Networking:NetworkBridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
+                            /usr/libexec/PlistBuddy -c "Set :Network:BridgeInterface:BridgeInterface "$DEVICE_ID"" "$UTM_VM/config.plist"
                         fi  
             			#echo ''
                     done <<< "$(find /Users/"$loggedInUser"/Library/Containers/com.utmapp.UTM/Data/Documents -mindepth 1 -maxdepth 1 -name "*.utm")"
