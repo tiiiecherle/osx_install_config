@@ -79,6 +79,20 @@ trap_function_exit_middle() { env_delete_tmp_batch_script_fifo; unset SUDOPASSWO
 ###
 
 
+### check if online
+env_check_if_online
+if [[ "$ONLINE_STATUS" == "online" ]]
+then
+    # online
+    :
+else
+	# not online
+	echo ''
+	echo "not online, exiting..."
+	echo ''
+fi
+
+
 ### in addition to showing them in terminal write errors to logfile when run from batch script
 env_force_start_error
 
