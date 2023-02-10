@@ -558,6 +558,12 @@ network_select() {
             check_if_online
             if [[ "$ONLINE_STATUS" == "offline" ]]
             then
+                # check again if first online check fails
+                sleep 3
+                check_if_online
+            fi
+            if [[ "$ONLINE_STATUS" == "offline" ]]
+            then
                 # switch to (ethernet) automatic dhcp profile
                 echo ''
                 echo "changing to location $(networksetup -listlocations | grep --ignore-case '^auto')..."
