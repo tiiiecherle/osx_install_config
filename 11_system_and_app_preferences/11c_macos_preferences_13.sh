@@ -815,7 +815,7 @@ EOF
         # not used as the receiver can not disconnect the connections from the menu bar
         # alternative for using screensharing above
         #sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -specifiedUsers
-        #sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users tom -privs -all
+        #sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users "$USER" -privs -all
         #sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate 
         #sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -menu
         
@@ -1709,27 +1709,212 @@ expect eof
     
     ### more options
     
-    # require an administrator password to access system-wide preferences
-    sudo security authorizationdb read system.preferences > /tmp/system.preferences.plist
-    sleep 0.5
-    # enabled = false
-    # disabled = true
-    #sudo /usr/libexec/PlistBuddy -c "Add :shared bool" /tmp/system.preferences.plist
-    sudo /usr/libexec/PlistBuddy -c "Set :shared false" /tmp/system.preferences.plist
-    sleep 0.5
-    #defaults read /tmp/system.preferences.plist
-    # exec or "$SCRIPT_INTERPRETER" -c work around
-    # Error Domain=NSCocoaErrorDomain Code=3840 "Cannot parse a NULL or zero-length data" UserInfo={NSDebugDescription=Cannot parse a NULL or zero-length data}
-    # that occurs due to the changed sudo command
-    #( env_use_password | exec sudo -p '' -S "$SCRIPT_INTERPRETER" -c "security authorizationdb write system.preferences < /tmp/system.preferences.plist" )
-    #sudo security authorizationdb write system.preferences < /tmp/system.preferences.plist
-    sudo -S "$SCRIPT_INTERPRETER" -c "security authorizationdb write system.preferences < /tmp/system.preferences.plist"      
+    ## require an administrator password to access system-wide preferences
+    
+    echo "enabling password to change system wide preferences..."
+    
+    # alternative 1 (in use)
+    # should have the same result as pressing the gui button
+    # settings can be reset (including all system.preferences."$i" preferences panes)
+    # by using the GUI button followed by quitting and restarting the system settings  
+    
+    # list of system preference panes
+    #defaults read /System/Library/Security/authorization.plist | grep system.preferences
+    
+    # list of system preference panes where the option is available
+    SYSTEM_PREFERENCES_LIST=$(defaults read /System/Library/Security/authorization.plist | grep system.preferences | grep -o '".*"' | sed 's/"//g')
+    SYSTEM_PREFERENCES_LIST_OPTION_AVAILABLE=()
+    while IFS= read -r line || [[ -n "$line" ]] 
+    do
+        if [[ "$line" == "" ]]; then continue; fi
+        i="$line"
+        #echo "$i"
+        #security authorizationdb read "$i" 2>&1 | awk '/shared/{p=2} p > 0 {print $0; p--}'
+        if [[ $(security authorizationdb read "$i" 2>&1 | grep "shared" | grep -v "YES \(0\)") == "" ]]
+        then
+        	:
+        else
+        	#echo "$i"
+        	#security authorizationdb read "$i" 2>&1 | awk '/shared/{p=2} p > 0 {print $0; p--}'
+        	SYSTEM_PREFERENCES_LIST_OPTION_AVAILABLE+=$(echo "$i")
+        fi
+    done <<< "$(printf "%s\n" "${SYSTEM_PREFERENCES_LIST[@]}")"
+    #printf "%s\n" "${SYSTEM_PREFERENCES_LIST_OPTION_AVAILABLE[@]}"
+
+    # setting all system preference panes to need a password that have the option available
+    while IFS= read -r line || [[ -n "$line" ]] 
+	do
+	    if [[ "$line" == "" ]]; then continue; fi
+        i="$line"
+        echo -e " \t $i"
+        (sudo security authorizationdb read "$i" > /tmp/"$i".plist) 2>&1 | grep -v "YES (0)"
+        sleep 0.5
+        # enabled = false
+        # disabled = true  
+        #sudo defaults write system.preferences."$i" shared -bool false
+        (sudo /usr/libexec/PlistBuddy -c "Set :shared false" /tmp/"$i".plist) 2>&1 | grep -v "YES (0)"
+        # reset to default (disabled)
+        #sudo /usr/libexec/PlistBuddy -c "Set :shared true" /tmp/"$i".plist
+        sleep 0.5
+        (sudo security authorizationdb write "$i" < /tmp/"$i".plist) 2>&1 | grep -v "YES (0)"
+        # exec or "$SCRIPT_INTERPRETER" -c work around
+        # Error Domain=NSCocoaErrorDomain Code=3840 "Cannot parse a NULL or zero-length data" UserInfo={NSDebugDescription=Cannot parse a NULL or zero-length data}
+        # that occurs due to the changed sudo command
+        #( env_use_password | exec sudo -p '' -S "$SCRIPT_INTERPRETER" -c "security authorizationdb write "$i" < /tmp/"$i".plist" )
+        sleep 0.5
+        #sudo security authorizationdb read "$i"
+        #echo ''
+    done <<< "$(printf "%s\n" "${SYSTEM_PREFERENCES_LIST_OPTION_AVAILABLE[@]}")"
+    #echo ''
+    
+    
+    # alternative 2 (not in use)
+    # setting the option using applescript / gui
+    activate_password_for_system_wide_preferences() {
+        
+        osascript <<EOF
+        tell application "System Settings"
+        	quit
+        	delay 2
+        end tell
+        
+        tell application "System Settings"
+        	reopen
+        	delay 3
+        	#activate
+        	#delay 2
+        end tell
+        
+        # do not use visible as it makes the window un-clickable
+        #tell application "System Events" to tell process "System Settings" to set visible to true
+        #delay 1
+        tell application "System Events" to tell process "System Settings" to set frontmost to true
+        delay 1
+        
+        # open preference
+        tell application "System Events"
+        	tell process "System Settings"
+        		# use name
+        		#set SystemSettingsToOpen to "Allgemein"
+        		# use AXIdentifier
+        		#set SystemSettingsToOpen to "com.apple.systempreferences.GeneralSettings"
+        		set SystemSettingsToOpen to "com.apple.settings.PrivacySecurity.extension"
+        		set RowNumberToCheck to 0
+        		set UiPositionOfRows to outline 1 of scroll area 1 of group 1 of splitter group 1 of group 1 of window 1
+        		repeat with aRow in row of UiPositionOfRows
+        			
+        			set RowNumberToCheck to (RowNumberToCheck + 1)
+        			
+        			try
+        				set RowToCheck to row RowNumberToCheck of UiPositionOfRows
+        			end try
+        			
+        			### get AXIdentifier or use ui-browser (screen reader - select - view report - identifier)
+        			#set DasGehtJetzt to row 13 of RowPlace
+        			#set NeededAXIdentifier to (value of attribute "AXIdentifier" of first static text of UI element 1 of DasGehtJetzt)
+        			#return NeededAXIdentifier
+        			
+        			### get AXIdentifier or read from button
+        			#set DasGehtJetzt to row 13 of RowPlace
+        			#set NeededName to (get properties of every static text of UI element 1 of DasGehtJetzt)
+        			#set NeededName to (name of first static text of UI element 1 of DasGehtJetzt)
+        			#return NeededName
+        			
+        			try
+        				if name of static text 1 of UI element 1 of RowToCheck is SystemSettingsToOpen then select RowToCheck
+        				if value of attribute "AXIdentifier" of first static text of UI element 1 of RowToCheck is SystemSettingsToOpen then select RowToCheck
+        			end try
+        			
+        		end repeat
+        	end tell
+        end tell
+        
+        delay 2
+        
+        # open sub-preference
+        tell application "System Events"
+        	tell process "System Settings"
+        		set ButtonName to "Profile"
+        		#return name of every button of every group of every scroll area of every group of every group of every splitter group of every group of window 1
+        		
+        		# solution 1: specify button directly
+        		click button 1 of scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1
+        		#set UiPositionOfGeneralSettings to scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1
+        		#set ButtonGroup to 7
+        		#click button 2 of group ButtonGroup of UiPositionOfGeneralSettings
+        		#click button ButtonName of group ButtonGroup of UiPositionOfGeneralSettings
+        		
+        		# solution 2: cycle through buttons by name (no need to specify ButtonGroup or UiPositionOfGeneralSettings)
+        		#repeat with ButtonInSettings in (every button of group 7 of every scroll area of every group of every group of every splitter group of every group of window 1)
+        		#	try
+        		#		if name of ButtonInSettings is ButtonName then click ButtonInSettings
+        		#	end try
+        		#end repeat
+        	end tell
+        end tell
+        
+        delay 2
+        
+        # install profile
+        tell application "System Events"
+        	tell process "System Settings"
+        		set theCheckbox to checkbox 1 of group 1 of scroll area 1 of group 1 of sheet 1 of window 1
+        		#return value of theCheckbox
+        		#tell theCheckbox
+        		if value of theCheckbox is 0 then
+        			click theCheckbox
+        			delay 3
+        			tell application "System Events" to keystroke "$SUDOPASSWORD"
+        			delay 3
+        			# press enter
+        			key code 36
+        		end if
+        		delay 3
+        		click button 2 of group 1 of sheet 1 of window 1
+        		#end tell
+        		
+        	end tell
+        end tell
+        
+        delay 4
+        
+        tell application "System Settings" to quit
+EOF
+    }
+    #activate_password_for_system_wide_preferences
+
+
+    # alternative 3 (not in use)
+    # directly writing to authorizationdb
+    # downsides 
+    #       it seems difficult to restore the real defaults (default files or exact contents are needed, e.g. from another mac)
+    #       complete entry in authorizationdb gets overwritten and default entries are completely gone
+    #       using the gui button to restore defaults is not possible
+    #       the gui button does not reflext the real permissions/entries which can be confusing for the users, only reading every single entry gives the correct overall information, e.g.
+    # sudo security authorizationdb read system.preferences
+    # sudo security authorizationdb read system.preferences.sharing
+    
+    # getting options
+    # https://developer.apple.com/forums/thread/716869
+    # sudo sqlite3 /var/db/auth.db
+    # select name from rules;
+    # .quit
+    
+    # example
+    # allows using all preferences panes without password
+    #sudo security authorizationdb write system.preferences allow
     #sudo security authorizationdb read system.preferences
-    sleep 0.5
+    
+    # restore values from another mac (works for all preferences panes but has to be done for every single one separately, e.g. system.preferences.sharing)
+    # on mac with default values
+    #sudo security authorizationdb read system.preferences > /tmp/system.preferences.plist
+    # copy file to mac with authorizationdb changed
+    #sudo security authorizationdb write system.preferences < /tmp/system.preferences.plist
+
     
     # autologout on inactivity
     sudo defaults write /Library/Preferences/.GlobalPreferences.plist com.apple.autologout.AutoLogOutDelay -int 0
-    
+
 
 
     ###
@@ -1805,9 +1990,9 @@ expect eof
     # 0=no, 1=yes
     defaults write NSGlobalDomain _HIHideMenuBar -int 0
     
-    # autohide menu bar in full scrren mode
+    # autohide menu bar in full screen mode
     # 0=yes, 1=no
-    defaults write NSGlobalDomain AppleMenuBarVisibleInFullscreen -int 1
+    defaults write NSGlobalDomain AppleMenuBarVisibleInFullscreen -int 0
     
     # recent documents
     defaults write NSGlobalDomain NSRecentDocumentsLimit 10
@@ -4628,7 +4813,7 @@ EOF
     
     echo "restarting affected apps"
     
-    for app in "Activity Monitor" "Calendar" "Contacts" "cfprefsd" "blued" "Dock" "Finder" "Mail" "Messages" "System Preferences" "Safari" "SystemUIServer" "TextEdit" "ControlStrip" "Photos" "NotificationCenter"; do
+    for app in "Activity Monitor" "Calendar" "Contacts" "cfprefsd" "blued" "Dock" "Finder" "Mail" "Messages" "System Settings" "Safari" "SystemUIServer" "TextEdit" "ControlStrip" "Photos" "NotificationCenter"; do
     	killall "${app}" > /dev/null 2>&1
     done
     
