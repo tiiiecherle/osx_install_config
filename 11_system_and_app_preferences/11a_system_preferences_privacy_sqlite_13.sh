@@ -369,6 +369,7 @@ CAMERAAPPS=(
 "Linphone                                   kTCCServiceCamera                                           1"
 "Jitsi Meet                                 kTCCServiceCamera                                           1"
 "Microsoft Teams                            kTCCServiceCamera                                           1"
+"Signal                                     kTCCServiceCamera                                           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${CAMERAAPPS[@]}")
