@@ -2,6 +2,7 @@
 paragon-extfs
 deluge
 github
+google-drive
 #jdownloader
 spotify
 transmission

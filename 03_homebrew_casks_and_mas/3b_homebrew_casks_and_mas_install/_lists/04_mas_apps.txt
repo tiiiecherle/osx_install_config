@@ -4,9 +4,12 @@
 409201541	Pages
 409203825	Numbers
 409183694	Keynote
-824183456	Affinity Photo
-824171161	Affinity Designer
-881418622	Affinity Publisher
+#824183456	Affinity Photo
+#824171161	Affinity Designer
+#881418622	Affinity Publisher
+1616822987	Affinity Photo 2
+1616831348	Affinity Designer 2
+1606941598	Affinity Publisher 2
 595374522	VirusScannerPlus
 1209754386	eDrawings
 477670270	2Do
@@ -27,7 +30,7 @@
 1197662954	HashBox
 #1055555711	fHash
 1294126402	HEIC Converter
-1037126344	Apple Configurator 2
+1037126344	Apple Configurator
 1520204499	Vectorize
 406825478	Telephone
 1568262835	Super Agent
