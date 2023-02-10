@@ -978,104 +978,108 @@ undo_vbox_workaround() {
 
 ### affinity
 # link color profiles (needed as of 2021-03)
-# publisher
-if [[ -e "$PATH_TO_APPS"/"Affinity Publisher.app" ]]
-then
-	echo ''
-	APP_NAME_FOR_PREFERENCES="Affinity Publisher"
-	echo "$APP_NAME_FOR_PREFERENCES"
-	mkdir -p "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/"
-	if [[ -e /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc ]]
-	then
-		if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/ISOcoated_v2_300_eci.icc" ]]
-		then
-			echo "color profile ISOcoated_v2_300_eci for publisher already exists..."
-		else
-			ln -s /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/"
-		fi
-	else
-		echo "color profile ISOcoated_v2_300_eci not found..." >&2
-	fi
-	if [[ -e /Library/ColorSync/Profiles/eci/eciRGB_v2.icc ]]
-	then
-		if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/eciRGB_v2.icc" ]]
-		then
-			echo "color profile eciRGB_v2 for publisher already exists..."
-		else
-			ln -s /Library/ColorSync/Profiles/eci/eciRGB_v2.icc "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/"
-		fi
-	else
-		echo "color profile eciRGB_v2 not found..." >&2
-	fi
-else
-	echo ""$PATH_TO_APPS"/"Affinity Publisher.app" not installed..." >&2
-fi
+# no longer needed for V2 apps (as of 2023-01)
 
-# photos
-if [[ -e "$PATH_TO_APPS"/"Affinity Photo.app" ]]
-then
-	echo ''
-	APP_NAME_FOR_PREFERENCES="Affinity Photo"
-	echo "$APP_NAME_FOR_PREFERENCES"
-	mkdir -p "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/"
-	if [[ -e /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc ]]
+color_profile_links_affinity_v1_apps() {
+	# publisher
+	if [[ -e "$PATH_TO_APPS"/"Affinity Publisher.app" ]]
 	then
-		if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/ISOcoated_v2_300_eci.icc" ]]
+		echo ''
+		APP_NAME_FOR_PREFERENCES="Affinity Publisher"
+		echo "$APP_NAME_FOR_PREFERENCES"
+		mkdir -p "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/"
+		if [[ -e /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc ]]
 		then
-			echo "color profile ISOcoated_v2_300_eci for photo already exists..."
+			if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/ISOcoated_v2_300_eci.icc" ]]
+			then
+				echo "color profile ISOcoated_v2_300_eci for publisher already exists..."
+			else
+				ln -s /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/"
+			fi
 		else
-			ln -s /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/"
+			echo "color profile ISOcoated_v2_300_eci not found..." >&2
+		fi
+		if [[ -e /Library/ColorSync/Profiles/eci/eciRGB_v2.icc ]]
+		then
+			if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/eciRGB_v2.icc" ]]
+			then
+				echo "color profile eciRGB_v2 for publisher already exists..."
+			else
+				ln -s /Library/ColorSync/Profiles/eci/eciRGB_v2.icc "/Users/$USER/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/profiles/"
+			fi
+		else
+			echo "color profile eciRGB_v2 not found..." >&2
 		fi
 	else
-		echo "color profile ISOcoated_v2_300_eci not found..." >&2
+		echo ""$PATH_TO_APPS"/"Affinity Publisher.app" not installed..." >&2
 	fi
-	if [[ -e /Library/ColorSync/Profiles/eci/eciRGB_v2.icc ]]
+	
+	# photos
+	if [[ -e "$PATH_TO_APPS"/"Affinity Photo.app" ]]
 	then
-		if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/eciRGB_v2.icc" ]]
+		echo ''
+		APP_NAME_FOR_PREFERENCES="Affinity Photo"
+		echo "$APP_NAME_FOR_PREFERENCES"
+		mkdir -p "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/"
+		if [[ -e /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc ]]
 		then
-			echo "color profile eciRGB_v2 for photo already exists..."
+			if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/ISOcoated_v2_300_eci.icc" ]]
+			then
+				echo "color profile ISOcoated_v2_300_eci for photo already exists..."
+			else
+				ln -s /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/"
+			fi
 		else
-			ln -s /Library/ColorSync/Profiles/eci/eciRGB_v2.icc "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/"
+			echo "color profile ISOcoated_v2_300_eci not found..." >&2
+		fi
+		if [[ -e /Library/ColorSync/Profiles/eci/eciRGB_v2.icc ]]
+		then
+			if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/eciRGB_v2.icc" ]]
+			then
+				echo "color profile eciRGB_v2 for photo already exists..."
+			else
+				ln -s /Library/ColorSync/Profiles/eci/eciRGB_v2.icc "/Users/$USER/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/profiles/"
+			fi
+		else
+			echo "color profile eciRGB_v2 not found..." >&2
 		fi
 	else
-		echo "color profile eciRGB_v2 not found..." >&2
+		echo ""$PATH_TO_APPS"/"Affinity Photo.app" not installed..." >&2
 	fi
-else
-	echo ""$PATH_TO_APPS"/"Affinity Photo.app" not installed..." >&2
-fi
-
-# designer
-if [[ -e "$PATH_TO_APPS"/"Affinity Designer.app" ]]
-then
-	echo ''
-	APP_NAME_FOR_PREFERENCES="Affinity Designer"
-	echo "$APP_NAME_FOR_PREFERENCES"
-	mkdir -p "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/"
-	if [[ -e /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc ]]
+	
+	# designer
+	if [[ -e "$PATH_TO_APPS"/"Affinity Designer.app" ]]
 	then
-		if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/ISOcoated_v2_300_eci.icc" ]]
+		echo ''
+		APP_NAME_FOR_PREFERENCES="Affinity Designer"
+		echo "$APP_NAME_FOR_PREFERENCES"
+		mkdir -p "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/"
+		if [[ -e /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc ]]
 		then
-			echo "color profile ISOcoated_v2_300_eci for designer already exists..."
+			if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/ISOcoated_v2_300_eci.icc" ]]
+			then
+				echo "color profile ISOcoated_v2_300_eci for designer already exists..."
+			else
+				ln -s /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/"
+			fi
 		else
-			ln -s /Library/ColorSync/Profiles/eci/ISOcoated_v2_300_eci.icc "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/"
+			echo "color profile ISOcoated_v2_300_eci not found..." >&2
+		fi
+		if [[ -e /Library/ColorSync/Profiles/eci/eciRGB_v2.icc ]]
+		then
+			if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/eciRGB_v2.icc" ]]
+			then
+				echo "color profile eciRGB_v2 for designer already exists..."
+			else
+				ln -s /Library/ColorSync/Profiles/eci/eciRGB_v2.icc "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/"
+			fi
+		else
+			echo "color profile eciRGB_v2 not found..." >&2
 		fi
 	else
-		echo "color profile ISOcoated_v2_300_eci not found..." >&2
+		echo ""$PATH_TO_APPS"/"Affinity Designer.app" not installed..." >&2
 	fi
-	if [[ -e /Library/ColorSync/Profiles/eci/eciRGB_v2.icc ]]
-	then
-		if [[ -e "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/eciRGB_v2.icc" ]]
-		then
-			echo "color profile eciRGB_v2 for designer already exists..."
-		else
-			ln -s /Library/ColorSync/Profiles/eci/eciRGB_v2.icc "/Users/$USER/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/profiles/"
-		fi
-	else
-		echo "color profile eciRGB_v2 not found..." >&2
-	fi
-else
-	echo ""$PATH_TO_APPS"/"Affinity Designer.app" not installed..." >&2
-fi
+}
 
 
 ### stopping the error output redirecting

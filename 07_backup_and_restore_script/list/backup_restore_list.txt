@@ -39,12 +39,19 @@ u	~/Library/Application Support/Adobe/Adobe PDF/Settings/ebook.joboptions
 
 # Affinity
 echo Affinity
-u	~/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/user/file_export_options.dat
-u	~/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Preferences/com.seriflabs.affinitypublisher.plist
-u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/user/file_export_options.dat
-u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Preferences/com.seriflabs.affinitydesigner.plist
-u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/user/file_export_options.dat
-u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Preferences/com.seriflabs.affinityphoto.plist
+#u	~/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Application Support/user/file_export_options.dat
+#u	~/Library/Containers/com.seriflabs.affinitypublisher/Data/Library/Preferences/com.seriflabs.affinitypublisher.plist
+#u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Application Support/user/file_export_options.dat
+#u	~/Library/Containers/com.seriflabs.affinitydesigner/Data/Library/Preferences/com.seriflabs.affinitydesigner.plist
+#u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Application Support/user/file_export_options.dat
+#u	~/Library/Containers/com.seriflabs.affinityphoto/Data/Library/Preferences/com.seriflabs.affinityphoto.plist
+u	~/Library/Containers/com.seriflabs.affinitypublisher2/Data/Library/Application Support/user/file_export_options.dat
+u	~/Library/Containers/com.seriflabs.affinitypublisher2/Data/Library/Preferences/com.seriflabs.affinitypublisher2.plist
+u	~/Library/Containers/com.seriflabs.affinitydesigner2/Data/Library/Application Support/user/file_export_options.dat
+u	~/Library/Containers/com.seriflabs.affinitydesigner2/Data/Library/Preferences/com.seriflabs.affinitydesigner2.plist
+u	~/Library/Containers/com.seriflabs.affinityphoto2/Data/Library/Application Support/user/file_export_options.dat
+u	~/Library/Containers/com.seriflabs.affinityphoto2/Data/Library/Preferences/com.seriflabs.affinityphoto2.plist
+u	~/Library/Group Containers/6LVTQB9699.com.seriflabs/v2
 
 # Alfred
 echo Alfred
@@ -481,10 +488,10 @@ u	~/Library/Group Containers/UBF8T346G9.Office
 # relinking ~/Library/Group Containers/UBF8T346G9.Office/MicrosoftRegistrationDB.reg is done in 11k_third_party_app_preferences.sh
 
 # MonKey Office
-echo MonKey Office 2022
-u	"$PATH_TO_APPS"/MonKey Office 2022.app
+echo MonKey Office 2023
+u	"$PATH_TO_APPS"/MonKey Office 2023.app
 u	~/Library/Application Support/ProSaldo
-#u	~/Library/Preferences/com.prosaldo.monkeyoffice2022.plist
+#u	~/Library/Preferences/com.prosaldo.monkeyoffice2023.plist
 
 # muCommander
 echo muCommander
