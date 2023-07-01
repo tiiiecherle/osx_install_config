@@ -198,6 +198,9 @@ echo Commander One
 #u	"$PATH_TO_APPS"/Commander One.app
 u	~/Library/Preferences/com.eltima.cmd1.plist
 
+# Command X
+u	~/Library/Containers/com.sindresorhus.Command-X/Data/Library/Preferences/com.sindresorhus.Command-X.plist
+
 # CotEditor
 echo CotEditor
 #u	"$PATH_TO_APPS"/CotEditor.app
