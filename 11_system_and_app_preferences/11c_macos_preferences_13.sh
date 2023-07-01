@@ -59,7 +59,7 @@ fi
 if [[ "$MACOS_VERSION_MAJOR" != "13" ]]
 then
     echo ''
-    echo "this script is only compatible with macos 12, exiting..."
+    echo "this script is only compatible with macos 13, exiting..."
     echo ''
     exit
 else
