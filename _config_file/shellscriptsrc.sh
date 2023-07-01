@@ -664,23 +664,23 @@ env_get_path_to_app() {
         do
             if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
             then
-                PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
+                PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | tail -1)
             fi
             if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
             then
-                PATH_TO_APP=$(find "$i" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
+                PATH_TO_APP=$(find "$i" -mindepth 1 -maxdepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | tail -1)
             fi
         done
-        # pref panes, apps in other apps
-        for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS"
+        # pref panes, apps in other apps, homebrew apps
+        for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS" "$(brew --prefix)/Caskroom"
         do
             if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
             then
-                PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | head -1)
+                PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | tail -1)
             fi
             if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
             then
-                PATH_TO_APP=$(find "$i" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | head -1)
+                PATH_TO_APP=$(find "$i" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | tail -1)
             fi
         done
         while [[ "$PATH_TO_APP" == "" ]]
@@ -1925,7 +1925,6 @@ env_set_open_on_first_run_permissions() {
         then
             if [[ $(xattr -l "$PATH_TO_APP" | grep com.apple.quarantine) != "" ]]
             then
-                #echo "$PATH_TO_APP"
                 xattr -d com.apple.quarantine "$PATH_TO_APP" &> /dev/null
                 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R -f -trusted "$PATH_TO_APP"
             else
