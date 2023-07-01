@@ -122,6 +122,7 @@ then
 	echo "clamav-unofficial-sigs.sh is already installed, upgrading..."
 	# root would be needed here, but the installation is completely homebrew and root free
 	#clamav-unofficial-sigs.sh --upgrade
+	#FRESH_INSTALL="yes"
 else
 	# not installed
 	echo "installing clamav-unofficial-sigs.sh..."
@@ -203,7 +204,7 @@ then
 	do
 	    sleep 1
 	done
-	sleep 5
+	sleep 10
 else
 	echo "clamd is already running..."
 fi
