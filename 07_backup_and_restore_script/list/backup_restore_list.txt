@@ -1,3 +1,6 @@
+# have a look at mackup for more application settings
+# https://github.com/lra/mackup
+
 # 2Do
 #echo 2Do
 #u	"$PATH_TO_APPS"/2Do.app
@@ -876,8 +879,11 @@ u	~/Library/Containers/com.coppertino.Vox/Data/Library/Preferences/com.coppertin
 # Whatsapp
 echo Whatsapp
 #u	"$PATH_TO_APPS"/Whatsapp.app
-u	~/Library/Application Support/WhatsApp
+u	~/Library/Application Support/WhatsApp/Preferences
+u	~/Library/Application Support/WhatsApp/settings.json
+u	~/Library/Preferences/WhatsApp-Helper.plist
 u	~/Library/Preferences/WhatsApp.plist
+#u	~/Library/Application Support/WhatsApp
 
 # Widgets
 #echo Widgets
