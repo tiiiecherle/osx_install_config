@@ -672,17 +672,38 @@ env_get_path_to_app() {
             fi
         done
         # pref panes, apps in other apps, homebrew apps
-        for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS" "$(brew --prefix)/Caskroom"
-        do
-            if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
-            then
-                PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | tail -1)
-            fi
-            if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
-            then
-                PATH_TO_APP=$(find "$i" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | tail -1)
-            fi
-        done
+        echo ''
+        if command -v brew &> /dev/null
+        then
+            # installed
+            echo "homebrew already installed, skipping..."
+            for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS" "$(brew --prefix)/Caskroom"
+            do
+                if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
+                then
+                    PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | tail -1)
+                fi
+                if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
+                then
+                    PATH_TO_APP=$(find "$i" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | tail -1)
+                fi
+            done  
+        else
+            # not installed
+            for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS"
+            do
+                if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
+                then
+                    PATH_TO_APP=$(mdfind kMDItemContentTypeTree=com.apple.application -onlyin "$i" | grep -i "/$APP_NAME_WITH_EXTENSION$" | sort -n | tail -1)
+                fi
+                if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
+                then
+                    PATH_TO_APP=$(find "$i" -mindepth 2 -name "$APP_NAME_WITH_EXTENSION" | sort -n | tail -1)
+                fi
+            done
+        fi
+        
+
         while [[ "$PATH_TO_APP" == "" ]]
         do
             # bash builtin printf can not print floating numbers
