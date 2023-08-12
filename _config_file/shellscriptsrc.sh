@@ -676,7 +676,7 @@ env_get_path_to_app() {
         if command -v brew &> /dev/null
         then
             # installed
-            echo "homebrew already installed, skipping..."
+            #echo "homebrew already installed..."
             for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS" "$(brew --prefix)/Caskroom"
             do
                 if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
@@ -690,7 +690,7 @@ env_get_path_to_app() {
             done  
         else
             # not installed
-            echo "homebrew is not installed, skipping search in homebrew directory..."
+            #echo "homebrew is not installed, skipping search in homebrew directory..."
             for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS"
             do
                 if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
