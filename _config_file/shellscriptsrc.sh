@@ -672,7 +672,7 @@ env_get_path_to_app() {
             fi
         done
         # pref panes, apps in other apps, homebrew apps
-        echo ''
+        #echo ''
         if command -v brew &> /dev/null
         then
             # installed
@@ -690,6 +690,7 @@ env_get_path_to_app() {
             done  
         else
             # not installed
+            echo "homebrew is not installed, skipping search in homebrew directory..."
             for i in "/Users/"$USER"/Library/PreferencePanes" "$PATH_TO_APPS"
             do
                 if [[ -e "$i" ]] && [[ "$PATH_TO_APP" == "" ]]
