@@ -15,7 +15,7 @@ xpdf		# pdf shrink script
 #qtfaststart	# video encoding script
 jq		# casks and casks update script
 cliclick	# backup/restore script
-python3		# icon scripts, build scripts, hosts file script, screen resolution script
+python@3	# icon scripts, build scripts, hosts file script, screen resolution script
 macosvpn	# network script
 #node		# npm command
 wakeonlan	# send magic packet to wake devices over lan
