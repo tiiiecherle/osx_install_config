@@ -298,6 +298,7 @@ ACCESSIBILITYAPPS=(
 "UI Browser                                                          kTCCServiceAccessibility           1"
 "run_on_login_virusscannerplus                                       kTCCServiceAccessibility           1"
 "BetterTouchTool                                                     kTCCServiceAccessibility           1"
+"Command X                                                           kTCCServiceAccessibility           1"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${ACCESSIBILITYAPPS[@]}")
