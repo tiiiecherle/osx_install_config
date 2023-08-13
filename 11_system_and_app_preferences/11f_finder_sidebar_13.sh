@@ -176,32 +176,65 @@ else
 	mysides remove all
 fi
 
+if [[ $(defaults read MobileMeAccounts Accounts | grep AccountID | cut -d \" -f2 | grep "does not exist") == "" ]]
+then
+    # icloud account exists
+    
+    ### settings and functions
+    FINDER_SIDEBAR_ITEMS=(
+    # entry name						    position		        toggle status
+    "last used                              1                       off"
+    "airdrop                                2                       off"
+    "applications                           3                       on"
+    "desktop                                4                       on"
+    "documents                              5                       on"
+    "downloads                              6                       on"
+    "movies                                 7                       on"
+    "music                                  8                       on"
+    "pictures                               9                       on"
+    "user                                   10                      on"
+    "icloud_drive                           11                      off"
+    "icloud_shared                          12                      off"
+    "mac                                    13                      off"
+    "internal drives                        14                      on"
+    "external drives                        15                      on"
+    "removable media                        16                      on"
+    "icloud                                 17                      off"
+    "bonjour                                18                      off"
+    "connected server                       19                      on"
+    "tags                                   20                      off"
+    )
+    FINDER_SIDEBAR_ITEMS_ARRAY=$(printf "%s\n" "${FINDER_SIDEBAR_ITEMS[@]}")
 
-### settings and functions
-FINDER_SIDEBAR_ITEMS=(
-# entry name						    position		        toggle status
-"last used                              1                       off"
-"airdrop                                2                       off"
-"applications                           3                       on"
-"desktop                                4                       on"
-"documents                              5                       on"
-"downloads                              6                       on"
-"movies                                 7                       on"
-"music                                  8                       on"
-"pictures                               9                       on"
-"user                                   10                      on"
-"icloud_drive                           11                      off"
-"icloud_shared                          12                      off"
-"mac                                    13                      off"
-"internal drives                        14                      on"
-"external drives                        15                      on"
-"removable media                        16                      on"
-"icloud                                 17                      off"
-"bonjour                                18                      off"
-"connected server                       19                      on"
-"tags                                   20                      off"
-)
-FINDER_SIDEBAR_ITEMS_ARRAY=$(printf "%s\n" "${FINDER_SIDEBAR_ITEMS[@]}")
+else
+    # icloud account does not exist
+    
+    ### settings and functions
+    FINDER_SIDEBAR_ITEMS=(
+    # entry name						    position		        toggle status
+    "last used                              1                       off"
+    "airdrop                                2                       off"
+    "applications                           3                       on"
+    "desktop                                4                       on"
+    "documents                              5                       on"
+    "downloads                              6                       on"
+    "movies                                 7                       on"
+    "music                                  8                       on"
+    "pictures                               9                       on"
+    "user                                   10                      on"
+    "icloud_drive                           11                      off"
+    "mac                                    12                      off"
+    "internal drives                        13                      on"
+    "external drives                        14                      on"
+    "removable media                        15                      on"
+    "icloud                                 16                      off"
+    "bonjour                                17                      off"
+    "connected server                       18                      on"
+    "tags                                   19                      off"
+    )
+    FINDER_SIDEBAR_ITEMS_ARRAY=$(printf "%s\n" "${FINDER_SIDEBAR_ITEMS[@]}")
+
+fi
 
 open_finder_preferences() {
     osascript <<EOF
