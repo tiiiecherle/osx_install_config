@@ -563,7 +563,8 @@ setting_preferences() {
     #"AdGuard Login Helper                                                     true"
     #"VirusScannerHelper                                                       true"
     # overflow autostart is activated at login inside the app preferences, this way the overflow window does not open when starting the app on login                 
-    #"Overflow 3                                                               true"                    
+    #"Overflow 3                                                               true"
+    "Command X                                                                 true"
     )
     AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_ALL_USERS[@]}")
     env_add_startup_items
@@ -599,7 +600,8 @@ setting_preferences() {
     #"witchdaemon"
     "Overflow 3"
     "VirusScannerPlus"
-    "iMazing"            
+    "iMazing"
+    "Command X"         
     )
         
     opening_autostart_apps() {
