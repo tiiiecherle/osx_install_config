@@ -75,7 +75,7 @@ undo_ssd_settings() {
 		
 		# disable local time machine backup
 		#echo "disabling local time machine backup..."
-		# already done in system preferences script
+		# already done in system settings script
 		#sudo tmutil disablelocal
 		
 		### noatime

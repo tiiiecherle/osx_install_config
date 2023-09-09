@@ -25,10 +25,10 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ###
 
 # specific macos version only
-if [[ "$MACOS_VERSION_MAJOR" != "13" ]]
+if [[ "$MACOS_VERSION_MAJOR" != "14" ]]
 then
     echo ''
-    echo "this script is only compatible with macos 13, exiting..."
+    echo "this script is only compatible with macos 14, exiting..."
     echo ''
     exit
 else
@@ -181,7 +181,7 @@ env_databases_apps_security_permissions
 # /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APPS"/Overflow 3.app/Contents/Info.plist"
 # com.stuntsoftware.Overflow3
 # example2
-# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APPS"/System Settings.app/Contents/Info.plist"
+# /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' ""$PATH_TO_APPS"/Settings.app/Contents/Info.plist"
 # com.apple.systempreferences
 # or        
 # osascript -e "id of app \"Overflow 3\""
@@ -513,6 +513,7 @@ AUTOMATION_APPS=(
 "Linphone                                                                   System Events               1"
 "BetterTouchTool                                                            Shortcuts                   1"
 "BetterTouchTool                                                            Shortcuts Events            1"
+"BetterTouchTool                                                            Finder                      1"
 )
         
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions

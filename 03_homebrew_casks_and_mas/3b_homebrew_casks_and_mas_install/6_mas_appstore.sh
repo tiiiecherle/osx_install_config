@@ -216,7 +216,7 @@ mas_login_applescript() {
     	osascript <<EOF
         tell application "App Store"
             launch
-            delay 3
+            delay 5
             #activate
             #delay 2
         end tell
@@ -225,7 +225,7 @@ mas_login_applescript() {
         #tell application "System Events" to tell process "App Store" to set visible to true
     	#delay 1
     	tell application "System Events" to tell process "App Store" to set frontmost to true
-    	delay 1
+    	delay 2
     
         tell application "System Events"
         	tell process "App Store"
@@ -244,7 +244,7 @@ mas_login_applescript() {
             		    click button 2 of UI element 1 of sheet 1 of window "App Store" 
                     end if
     		    end try
-                delay 5
+                delay 8
                 
     		    ### on clean install on first run the appstore asks for enabling notifications
     		    # set before login by adding preferences for app store for notification center
@@ -274,18 +274,18 @@ mas_login_applescript() {
         		        set focused of text field 1 of sheet 1 of sheet 1 of window "App Store" to true
         		    end try
                 end if
-        		delay 2
+        		delay 3
         		tell application "System Events" to keystroke "$MAS_APPLE_ID"
-        		delay 2
+        		delay 3
         		tell application "System Events" to keystroke return
-        		delay 2
+        		delay 3
         		tell application "System Events" to keystroke "$MAS_APPSTORE_PASSWORD"
-        		delay 2
+        		delay 3
         		tell application "System Events" to keystroke return
         		# leave two factor auth disabled if disabled before
                 if "$MACOS_VERSION_MAJOR" greater than or equal to "11" then
             		try
-            		    delay 12
+            		    delay 15
             		    try
             		        # german
             		        click button "Weitere Optionen" of group 6 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
@@ -293,7 +293,7 @@ mas_login_applescript() {
             		        # universal
             		        click button 1 of group 6 of group 1 of UI element 1 of scroll area 1 of sheet 1 of sheet 1 of window "App Store"
             		    end try
-            		    delay 5
+            		    delay 8
             		    try
             		        # german
             		        click button "Nicht aktualisieren" of sheet 1 of sheet 1 of window "App Store" 
@@ -301,7 +301,7 @@ mas_login_applescript() {
             		        # universal
             		        click button 1 of sheet 1 of sheet 1 of window "App Store" 
             		    end try
-                        delay 5
+                        delay 8
                     end try
                 end if
         	end tell

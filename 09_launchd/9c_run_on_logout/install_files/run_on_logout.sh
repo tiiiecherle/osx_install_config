@@ -133,7 +133,7 @@ run_cleaning2 () {
 	echo "running cleaning function 2..."
 	
 	# cleaning caches
-	# do not clean /System/Library/Caches/* as it leads to not opening third party system preferences panes
+	# do not clean /System/Library/Caches/* as it leads to not opening third party system settings panes
 	# can be solved by installing the latest combo update afterwards
 	#rm -rf /System/Library/Caches/*
 	rm -rf /Library/Caches/*

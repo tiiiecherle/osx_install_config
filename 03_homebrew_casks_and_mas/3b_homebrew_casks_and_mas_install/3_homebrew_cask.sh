@@ -173,11 +173,15 @@ echo "cleaning up..."
 env_cleanup_all_homebrew
 
 
-### installing homebrew cask
-echo ''
-echo "installing homebrew cask..."
-
-brew tap homebrew/cask 2>&1
+### installing homebrew cask (as of 2023-03 the homebrew/cask tap is unnecessary)
+# Warning: You have an unnecessary local Cask tap.
+# This can cause problems installing up-to-date casks.
+# Please remove it by running:
+# brew untap homebrew/cask
+#echo ''
+#echo "installing homebrew cask..."
+#
+#brew tap homebrew/cask 2>&1
 
 
 ### installing keepingyouawake

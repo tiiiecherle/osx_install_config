@@ -25,10 +25,10 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ###
 
 # specific macos version only
-if [[ "$MACOS_VERSION_MAJOR" != "13" ]]
+if [[ "$MACOS_VERSION_MAJOR" != "14" ]]
 then
     echo ''
-    echo "this script is only compatible with macos 11, exiting..."
+    echo "this script is only compatible with macos 14, exiting..."
     echo ''
     exit
 else
@@ -48,7 +48,7 @@ echo "disabling siri analytics..."
 # already done in system settings script before but some apps seem to appear here later
 for i in $(/usr/libexec/PlistBuddy -c "Print CSReceiverBundleIdentifierState" /Users/"$USER"/Library/Preferences/com.apple.corespotlightui.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
 do
-        echo "$i"
+        echo -e " \t $i"
 	    /usr/libexec/PlistBuddy -c "Set CSReceiverBundleIdentifierState:$i false" /Users/"$USER"/Library/Preferences/com.apple.corespotlightui.plist
 done
 defaults read /Users/"$USER"/Library/Preferences/com.apple.corespotlightui.plist &> /dev/null
@@ -77,6 +77,9 @@ APPS_TO_DISABLE_FOR_SIRI=(
 "Safari"
 "System Settings"
 "Tips"
+"Books"
+"Help Viewer"
+"WhatsApp"
 )
 
 CONFIG_FILE="/Users/"$USER"/Library/Preferences/com.apple.suggestions.plist"
@@ -98,7 +101,7 @@ do
     
 	APP_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$PATH_TO_APP/Contents/Info.plist")
 	if [[ "$APP_ID" == "" ]];then echo "APP_ID of "$APP_NAME" is empty, skipping entry..." && continue; fi
-	echo ""$APP_ID"..."
+	echo -e " \t $APP_ID"
 	/usr/libexec/PlistBuddy -c "Add :AppCanShowSiriSuggestionsBlacklist:"$NUM" string "$APP_ID"" "$CONFIG_FILE"
 	/usr/libexec/PlistBuddy -c "Add :SiriCanLearnFromAppBlacklist:"$NUM" string "$APP_ID"" "$CONFIG_FILE"
 	NUM=((NUM+1))

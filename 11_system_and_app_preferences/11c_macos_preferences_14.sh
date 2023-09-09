@@ -56,10 +56,10 @@ fi
 ###
 
 # specific macos version only
-if [[ "$MACOS_VERSION_MAJOR" != "13" ]]
+if [[ "$MACOS_VERSION_MAJOR" != "14" ]]
 then
     echo ''
-    echo "this script is only compatible with macos 13, exiting..."
+    echo "this script is only compatible with macos 14, exiting..."
     echo ''
     exit
 else
@@ -1059,7 +1059,7 @@ EOF
     end tell
     
     # do not use visible as it makes the window un-clickable
-    #tell application "System Events" to tell process "system settings" to set visible to true
+    #tell application "System Events" to tell process "System Settings" to set visible to true
     #delay 1
     tell application "System Events" to tell process "System Settings" to set frontmost to true
     delay 1
@@ -1395,6 +1395,15 @@ EOF
         NotPreferredMenuExtras=(
         "/System/Library/CoreServices/Menu Extras/TimeMachine.menu"
         )
+        
+        # without this step a warning/error message appears
+        #/usr/libexec/PlistBuddy -c "Delete :menuExtras" ~/Library/Preferences/com.apple.systemuiserver.plist
+        if [[ -z $(/usr/libexec/PlistBuddy -c "Print :menuExtras" ~/Library/Preferences/com.apple.systemuiserver.plist) ]] > /dev/null 2>&1
+        then
+            /usr/libexec/PlistBuddy -c "Add :menuExtras array" ~/Library/Preferences/com.apple.systemuiserver.plist
+        else
+            :
+        fi
         
         for varname in "${NotPreferredMenuExtras[@]}"; 
         do
@@ -2085,7 +2094,14 @@ EOF
     # if stage manager is enabled - show/hide desktop items
     defaults write com.apple.WindowManager HideDesktop -bool false
     
+    ## show desktop on desktop click
+    # true = always
+    # false = only in stage manager
+    defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
     
+    # needs restart of window manager to enable changes
+    # done at the end of the script
+    #killall WindowManager
     
     ### mission control
     
@@ -2415,70 +2431,22 @@ EOF
     # setting desktop wallpaper
     # reading infos
     #osascript -e 'tell application "System Events" to get properties of every desktop'
+    # or use desktoppr (https://github.com/scriptingosx/desktoppr/tree/v0.2)
+    #brew install desktoppr
+    #desktoppr
+    # shows the currently active wallpaper
     
-    # sets picture, but does not set the dynamic mode (light, dark, dynamic)
-    #osascript -e 'tell application "System Events" to set picture of every desktop to posix file "/System/Library/Desktop Pictures/Big Sur.heic"'
-    
-    # all credits for the desktop picture section go to
-    # https://github.com/tech-otaku/macos-desktop
-    
-    # desktop picture database
-    DESKTOP_DB="/Users/"$USER"/Library/Application Support/Dock/desktoppicture.db"
-    
-    # sqlite3 "$DESKTOP_DB" ".dump data"
-    # big sur dynamic
-    VALUE=1
-    DESKTOP_FILE="/System/Library/Desktop Pictures/Big Sur.heic"
-    
-    if [[ $(sqlite3 "$DESKTOP_DB" "SELECT COUNT() FROM displays;") -ge 2 ]] || [[ $(sqlite3 "$DESKTOP_DB" "SELECT COUNT() FROM spaces;") -ge 2 ]]
-    then
-        osascript -e "tell application \"System Events\" to set picture of every desktop to posix file \"$DESKTOP_FILE\""
-        echo "multiple displays or spaces deteced, please select dynamic mode of desktop pictures manually in system settings..." >&2
-    else
-        
-        # reset desktop wallpaper to make sure to start with a clean database
-        if [[ -f "$DESKTOP_DB" ]]; then rm -f "$DESKTOP_DB" && killall Dock && sleep 2; else :; fi
-        
-        # sqlite3 "$DESKTOP_DB" ".dump preferences"
-        # sqlite3 "$DESKTOP_DB" "SELECT key FROM preferences WHERE picture_id=1;"
-        # sqlite3 "$DESKTOP_DB" "SELECT key FROM preferences;" | head -n 2
-        KEY1=20
-        KEY2=1
-    
-        # last rows
-        LAST_ROW_DATA=$(sqlite3 "$DESKTOP_DB" "SELECT ROWID FROM data ORDER BY ROWID DESC LIMIT 1;")
-        if [[ "$LAST_ROW_DATA" == "" ]]; then LAST_ROW_DATA=0; else :; fi
-        LAST_ROW_PREFERENCES=$(sqlite3 "$DESKTOP_DB" "SELECT ROWID FROM preferences ORDER BY ROWID DESC LIMIT 1;")
-        if [[ "$LAST_ROW_PREFERENCES" == "" ]]; then LAST_ROW_PREFERENCES=0; else :; fi
-    
-        # deleting values to start cleanly
-        sqlite3 "$DESKTOP_DB" "DELETE FROM data;"
-        sqlite3 "$DESKTOP_DB" "DELETE FROM preferences;"
-    
-        # add needed row to data
-        sqlite3 "$DESKTOP_DB" "INSERT INTO data(rowid,value) VALUES( $((LAST_ROW_DATA + 1)), $VALUE );"
-        # add needed rows to preferences
-        DATA_ID1=$(sqlite3 "$DESKTOP_DB" "SELECT rowid FROM data WHERE value=$VALUE;")
-        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 1)),$KEY1,$DATA_ID1,3);"
-        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 2)),$KEY1,$DATA_ID1,4);"
-        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 3)),$KEY1,$DATA_ID1,2);"
-        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 4)),$KEY1,$DATA_ID1,1);"
-        
-        # for desktop pictures that have a dynamic mode (light, dark, dynamic) more entreis are needed
-        # add needed row to data
-        sqlite3 "$DESKTOP_DB" "INSERT INTO data(rowid,value) VALUES( $((LAST_ROW_DATA + 2)), \"$DESKTOP_FILE\" );"
-        # add needed rows to preferences
-        DATA_ID2=$(sqlite3 "$DESKTOP_DB" "SELECT rowid FROM data WHERE value=\"$DESKTOP_FILE\"")
-        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 5)),$KEY2,$DATA_ID2,3);"
-        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 6)),$KEY2,$DATA_ID2,4);"
-        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 7)),$KEY2,$DATA_ID2,2);"
-        sqlite3 "$DESKTOP_DB" "INSERT INTO preferences(rowid,key,data_id,picture_id) VALUES( $((LAST_ROW_PREFERENCES + 8)),$KEY2,$DATA_ID2,1);"
-        
-        # applying changes    
-        killall Dock
-        # killall "System Settings"          # needed to see changes in system settings
-    fi
+    #DESKTOP_FILE="/System/Library/Desktop Pictures/Valley.madesktop"    
+    DESKTOP_FILE="/System/Library/CoreServices/DefaultDesktop.heic"
+    # /System/Library/Desktop Pictures/.wallpapers/Sonoma Horizon/Sonoma Horizon.heic
 
+    osascript -e "tell application \"System Events\" to set picture of every desktop to posix file \"$DESKTOP_FILE\""
+    #osascript -e "tell application Finder to set picture of every desktop to posix file \"$DESKTOP_FILE\""
+    # or
+    #desktoppr "$DESKTOP_FILE"
+
+    # changes are reflected in this file
+    #"~/Library/Application Support/com.apple.wallpaper/Store/Index.plist"
 
 
     ###
@@ -3683,17 +3651,6 @@ EOF
     # do not get tracked
     defaults write com.apple.Safari SendDoNotTrackHTTPHeader -bool true
     
-    # block new cookies and website data
-    # 0 = yes
-    # 2 = no
-    defaults write com.apple.Safari BlockStoragePolicy -int 2
-    
-    # allow websites to check if applepay is enabled
-    defaults write com.apple.Safari WebKitPreferences.applePayCapabilityDisclosureAllowed -bool true
-    
-    # allow web measurement
-    defaults write com.apple.Safari WebKitPreferences.privateClickMeasurementEnabled -bool false
-    
     
     ### safari websites
     
@@ -3918,8 +3875,28 @@ EOF
     # press tab to highlight each item on a webpage
     defaults write com.apple.Safari WebKitTabToLinksPreferenceKey -bool false
     
+    # show color in compact tab view
+    # false = show color
+    # true = never show color
+    defaults write com.apple.Safari NeverUseBackgroundColorInToolbar -bool true
+    
     # automatically save for offline reading
     defaults write com.apple.Safari WebKitTabToLinksPreferenceKey -bool false
+    
+    # advanced tracking- and identification protection
+    defaults write com.apple.Safari EnableEnhancedPrivacyInPrivateBrowsing -bool true
+    defaults write com.apple.Safari EnableEnhancedPrivacyInRegularBrowsing -bool true
+    
+    # allow websites to check for apple pay and apple card
+    defaults write com.apple.Safari WebKitPreferences.applePayCapabilityDisclosureAllowed -bool false
+    
+    # allow privacy protected measurement of advertising effectiveness
+    defaults write com.apple.Safari WebKitPreferences.privateClickMeasurementEnabled -bool false
+    
+    # block new cookies and website data
+    # 0 = yes
+    # 2 = no
+    defaults write com.apple.Safari BlockStoragePolicy -int 2
     
     # user style sheet
     defaults write com.apple.Safari UserStyleSheetEnabled -bool false
@@ -3932,6 +3909,42 @@ EOF
     defaults write com.apple.Safari IncludeDevelopMenu -bool true
     defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
     defaults write com.apple.Safari.SandboxBroker ShowDevelopMenu -bool true
+    
+    
+    ## safari developer
+    
+    # allow remote automation
+    defaults write com.apple.Safari UserStyleSheetEnabled -bool false
+
+    # allow java in intelligent search field
+    # true = allow
+    # false = do not allow
+    defaults write com.apple.Safari UnifiedFieldSupportsJavascriptURLs -bool false
+    
+    # allow java from apple events
+    # true = allow
+    # false = do not allow
+    defaults write com.apple.Safari AllowJavaScriptFromAppleEvents -bool false
+    
+    # true = deactivate web site specific hacks
+    # false = activate web site specific hacks
+    defaults write com.apple.Safari WebKitPreferences.needsSiteSpecificQuirks -bool false
+    defaults write com.apple.Safari WebKitUseSiteSpecificSpoofing -bool false
+    
+    # local file restrictions 
+    # true = deactivate local file restrictions
+    # false = activate local file restrictions
+    defaults write com.apple.Safari LocalFileRestrictionsEnabled -bool false
+    
+    # cross origin restrictions
+    # true = deactivate restrictions
+    # false = activate restrictions
+    defaults write com.apple.Safari WebKitWebSecurityEnabled -bool false
+    defaults write com.apple.Safari WebKitPreferences.webSecurityEnabled -bool false
+    
+    # allow unsigned extensions
+    # clicking in the gui adds removed date entries to this file
+    # /Users/tom/Library/Containers/com.apple.Safari/Data/Library/Safari/WebExtensions/Extensions.plist
     
     
     ## more safari settings
@@ -4037,6 +4050,11 @@ EOF
     
     # add invitations to calendar app automatically
     # adds entry to ~/Library/Mail/V6/MailData/UnsyncedRules.plist
+    
+    # show suggestions for follow up messages
+    # true = diabled
+    # false = enabled
+    defaults write "/Users/"$USER"/Library/Group Containers/group.com.apple.mail/Library/Preferences/group.com.apple.mail.plist" DisableFollowUp -bool true
     
     # archive or delete suppressed messages
     defaults write com.apple.mail ArchiveOrDeleteMutedMessagesKey -bool false
@@ -4251,6 +4269,128 @@ EOF
     
     # unfold the favorites section
     /usr/libexec/PlistBuddy -c "Add 'NSOutlineView Items Main Window Mailbox List-V2':1 string 'favoritemailboxdatum://Inbox?parent=0'" "$MAIL_PREFERENCES_FILE"
+
+
+    ### safari third party extensions
+    
+    # variables
+    SAFARI_APP_EXTENSIONS_CONFIG_FILE="/Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist"
+    EXTENSION="com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)"
+    
+    # list extensions
+    # get first level dict from file with four spaces, second level with eight spaces, ect.
+    #/usr/libexec/PlistBuddy "$SAFARI_APP_EXTENSIONS_CONFIG_FILE" -c "Print :" | grep -E '^[[:space:]]{4}[^[:space:]]' | grep -v "^Dict {" | grep -E '{$' | sed 's/^\(.*\) =.*/\1/g' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d'
+    
+    # checking values example
+    #/usr/libexec/PlistBuddy -c "Print :'com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)':" ~/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist
+    #/usr/libexec/PlistBuddy -c "Print :'com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)':GrantedPermissionOrigins:'https\:\/\/\*\/\*':" ~/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist
+    
+    configure_safari_extensions() {
+		echo "safari third party extensions..."
+        while IFS= read -r line || [[ -n "$line" ]]
+	    do
+	        if [[ "$line" == "" ]]; then continue; fi
+            local ENTRY="$line"
+            local SAFARI_EXTENSION_NAME=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_NAME"
+            local SAFARI_EXTENSION_ENABLED=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_ENABLED"
+            local SAFARI_EXTENSION_PERMISSIONS=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_PERMISSIONS"
+            local SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $4}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING"
+            if [[ $(/usr/libexec/PlistBuddy -c "Print :" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE" | grep "$SAFARI_EXTENSION_NAME") == "" ]]
+            then
+            	echo -e " \t extension "$SAFARI_EXTENSION_NAME" not found, skipping..." && continue
+            else
+            	echo -e " \t $SAFARI_EXTENSION_NAME"
+            fi
+                        
+			### extension enabled
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':Enabled:" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':Enabled" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			
+            if [[ "$SAFARI_EXTENSION_ENABLED" == "yes" ]]
+            then
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':Enabled bool true" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			else
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':Enabled bool false" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+
+			### extension permissions
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+
+			if [[ "$SAFARI_EXTENSION_PERMISSIONS" == "ask" ]]
+            then
+				:
+			elif [[ "$SAFARI_EXTENSION_PERMISSIONS" == "allow" ]]
+			then
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			elif [[ "$SAFARI_EXTENSION_PERMISSIONS" == "deny" ]]
+			then	
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+
+			### extension allowed in private browsing
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing:" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			
+			if [[ "$SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING" == "yes" ]]
+            then
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing bool true" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			else
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing bool false" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+        done <<< "$(printf "%s\n" "${SAFARI_EXTENSION_ENTRIES_ARRAY[@]}")"
+    }
+    
+    SAFARI_EXTENSION_ENTRIES=(
+    # name								 							enabled			permissions (ask, allow, deny)	allowed in private browsing
+    "com.colliderli.iina.OpenInIINA (67CQ77V27R)        				no      	allow							yes"
+	"com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)	        yes     	allow							yes"
+	"com.adguard.safari.AdGuard.AdvancedBlocking (TC3Q7MAJXF)		    yes     	allow							yes"
+	"com.adguard.safari.AdGuard.Extension (TC3Q7MAJXF)				    yes     	allow							yes"
+	"com.PS.PSD.SafariBridge (E67296UX9N)				        		no      	ask								yes"
+	"com.bitdefender.virusscannerplus.TrafficLight (GUNFMW623Y)        	no      	ask								yes"
+    "com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)        	yes     	allow							yes"
+    )
+    SAFARI_EXTENSION_ENTRIES_ARRAY=$(printf "%s\n" "${SAFARI_EXTENSION_ENTRIES[@]}")
+    configure_safari_extensions
 
 
     
@@ -4645,16 +4785,20 @@ EOF
     
     # shared with you
     defaults write com.apple.SocialLayer SharedWithYouEnabled -bool false
-    if [[ -z $(/usr/libexec/PlistBuddy -c "Print SharedWithYouApps" /Users/"$USER"/Library/Preferences/com.apple.SocialLayer.plist) ]] > /dev/null 2>&1
+
+    # only if SharedWithYouEnabled set to true
+    if [[ -z $(/usr/libexec/PlistBuddy -c "Print :SharedWithYouApps" /Users/"$USER"/Library/Preferences/com.apple.SocialLayer.plist) ]] > /dev/null 2>&1
     then
         :
     else
-        for i in $(/usr/libexec/PlistBuddy -c "Print SharedWithYouApps" /Users/"$USER"/Library/Preferences/com.apple.SocialLayer.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
+        for i in $(/usr/libexec/PlistBuddy -c "Print :SharedWithYouApps" /Users/"$USER"/Library/Preferences/com.apple.SocialLayer.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
         do
             #echo "$i"
-    	    /usr/libexec/PlistBuddy -c "Set SharedWithYouApps:$i false" /Users/"$USER"/Library/Preferences/com.apple.SocialLayer.plist
+    	    /usr/libexec/PlistBuddy -c "Set :SharedWithYouApps:$i bool false" /Users/"$USER"/Library/Preferences/com.apple.SocialLayer.plist
         done
     fi
+    defaults read /Users/tom/Library/Preferences/com.apple.SocialLayer.plist >/dev/null
+    #killall sociallayerd
     
 
     ### pages
@@ -4724,6 +4868,9 @@ EOF
     
     # allow live photos during video calls
     defaults write com.apple.TelephonyUtilities FaceTimePhotosEnabled -bool false
+    
+    # share play
+    defaults write com.apple.TelephonyUtilities.sharePlayAppPolicies CPAppPolicy.AutoSharePlayToggle -bool true
 
 
     ### screenshots
@@ -4817,20 +4964,20 @@ EOF
     
     echo "restarting affected apps"
     
-    for app in "Activity Monitor" "Calendar" "Contacts" "cfprefsd" "blued" "Dock" "Finder" "Mail" "Messages" "System Settings" "Safari" "SystemUIServer" "TextEdit" "ControlStrip" "Photos" "NotificationCenter"; do
-    	killall "${app}" > /dev/null 2>&1
+    for app in "Activity Monitor" "Calendar" "Contacts" "cfprefsd" "blued" "Dock" "Finder" "Mail" "Messages" "System Settings" "Safari" "SystemUIServer" "TextEdit" "ControlStrip" "Photos" "NotificationCenter" "WindowManager"; 
+    do
+        echo -e " \t $app"
+    	killall -q "${app}"
     done
-    
-    
     
     ###
     ### clear notification center
     ###
-    
-    NEEDED_DIRECTOR=$(getconf DARWIN_USER_DIR)
-    if [[ -e "$NEEDED_DIRECTOR"/com.apple.notificationcenter ]]
+    NEEDED_DIRECTORY=$(getconf DARWIN_USER_DIR)
+    if [[ -e "$NEEDED_DIRECTORY"/com.apple.notificationcenter ]]
     then
-        rm -rf "$NEEDED_DIRECTOR"/com.apple.notificationcenter
+        sleep 3
+        rm -rf "$NEEDED_DIRECTORY"/com.apple.notificationcenter
         killall usernoted
         killall NotificationCenter
     else
@@ -4839,7 +4986,6 @@ EOF
 
 
 }
-
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then 
     setting_preferences | tee "$HOME"/Desktop/"$SCRIPT_NAME"_log.txt
@@ -4847,14 +4993,12 @@ else
     setting_preferences 2>&1 | tee "$HOME"/Desktop/"$SCRIPT_NAME"_log.txt
 fi
 
-
 ### stopping the error output redirecting
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_stop_error_log; else :; fi
 
 
 echo "done ;)"
 echo "a few changes need a reboot or logout to take effect"
-
 if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]
 then
     :

@@ -428,6 +428,17 @@ env_get_mounted_disks() {
 env_convert_version_comparable() { echo "$@" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }'; }
 
 
+### system gui settings app
+VERSION_TO_CHECK_AGAINST=12
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos versions until and including 12
+    SYSTEM_GUI_SETTINGS_APP="System Preferences"
+else
+    # macos versions 13 and up
+    SYSTEM_GUI_SETTINGS_APP="System Settings"
+fi
+
 ### paths to applications
 VERSION_TO_CHECK_AGAINST=10.14
 if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
@@ -876,9 +887,9 @@ env_set_apps_security_permissions() {
                 sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,?,NULL,0,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,NULL,NULL,NULL,$APP_CSREQ,NULL,0,?);"
-            elif VERSION_TO_CHECK_AGAINST=11; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            elif [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable 11) ]] && [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable 13) ]]
             then
-                # macos 11 and higher
+                # macos 11 to 13
                 if [[ $PERMISSION_GRANTED == "0" ]]
                 then
                     :
@@ -890,6 +901,17 @@ env_set_apps_security_permissions() {
                 sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,4,1,NULL,NULL,NULL,?,NULL,0,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,4,1,NULL,NULL,NULL,$APP_CSREQ,NULL,0,?);"
+            elif VERSION_TO_CHECK_AGAINST=14; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos 14 and higher
+                if [[ $PERMISSION_GRANTED == "0" ]]
+                then
+                    :
+                elif [[ $PERMISSION_GRANTED == "1" ]]
+                then
+                    PERMISSION_GRANTED=2
+                fi
+                sudo sqlite3 "$DATABASE_SYSTEM" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,4,1,?,NULL,0,'UNUSED',NULL,0,?,NULL,NULL,'UNUSED',?);"
             else
                 echo ''
                 echo "setting security permissions for this version of macos is not supported, skipping..."
@@ -910,7 +932,7 @@ env_set_apps_security_permissions() {
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,NULL,?,NULL,NULL,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,1,$APP_CSREQ,NULL,NULL,?,NULL,NULL,?);"
-            elif VERSION_TO_CHECK_AGAINST=11; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            elif [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable 11) ]] && [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable 13) ]]
             then
                 # macos 11 and higher
                 if [[ $PERMISSION_GRANTED == "0" ]]
@@ -924,6 +946,17 @@ env_set_apps_security_permissions() {
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,4,1,?,NULL,NULL,?,NULL,NULL,?);" 2>&1 | grep -v '^$'
                 # working with csreq
                 #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('"$INPUT_SERVICE"','"$APP_ID"',0,$PERMISSION_GRANTED,4,1,$APP_CSREQ,NULL,NULL,?,NULL,NULL,?);"
+            elif VERSION_TO_CHECK_AGAINST=14; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos 14 and higher
+                if [[ $PERMISSION_GRANTED == "0" ]]
+                then
+                    :
+                elif [[ $PERMISSION_GRANTED == "1" ]]
+                then
+                    PERMISSION_GRANTED=2
+                fi
+                sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('$INPUT_SERVICE','$APP_ID',0,$PERMISSION_GRANTED,4,1,?,NULL,0,'UNUSED',NULL,0,?,NULL,NULL,'UNUSED',?);" 2>&1 | grep -v '^$'
             else
                 echo ''
                 echo "setting security permissions for this version of macos is not supported, skipping..."
@@ -1066,11 +1099,11 @@ env_set_apps_automation_permissions() {
             #echo "$PERMISSION_GRANTED"
             
             ### setting permissions
-            # working, but does not show in gui of system preferences, use csreq for the entry to make it work and show
+            # working, but does not show in gui, use csreq for the entry to make it work and show
             #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,?,NULL,0,'$AUTOMATED_APP_ID',?,NULL,?);"
-            # not working, but shows correct entry in gui of system preferences, use csreq to make it work and show
+            # not working, but shows correct entry in gui, use csreq to make it work and show
             #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,'UNUSED',NULL,0,'$AUTOMATED_APP_ID','UNUSED',NULL,?);"
-            # working and showing in gui of system preferences when using correct values in CSREQ variables
+            # working and showing in gui when using correct values in CSREQ variables
             #sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
             
             # delete entry before resetting
@@ -1081,10 +1114,11 @@ env_set_apps_automation_permissions() {
             if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
             then
                 # macos versions until and including 10.15
-                # working and showing in gui of system preferences if csreq is not '?'
+                # working and showing in gui if csreq is not '?'
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
-            else
-                # macos version 11 and higher
+            elif [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable 11) ]] && [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable 13) ]]
+            then
+                # macos version 11 to 13
                 if [[ $PERMISSION_GRANTED == "0" ]]
                 then
                     :
@@ -1093,6 +1127,17 @@ env_set_apps_automation_permissions() {
                     PERMISSION_GRANTED=2
                 fi
                 sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,4,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?);"
+            elif VERSION_TO_CHECK_AGAINST=14; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+            then
+                # macos version 14 and higher
+                if [[ $PERMISSION_GRANTED == "0" ]]
+                then
+                    :
+                elif [[ $PERMISSION_GRANTED == "1" ]]
+                then
+                    PERMISSION_GRANTED=2
+                fi
+                sqlite3 "$DATABASE_USER" "REPLACE INTO access VALUES('kTCCServiceAppleEvents','$SOURCE_APP_ID',0,$PERMISSION_GRANTED,4,1,$SOURCE_APP_CSREQ,NULL,0,'$AUTOMATED_APP_ID',$AUTOMATED_APP_CSREQ,NULL,?,NULL,NULL,'UNUSED',?);"
             fi
             
             ### print line

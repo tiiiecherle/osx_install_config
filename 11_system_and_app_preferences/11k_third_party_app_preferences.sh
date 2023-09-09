@@ -906,7 +906,7 @@ vbox_workaround() {
 	sudo kextload -b org.virtualbox.kext.VBoxNetAdp
 	sudo kextload -b org.virtualbox.kext.VBoxUSB
 	
-	# open System Preferences - Privacy - General
+	# open System Settings - Privacy - General
 	# accept extensions
 	# allowing kext extensions via mobileconfig profile does not work locally, has to be deployed by a trusted mdm server
 	osascript <<EOF	
@@ -969,7 +969,7 @@ undo_vbox_workaround() {
 	#sudo kextload -b org.virtualbox.kext.VBoxNetAdp
 	#sudo kextload -b org.virtualbox.kext.VBoxUSB
 	
-	# open System Preferences - Privacy - General
+	# open System Settings - Privacy - General
 	# accept extensions
 	
 	}

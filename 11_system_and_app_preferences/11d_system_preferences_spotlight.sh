@@ -56,7 +56,7 @@ echo "setting security and automation permissions..."
 # macos versions 10.14 and up
 AUTOMATION_APPS=(
 # source app name							automated app name										    allowed (1=yes, 0=no)
-"$SOURCE_APP_NAME   	                    System Preferences                                         	1"
+"$SOURCE_APP_NAME   	                    $SYSTEM_GUI_SETTINGS_APP                                    1"
 "$SOURCE_APP_NAME	                       	System Events                                           	1"
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
@@ -171,7 +171,7 @@ else
 	
 	delay 2
 	
-	tell application "System Preferences"
+	tell application "System Settings"
 		quit
 	end tell
 EOF
@@ -188,7 +188,7 @@ sleep 10
 open_system_prefs_spotlight
 
 # if script hangs it has to be run with an app that has the the right to write to accessibility settings
-# in system preferences - security - assistance devices
+# in system settings - security - assistance devices
 # e.g. terminal or iterm
 
 # change indexing order and disable some search results
@@ -200,7 +200,7 @@ open_system_prefs_spotlight
 # 	MENU_WEBSEARCH             (send search queries to Apple)
 # 	MENU_OTHER
 
-echo "settings spotlight system preferences options..."
+echo "settings spotlight system settings options..."
 if [[ -z $(/usr/libexec/PlistBuddy -c "Print :orderedItems" ~/Library/Preferences/com.apple.Spotlight.plist) ]] > /dev/null 2>&1
 then
 	:
@@ -356,11 +356,11 @@ done <<< "$(printf "%s\n" "${SPOTLIGHT_INDEX_FOLDERS[@]}")"
 #run_spotlight_command
 
 # stop indexing for some volumes which will not be indexed again
-# only shows in system preferences if connected
+# only shows in system settings if connected
 sudo defaults write "$SPOTLIGHT_FOLDER_CONFIG"/VolumeConfiguration Exclusions -array "/Volumes/office" "/Volumes/extra" "/Volumes/scripts"
 # check entries
 #sudo defaults read /.Spotlight-V100/VolumeConfiguration Exclusions
-# activating changes in system preferences
+# activating changes in system settings
 #sudo killall mds		# done in restarting affected apps
 
 # waiting for volume information to be available after deleting the indexes and killing mds
@@ -405,7 +405,7 @@ echo "restarting affected apps..."
 
 apps_to_kill=(
 "cfprefsd"
-"System Preferences"
+"$SYSTEM_GUI_SETTINGS_APP"
 "mds"
 "mds_stores"
 )

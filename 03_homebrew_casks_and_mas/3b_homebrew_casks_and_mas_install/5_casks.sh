@@ -102,7 +102,7 @@ install_casks_parallel() {
     if [[ $(brew list --cask | grep "^$i$") == "" ]]
     then
         echo "installing cask "$i"..."
-        env_use_password | env_timeout 400 brew install --cask --force "$i" 2> /dev/null | grep "successfully installed"
+        env_use_password | env_timeout 600 brew install --cask --force "$i" 2> /dev/null | grep "successfully installed"
         if [[ $? -eq 0 ]]
         then
             # successfull
@@ -113,7 +113,7 @@ install_casks_parallel() {
             if [[ "$SECOND_TRY" == "yes" ]]
             then
                 # do nothing if it already is the second try
-                :
+                echo "installing cask $i failed for the second time..." >&2
             else
                 if [[ -e /tmp/casks_second_try.txt ]]; then :; else touch /tmp/casks_second_try.txt; fi
                 echo "installing cask $i failed, noting for a second try..." >&2
@@ -563,8 +563,8 @@ then
         #       reset PRAM by rebooting and pressing cmd+option+P+R (release after second time chime or logo comes up)
         #       boot into macOS and uninstall and reinstall virtualbox and extension pack and macfuse
         #           brew reinstall --cask--force virtualbox virtualbox-extension-pack macfuse
-        #       open system preferences - security - general and accept extension
-        #       open system preferences - sound and disable startup chime (if wanted)
+        #       open system settings - security - general and accept extension
+        #       open system settings - sound and disable startup chime (if wanted)
         #       reboot if needed
         #       boot into recovery (cmd + R)
         #           disable sip (if wanted)

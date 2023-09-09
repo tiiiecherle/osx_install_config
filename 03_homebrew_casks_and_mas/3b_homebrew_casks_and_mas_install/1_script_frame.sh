@@ -110,7 +110,7 @@ else
     # source app name							automated app name										    allowed (1=yes, 0=no)
     "$SOURCE_APP_NAME                           System Events                                               1"
     "$SOURCE_APP_NAME                           Finder                                                      1"
-    "$SOURCE_APP_NAME                           System Preferences                                          1"
+    "$SOURCE_APP_NAME                           $SYSTEM_GUI_SETTINGS_APP                                    1"
     )
     PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
     #echo ''

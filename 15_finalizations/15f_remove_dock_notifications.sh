@@ -63,7 +63,14 @@ fi
 # reaaperas after search for new software in gui
 # "com.apple.preferences.softwareupdate" = 1;
 defaults write com.apple.systempreferences AttentionPrefBundleIDs -dict-add com.apple.preferences.softwareupdate -integer 0
-/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.systempreferences.plist -c 'Delete AttentionPrefBundleIDs:com.apple.preferences.softwareupdate'
+
+if [[ -z $(/usr/libexec/PlistBuddy -c "Print :AttentionPrefBundleIDs:com.apple.preferences.softwareupdate"  ~/Library/Preferences/com.apple.systempreferences.plist) ]] > /dev/null 2>&1
+then
+	:
+else
+	/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.systempreferences.plist -c 'Delete AttentionPrefBundleIDs:com.apple.preferences.softwareupdate'
+fi
+
 #killall Dock
 
 

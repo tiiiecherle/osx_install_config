@@ -877,13 +877,8 @@ echo VOX
 u	~/Library/Containers/com.coppertino.Vox/Data/Library/Preferences/com.coppertino.Vox.plist
 
 # Whatsapp
-echo Whatsapp
-#u	"$PATH_TO_APPS"/Whatsapp.app
-u	~/Library/Application Support/WhatsApp/Preferences
-u	~/Library/Application Support/WhatsApp/settings.json
-u	~/Library/Preferences/WhatsApp-Helper.plist
-u	~/Library/Preferences/WhatsApp.plist
-#u	~/Library/Application Support/WhatsApp
+#echo Whatsapp
+# whatsapp switched to a native app that has to be linked to the new installation on first run
 
 # Widgets
 #echo Widgets
@@ -895,8 +890,14 @@ u	~/Library/Preferences/WhatsApp.plist
 
 # Wireguard
 #echo Wireguard
+# backup and restore done by restoring login.keychain-db or manually like this
+# https://aaron.cc/restoring-the-wireguard-configuration-from-a-backup/
+# https://superuser.com/questions/1488506/how-to-restore-macos-wireguard-vpns-after-catalina-beta-update#:~:text=If%20you%20cannot%20find%20it,in%20the%20%22Password%22%20field
 #u	/Library/Preferences/SystemConfiguration/preferences.plist
 #u	/Library/Preferences/com.apple.networkextension.plist
+# already done with keychain backup
+#u	~/Library/Preferences/com.apple.keychainaccess.plist
+#u	~/Library/Keychains
 
 # Witch
 echo Witch

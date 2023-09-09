@@ -39,7 +39,7 @@ add Desktop Picture when updating to macOS 12
 update macpass manually to latest continuous version when updating to macOS 12
 
 if no icloud account is used and red dot notification is shown therefore on dock icon
-of system preferences, run script 15f_delete_dock_notifications.sh
+of system settings, run script 15f_delete_dock_notifications.sh
 
 delete restore files on desktop and empty trash
 

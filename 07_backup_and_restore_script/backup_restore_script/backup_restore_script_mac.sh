@@ -1211,7 +1211,7 @@ EOF
             ###
             
             # disabling siri analytics
-            # already done in system preferences script before but some apps seam to appear here later
+            # already done in system settings script before but some apps seam to appear here later
             for i in $(/usr/libexec/PlistBuddy -c "Print CSReceiverBundleIdentifierState" /Users/"$USER"/Library/Preferences/com.apple.corespotlightui.plist | grep " = " | sed -e 's/^[ \t]*//' | awk '{print $1}')
             do
                 #echo $i

@@ -196,7 +196,7 @@ sleep 2
   
 # clearing dock
 defaults write $DOCK 'persistent-apps' -array ''
-# hiding recent section in dock is a system preferences value which is re-set in 11c_macos_preferences
+# hiding recent section in dock is a system settings value which is re-set in 11c_macos_preferences
 # show last used applications in the dock
 defaults write com.apple.dock show-recents -bool false
 defaults write $DOCK 'recent-apps' -array ''

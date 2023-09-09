@@ -98,7 +98,7 @@ getting_network_device_ids() {
     if [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "macbookpro" ]]
     then
         ETHERNET_DEVICE="USB 10/100/1000 LAN"
-    if [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "macbookair" ]]
+    elif [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "macbookair" ]]
     then
         ETHERNET_DEVICE="USB 10/100/1000 LAN"
     elif [[ "$ETHERNET_DEVICE" == "" ]] && [[ "$HARDWARE_TYPE" == "imac" ]]

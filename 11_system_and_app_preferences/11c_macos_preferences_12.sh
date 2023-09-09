@@ -1648,9 +1648,9 @@ EOF
     sudo /usr/libexec/PlistBuddy -c "Set :shared false" /tmp/system.preferences.plist
     sleep 0.5
     #defaults read /tmp/system.preferences.plist
-    # exec or "$SCRIPT_INTERPRETER" -c work around
+    #(sudo security authorizationdb write "$i" < /tmp/"$i".plist) 2>&1 | grep -v "YES (0)"
     # Error Domain=NSCocoaErrorDomain Code=3840 "Cannot parse a NULL or zero-length data" UserInfo={NSDebugDescription=Cannot parse a NULL or zero-length data}
-    # that occurs due to the changed sudo command
+    # that occurs due to the changed sudo command env_sudo
     #( env_use_password | exec sudo -p '' -S "$SCRIPT_INTERPRETER" -c "security authorizationdb write system.preferences < /tmp/system.preferences.plist" )
     #sudo security authorizationdb write system.preferences < /tmp/system.preferences.plist
     sudo -S "$SCRIPT_INTERPRETER" -c "security authorizationdb write system.preferences < /tmp/system.preferences.plist"      

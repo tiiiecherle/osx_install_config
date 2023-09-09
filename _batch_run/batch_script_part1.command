@@ -135,7 +135,7 @@ echo "setting security and automation permissions..."
 AUTOMATION_APPS=(
 # source app name							automated app name										    allowed (1=yes, 0=no)
 "$SOURCE_APP_NAME                           System Events                                               1"
-"$SOURCE_APP_NAME                           System Preferences                                               1"
+"$SOURCE_APP_NAME                           $SYSTEM_GUI_SETTINGS_APP                                    1"
 "$SOURCE_APP_NAME                           Finder                                                      1"
 )
 PRINT_AUTOMATING_PERMISSIONS_ENTRIES="yes" env_set_apps_automation_permissions
@@ -495,6 +495,7 @@ cleanup_log() {
     sed -i '' '/Please note that these warnings.*Homebrew maintainers/,/just ignore this\. Thanks/d' "$COMBINED_ERROR_LOG"
     sed -i '' "/Already on 'release/d" "$COMBINED_ERROR_LOG"
     sed -i '' '/security\:\ SecKeychainSearchCopyNext\:\ The specified item could not be found in the keychain\./d' "$COMBINED_ERROR_LOG"
+    sed -i '' '/It is expected behaviour.*will fail to build/,/may not accept it\./d' "$COMBINED_ERROR_LOG"
     perl -i -ane '$n=(@F==0) ? $n+1 : 0; print if $n<=2' "$COMBINED_ERROR_LOG"
 }
 sleep 1
