@@ -2447,6 +2447,9 @@ EOF
 
     # changes are reflected in this file
     #"~/Library/Application Support/com.apple.wallpaper/Store/Index.plist"
+    
+    sleep 3
+
 
 
     ###
