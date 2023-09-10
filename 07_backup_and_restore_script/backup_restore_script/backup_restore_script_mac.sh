@@ -1724,7 +1724,22 @@ EOF
             # signal
             if [[ -e "/Users/"$USER"/Library/Application Support/Signal/" ]]
             then
-                :
+                if [[ "$MACOS_CURRENTLY_BOOTED_VOLUME" == "macintosh_hd2" ]]
+                then
+                    # remove everything and start clean as of 2023-09 signal does not have a sync or backup/restore function for the signal desktop app
+                    # data is stored in
+                    # ~/Library/Application Support/Signal/sql/db.sqlite
+                    # access to database
+                    # sqlcipher ~"/Library/Application Support/Signal/sql/db.sqlite"
+                    # .tables results in file is not a database
+                    # decrypt database
+                    # PRAGMA key = "x'<key from config.json>'";
+                    # .tables (or other commands)
+                    rm -rf "/Users/"$USER"/Library/Application Support/Signal/"
+                else
+                    rm -rf "/Users/"$USER"/Library/Application Support/Signal/logs/"
+                fi
+                
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/__update__"
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/attachments.noindex"
                 #rm -rf "/Users/"$USER"/Library/Application Support/Signal/Cache/"
