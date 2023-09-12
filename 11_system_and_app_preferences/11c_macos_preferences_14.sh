@@ -3863,6 +3863,221 @@ EOF
     defaults write com.apple.Safari InstallExtensionUpdatesAutomatically -bool true
     
     
+    ## safari third party extensions
+    
+    # list extensions
+    # get first level dict from file with four spaces, second level with eight spaces, ect.
+    #/usr/libexec/PlistBuddy "$SAFARI_APP_EXTENSIONS_CONFIG_FILE" -c "Print :" | grep -E '^[[:space:]]{4}[^[:space:]]' | grep -v "^Dict {" | grep -E '{$' | sed 's/^\(.*\) =.*/\1/g' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d'
+    
+    # checking values example
+    #/usr/libexec/PlistBuddy -c "Print :'com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)':" ~/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist
+    #/usr/libexec/PlistBuddy -c "Print :'com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)':GrantedPermissionOrigins:'https\:\/\/\*\/\*':" ~/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist
+    
+    configure_safari_third_party_extensions() {
+		echo "safari third party extensions..."
+        while IFS= read -r line || [[ -n "$line" ]]
+	    do
+	        if [[ "$line" == "" ]]; then continue; fi
+            local ENTRY="$line"
+            local SAFARI_EXTENSION_NAME=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_NAME"
+            local SAFARI_EXTENSION_TYPE=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_TYPE"
+            local SAFARI_EXTENSION_ENABLED=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_ENABLED"
+            local SAFARI_EXTENSION_PERMISSIONS=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $4}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_PERMISSIONS"
+            local SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $5}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+            #echo "$SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING"
+            
+            if [[ "$SAFARI_EXTENSION_TYPE" == "AppExtension" ]]
+            then
+                SAFARI_APP_EXTENSIONS_CONFIG_FILE="/Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist"
+            elif [[ "$SAFARI_EXTENSION_TYPE" == "WebExtension" ]]
+            then
+                SAFARI_APP_EXTENSIONS_CONFIG_FILE="/Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Safari/WebExtensions/Extensions.plist"
+            else
+                echo "wrong extension type, skipping..."
+                continue
+            fi
+
+            if [[ $(/usr/libexec/PlistBuddy -c "Print :" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE" | grep "$SAFARI_EXTENSION_NAME") == "" ]]
+            then
+            	echo -e " \t extension "$SAFARI_EXTENSION_NAME" not found, skipping..." && continue
+            else
+            	echo -e " \t $SAFARI_EXTENSION_NAME"
+            fi
+                        
+			### extension enabled
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':Enabled:" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':Enabled" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			
+            if [[ "$SAFARI_EXTENSION_ENABLED" == "yes" ]]
+            then
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':Enabled bool true" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			else
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':Enabled bool false" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+
+			### extension permissions
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+
+			if [[ "$SAFARI_EXTENSION_PERMISSIONS" == "ask" ]]
+            then
+				:
+			elif [[ "$SAFARI_EXTENSION_PERMISSIONS" == "allow" ]]
+			then
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			elif [[ "$SAFARI_EXTENSION_PERMISSIONS" == "deny" ]]
+			then	
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+
+			### extension allowed in private browsing
+			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing:" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
+			then
+				:
+			else
+				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+			
+			if [[ "$SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING" == "yes" ]]
+            then
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing bool true" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			else
+				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing bool false" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
+			fi
+        done <<< "$(printf "%s\n" "${SAFARI_EXTENSION_ENTRIES_ARRAY[@]}")"
+    }
+    
+    SAFARI_EXTENSION_ENTRIES=(
+    # name								 							type                 enabled    permissions (ask, allow, deny)	allowed in private browsing
+    "com.colliderli.iina.OpenInIINA (67CQ77V27R)        		    AppExtension		 no      	ask							    yes"
+	"com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)	    AppExtension         yes     	allow							yes"
+	"com.adguard.safari.AdGuard.AdvancedBlocking (TC3Q7MAJXF)		AppExtension         yes     	allow							yes"
+	"com.adguard.safari.AdGuard.Extension (TC3Q7MAJXF)				AppExtension         yes     	allow							yes"
+	"com.PS.PSD.SafariBridge (E67296UX9N)				        	AppExtension	     no      	ask								yes"
+	"com.bitdefender.virusscannerplus.TrafficLight (GUNFMW623Y)     AppExtension   	     no      	ask								yes"
+	"com.agent.super.extension.safari.Extension (L6AC7Q9876)        WebExtension   	     yes      	allow							yes"
+    )
+    SAFARI_EXTENSION_ENTRIES_ARRAY=$(printf "%s\n" "${SAFARI_EXTENSION_ENTRIES[@]}")
+    configure_safari_third_party_extensions
+    
+    
+    ## show or hide third party extensions in safari toolbar
+	show_or_hide_third_party_extensions_in_safari_toolbar () {
+	    
+		# first reset entries for thier party extensions in safari toolbar
+		# extension only shows if it is enabled
+		
+    	if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Default Item Identifiers'" "$SAFARI_PREFERENCES_FILE") ]] > /dev/null 2>&1
+		then
+			#echo "entry exists: "no""
+			/usr/libexec/PlistBuddy -c "Add :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Default Item Identifiers' array" "$SAFARI_PREFERENCES_FILE"
+		else
+			#echo "entry exists "yes""
+			/usr/libexec/PlistBuddy -c "Delete :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Default Item Identifiers'" "$SAFARI_PREFERENCES_FILE"
+			/usr/libexec/PlistBuddy -c "Add :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Default Item Identifiers' array" "$SAFARI_PREFERENCES_FILE"
+		fi
+		
+    	if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Item Identifiers'" "$SAFARI_PREFERENCES_FILE") ]] > /dev/null 2>&1
+		then
+			#echo "entry exists: "no""
+			/usr/libexec/PlistBuddy -c "Add :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Item Identifiers' array" "$SAFARI_PREFERENCES_FILE"
+		else
+			#echo "entry exists "yes""
+			/usr/libexec/PlistBuddy -c "Delete :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Item Identifiers'" "$SAFARI_PREFERENCES_FILE"
+			/usr/libexec/PlistBuddy -c "Add :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Item Identifiers' array" "$SAFARI_PREFERENCES_FILE"
+		fi	
+		
+		# hide some third party extensions in safari toolbar
+		SAFARI_EXTENSION_SHOW_IN_TOOLBAR=(
+	    # name								 										show
+		"com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)	        		yes"
+		"com.adguard.safari.AdGuard.AdvancedBlocking (TC3Q7MAJXF)		    		no"
+		"com.adguard.safari.AdGuard.Extension (TC3Q7MAJXF)				    		yes"
+		"WebExtension-com.agent.super.extension.safari.Extension (L6AC7Q9876)		yes"
+	    )
+	    SAFARI_EXTENSION_SHOW_IN_TOOLBAR_ARRAY=$(printf "%s\n" "${SAFARI_EXTENSION_SHOW_IN_TOOLBAR[@]}")
+    
+		# list of entries in correct (reversed) order - does not work in another order
+		SAFARI_MENU_BAR_ENTRIES=$(/usr/libexec/PlistBuddy -c "Print :'ExtensionsToolbarConfiguration BrowserStandaloneTabBarToolbarIdentifier-v2':OrderedToolbarItemIdentifiers" "$SAFARI_PREFERENCES_FILE" | grep -E '^[[:space:]]{4}[^[:space:]]' | grep -v "^Dict {" | sed 's/^\(.*\) =.*/\1/g' | sed '/^$/d' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | tac)
+		
+		# show all extensions
+		DEFAULT_ITEM_NUMBER=0
+		ITEM_NUMBER=0
+        while IFS= read -r line || [[ -n "$line" ]]
+	    do
+			if [[ "$line" == "" ]]; then continue; fi
+            local ENTRY="$line"
+			
+			/usr/libexec/PlistBuddy -c "Add :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Default Item Identifiers':Item"$DEFAULT_ITEM_NUMBER" string "$ENTRY"" "$SAFARI_PREFERENCES_FILE"
+			/usr/libexec/PlistBuddy -c "Add :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Item Identifiers':Item"$ITEM_NUMBER" string "$ENTRY"" "$SAFARI_PREFERENCES_FILE"
+			
+			# hide some extensions
+			while IFS= read -r line2 || [[ -n "$line2" ]]
+	    	do
+				if [[ "$line2" == "" ]]; then continue; fi
+	            local ENTRY2="$line2"
+	            local SAFARI_EXTENSION_NAME=$(echo "$ENTRY2" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+	            local SAFARI_EXTENSION_SHOULD_SHOW_IN_TOOLBAR=$(echo "$ENTRY2" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
+				
+				if [[ $(echo "$ENTRY" | grep "$SAFARI_EXTENSION_NAME") != "" ]] && [[ "$SAFARI_EXTENSION_SHOULD_SHOW_IN_TOOLBAR" == "no" ]]
+				then
+					/usr/libexec/PlistBuddy -c "Delete :'NSToolbar Configuration BrowserStandaloneTabBarToolbarIdentifier-v2':'TB Item Identifiers':Item"$DEFAULT_ITEM_NUMBER"" "$SAFARI_PREFERENCES_FILE"
+					DEFAULT_ITEM_NUMBER=$(($DEFAULT_ITEM_NUMBER - 1 ))
+					echo -e " \t  show "$SAFARI_EXTENSION_NAME" is set to no..."
+				elif [[ $(echo "$ENTRY" | grep "$SAFARI_EXTENSION_NAME") != "" ]] && [[ "$SAFARI_EXTENSION_SHOULD_SHOW_IN_TOOLBAR" == "yes" ]]
+				then
+					echo -e " \t  show "$SAFARI_EXTENSION_NAME" is set to yes..."
+					:
+				else
+					#echo "values for entry "$ENTRY" not set..."
+					:
+				fi
+					
+			done <<< "$(printf "%s\n" "${SAFARI_EXTENSION_SHOW_IN_TOOLBAR_ARRAY[@]}")"
+		
+			DEFAULT_ITEM_NUMBER=$(($DEFAULT_ITEM_NUMBER + 1 ))
+			ITEM_NUMBER=$(($ITEM_NUMBER + 1 ))
+			
+        done <<< "$(printf "%s\n" "${SAFARI_MENU_BAR_ENTRIES[@]}")"
+    
+    }
+    show_or_hide_third_party_extensions_in_safari_toolbar   
+    
+    
     ## safari advanced
     
     # show full url
@@ -4272,128 +4487,6 @@ EOF
     
     # unfold the favorites section
     /usr/libexec/PlistBuddy -c "Add 'NSOutlineView Items Main Window Mailbox List-V2':1 string 'favoritemailboxdatum://Inbox?parent=0'" "$MAIL_PREFERENCES_FILE"
-
-
-    ### safari third party extensions
-    
-    # variables
-    SAFARI_APP_EXTENSIONS_CONFIG_FILE="/Users/"$USER"/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist"
-    EXTENSION="com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)"
-    
-    # list extensions
-    # get first level dict from file with four spaces, second level with eight spaces, ect.
-    #/usr/libexec/PlistBuddy "$SAFARI_APP_EXTENSIONS_CONFIG_FILE" -c "Print :" | grep -E '^[[:space:]]{4}[^[:space:]]' | grep -v "^Dict {" | grep -E '{$' | sed 's/^\(.*\) =.*/\1/g' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g' | sed '/^$/d'
-    
-    # checking values example
-    #/usr/libexec/PlistBuddy -c "Print :'com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)':" ~/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist
-    #/usr/libexec/PlistBuddy -c "Print :'com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)':GrantedPermissionOrigins:'https\:\/\/\*\/\*':" ~/Library/Containers/com.apple.Safari/Data/Library/Safari/AppExtensions/Extensions.plist
-    
-    configure_safari_extensions() {
-		echo "safari third party extensions..."
-        while IFS= read -r line || [[ -n "$line" ]]
-	    do
-	        if [[ "$line" == "" ]]; then continue; fi
-            local ENTRY="$line"
-            local SAFARI_EXTENSION_NAME=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $1}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-            #echo "$SAFARI_EXTENSION_NAME"
-            local SAFARI_EXTENSION_ENABLED=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $2}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-            #echo "$SAFARI_EXTENSION_ENABLED"
-            local SAFARI_EXTENSION_PERMISSIONS=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $3}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-            #echo "$SAFARI_EXTENSION_PERMISSIONS"
-            local SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING=$(echo "$ENTRY" | awk '{gsub("\t","  ",$0); print;}' | awk -F ' \{2,\}' '{print $4}' | sed 's/^[[:space:]]*//g' | sed -e 's/[[:space:]]*$//g')
-            #echo "$SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING"
-            if [[ $(/usr/libexec/PlistBuddy -c "Print :" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE" | grep "$SAFARI_EXTENSION_NAME") == "" ]]
-            then
-            	echo -e " \t extension "$SAFARI_EXTENSION_NAME" not found, skipping..." && continue
-            else
-            	echo -e " \t $SAFARI_EXTENSION_NAME"
-            fi
-                        
-			### extension enabled
-			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':Enabled:" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
-			then
-				:
-			else
-				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':Enabled" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-			
-            if [[ "$SAFARI_EXTENSION_ENABLED" == "yes" ]]
-            then
-				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':Enabled bool true" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			else
-				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':Enabled bool false" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-
-			### extension permissions
-			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
-			then
-				:
-			else
-				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-			
-			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
-			then
-				:
-			else
-				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
-			then
-				:
-			else
-				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-			
-			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*':" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
-			then
-				:
-			else
-				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-
-			if [[ "$SAFARI_EXTENSION_PERMISSIONS" == "ask" ]]
-            then
-				:
-			elif [[ "$SAFARI_EXTENSION_PERMISSIONS" == "allow" ]]
-			then
-				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'http\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':GrantedPermissionOrigins:'https\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			elif [[ "$SAFARI_EXTENSION_PERMISSIONS" == "deny" ]]
-			then	
-				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'http\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':RevokedPermissionOrigins:'https\:\/\/\*\/\*' date 'Mon Jan 01 01:00:00 CET 4001'" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-
-			### extension allowed in private browsing
-			if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing:" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE") ]] > /dev/null 2>&1
-			then
-				:
-			else
-				/usr/libexec/PlistBuddy -c "Delete :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-			
-			if [[ "$SAFARI_EXTENSION_ALLOWED_IN_PRIVATE_BROWSING" == "yes" ]]
-            then
-				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing bool true" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			else
-				/usr/libexec/PlistBuddy -c "Add :'$SAFARI_EXTENSION_NAME':AllowInPrivateBrowsing bool false" "$SAFARI_APP_EXTENSIONS_CONFIG_FILE"
-			fi
-        done <<< "$(printf "%s\n" "${SAFARI_EXTENSION_ENTRIES_ARRAY[@]}")"
-    }
-    
-    SAFARI_EXTENSION_ENTRIES=(
-    # name								 							enabled			permissions (ask, allow, deny)	allowed in private browsing
-    "com.colliderli.iina.OpenInIINA (67CQ77V27R)        				no      	allow							yes"
-	"com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)	        yes     	allow							yes"
-	"com.adguard.safari.AdGuard.AdvancedBlocking (TC3Q7MAJXF)		    yes     	allow							yes"
-	"com.adguard.safari.AdGuard.Extension (TC3Q7MAJXF)				    yes     	allow							yes"
-	"com.PS.PSD.SafariBridge (E67296UX9N)				        		no      	ask								yes"
-	"com.bitdefender.virusscannerplus.TrafficLight (GUNFMW623Y)        	no      	ask								yes"
-    "com.google.AnalyticsOptOutSafari.Extension (EQHXZ8M8AV)        	yes     	allow							yes"
-    )
-    SAFARI_EXTENSION_ENTRIES_ARRAY=$(printf "%s\n" "${SAFARI_EXTENSION_ENTRIES[@]}")
-    configure_safari_extensions
 
 
     
