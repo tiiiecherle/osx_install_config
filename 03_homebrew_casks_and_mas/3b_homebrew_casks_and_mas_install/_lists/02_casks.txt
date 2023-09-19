@@ -63,7 +63,7 @@ quickhash
 #quicksilver
 sejda-pdf
 signal
-skype
+#skype
 stats
 teamviewer
 textmate
