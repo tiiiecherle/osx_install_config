@@ -476,6 +476,12 @@ EOF
         	APPLICATIONS_TO_SET_NOTIFICATIONS=(
         	"Reminders														        1921524055"
         	)
+        elif VERSION_TO_CHECK_AGAINST=13; [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -ge $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+        then
+            # macos 13 and higher
+        	APPLICATIONS_TO_SET_NOTIFICATIONS=(
+        	"Reminders														        10511458647"
+        	)
     	else
     	    :
     	fi

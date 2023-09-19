@@ -51,14 +51,26 @@ fi
 # urgent notifications allowed                                              1652564311
 # urgent notifications not allowed                                          1115693399
 
+# check values for reminders and calendar
+# set wanted settings in the gui and enable the following function
+check_values_for_specific_apps() {
+    APPLICATIONS_TO_SET_NOTIFICATIONS=(
+    "Reminders														        10511458647"
+    "Calendar														        10511458647"
+    )
+    CHECK_APPS_NOTIFICATIONS="yes" PRINT_NOTIFICATION_CHECK_TO_ERROR_LOG="no" env_set_check_apps_notifications
+    exit
+}
+#check_values_for_specific_apps
+
 ### apps to set notifications for
 APPLICATIONS_TO_SET_NOTIFICATIONS=(
 "WhatsApp																41943375"
 "Signal																	41951575"
 "Script Editor                                                          41943375"
 "pdf_shrink_done			                                            41943375"
-"Reminders														        1921524055"
-"Calendar														        1652564311"
+"Reminders														        10511458647"
+"Calendar														        10511458647"
 "Notes															        41943375"
 "Photos															        41943375"
 "EagleFiler															    41943375"
