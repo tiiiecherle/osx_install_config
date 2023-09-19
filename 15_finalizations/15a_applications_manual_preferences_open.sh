@@ -452,6 +452,18 @@ else
 	:
 fi
 
+# opening 
+VERSION_TO_CHECK_AGAINST=12
+if [[ $(env_convert_version_comparable "$MACOS_VERSION_MAJOR") -le $(env_convert_version_comparable "$VERSION_TO_CHECK_AGAINST") ]]
+then
+    # macos until and including 12
+    :
+else
+	# checking allowed in background items
+	# opening system settings panes is documented in install_mobileconfig_profiles_xx.sh
+	open "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"
+fi
+
 
 ### testing ssh connection
 echo ''
