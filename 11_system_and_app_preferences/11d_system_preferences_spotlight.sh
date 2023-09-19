@@ -148,7 +148,8 @@ else
 	# ls -la /System/Library/PreferencePanes/
 	# if there is no prefpane in this directory, see defaults_write/_scripts_final/_mobileconfig/install_profiles_13.scpt
 	# for using applescript to open prefpane
-  	open /System/Library/PreferencePanes/Spotlight.prefPane
+  	#open /System/Library/PreferencePanes/Spotlight.prefPane
+  	open "x-apple.systempreferences:com.apple.Siri-Settings.extension"
   	
   	sleep 2
 
