@@ -565,6 +565,8 @@ setting_preferences() {
     # overflow autostart is activated at login inside the app preferences, this way the overflow window does not open when starting the app on login                 
     #"Overflow 3                                                               true"
     "Command X                                                                 true"
+    #"Signal                                                                 true"
+    #"Whatsapp                                                                 true"
     )
     AUTOSTART_ITEMS=$(printf "%s\n" "${AUTOSTART_ITEMS_ALL_USERS[@]}")
     env_add_startup_items
@@ -669,7 +671,7 @@ EOF
     
     
     ### allow in the background
-    # see 11k_third_party_app_preferences.sh BackgroundItems-v3.btm
+    # see 11k_third_party_app_preferences.sh BackgroundItems-v8.btm
 
     
     ### language and region
@@ -1783,118 +1785,6 @@ expect eof
     
     # alternative 2 (not in use)
     # setting the option using applescript / gui
-    activate_password_for_system_wide_preferences() {
-        
-        osascript <<EOF
-        tell application "System Settings"
-        	quit
-        	delay 2
-        end tell
-        
-        tell application "System Settings"
-        	reopen
-        	delay 3
-        	#activate
-        	#delay 2
-        end tell
-        
-        # do not use visible as it makes the window un-clickable
-        #tell application "System Events" to tell process "System Settings" to set visible to true
-        #delay 1
-        tell application "System Events" to tell process "System Settings" to set frontmost to true
-        delay 1
-        
-        # open preference
-        tell application "System Events"
-        	tell process "System Settings"
-        		# use name
-        		#set SystemSettingsToOpen to "Allgemein"
-        		# use AXIdentifier
-        		#set SystemSettingsToOpen to "com.apple.systempreferences.GeneralSettings"
-        		set SystemSettingsToOpen to "com.apple.settings.PrivacySecurity.extension"
-        		set RowNumberToCheck to 0
-        		set UiPositionOfRows to outline 1 of scroll area 1 of group 1 of splitter group 1 of group 1 of window 1
-        		repeat with aRow in row of UiPositionOfRows
-        			
-        			set RowNumberToCheck to (RowNumberToCheck + 1)
-        			
-        			try
-        				set RowToCheck to row RowNumberToCheck of UiPositionOfRows
-        			end try
-        			
-        			### get AXIdentifier or use ui-browser (screen reader - select - view report - identifier)
-        			#set DasGehtJetzt to row 13 of RowPlace
-        			#set NeededAXIdentifier to (value of attribute "AXIdentifier" of first static text of UI element 1 of DasGehtJetzt)
-        			#return NeededAXIdentifier
-        			
-        			### get AXIdentifier or read from button
-        			#set DasGehtJetzt to row 13 of RowPlace
-        			#set NeededName to (get properties of every static text of UI element 1 of DasGehtJetzt)
-        			#set NeededName to (name of first static text of UI element 1 of DasGehtJetzt)
-        			#return NeededName
-        			
-        			try
-        				if name of static text 1 of UI element 1 of RowToCheck is SystemSettingsToOpen then select RowToCheck
-        				if value of attribute "AXIdentifier" of first static text of UI element 1 of RowToCheck is SystemSettingsToOpen then select RowToCheck
-        			end try
-        			
-        		end repeat
-        	end tell
-        end tell
-        
-        delay 2
-        
-        # open sub-preference
-        tell application "System Events"
-        	tell process "System Settings"
-        		set ButtonName to "Profile"
-        		#return name of every button of every group of every scroll area of every group of every group of every splitter group of every group of window 1
-        		
-        		# solution 1: specify button directly
-        		click button 1 of scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1
-        		#set UiPositionOfGeneralSettings to scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1
-        		#set ButtonGroup to 7
-        		#click button 2 of group ButtonGroup of UiPositionOfGeneralSettings
-        		#click button ButtonName of group ButtonGroup of UiPositionOfGeneralSettings
-        		
-        		# solution 2: cycle through buttons by name (no need to specify ButtonGroup or UiPositionOfGeneralSettings)
-        		#repeat with ButtonInSettings in (every button of group 7 of every scroll area of every group of every group of every splitter group of every group of window 1)
-        		#	try
-        		#		if name of ButtonInSettings is ButtonName then click ButtonInSettings
-        		#	end try
-        		#end repeat
-        	end tell
-        end tell
-        
-        delay 2
-        
-        # install profile
-        tell application "System Events"
-        	tell process "System Settings"
-        		set theCheckbox to checkbox 1 of group 1 of scroll area 1 of group 1 of sheet 1 of window 1
-        		#return value of theCheckbox
-        		#tell theCheckbox
-        		if value of theCheckbox is 0 then
-        			click theCheckbox
-        			delay 3
-        			tell application "System Events" to keystroke "$SUDOPASSWORD"
-        			delay 3
-        			# press enter
-        			key code 36
-        		end if
-        		delay 3
-        		click button 2 of group 1 of sheet 1 of window 1
-        		#end tell
-        		
-        	end tell
-        end tell
-        
-        delay 4
-        
-        tell application "System Settings" to quit
-EOF
-    }
-    #activate_password_for_system_wide_preferences
 
 
     # alternative 3 (not in use)
@@ -3996,6 +3886,34 @@ EOF
     
     
     ## show or hide third party extensions in safari toolbar
+
+	# make sure safari current toolbar entries are written to the plist file by opening the toolbar
+    echo "opening safaris toolbar to write current config to plist file..."
+    osascript <<EOF
+    try
+    	tell application "Safari"
+    		run
+    		delay 5
+    		tell application "System Events"
+    			tell process "Safari"
+    				set frontmost to true
+    				delay 2
+    				click menu item 2 of menu 1 of menu bar item 5 of menu bar 1
+    				delay 2
+    				click button 1 of sheet 1 of window 1
+    				delay 2
+    			end tell
+    		end tell
+    		quit
+    	end tell
+    end try        
+EOF
+
+    sleep 2
+    defaults read "$SAFARI_PREFERENCES_FILE" > /dev/null 2>&1
+    sleep 2
+    
+    # showing and hiding extensions in safari toolbar
 	show_or_hide_third_party_extensions_in_safari_toolbar () {
 	    
 		# first reset entries for thier party extensions in safari toolbar
@@ -4063,7 +3981,7 @@ EOF
 					echo -e " \t  show "$SAFARI_EXTENSION_NAME" is set to yes..."
 					:
 				else
-					#echo "values for entry "$ENTRY" not set..."
+					#echo "values for entry "$ENTRY" not set..." >&2
 					:
 				fi
 					
@@ -4075,9 +3993,16 @@ EOF
         done <<< "$(printf "%s\n" "${SAFARI_MENU_BAR_ENTRIES[@]}")"
     
     }
-    show_or_hide_third_party_extensions_in_safari_toolbar   
-    
-    
+	if [[ -z $(/usr/libexec/PlistBuddy -c "Print :'ExtensionsToolbarConfiguration BrowserStandaloneTabBarToolbarIdentifier-v2':OrderedToolbarItemIdentifiers" "$SAFARI_PREFERENCES_FILE") ]] > /dev/null 2>&1
+	then
+		#echo "entry exists: "no""
+		echo "OrderedToolbarItemIdentifiers are not in the safari configuration file, skipping show_or_hide_third_party_extensions_in_safari_toolbar..." >&2
+	else
+		#echo "entry exists "yes""
+        show_or_hide_third_party_extensions_in_safari_toolbar
+	fi	
+       
+       
     ## safari advanced
     
     # show full url
@@ -4893,10 +4818,15 @@ EOF
     	    /usr/libexec/PlistBuddy -c "Set :SharedWithYouApps:$i bool false" /Users/"$USER"/Library/Preferences/com.apple.SocialLayer.plist
         done
     fi
-    defaults read /Users/tom/Library/Preferences/com.apple.SocialLayer.plist >/dev/null
-    #killall sociallayerd
     
-
+    # make sure the settings get applied
+    defaults read /Users/"$USER"/Library/Preferences/com.apple.SocialLayer.plist >/dev/null
+    killall sociallayerd
+    sleep 2
+    killall cfprefsd
+    sleep 2
+    
+    
     ### pages
         
     echo "pages"
