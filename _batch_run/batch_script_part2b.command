@@ -201,12 +201,7 @@ batch_run_all() {
 	
 	
 	### run before shutdown
-	# important: script can not delay shutdown and is killed by macos on shutdown
-	# more documentation can be found in the script
-	printf "\n${bold_text}###\nrun before shutdown launchd...\n###\n${default_text}"
-	env_create_tmp_batch_script_fifo
-	"$SCRIPTS_FINAL_DIR"/09_launchd/9e_run_on_shutdown/install_script_run_on_shutdown_launchdservice.sh
-	env_active_source_app
+	# moved to batchs script 1 to execute after the next reboot (after batch script 2)
 	
 		
 	### special autostart apps
