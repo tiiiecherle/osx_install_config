@@ -180,15 +180,33 @@ batch_run_all() {
 	
 	
 	### logout hook
-	printf "\n${bold_text}###\nlogout hook...\n###\n${default_text}"
-	env_create_tmp_batch_script_fifo
-	"$SCRIPTS_FINAL_DIR"/09_launchd/9c_run_on_logout/install_run_on_logout_hook.sh
+	# deprecated
+	#printf "\n${bold_text}###\nlogout hook...\n###\n${default_text}"
+	#env_create_tmp_batch_script_fifo
+	#"$SCRIPTS_FINAL_DIR"/09_launchd/9c_run_on_logout/install_run_on_logout_hook.sh
 	
 	
 	### login hook
-	printf "\n${bold_text}###\nlogin hook...\n###\n${default_text}"
+	# deprecated
+	#printf "\n${bold_text}###\nlogin hook...\n###\n${default_text}"
+	#env_create_tmp_batch_script_fifo
+	#"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/system/install_run_on_login_hook.sh
+	
+	
+	### run on boot
+	printf "\n${bold_text}###\nrun on boot launchd...\n###\n${default_text}"
 	env_create_tmp_batch_script_fifo
-	"$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/system/install_run_on_login_hook.sh
+	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/5_run_on_boot_general/install_run_on_boot_and_launchdservice.sh
+	env_active_source_app
+	
+	
+	### run before shutdown
+	# important: script can not delay shutdown and is killed by macos on shutdown
+	# more documentation can be found in the script
+	printf "\n${bold_text}###\nrun before shutdown launchd...\n###\n${default_text}"
+	env_create_tmp_batch_script_fifo
+	"$SCRIPTS_FINAL_DIR"/09_launchd/9e_run_on_shutdown/install_script_run_on_shutdown_launchdservice.sh
+	env_active_source_app
 	
 		
 	### special autostart apps
@@ -200,7 +218,7 @@ batch_run_all() {
         if [[ $(eval "echo \"\$$AUTOSTART_VARIABLE_TO_CHECK\"") == "yes" ]]
         then
         	printf "\n${bold_text}###\nspecial autostart app $AUTOSTART_APP_LOWER...\n###\n${default_text}"
-        	. "$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_"$AUTOSTART_APP_LOWER".sh	
+        	. "$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart_apps/install_run_on_login_"$AUTOSTART_APP_LOWER".sh	
         	echo ''
         else
         	:

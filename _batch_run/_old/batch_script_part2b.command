@@ -178,7 +178,7 @@ batch_run_all() {
         if [[ $(eval "echo \"\$$AUTOSTART_VARIABLE_TO_CHECK\"") == "yes" ]]
         then
         	printf "\n${bold_text}###\nspecial autostart app $AUTOSTART_APP_LOWER...\n###\n${default_text}"
-        	. "$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart/install_run_on_login_"$AUTOSTART_APP_LOWER".sh	
+        	. "$SCRIPTS_FINAL_DIR"/09_launchd/9d_run_on_login/autostart_apps/install_run_on_login_"$AUTOSTART_APP_LOWER".sh	
         	echo ''
         else
         	:
