@@ -59,8 +59,21 @@ fi
 # does no longer work
 
 # it seems an entry in the BackgroundItems file is needed
-# plutil -p /private/var/db/com.apple.backgroundtaskmanagement/BackgroundItems-v3.btm
-# there is no known tool to do that as of 2022-07
+# readable output
+#sfltool dumpbtm /private/var/db/com.apple.backgroundtaskmanagement/BackgroundItems-v8.btm
+# delete all data from login-items
+#sfltool resetbtm
+#
+# disabling
+# bootout, disbale and remove with launchctl did not work as of 2023-09
+#
+# deleting and disabling
+# to make an item disappear from the list, delete the corresponding files in
+# /Library/LaunchAgents			system
+# /Library/LaunchDaemons		system
+# ~/Library/LaunchAgents		user
+# will be reinstalled on every app update of the corresponding app
+# workaround included in run_on_shutdown.sh script
 
 # as a workaround a launchagent is working
 create_user_launch_agent() {
