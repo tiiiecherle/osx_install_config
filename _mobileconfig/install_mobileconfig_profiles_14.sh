@@ -144,87 +144,36 @@ do
 	delay 3
 end tell
 EOF
-    
-    # open settings by opening preferences pane directly
-    # defaults read /System/Library/PreferencePanes/Profiles.prefPane/Contents/Info CFBundleIdentifier com.apple.preferences.configurationprofiles
-    #open /System/Library/PreferencePanes/Profiles.prefPane
 
-    # or open settings by applescript
-    osascript <<EOF
 
-tell application "System Settings"
-	reopen
-	delay 3
-	#activate
-	#delay 2
-end tell
+# open settings by opening preferences pane directly
+# defaults read /System/Library/PreferencePanes/Profiles.prefPane/Contents/Info CFBundleIdentifier com.apple.preferences.configurationprofiles
+#open /System/Library/PreferencePanes/Profiles.prefPane
 
-# do not use visible as it makes the window un-clickable
-#tell application "System Events" to tell process "System Settings" to set visible to true
-#delay 1
-tell application "System Events" to tell process "System Settings" to set frontmost to true
-delay 1
+# easiest ways to open a specific system settings pane
+# https://apple.stackexchange.com/questions/446111/how-to-open-login-items-in-system-settings-programmatically-in-macos-13-ve
+# https://gist.github.com/rmcdongit/f66ff91e0dad78d4d6346a75ded4b751?permalink_comment_id=4258811
 
-# open preference
-tell application "System Events"
-	tell process "System Settings"
-		# use name
-		#set SystemSettingsToOpen to "Allgemein"
-		# use AXIdentifier
-		#set SystemSettingsToOpen to "com.apple.systempreferences.GeneralSettings"
-		set SystemSettingsToOpen to "com.apple.settings.PrivacySecurity.extension"
-		set RowNumberToCheck to 0
-		set UiPositionOfRows to outline 1 of scroll area 1 of group 1 of splitter group 1 of group 1 of window 1
-		repeat with aRow in row of UiPositionOfRows
-			
-			set RowNumberToCheck to (RowNumberToCheck + 1)
-			
-			try
-				set RowToCheck to row RowNumberToCheck of UiPositionOfRows
-			end try
-			
-			### get AXIdentifier or use ui-browser (screen reader - select - view report - identifier)
-			#set DasGehtJetzt to row 13 of RowPlace
-			#set NeededAXIdentifier to (value of attribute "AXIdentifier" of first static text of UI element 1 of DasGehtJetzt)
-			#return NeededAXIdentifier
-			
-			### get AXIdentifier or read from button
-			#set DasGehtJetzt to row 13 of RowPlace
-			#set NeededName to (get properties of every static text of UI element 1 of DasGehtJetzt)
-			#set NeededName to (name of first static text of UI element 1 of DasGehtJetzt)
-			#return NeededName
-			
-			try
-				if name of static text 1 of UI element 1 of RowToCheck is SystemSettingsToOpen then select RowToCheck
-				if value of attribute "AXIdentifier" of first static text of UI element 1 of RowToCheck is SystemSettingsToOpen then select RowToCheck
-			end try
-			
-		end repeat
-	end tell
-end tell
+# url schemes
+# list of all url schemes macos 14
+# all ids url schemes are listed in /System/Applications/System Settings.app/Contents/Resources/Sidebar.plist
+# or here
+# https://github.com/piarasj/piarasj.github.io/blob/master/ventura_settings.md#ventura-system-settings
+# listing Pane ids to open with url schemes
+# or
+#for pref in $(strings "/System/Applications/System Settings.app/Contents/MacOS/System Settings" | awk '/^com.apple./ {print $1 }'); do echo "$pref"; done
+# usage
+#open "x-apple.systempreferences:<PaneID>"
 
-delay 2
+# open with system settings bundle identifier and pane path
+# some paths do not open the correct pane in the gui
+#open com.apple.systempreferences /path/to/pane
 
-# open sub-preference
-tell application "System Events"
-	tell process "System Settings"
-		set ButtonName to "Profile"
-		#return name of every button of every group of every scroll area of every group of every group of every splitter group of every group of window 1
-		
-		# solution 1: specify button directly
-		set UiPositionOfGeneralSettings to scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window 1
-		set ButtonGroup to 7
-		click button 2 of group ButtonGroup of UiPositionOfGeneralSettings
-		#click button ButtonName of group ButtonGroup of UiPositionOfGeneralSettings
-		
-		# solution 2: cycle through buttons by name (no need to specify ButtonGroup or UiPositionOfGeneralSettings)
-		#repeat with ButtonInSettings in (every button of group 7 of every scroll area of every group of every group of every splitter group of every group of window 1)
-		#	try
-		#		if name of ButtonInSettings is ButtonName then click ButtonInSettings
-		#	end try
-		#end repeat
-	end tell
-end tell
+# other possibilities are documented in 
+# _mobileconfig/install_mobileconfig_profiles_13.sh
+# _mobileconfig/install_profiles_13/14.scpt
+
+open "x-apple.systempreferences:com.apple.preferences.configurationprofiles"
 
 delay 2
 
