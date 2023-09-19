@@ -98,7 +98,7 @@ unmount_update_partition() {
         :
     fi
 }
-unmount_update_partition &
+#unmount_update_partition &
 
 
 ###

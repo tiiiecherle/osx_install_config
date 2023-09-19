@@ -185,6 +185,62 @@ reset_safari_download_location () {
         
 }
 
+deactivate_hidden_login_items_workaround () {
+# explanation see scripts 11c and 11k
+
+	ACTIVE_LOGIN_ITEMS=(
+	com.DigiDNA.iMazing2Mac.Mini.plist
+	com.adobe.ARMDCHelper.\*.plist
+	com.adobe.ARMDC.Communicator.plist
+	com.adobe.ARMDC.SMJobBlessHelper.plist
+	com.microsoft.teams.TeamsUpdaterDaemon.plist
+	com.google.keystone.agent.plist
+	com.google.keystone.xpcservice.plist
+	com.google.keystone.daemon.plist
+	org.xquartz.startx.plist
+	com.teamviewer.Helper.plist
+	com.teamviewer.UninstallerHelper.plist
+	com.teamviewer.UninstallerWatcher.plist
+	org.xquartz.privileged_startx.plist
+	)
+	ACTIVE_LOGIN_ITEMS_LIST=$(printf "%s\n" "${ACTIVE_LOGIN_ITEMS[@]}")
+
+	LOGIN_ITEMS_DIRECTORIES=(
+	/Library/LaunchAgents
+	/Library/LaunchDaemons
+	/Users/"$loggedInUser"/Library/LaunchAgents
+	)
+	LOGIN_ITEMS_DIRECTORIES_LIST=$(printf "%s\n" "${LOGIN_ITEMS_DIRECTORIES[@]}")
+	
+	while IFS= read -r line || [[ -n "$line" ]]
+	do
+		if [[ "$line" == "" ]]; then continue; fi
+		local LOGIN_ITEM="$line"
+		
+			while IFS= read -r line || [[ -n "$line" ]]
+			do
+				if [[ "$line" == "" ]]; then continue; fi
+				local LOGIN_ITEM_DIRECTORY="$line"
+				
+				LOGIN_ITEMS_PATH=
+				if [[ $(ls -1 "$LOGIN_ITEM_DIRECTORY" | grep "$LOGIN_ITEM") != "" ]]
+				then
+					LOGIN_ITEM_COMPLETE_PATH="$LOGIN_ITEM_DIRECTORY"/$(ls -1 "$LOGIN_ITEM_DIRECTORY" | grep "$LOGIN_ITEM")
+					#echo "$LOGIN_ITEM_COMPLETE_PATH"
+					if [[ -e "$LOGIN_ITEM_COMPLETE_PATH" ]]
+					then
+						echo ""$LOGIN_ITEM_COMPLETE_PATH" exists, deleting..."
+						rm -f "$LOGIN_ITEM_COMPLETE_PATH"
+					else	
+						:
+					fi
+				else
+					:
+				fi
+			done <<< "$(printf "%s\n" "${LOGIN_ITEMS_DIRECTORIES_LIST[@]}")"
+	done <<< "$(printf "%s\n" "${ACTIVE_LOGIN_ITEMS_LIST[@]}")"
+
+}
 
 DIVIDER=10
 # every reboot is counted as shutdown, too
@@ -203,6 +259,9 @@ sleep 0.1
 
 #reset_safari_download_location
 #sleep 0.1
+
+deactivate_hidden_login_items_workaround
+sleep 0.1
 
 # last reboot | grep reboot | wc -l | sed 's/ //g'
 # last shutdown | grep reboot | wc -l | sed 's/ //g'

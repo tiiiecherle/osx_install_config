@@ -70,7 +70,7 @@ do
         # checking if enabled
         #launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i"
         #
-        if [[ $(sudo launchctl print-disabled system | grep "$i" | grep false) != "" ]]
+        if [[ $(sudo launchctl print-disabled system | grep "$i" | grep enabled) != "" ]]
         then
             #echo "$i is installed and enabled..."
             echo "$i is enabled..."

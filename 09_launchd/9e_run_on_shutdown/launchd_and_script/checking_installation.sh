@@ -13,13 +13,22 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### checking installation
 ###
 
-### variables
-SERVICE_NAME=com.example_user.show
-SERVICE_INSTALL_PATH=/Users/$USER/Library/LaunchAgents
-SCRIPT_INSTALL_NAME=example_user
-SCRIPT_INSTALL_PATH=/Users/$USER/Library/Scripts
+if [[ $(id -u) -ne 0 ]]
+then 
+    echo "script is not run as root, exiting..."
+    exit
+else
+    :
+fi
 
-LOGDIR=/Users/"$USER"/Library/Logs
+
+### variables
+SERVICE_NAME=com.run_on.shutdown
+SERVICE_INSTALL_PATH=/Library/LaunchDaemons
+SCRIPT_INSTALL_NAME=run_on_shutdown
+SCRIPT_INSTALL_PATH=/Library/Scripts/custom
+
+LOGDIR=/var/log
 LOGFILE="$LOGDIR"/"$SCRIPT_INSTALL_NAME".log
 
 # logfiles
@@ -43,7 +52,7 @@ do
         echo "$i is installed..."
     
         # checking if running
-        if [[ $(launchctl list | grep "$i") != "" ]]
+        if [[ $(sudo launchctl list | grep "$i") != "" ]]
         then
             echo "$i is running..."
         else
@@ -53,7 +62,7 @@ do
         # checking if enabled
         #launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i"
         #
-        if [[ $(launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i" | grep enabled) != "" ]]
+        if [[ $(sudo launchctl print-disabled system | grep "$i" | grep enabled) != "" ]]
         then
             #echo "$i is installed and enabled..."
             echo "$i is enabled..."

@@ -1,0 +1,12 @@
+Both hooks are deprecated and do not work anymore:
+
+sudo defaults write com.apple.loginwindow LogoutHook /Users/"$USER"/Library/Scripts/run_on_logout.sh
+sudo defaults write com.apple.loginwindow LoginHook /Users/"$USER"/Library/Scripts/run_on_login.sh
+
+It is recommended to use launchd instead.
+As of 2023-09 launchd offers a run on boot option (RunAtLoad) but no options for run before shutdown, run on login or run before logout.
+An example workaround script for run before shutdown is in 9e_run_on_shutdown.
+IMPORTANT
+The workaround plist and script can not delay the shutdown progress and is killed by macos after a certain amount of time during the shutdown. Using macos 14 and a macbook pro the script has about 4 seconds to finish before it gets terminated. 
+When using the run on boot RunOnLoad option you can create scripts for the user or root level by installing the plist file an the script in the correct directories with the respective permissions.
+Examples are in 09_launchd/9b_run_on_boot.

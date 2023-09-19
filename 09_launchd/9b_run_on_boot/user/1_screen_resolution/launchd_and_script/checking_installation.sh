@@ -53,7 +53,7 @@ do
         # checking if enabled
         #launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i"
         #
-        if [[ $(launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i" | grep false) != "" ]]
+        if [[ $(launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$i" | grep enabled) != "" ]]
         then
             #echo "$i is installed and enabled..."
             echo "$i is enabled..."
