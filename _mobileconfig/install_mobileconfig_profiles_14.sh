@@ -138,7 +138,7 @@ do
     
     sleep 3
     
-        osascript <<EOF
+    osascript <<EOF
     tell application "System Settings"
 	quit
 	delay 3
@@ -174,8 +174,10 @@ EOF
 # _mobileconfig/install_profiles_13/14.scpt
 
 open "x-apple.systempreferences:com.apple.preferences.configurationprofiles"
+sleep 2
 
-delay 2
+
+osascript <<EOF
 
 # open install dialog 
 # installing profile
