@@ -742,8 +742,10 @@ EOF
     # set time server
     #sudo systemsetup -getnetworktimeserver
     # use default by not setting anything else
-    sudo systemsetup -setnetworktimeserver time.apple.com
-    
+    # redirecting output due to this error message
+    # Error:-99 File:/AppleInternal/Library/BuildRoots/0783246a-4091-11ee-8fca-aead88ae2785/Library/Caches/com.apple.xbs/Sources/Admin/InternetServices.m Line:379
+    sudo systemsetup -setnetworktimeserver time.apple.com 2>/dev/null 1>&2
+        
     # 12 hour clock
     # 12 hour clock of = 24 h clock on
     # be sure the system settings window is not open when using this or it won`t work
@@ -755,7 +757,9 @@ EOF
     sudo defaults write /Library/Preferences/com.apple.timezone.auto.plist Active -bool false
     
     # set the timezone; see "systemsetup -listtimezones" for other values
-    sudo systemsetup -settimezone "Europe/Berlin"
+    # redirecting output due to this error message
+    # Error:-99 File:/AppleInternal/Library/BuildRoots/0783246a-4091-11ee-8fca-aead88ae2785/Library/Caches/com.apple.xbs/Sources/Admin/InternetServices.m Line:379
+    sudo systemsetup -settimezone "Europe/Berlin" 2>/dev/null 1>&2
     
     
     ### sharing
@@ -4778,6 +4782,22 @@ EOF
     ### messages
     
     echo "messages"
+    
+    ## opening messages
+    echo "opening and quitting messages in background..."
+	# without opening mail on first run favorites get double entries
+	osascript <<EOF
+	
+			try
+				tell application "Messages"
+					run
+					delay 5
+					quit
+				end tell
+			end try	
+EOF
+
+    sleep 2
     
     # disable automatic emoji substitution (i.e. use plain text smileys)
     #defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false
