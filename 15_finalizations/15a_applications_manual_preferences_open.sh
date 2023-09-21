@@ -136,7 +136,7 @@ end try
 tell application "System Events" to tell process "Reminders"
 	#return position of window 1
 	#return size of window 1
-    #set position of window 1 to {440, 130}
+    set position of window 1 to {0, 50}
     set size of window 1 to {860, 850}
     delay 2
 end tell
@@ -164,8 +164,8 @@ delay 1
 tell application "System Events" to tell process "Calendar"
 	#return position of window 1
 	#return size of window 1
-    #set position of window 1 to {50, 50}
-    set size of window 1 to {1700, 1000}
+    set position of window 1 to {0, 50}
+    set size of window 1 to {1650, 950}
     delay 2
 end tell
 EOF
@@ -255,7 +255,7 @@ delay 1
 tell application "System Events" to tell process "Contacts"
 	#return position of window 1
 	#return size of window 1
-    #set position of window 1 to {400, 150}
+    set position of window 1 to {0, 50}
     set size of window 1 to {1000, 800}
     delay 2
 end tell
