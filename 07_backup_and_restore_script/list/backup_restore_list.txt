@@ -542,7 +542,7 @@ u	~/Library/Preferences/com.titanium.OnyX.plist
 
 # Overflow 3
 echo Overflow 3
-#u	"$PATH_TO_APPS"/Overflow 3.app
+u	"$PATH_TO_APPS"/Overflow 3.app
 u	~/Library/Containers/com.stuntsoftware.Overflow3/Data/Library/Preferences/com.stuntsoftware.Overflow3.plist
 u	~/Library/Containers/com.stuntsoftware.Overflow3/Data/Library/Application Support/default.realm
 
