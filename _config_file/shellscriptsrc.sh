@@ -450,6 +450,7 @@ else
     # macos versions 10.15 and up
     PATH_TO_SYSTEM_APPS="/System/Applications"
     PATH_TO_APPS="/System/Volumes/Data/Applications"
+    PATH_TO_PREBOOT_APPS="/System/Volumes/Preboot/Cryptexes/App/System/Applications/"
 fi
 
 

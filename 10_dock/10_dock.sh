@@ -58,6 +58,10 @@ add_entry_system_app() {
     defaults write $DOCK "$ENTRY_POSITION" -array-add "$APP_HEAD$PATH_TO_SYSTEM_APPS/$APP_NAME/$APP_TAIL"
 }
 
+add_entry_preboot_app() {
+    defaults write $DOCK "$ENTRY_POSITION" -array-add "$APP_HEAD$PATH_TO_PREBOOT_APPS/$APP_NAME/$APP_TAIL"
+}
+
 add_entry_folder() {
     FOLDER_TAIL="</string><key>_CFURLStringType</key><integer>0</integer></dict><key>preferreditemsize</key><integer>"$PREFERRED_ITEM_SIZE"</integer><key>showas</key><integer>"$VIEWAS"</integer></dict><key>tile-type</key><string>directory-tile</string></dict>"
     defaults write $DOCK "$ENTRY_POSITION" -array-add "$FOLDER_HEAD/$FOLDER_PATH/$FOLDER_TAIL"
@@ -119,7 +123,7 @@ set_dock_from_profile() {
         then
             #echo "line is commented out or empty..."
             :
-	    elif [[ ! "$ENTRY_POSITION" =~ ^(persistent-apps|persistent-others)$ ]] || [[ ! "$ENTRY_TYPE" =~ ^(spacer|app|system_app|system_volumes_data_app|folder|recents)$ ]]
+	    elif [[ ! "$ENTRY_POSITION" =~ ^(persistent-apps|persistent-others)$ ]] || [[ ! "$ENTRY_TYPE" =~ ^(spacer|app|system_app|preboot_app|system_volumes_data_app|folder|recents)$ ]]
     	then
             echo "wrong syntax for entry in profile in line "$LINENUMBER": "$i", skipping..."
             SYNTAXERRORS=$((SYNTAXERRORS+1))
@@ -135,6 +139,10 @@ set_dock_from_profile() {
 	        then
 	            APP_NAME="$ENTRY_VALUE1"
 	            add_entry_system_app
+	        elif [[ "$ENTRY_TYPE" == "preboot_app" ]]
+	        then
+	            APP_NAME="$ENTRY_VALUE1"
+	            add_entry_preboot_app
 	        elif [[ "$ENTRY_TYPE" == "folder" ]]
 	        then
 	            FOLDER_PATH="$(eval echo $ENTRY_VALUE1)"
