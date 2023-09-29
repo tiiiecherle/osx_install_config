@@ -546,7 +546,7 @@ setting_preferences() {
     # adding startup-items
     AUTOSTART_ITEMS_ALL_USERS=(
     # name													                  start hidden
-    "Bartender 4                                                              false"
+    "Bartender 5                                                              false"
     "AudioSwitcher                                                            false"   
     "KeepingYouAwake                                                          false" 
     "Alfred 5                                                                 false" 
@@ -1202,15 +1202,15 @@ EOF
     # becomes active after logout
     # defaults read -g | grep AppleInterfaceStyle
     # light
-    #defaults delete -g AppleInterfaceStyle &> /dev/null
-    #defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
+    defaults delete -g AppleInterfaceStyle &> /dev/null
+    defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
     # dark
     #defaults delete -g AppleInterfaceStyle &> /dev/null
     #defaults write -g AppleInterfaceStyle -string "Dark"
     #defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool false
     # automatic
-    defaults delete -g AppleInterfaceStyle &> /dev/null
-    defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool true
+    #defaults delete -g AppleInterfaceStyle &> /dev/null
+    #defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool true
     
     # immediate change
     #osascript -e '

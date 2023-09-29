@@ -447,7 +447,7 @@ fi
 
 ### bartender
 echo ''
-APP_NAME_FOR_PREFERENCES="Bartender 4"
+APP_NAME_FOR_PREFERENCES="Bartender 5"
 if [[ -e ""$PATH_TO_APPS"/"$APP_NAME_FOR_PREFERENCES".app" ]]
 then
 	
@@ -458,7 +458,7 @@ then
 	#sleep 3
 	
 	USER_LAUNCH_AGENT_NAME="com.bartender_login_helper.custom"
-	USER_LAUNCH_AGENT_LOGIN_HELPER="/Applications/Bartender 4.app/Contents/Library/LoginItems/BartenderStartAtLoginHelper.app/Contents/MacOS/BartenderStartAtLoginHelper"
+	USER_LAUNCH_AGENT_LOGIN_HELPER="/Applications/"$APP_NAME_FOR_PREFERENCES".app/Contents/Library/LoginItems/BartenderStartAtLoginHelper.app/Contents/MacOS/BartenderStartAtLoginHelper"
 	create_user_launch_agent
 
 else

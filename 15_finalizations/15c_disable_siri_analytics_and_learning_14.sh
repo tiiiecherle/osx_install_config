@@ -62,7 +62,7 @@ echo "disabling siri suggestions and learning..."
 
 APPS_TO_DISABLE_FOR_SIRI=(
 "App Store"
-"Bartender 4"
+"Bartender 5"
 "Reminders"
 "FaceTime"
 "Photos"
