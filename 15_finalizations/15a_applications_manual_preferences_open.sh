@@ -236,33 +236,100 @@ EOF
 
 			fi
 
+			# contacts
 			if [[ "$APP_NAME" == "Contacts" ]]
 			then		
-osascript <<EOF
-tell application "Contacts"
-	launch
-	delay 3
-	#activate
-	#delay 2
-end tell
-
-# do not use visible as it makes the window un-clickable
-#tell application "System Events" to tell process "Contacts" to set visible to true
-#delay 1
-tell application "System Events" to tell process "Contacts" to set frontmost to true
-delay 1
-	
-tell application "System Events" to tell process "Contacts"
-	#return position of window 1
-	#return size of window 1
-    set position of window 1 to {0, 50}
-    set size of window 1 to {1000, 800}
-    delay 2
-end tell
+				osascript <<EOF
+				tell application "Contacts"
+					launch
+					delay 3
+					#activate
+					#delay 2
+				end tell
+				
+				# do not use visible as it makes the window un-clickable
+				#tell application "System Events" to tell process "Contacts" to set visible to true
+				#delay 1
+				tell application "System Events" to tell process "Contacts" to set frontmost to true
+				delay 1
+					
+				tell application "System Events" to tell process "Contacts"
+					#return position of window 1
+					#return size of window 1
+				    set position of window 1 to {0, 50}
+				    set size of window 1 to {1000, 800}
+				    delay 2
+				end tell
 EOF
-center_frontmost_window
-
+				center_frontmost_window
+			else
+				:
 			fi
+			
+			
+			# whatsapp
+			if [[ "$APP_NAME" == "WhatsApp" ]]
+			then		
+				osascript <<EOF
+				tell application "WhatsApp"
+					launch
+					delay 3
+					#activate
+					#delay 2
+				end tell
+				
+				# do not use visible as it makes the window un-clickable
+				#tell application "System Events" to tell process "WhatsApp" to set visible to true
+				#delay 1
+				tell application "System Events" to tell process "WhatsApp" to set frontmost to true
+				delay 1
+					
+				tell application "System Events" to tell process "WhatsApp"
+					#return position of window 1
+					#return size of window 1
+				    set position of window 1 to {0, 50}
+				    set size of window 1 to {1150, 825}
+				    delay 2
+				end tell
+EOF
+				center_frontmost_window
+			else
+				:
+			fi
+			
+			
+			# signal
+			if [[ "$APP_NAME" == "Signal" ]]
+			then		
+				osascript <<EOF
+				tell application "Signal"
+					launch
+					delay 3
+					#activate
+					#delay 2
+				end tell
+				
+				# do not use visible as it makes the window un-clickable
+				#tell application "System Events" to tell process "Signal" to set visible to true
+				#delay 1
+				tell application "System Events" to tell process "Signal" to set frontmost to true
+				delay 1
+					
+				tell application "System Events" to tell process "Signal"
+					#return position of window 1
+					#return size of window 1
+				    set position of window 1 to {0, 50}
+				    set size of window 1 to {1150, 825}
+				    delay 2
+				end tell
+EOF
+				center_frontmost_window
+
+			else
+				:
+			fi
+
+			
 		else
 			echo "$APP_NAME not found, skipping..."
 		fi
