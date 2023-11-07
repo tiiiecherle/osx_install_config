@@ -437,6 +437,8 @@ run_on_shutdown() {
     	com.adobe.ARMDC.Communicator.plist
     	com.adobe.ARMDC.SMJobBlessHelper.plist
     	com.microsoft.teams.TeamsUpdaterDaemon.plist
+    	#com.microsoft.update.agent
+    	#com.microsoft.autoupdate.helper
     	com.google.keystone.agent.plist
     	com.google.keystone.xpcservice.plist
     	com.google.keystone.daemon.plist
