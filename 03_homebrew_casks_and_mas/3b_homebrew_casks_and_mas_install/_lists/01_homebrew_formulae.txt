@@ -4,7 +4,7 @@ pv		# backup/restore script
 coreutils	# backup/restore script, shellscriptsrc (gtimeout)
 parallel	# backup/restore script, formulae and casks install/update
 gnupg		# backup/restore script
-openssl@1.1	# certificate install/update script
+#openssl@1.1	# certificate install/update script, deprecated as of 2023-10
 git		# hosts file script, screen resolution script
 rename		# rename scripts
 htop		# if htop is not working, use glances instead
