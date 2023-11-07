@@ -394,6 +394,7 @@ MICROPHONEAPPS=(
 "Telephone                                  kTCCServiceMicrophone                                       1"
 "Signal                                     kTCCServiceMicrophone                                       1"
 "Microsoft Teams                            kTCCServiceMicrophone                                       1"
+"UTM                                        kTCCServiceMicrophone                                       0"
 )
 
 APPS_SECURITY_ARRAY=$(printf "%s\n" "${MICROPHONEAPPS[@]}")
