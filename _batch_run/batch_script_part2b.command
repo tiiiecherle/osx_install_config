@@ -139,10 +139,12 @@ batch_run_all() {
         :
     else
         # macos versions 10.15
-    	printf "\n${bold_text}###\nlocal ssl certificate...\n###\n${default_text}"
-    	env_create_tmp_batch_script_fifo
-    	"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/2_cert_install_update/install_cert_install_update_launchdservice.sh
-    	env_active_source_app
+        # deprecated
+    	#printf "\n${bold_text}###\nlocal ssl certificate...\n###\n${default_text}"
+    	#env_create_tmp_batch_script_fifo
+    	#"$SCRIPTS_FINAL_DIR"/09_launchd/9b_run_on_boot/root/2_cert_install_update/install_cert_install_update_launchdservice.sh
+    	#env_active_source_app
+    	:
     fi
     
     
