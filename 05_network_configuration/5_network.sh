@@ -181,7 +181,9 @@ create_location_tmp_automatic() {
     sleep 2
     if [[ "$ETHERNET_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
     then
-        sudo networksetup -setv6off "$ETHERNET_DEVICE"
+        # do not disable ipv6 for automatic profiles as they should keep all default settings
+        # as of 2024-01 the client internet connection (macbook) does not work with ipv6 disabled for Wi-Fi when connected to the iphone mobile data access point
+        #sudo networksetup -setv6off "$ETHERNET_DEVICE"
         #sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
         sleep 2
     else
@@ -189,7 +191,9 @@ create_location_tmp_automatic() {
     fi
     if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
     then
-        sudo networksetup -setv6off "$WLAN_DEVICE"
+        # do not disable ipv6 for automatic profiles as they should keep all default settings
+        # as of 2024-01 the client internet connection (macbook) does not work with ipv6 disabled for Wi-Fi when connected to the iphone mobile data access point
+        #sudo networksetup -setv6off "$WLAN_DEVICE"
         #sudo networksetup -setv6automatic "$WLAN_DEVICE"
         sleep 2
     else
@@ -209,7 +213,9 @@ create_location_automatic() {
     sleep 2
     if [[ "$ETHERNET_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$ETHERNET_DEVICE$") != "" ]]
     then
-        sudo networksetup -setv6off "$ETHERNET_DEVICE"
+        # do not disable ipv6 for automatic profiles as they should keep all default settings
+        # as of 2024-01 in case a client (e.g. macbook) connects to the mobile data acces point of an iphone the internet connection does not work for the client
+        #sudo networksetup -setv6off "$ETHERNET_DEVICE"
         #sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
         sleep 2
     else
@@ -217,7 +223,9 @@ create_location_automatic() {
     fi
     if [[ "$WLAN_DEVICE" != "" ]] && [[ $(networksetup -listallhardwareports | grep "$WLAN_DEVICE$") != "" ]]
     then
-        sudo networksetup -setv6off "$WLAN_DEVICE"
+        # do not disable ipv6 for automatic profiles as they should keep all default settings
+        # as of 2024-01 in case a client (e.g. macbook) connects to the mobile data acces point of an iphone the internet connection does not work for the client
+        #sudo networksetup -setv6off "$WLAN_DEVICE"
         #sudo networksetup -setv6automatic "$WLAN_DEVICE"
         sleep 2
     else
@@ -279,8 +287,11 @@ create_location_custom() {
     then
         sudo networksetup -createnetworkservice "$WLAN_DEVICE" "$WLAN_DEVICE"
         sleep 2
-        sudo networksetup -setv6off "$WLAN_DEVICE"
-        sleep 2
+        # as of 2024-01 in case a client (e.g. macbook) connects to the mobile data acces point of an iphone the internet connection does not work for the client
+        # due to this if no other issue comes up leave the default value (setv6automatic) enabled
+        #sudo networksetup -setv6off "$WLAN_DEVICE"
+        #sudo networksetup -setv6automatic "$WLAN_DEVICE"
+        #sleep 2
     else
         :
     fi
@@ -292,9 +303,11 @@ create_location_custom() {
         sleep 2
         sudo networksetup -setdnsservers "$ETHERNET_DEVICE" "$DNS"
         sleep 2
-        sudo networksetup -setv6off "$ETHERNET_DEVICE"
+        # as of 2024-01 in case a client (e.g. macbook) connects to the mobile data acces point of an iphone the internet connection does not work for the client
+        # due to this if no other issue comes up leave the default value (setv6automatic) enabled
+        #sudo networksetup -setv6off "$ETHERNET_DEVICE"
         #sudo networksetup -setv6automatic "$ETHERNET_DEVICE"
-        sleep 2
+        #sleep 2
         if [[ -e /Users/"$loggedInUser"/Library/Preferences/network_profile_"$loggedInUser".conf ]]; then rm -f /Users/"$loggedInUser"/Library/Preferences/network_profile_"$loggedInUser".conf; else :;fi
     else
         echo "ethernet device not present or not defined, skipping..."
