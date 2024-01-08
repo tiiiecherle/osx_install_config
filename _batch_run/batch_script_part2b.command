@@ -386,8 +386,8 @@ batch_run_all() {
 	
 	
 	### firefox hardening
-	printf "\n${bold_text}###\nfirefox hardening...\n###\n${default_text}"
-	CONT1="no" "$SCRIPTS_FINAL_DIR"/15_finalizations/15d_firefox_hardening.sh
+	#printf "\n${bold_text}###\nfirefox hardening...\n###\n${default_text}"
+	#CONT1="no" "$SCRIPTS_FINAL_DIR"/15_finalizations/15d_firefox_hardening.sh
 	
 	
 	### calendar notifications and visibility
