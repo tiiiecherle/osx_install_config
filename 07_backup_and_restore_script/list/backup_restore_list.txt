@@ -614,10 +614,13 @@ echo Printers
 u 	~/.cups/lpoptions
 u	~/Library/Printers/
 u	~/Library/Preferences/com.apple.print.custompresets.forprinter.canon_ir_adv_c3325if.plist
+u	~/Library/Preferences/com.apple.print.custompresets.forprinter.canon_ir_adv_dx_c3926i.plist
 #u	~/Library/Preferences/com.apple.print.custompapers.plist
 u	/etc/cups/ppd/canon_ir_adv_c3325if.ppd
+u	/etc/cups/ppd/canon_ir_adv_dx_c3926i.ppd
 u	/etc/cups/printers.conf
 u	/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3325S2.ppd.gz
+u	/Library/Printers/PPDs/Contents/Resources/CNMCIRAC3926S2.ppd.gz
 u	/Library/Printers/Canon/CUPSPS2
 # sudo launchctl start org.cups.cupsd
 
