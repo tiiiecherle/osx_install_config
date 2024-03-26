@@ -57,7 +57,7 @@ onyx
 openwebstart
 photosync
 prefs-editor
-profilecreator
+#profilecreator
 progressive-downloader
 quickhash
 #quicksilver
@@ -71,13 +71,13 @@ the-archive-browser
 the-unarchiver
 timer
 tnefs-enough
-ui-browser
+#ui-browser
 unified-remote
 utm
 veracrypt
 visual-studio-code
 vlc
-vlc-webplugin
+#vlc-webplugin
 vnc-viewer
 vox			# alternative: tiny-player
 whatsapp
