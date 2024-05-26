@@ -14,7 +14,28 @@ import getpass
 import subprocess
 import uuid
 
+# python 3.11 implements the new PEP 668, marking python base environments as "externally managed"
+# homebrew reflects these changes in python 3.12 and newer
+# it is recommended to create virtual environments (which doesn't work with sudo -H -u "$loggedInUser")
+# or to use python3 -m pip [command] --break-system-packages --user to install to /Users/$USER/Library/Python/3.xx/ (it does not break system packages, just a scary name)
+# without some changes before this would lead to this error
+# ModuleNotFoundError: No module named 'Foundation'
+# to make this script and importing Foundation work, run this command before
+# if installed it uses homebrew python to install to /Users/$USER/Library/Python/3.xx/
+# python3 -m pip install pyobjc --break-system-packages --user
+# the following code installs pyobjc and reloads/reinitializes python before trying to import Foundation 
+import subprocess
+import sys
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package, "--break-system-packages", "--user"])
+install('pyobjc')
+import site
+from importlib import reload
+reload(site)
+
 import Foundation
+
+###
 
 favorites_path = "/Users/{user}/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.FavoriteServers.sfl2"
 
