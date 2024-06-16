@@ -43,6 +43,16 @@ else
 fi
 
 
+### deleting virtual python environment
+PYTHON_VIRTUALENVIRONMENT="/Users/"$USER"/Library/Python/screen_resolution"
+if [[ -e "$PYTHON_VIRTUALENVIRONMENT" ]]
+then
+    rm -rf "$PYTHON_VIRTUALENVIRONMENT"
+else
+    :
+fi
+
+
 ### stopping, disabling and removing launchd service
 if [[ $(launchctl list | grep "$SERVICE_NAME") != "" ]] || [[ $(launchctl print-disabled user/"$UNIQUE_USER_ID" | grep "$SERVICE_NAME" | grep true) != "" ]]
 then

@@ -287,7 +287,27 @@ screen_resolution() {
     
 
     ### homebrew and python versions
-    check_homebrew_and_python_versions
+    # no longer needed as the system or homebrew python version is only used to create an virtual python environment with its own version that ist used for the python commands in this script
+    # see below for more details on virtual python environment
+    #check_homebrew_and_python_versions
+
+
+    ### python changes
+    # python 3.11 implements the new PEP 668, marking python base environments as "externally managed"
+    # homebrew reflects these changes in python 3.12 and newer
+    # there are two recoomended ways of using python
+    
+    # 1     usage of two special commands --break-system-packages --user (not used in this script)
+    # use python3 -m pip [command] --break-system-packages --user to install to /Users/$USER/Library/Python/3.xx/ (it does not break system packages, just a scary name)
+    # the disadvantage of this usage is that all python project would use the same directory/virtualenv and it would not be possible to use different versions of python or the packages for each project
+    # therefore the directory has to exist and has to be in PATH when using sudo -H -u "$loggedInUser" python3 -m pip [...]
+    #echo ''
+    #echo "using new PATH including user python directory..."
+    #PYTHON_VERSION_FOLDER_TO_CREATE="$(echo $PYTHON3_VERSION | awk '{print $2}' | awk -F'.' '{print $1 "." $2}')"
+    #sudo -H -u "$loggedInUser" mkdir -p /Users/"$loggedInUser"/Library/Python/"$PYTHON_VERSION_FOLDER_TO_CREATE"/bin
+    #PATH=$PATH:/Users/"$loggedInUser"/Library/Python/"$PYTHON_VERSION_FOLDER_TO_CREATE"/bin
+    #echo "$PATH"
+    #echo ''
     
     
     ### python changes
@@ -304,32 +324,64 @@ screen_resolution() {
     echo "$PATH"
     #echo ''
     
+    # 2     virtual environments (used in this script)
+    # the best way is to create a virtual environment for each python usage/script/project and maintain them separately
+    # this gives the best fexiblility, testing possibilities and stability on the final used environment
+    PYTHON_VERSION="python3"
     
-    ### python modules  
+    # checking system python version (including homebrew)
     echo ''
-    echo "checking python modules..."
+    echo 'system python version incl. homebrew outside of the virtual environment...'
+    sudo -H -u "$loggedInUser" which "${PYTHON_VERSION}"
+    sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -V
+    # will be deactivated later after last python command of the script
+    #echo ''
+    
+    # creating and activating virtual python environment
+    echo ''
+    echo "creating and activating virtual python environment..."
+    PYTHON_VIRTUALENVIRONMENT="/Users/"$loggedInUser"/Library/Python/screen_resolution"
+    sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m venv "$PYTHON_VIRTUALENVIRONMENT"
+    source "$PYTHON_VIRTUALENVIRONMENT"/bin/activate
+    
+    # virtual environment python version
+    echo ''
+    echo 'virtual environment python version...'
+    sudo -H -u "$loggedInUser" which "${PYTHON_VERSION}"
+    sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -V
+    # will be deactivated later after last python command of the script
+    #echo ''
+
+
+    ### updating
+    echo ''
+    echo "updating pip..."
+    
+    # updating pip itself
+    sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+    
+    # requirements 
+    echo ''
+    echo "installing requirements..."
     for i in pyobjc-framework-Cocoa pyobjc-framework-Quartz
     do
-        if [[ $(sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip list --user | grep "$i") == "" ]]
+        if if [[ $(sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip list | cut -f1 -d' ' | tr " " "\n" | awk '{if(NR>=3)print}' | cut -d' ' -f1 | grep "$i") == "" ]]
         then
             echo ''
             echo "installing python package "$i"..."
-            sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install "$i" --break-system-packages --user
+            sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install "$i"
         else
             echo "python package "$i" already installed..."
         fi
     done
     
-    echo ''
-    echo "updating pip and script dependencies..."
-    
-    # updating pip itself
-    sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade pip --break-system-packages --user 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
-    
     # updating all packages to latest versions
-    sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --user --format=json | sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -c "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))" | xargs -n1 sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade --break-system-packages --user 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+    echo ''
+    echo "updating all packages..."
+    #sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --format=json | sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -c "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))"
+    sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --format=json | sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -c "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))" | xargs -n1 sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
     # or (both working)
-    #sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --user | cut -f1 -d' ' | tr " " "\n" | awk '{if(NR>=3)print}' | cut -d' ' -f1 | xargs -n1 sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade --break-system-packages --user 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+    #sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --user | cut -f1 -d' ' | tr " " "\n" | awk '{if(NR>=3)print}' | cut -d' ' -f1 | xargs -n1 sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
     
     
     ### variables
@@ -394,6 +446,12 @@ screen_resolution() {
         echo ''
         exit
     fi
+    
+    # deactivating/leaving python virtual environment
+    echo ''
+    echo "deactivating virtual python environment..."
+    deactivate
+    #sudo -H -u "$loggedInUser" which "${PYTHON_VERSION}"
     
     echo ''
     echo "done ;)"

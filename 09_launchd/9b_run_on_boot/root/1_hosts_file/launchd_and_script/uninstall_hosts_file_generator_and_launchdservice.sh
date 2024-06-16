@@ -91,6 +91,16 @@ sudo dscacheutil -flushcache
 sudo killall -HUP mDNSResponder
 
 
+### deleting virtual python environment
+PYTHON_VIRTUALENVIRONMENT="/Users/"$USER"/Library/Python/hosts_file_generator"
+if [[ -e "$PYTHON_VIRTUALENVIRONMENT" ]]
+then
+    rm -rf "$PYTHON_VIRTUALENVIRONMENT"
+else
+    :
+fi
+
+
 ### checking installation
 if [[ $(ps aux | grep /install_"$SCRIPT_INSTALL_NAME"_and_launchdservice.sh | grep -v grep) == "" ]]
 then

@@ -439,12 +439,8 @@ hosts_file_install_update() {
                 :
             fi
         fi
-            
-                   
-        ### homebrew and python versions
-        check_homebrew_and_python_versions
-    
-    
+        
+        
         ### version of dependencies
         change_dependencies_versions() {
             if [[ $(cat "$PATH_TO_APPS"/hosts_file_generator/requirements.txt | grep "beautifulsoup4==4.6.1") != "" ]]
@@ -454,52 +450,97 @@ hosts_file_install_update() {
                 :
             fi
         }
-        #change_dependencies_versions
-        
-        
+        #change_dependencies_versions  
+                   
+                   
+        ### homebrew and python versions
+        # no longer needed as the system or homebrew python version is only used to create an virtual python environment with its own version that ist used for the python commands in this script
+        # see below for more details on virtual python environment
+        #check_homebrew_and_python_versions
+    
+    
         ### python changes
         # python 3.11 implements the new PEP 668, marking python base environments as "externally managed"
         # homebrew reflects these changes in python 3.12 and newer
-        # it is recommended to create virtual environments (which doesn't work with sudo -H -u "$loggedInUser")
-        # or to use python3 -m pip [command] --break-system-packages --user to install to /Users/$USER/Library/Python/3.xx/ (it does not break system packages, just a scary name)
+        # there are two recoomended ways of using python
+        
+        # 1     usage of two special commands --break-system-packages --user (not used in this script)
+        # use python3 -m pip [command] --break-system-packages --user to install to /Users/$USER/Library/Python/3.xx/ (it does not break system packages, just a scary name)
+        # the disadvantage of this usage is that all python project would use the same directory/virtualenv and it would not be possible to use different versions of python or the packages for each project
         # therefore the directory has to exist and has to be in PATH when using sudo -H -u "$loggedInUser" python3 -m pip [...]
+        #echo ''
+        #echo "using new PATH including user python directory..."
+        #PYTHON_VERSION_FOLDER_TO_CREATE="$(echo $PYTHON3_VERSION | awk '{print $2}' | awk -F'.' '{print $1 "." $2}')"
+        #sudo -H -u "$loggedInUser" mkdir -p /Users/"$loggedInUser"/Library/Python/"$PYTHON_VERSION_FOLDER_TO_CREATE"/bin
+        #PATH=$PATH:/Users/"$loggedInUser"/Library/Python/"$PYTHON_VERSION_FOLDER_TO_CREATE"/bin
+        #echo "$PATH"
+        #echo ''
+        
+        # 2     virtual environments (used in this script)
+        # the best way is to create a virtual environment for each python usage/script/project and maintain them separately
+        # this gives the best fexiblility, testing possibilities and stability on the final used environment
+        PYTHON_VERSION="python3"
+        
+        # checking system python version (including homebrew)
         echo ''
-        echo "using new PATH including user python directory..."
-        PYTHON_VERSION_FOLDER_TO_CREATE="$(echo $PYTHON3_VERSION | awk '{print $2}' | awk -F'.' '{print $1 "." $2}')"
-        sudo -H -u "$loggedInUser" mkdir -p /Users/"$loggedInUser"/Library/Python/"$PYTHON_VERSION_FOLDER_TO_CREATE"/bin
-        PATH=$PATH:/Users/"$loggedInUser"/Library/Python/"$PYTHON_VERSION_FOLDER_TO_CREATE"/bin
-        echo "$PATH"
+        echo 'system python version incl. homebrew outside of the virtual environment...'
+        sudo -H -u "$loggedInUser" which "${PYTHON_VERSION}"
+        sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -V
+        # will be deactivated later after last python command of the script
+        #echo ''
+        
+        # creating and activating virtual python environment
+        echo ''
+        echo "creating and activating virtual python environment..."
+        PYTHON_VIRTUALENVIRONMENT="/Users/"$loggedInUser"/Library/Python/hosts_file_generator"
+        sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m venv "$PYTHON_VIRTUALENVIRONMENT"
+        source "$PYTHON_VIRTUALENVIRONMENT"/bin/activate
+        
+        # virtual environment python version
+        echo ''
+        echo 'virtual environment python version...'
+        sudo -H -u "$loggedInUser" which "${PYTHON_VERSION}"
+        sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -V
+        # will be deactivated later after last python command of the script
         #echo ''
 
 
         ### updating
         echo ''
-        echo "updating pip and script dependencies..."
+        echo "updating pip..."
         
         # updating pip itself
-        sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade pip --break-system-packages --user 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+        sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade pip 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
         
-        # updating all packages to latest versions
-        sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --user --format=json | sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -c "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))" | xargs -n1 sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade --break-system-packages --user 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
-        # or (both working)
-        #sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --user | cut -f1 -d' ' | tr " " "\n" | awk '{if(NR>=3)print}' | cut -d' ' -f1 | xargs -n1 sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade --break-system-packages --user 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
-        
-        # installing dependencies
+        # requirements 
+        echo ''
+        echo "installing requirements..."
+        # installing dependencies into virtual python environment
         for i in $(cat "$PATH_TO_APPS"/hosts_file_generator/requirements.txt | awk '{ print $1 }')
         do
-            if [[ $(sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip list --user | grep "$i") == "" ]]
+            if [[ $(sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip list | cut -f1 -d' ' | tr " " "\n" | awk '{if(NR>=3)print}' | cut -d' ' -f1 | grep "$i") == "" ]]
             then
                 echo ''
                 echo "installing python package "$i"..."
-                sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install "$i" --break-system-packages --user
+                sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install "$i"
             else
                 echo "python package "$i" already installed..."
             fi
         done
         
+        # updating all packages to latest versions
+        echo ''
+        echo "updating all packages..."
+        #sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --format=json | sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -c "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))"
+        sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --format=json | sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -c "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))" | xargs -n1 sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+        # or (both working)
+        #sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip --disable-pip-version-check list --outdated --user | cut -f1 -d' ' | tr " " "\n" | awk '{if(NR>=3)print}' | cut -d' ' -f1 | xargs -n1 sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install --upgrade 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+        
         # installs the exact version of the requirement and even downgrades them if a lower version is specified in requirements.txt
-        # if using this make sure there is no other script running at the same time that updates or downgrades python packages
-        #sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt --break-system-packages --user 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
+        # therefore it is recommended to use a virtual python environment (see above)
+        echo ''
+        echo "installing exact versions from requirements.txt..."
+        sudo -H -u "$loggedInUser" "${PYTHON_VERSION}" -m pip install -r "$PATH_TO_APPS"/hosts_file_generator/requirements.txt 2>&1 | grep -v 'already up-to-date' | grep -v 'already satisfied'
         
         # backing up original hosts file
         if [[ ! -f "/etc/hosts.orig" ]]
@@ -535,7 +576,13 @@ hosts_file_install_update() {
         #sudo python updateHostsFile.py -a -n -r -o alternates/fakenews-gambling-porn -e fakenews gambling porn
         #sudo python updateReadme.py
         cd - >/dev/null 2>&1
-    
+        
+        # deactivating/leaving python virtual environment
+        echo ''
+        echo "deactivating virtual python environment..."
+        deactivate
+        #sudo -H -u "$loggedInUser" which "${PYTHON_VERSION}"
+
         ### customization
         # commenting out lines
         #sudo sed -i '' '/cdn-static.liverail.com/s/^/#/g' /etc/hosts

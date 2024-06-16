@@ -252,7 +252,7 @@ batch_run_all() {
 	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11c_macos_preferences_"$MACOS_VERSION_MAJOR_UNDERSCORE".sh
 	
 	
-		### check if network volume is connected (needed for finder sidebar script)
+	### check if network volume is connected (needed for finder sidebar script)
 	# user specific customization
 	SCRIPT_NAME="finder_sidebar_"$USER""
 	SCRIPT_DIR_DEFAULTS_WRITE="$SCRIPT_DIR_TWO_BACK"
@@ -264,7 +264,8 @@ batch_run_all() {
 		SCRIPT_SUFFIX="py"
 	else
 		# intel mac
-		SCRIPT_SUFFIX="sh"
+		#SCRIPT_SUFFIX="sh"
+		SCRIPT_SUFFIX="py"
 	fi	
 	
 	if [[ -e "$SCRIPT_DIR_INPUT_KEEP"/"$SCRIPT_NAME"."$SCRIPT_SUFFIX" ]]
@@ -354,8 +355,9 @@ batch_run_all() {
 	printf "\n${bold_text}###\nfinder favorites...\n###\n${default_text}"
 	#echo ''
 	# python dependencies
-    pip3 install pyobjc-framework-SystemConfiguration
-	python3 "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11g_finder_favorites.py
+    #pip3 install pyobjc-framework-SystemConfiguration
+	#python3 "$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11g_finder_favorites.py
+	"$SCRIPTS_FINAL_DIR"/11_system_and_app_preferences/11g_finder_favorites_python_wrapper.sh
 	#echo ''
 	
 	
