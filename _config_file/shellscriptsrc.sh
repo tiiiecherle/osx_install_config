@@ -1473,7 +1473,10 @@ env_start_sudo() {
         env_enter_sudo_password
     fi
     env_use_password | builtin command sudo -p '' -S -v
-    ( while true; do env_use_password | builtin command sudo -p '' -S -v; sleep 60; done; ) &
+    #( while true; do env_use_password | builtin command sudo -p '' -S -v; sleep 60; done; ) &
+    #
+    #while true; do env_use_password | builtin command sudo -p '' -S -v; sleep 60; done &
+    ( while true; do sleep 60; sudo -n true; kill -0 "$$" || exit; done 2>/dev/null ) &
     SUDO_PID="$!"
     #echo "SUDO PID is $SUDO_PID..." 
 }
@@ -1832,9 +1835,10 @@ env_rename_files_and_directories() {
                 find "$RENAME_DIR" -print0 | xargs -0 rename --force 's/ä/ae/g;s/ö/oe/g;s/ü/ue/g;s/Ä/Ae/g;s/Ö/Oe/g;s/Ü/Ue/g;s/ß/ss/g;s/\x61\xcc\x88/ae/g;s/\x6f\xcc\x88/oe/g;s/\x75\xcc\x88/ue/g;s/\x41\xcc\x88/AE/g;s/\x4f\xcc\x88/OE/g;s/\x55\xcc\x88/UE/g;'
                 
                 # sanitizing (problematic if whitespace in path to file or folder)
-                #find "$RENAME_DIR" -print0 | xargs -0 rename --sanitize --keep-extension"
+                find "$RENAME_DIR" -print0 | xargs -0 rename --sanitize --keep-extension
+                #find "$RENAME_DIR" -print0 | xargs -0 rename --noctrl --nometa --trim --keep-extension
                 
-                for RENAME_VAR_REGEX in , '<' '>' » « '(' ')' '\[' '\]' + % @ ® ø · • › … – — ’ ‘ “ ” é ï Ì € Ë â Â ¬ ° ¹ º š Œ ¶ ¼ Æ ƒ ˆ † '\=' '\!' '\|' '\#' '\\~' '\"' '\?' '\¸' '\' '\&' '\§' '\$' '\%' ' ' '\\' ''\''' __
+                for RENAME_VAR_REGEX in , ' ' '<' '>' » « '(' ')' '\[' '\]' + % @ ® ø · • › … – — ’ ‘ “ ” é ï Ì € Ë â Â ¬ ° ¹ º š Œ ¶ ¼ Æ ƒ ˆ † '\=' '\!' '\|' '\#' '\\~' '\"' '\?' '\¸' '\' '\&' '\§' '\$' '\%' ' ' '\\' ''\''' __
                 do
                     NUM1=0
                     #
