@@ -988,8 +988,8 @@ echo "script is run with $SCRIPT_INTERPRETER interpreter..."
 #echo ''
 
 unset_variables() {
-    unset SUDOPASSWORD
-    unset USE_PASSWORD
+    #unset SUDOPASSWORD		# done in trap
+    #unset USE_PASSWORD		# done in trap
     unset TMP_DIR_FORMULAE
     unset TMP_DIR_CASK
     unset DATE_LIST_FILE_FORMULAE
@@ -1197,7 +1197,7 @@ then
         :
     fi
     
-    # done in trap
+    # done in trap additionally, but it seems the sudo function is killed somewhere after this, so this is needed here to use sudo inside of env_stop_sudo
     #env_stop_sudo
 
 else
@@ -1220,7 +1220,11 @@ echo ''
 unset_variables
 
 # kill all child and grandchild processes
+# pid
 #ps -o pgid= $$ | grep -o '[0-9]*'
+# process details belonging to pid
+#ps -p $(ps -o pgid= $$ | grep -o '[0-9]*')
+# kill processes
 #kill -9 -$(ps -o pgid= $$ | grep -o '[0-9]*')
 
 exit
