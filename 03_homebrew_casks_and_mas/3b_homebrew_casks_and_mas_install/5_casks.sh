@@ -69,7 +69,6 @@ else
 fi
 
 env_sudo
-#env_sudo_homebrew
 
 
 

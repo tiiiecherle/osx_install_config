@@ -1366,7 +1366,7 @@ env_set_check_apps_notifications() {
 }
 
 
-### sudo password upfront
+### sudo password upfront to variable
 env_enter_sudo_password() {
 
     #echo ''
@@ -1425,7 +1425,7 @@ env_enter_sudo_password() {
                 break
             else
                 #echo "Sorry, try again."
-                SUDOPASSWORD_CORRECT="no"
+                SUDOPASSWORD_CORRECT="no"env_use_password
                 unset SUDOPASSWORD
                 unset USE_PASSWORD
             fi
@@ -1447,6 +1447,71 @@ env_enter_sudo_password() {
     }
 }
 
+### add sudo password to keychain from variable
+env_temp_add_sudo_password_to_keychain() {
+    /usr/bin/security -i add-generic-password -U -s 'command_line' -a "${USER}" -w "$(builtin printf $SUDOPASSWORD)"
+}
+
+### sudo password upfront to keychain
+env_enter_sudo_password_to_keychain() {
+
+    #echo ''
+    
+    # function for reading secret string (POSIX compliant)
+    enter_password_secret_keychain() {
+        printf "Password: " 
+        (   
+        	builtin read -rs < /dev/tty
+          	builtin echo "add-generic-password -U -s 'command_line' -a '${USER}' -w '${REPLY}'"
+        ) | /usr/bin/security -i
+    }
+    
+    # making sure no variables are exported
+    set +a
+    
+    # asking for the SUDOPASSWORD upfront
+    # typing and reading SUDOPASSWORD from command line without displaying it and
+    # checking if entered password is the sudo password with a set maximum of tries
+    NUMBER_OF_TRIES=0
+    MAX_TRIES=3
+    while [[ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]]
+    do
+        NUMBER_OF_TRIES=$((NUMBER_OF_TRIES+1))
+        #echo "$NUMBER_OF_TRIES"
+        if [[ "$NUMBER_OF_TRIES" -le "$MAX_TRIES" ]]
+        then
+            if [[ "$USE_PASSWORD" == "" ]] || [[ "$SUDOPASSWORD_CORRECT" == "no" ]]
+            then
+                enter_password_secret_keychain
+            else
+                :
+            fi
+            env_use_password | sudo -k -S echo "" > /dev/null 2>&1
+            if [[ $? -eq 0 ]]
+            then 
+                break
+            else
+                #echo "Sorry, try again."
+                SUDOPASSWORD_CORRECT="no"env_use_password
+                unset SUDOPASSWORD
+                unset USE_PASSWORD
+            fi
+        else
+            echo ""$MAX_TRIES" incorrect password attempts"
+            exit
+        fi
+    done
+    
+    # setting up trap to ensure the SUDOPASSWORD is unset if the script is terminated while it is set
+    #trap 'unset SUDOPASSWORD' EXIT
+    # set the trap after usage of the function in the respective script
+ 
+    # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
+    sudo() {
+        builtin command sudo -A "$@"
+    }
+}
+
 
 ### using sudo password
 # replacing sudo command with a function, so all sudo commands of the script do not have to be changed
@@ -1465,6 +1530,30 @@ env_sudo_homebrew() {
     }
 }
 
+env_sudo_askpass() {
+    sudo() {
+        builtin command sudo -A "$@"
+    }
+}
+
+env_start_sudo_askpass() {
+    if [[ "$USE_PASSWORD" != "" ]]
+    then
+        :
+    else
+        env_enter_sudo_password
+        env_temp_add_sudo_password_to_keychain
+        SUDO_ASKPASS="$(/usr/bin/mktemp)"
+        {
+          echo "#!/bin/zsh"
+          echo "/usr/bin/security find-generic-password -s 'command_line' -a '${USER}' -w"
+        } > "${SUDO_ASKPASS}"
+        chmod +x "${SUDO_ASKPASS}"
+        #echo "$SUDO_ASKPASS"
+        export SUDO_ASKPASS
+    fi
+}
+
 env_start_sudo() {
     if [[ "$USE_PASSWORD" != "" ]]
     then
@@ -1474,7 +1563,6 @@ env_start_sudo() {
     fi
     env_use_password | builtin command sudo -p '' -S -v
     #( while true; do env_use_password | builtin command sudo -p '' -S -v; sleep 60; done; ) &
-    #
     #while true; do env_use_password | builtin command sudo -p '' -S -v; sleep 60; done &
     ( while true; do sleep 60; sudo -n true; kill -0 "$$" || exit; done 2>/dev/null ) &
     SUDO_PID="$!"
@@ -1505,6 +1593,41 @@ env_stop_sudo() {
     	then
       		unset -f sudo
     	fi
+    	# delete SUDO_ASKPASS file
+    	if [[ "$(echo ""$SUDO_ASKPASS"" | grep ""$(echo $TMPDIR)"" | grep ""\/tmp\."")" != "" ]]
+        then
+            #echo "tmp SUDO_ASKPASS file found..."
+            if [[ -f "${SUDO_ASKPASS}" ]]
+            then
+                rm -f "${SUDO_ASKPASS}" >/dev/null 2>&1
+                if [ $? -eq 0 ]; then
+                    #echo "successfully deleted tmp SUDO_ASKPASS file..."
+                    :
+                else
+                    echo "failed to delete tmp SUDO_ASKPASS file..."
+                fi
+            else
+                :
+            fi      
+        else
+            #echo "no tmp SUDO_ASKPASS file..."
+            :
+        fi
+        # delete keychain entry
+        if /usr/bin/security find-generic-password -s 'command_line' -a "${USER}" >/dev/null 2>&1
+        then
+            #echo "SUDO_ASKPASS keychain entry found..."
+            /usr/bin/security delete-generic-password -s 'command_line' -a "${USER}" >/dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                #echo "successfully deleted SUDO_ASKPASS keychain entry..."
+                :
+            else
+                echo "failed to delete tmp SUDO_ASKPASS entry in keychain..."
+            fi
+        else
+            #echo "no SUDO_ASKPASS keychain entry..."
+            :
+        fi
     else
         :
     fi

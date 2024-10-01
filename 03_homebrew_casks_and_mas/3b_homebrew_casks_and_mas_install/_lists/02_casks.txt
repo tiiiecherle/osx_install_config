@@ -69,7 +69,7 @@ teamviewer
 textmate
 the-archive-browser
 the-unarchiver
-timer
+#timer
 tnefs-enough
 #ui-browser
 unified-remote

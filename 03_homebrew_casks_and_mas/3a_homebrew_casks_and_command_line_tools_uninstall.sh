@@ -137,7 +137,7 @@ then
     echo ''
     echo "uninstalling homebrew and all formulae..."
     # redefining sudo so it is possible to run homebrew without entering the password again
-    env_sudo_homebrew
+    #env_sudo_homebrew
     # uninstalling with homebrew script
     #sudo yes | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"

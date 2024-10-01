@@ -39,9 +39,10 @@ then
     USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
     delete_tmp_backup_script_fifo2
     set +a
-    env_sudo
+    env_temp_add_sudo_password_to_keychain
+    env_sudo_askpass
 else
-    env_enter_sudo_password
+    env_start_sudo_askpass
 fi
 
 
@@ -425,7 +426,8 @@ formulae_install_updates_parallel() {
                 
             #fi
             echo 'removing old installed versions of '"$FORMULA"'...'
-            env_use_password | brew cleanup "$FORMULA"
+            #env_use_password | brew cleanup "$FORMULA"
+            brew cleanup "$FORMULA"
             echo ''
             
             # cleanup entries
@@ -682,7 +684,8 @@ casks_install_updates() {
         	if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep "$i") != "" ]]
         	then
                 echo 'updating '"$i"'...'
-                env_use_password | brew reinstall --cask "$i"
+                #env_use_password | brew reinstall --cask "$i"
+                brew reinstall --cask "$i"
                 #sed -i "" "/""$i""/d" "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
                 sed -i '' '/'"$i"'/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
                 echo ''
@@ -704,7 +707,8 @@ casks_install_updates() {
             #sudo brew install --cask "$line" --force
             # reinstall deletes autostart entries as it runs uninstall and then install
             #env_use_password | brew reinstall --cask "$line" --force
-            env_use_password | brew install --cask "$CASK" --force
+            #env_use_password | brew install --cask "$CASK" --force
+            brew install --cask "$CASK" --force
             #echo ''
             
             # cleanup entries
@@ -855,7 +859,8 @@ post_cask_installations() {
 	then
 	    echo ''
         echo "updating macosfuse after virtualbox update..."
-        env_use_password | brew install --cask --force macfuse
+        #env_use_password | brew install --cask --force macfuse
+        brew install --cask --force macfuse
     else
         :
     fi
@@ -988,8 +993,8 @@ echo "script is run with $SCRIPT_INTERPRETER interpreter..."
 #echo ''
 
 unset_variables() {
-    unset SUDOPASSWORD
-    unset USE_PASSWORD
+    #unset SUDOPASSWORD		# done in trap
+    #unset USE_PASSWORD		# done in trap
     unset TMP_DIR_FORMULAE
     unset TMP_DIR_CASK
     unset DATE_LIST_FILE_FORMULAE
@@ -1045,7 +1050,7 @@ then
     
     env_identify_terminal
     
-    env_start_sudo
+    #env_start_sudo
 
     env_command_line_tools_install_shell
     
@@ -1061,7 +1066,8 @@ then
         echo "all script dependencies installed..."
     else
         echo "not all script dependencies installed, installing..."
-        env_use_password | brew install jq parallel
+        #env_use_password | brew install jq parallel
+        brew install jq parallel
     fi
     
     # number of parallel processes depending on cpu-cores
@@ -1197,7 +1203,7 @@ then
         :
     fi
     
-    # done in trap
+    # done in trap additionally, but it seems the sudo function is killed somewhere after this, so this is needed here to use sudo inside of env_stop_sudo
     #env_stop_sudo
 
 else
@@ -1220,7 +1226,11 @@ echo ''
 unset_variables
 
 # kill all child and grandchild processes
+# pid
 #ps -o pgid= $$ | grep -o '[0-9]*'
+# process details belonging to pid
+#ps -p $(ps -o pgid= $$ | grep -o '[0-9]*')
+# kill processes
 #kill -9 -$(ps -o pgid= $$ | grep -o '[0-9]*')
 
 exit

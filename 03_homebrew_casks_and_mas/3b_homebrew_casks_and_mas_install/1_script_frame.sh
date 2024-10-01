@@ -37,7 +37,7 @@ fi
 
 
 # redefining sudo so it is possible to run homebrew install without entering the password again
-env_sudo_homebrew
+#env_sudo_homebrew
 
 
 ###
