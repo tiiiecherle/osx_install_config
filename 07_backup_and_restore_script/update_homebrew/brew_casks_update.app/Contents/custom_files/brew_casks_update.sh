@@ -39,9 +39,10 @@ then
     USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
     delete_tmp_backup_script_fifo2
     set +a
-    env_sudo
+    env_temp_add_sudo_password_to_keychain
+    env_sudo_askpass
 else
-    env_enter_sudo_password
+    env_start_sudo_askpass
 fi
 
 
@@ -425,7 +426,8 @@ formulae_install_updates_parallel() {
                 
             #fi
             echo 'removing old installed versions of '"$FORMULA"'...'
-            env_use_password | brew cleanup "$FORMULA"
+            #env_use_password | brew cleanup "$FORMULA"
+            brew cleanup "$FORMULA"
             echo ''
             
             # cleanup entries
@@ -682,7 +684,8 @@ casks_install_updates() {
         	if [[ $(cat "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS" | grep "$i") != "" ]]
         	then
                 echo 'updating '"$i"'...'
-                env_use_password | brew reinstall --cask "$i"
+                #env_use_password | brew reinstall --cask "$i"
+                brew reinstall --cask "$i"
                 #sed -i "" "/""$i""/d" "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
                 sed -i '' '/'"$i"'/d' "$TMP_DIR_CASK"/"$DATE_LIST_FILE_CASKS"
                 echo ''
@@ -704,7 +707,8 @@ casks_install_updates() {
             #sudo brew install --cask "$line" --force
             # reinstall deletes autostart entries as it runs uninstall and then install
             #env_use_password | brew reinstall --cask "$line" --force
-            env_use_password | brew install --cask "$CASK" --force
+            #env_use_password | brew install --cask "$CASK" --force
+            brew install --cask "$CASK" --force
             #echo ''
             
             # cleanup entries
@@ -855,7 +859,8 @@ post_cask_installations() {
 	then
 	    echo ''
         echo "updating macosfuse after virtualbox update..."
-        env_use_password | brew install --cask --force macfuse
+        #env_use_password | brew install --cask --force macfuse
+        brew install --cask --force macfuse
     else
         :
     fi
@@ -1045,7 +1050,7 @@ then
     
     env_identify_terminal
     
-    env_start_sudo
+    #env_start_sudo
 
     env_command_line_tools_install_shell
     
@@ -1061,7 +1066,8 @@ then
         echo "all script dependencies installed..."
     else
         echo "not all script dependencies installed, installing..."
-        env_use_password | brew install jq parallel
+        #env_use_password | brew install jq parallel
+        brew install jq parallel
     fi
     
     # number of parallel processes depending on cpu-cores
