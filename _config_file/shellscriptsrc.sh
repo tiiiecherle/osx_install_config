@@ -1537,20 +1537,45 @@ env_sudo_askpass() {
 }
 
 env_start_sudo_askpass() {
-    if [[ "$USE_PASSWORD" != "" ]]
+    #if [[ "$USE_PASSWORD" != "" ]]
+    #then
+    #   :
+    #else
+    #   :
+    #fi
+    SUDO_ASKPASS="$(/usr/bin/mktemp)"
+    {
+      echo "#!/bin/zsh"
+      echo "/usr/bin/security find-generic-password -s 'command_line' -a '${USER}' -w"
+    } > "${SUDO_ASKPASS}"
+    chmod +x "${SUDO_ASKPASS}"
+    #echo "$SUDO_ASKPASS"
+    export SUDO_ASKPASS
+}
+
+env_check_keychain_for_password_entry() {
+    SUDO_ENTRY_IN_KEYCHAIN=""
+    if /usr/bin/security find-generic-password -s 'command_line' -a "${USER}" >/dev/null 2>&1
     then
-        :
+        echo ''
+        echo "SUDO_ASKPASS command_line keychain entry found..."
+        SUDO_ENTRY_IN_KEYCHAIN="yes"
     else
-        env_enter_sudo_password
-        env_temp_add_sudo_password_to_keychain
-        SUDO_ASKPASS="$(/usr/bin/mktemp)"
-        {
-          echo "#!/bin/zsh"
-          echo "/usr/bin/security find-generic-password -s 'command_line' -a '${USER}' -w"
-        } > "${SUDO_ASKPASS}"
-        chmod +x "${SUDO_ASKPASS}"
-        #echo "$SUDO_ASKPASS"
-        export SUDO_ASKPASS
+        #echo "no SUDO_ASKPASS command_line keychain entry..."
+        SUDO_ENTRY_IN_KEYCHAIN="no"
+        :
+    fi
+}
+
+env_check_for_sudo_askpass_file() {
+    SUDO_ASKPASS_FILE=""
+	if [[ "$(echo ""$SUDO_ASKPASS"" | grep ""$(echo $TMPDIR)"" | grep ""\/tmp\."")" != "" ]]
+    then
+        echo "tmp SUDO_ASKPASS file found..."
+        SUDO_ASKPASS_FILE="yes"   
+    else
+        #echo "no tmp SUDO_ASKPASS file..."
+        SUDO_ASKPASS_FILE="no"
     fi
 }
 
@@ -1575,6 +1600,7 @@ env_stop_sudo() {
     then
         :
     else
+        echo "sudo pid is not empty, stopping sudo..."
         if ps -p "$SUDO_PID" > /dev/null
         then
             sudo kill -9 "$SUDO_PID" &> /dev/null
@@ -1593,40 +1619,46 @@ env_stop_sudo() {
     	then
       		unset -f sudo
     	fi
+    	
     	# delete SUDO_ASKPASS file
-    	if [[ "$(echo ""$SUDO_ASKPASS"" | grep ""$(echo $TMPDIR)"" | grep ""\/tmp\."")" != "" ]]
+    	env_check_for_sudo_askpass_file
+    	if [[ "$SUDO_ASKPASS_FILE" == "yes" ]]
         then
-            #echo "tmp SUDO_ASKPASS file found..."
             if [[ -f "${SUDO_ASKPASS}" ]]
             then
                 rm -f "${SUDO_ASKPASS}" >/dev/null 2>&1
-                if [ $? -eq 0 ]; then
-                    #echo "successfully deleted tmp SUDO_ASKPASS file..."
+                if [ $? -eq 0 ]
+                then
+                    echo "successfully deleted tmp SUDO_ASKPASS file..."
+                    #echo ''
                     :
                 else
                     echo "failed to delete tmp SUDO_ASKPASS file..."
+                    #echo ''
                 fi
             else
                 :
             fi      
         else
-            #echo "no tmp SUDO_ASKPASS file..."
             :
         fi
+        
         # delete keychain entry
-        if /usr/bin/security find-generic-password -s 'command_line' -a "${USER}" >/dev/null 2>&1
+        env_check_keychain_for_password_entry
+        if [[ "$SUDO_ENTRY_IN_KEYCHAIN" == "yes" ]]
         then
-            #echo "SUDO_ASKPASS keychain entry found..."
             /usr/bin/security delete-generic-password -s 'command_line' -a "${USER}" >/dev/null 2>&1
-            if [ $? -eq 0 ]; then
-                #echo "successfully deleted SUDO_ASKPASS keychain entry..."
+            if [ $? -eq 0 ]
+            then
+                echo "successfully deleted SUDO_ASKPASS keychain entry..."
+                echo ''
                 :
             else
                 echo "failed to delete tmp SUDO_ASKPASS entry in keychain..."
+                echo ''
             fi
         else
-            #echo "no SUDO_ASKPASS keychain entry..."
-            :
+            :        
         fi
     else
         :

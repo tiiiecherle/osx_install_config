@@ -24,22 +24,36 @@ if [[ "$RUN_FROM_BATCH_SCRIPT" == "yes" ]]; then env_start_error_log; else :; fi
 ### asking password upfront
 ###
 
-if [[ "$SUDOPASSWORD" == "" ]]
+env_check_keychain_for_password_entry
+if [[ "$SUDO_ENTRY_IN_KEYCHAIN" == "yes" ]]
 then
-    if [[ -e /tmp/tmp_batch_script_fifo ]]
-    then
-        unset SUDOPASSWORD
-        SUDOPASSWORD=$(cat "/tmp/tmp_batch_script_fifo" | head -n 1)
-        USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-        env_delete_tmp_batch_script_fifo
-        env_sudo
-    else
-        env_enter_sudo_password
-    fi
-else
     :
+else
+    if [[ "$SUDOPASSWORD" == "" ]]
+    then
+        if [[ -e /tmp/tmp_backup_script_fifo ]]
+        then
+            unset SUDOPASSWORD
+            SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo" | head -n 1)
+            USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+            delete_tmp_backup_script_fifo
+            #set +a
+        else
+            env_enter_sudo_password
+        fi
+    else
+        :
+    fi
+    env_temp_add_sudo_password_to_keychain
 fi
-
+env_check_for_sudo_askpass_file
+if [[ "$SUDO_ASKPASS_FILE" == "yes" ]]
+then
+    :
+else
+    env_start_sudo_askpass
+fi
+env_sudo_askpass
 
 
 ###
@@ -59,7 +73,7 @@ unset_variables() {
     unset TERMINALWIDTH
     unset LINENUMBER
     unset DESTINATION
-    unset SUDOPASSWORD
+    #unset SUDOPASSWORD     # done in trap
     unset VBOXSAVEDIR
     unset UTMSAVEDIR
     unset GUI_APP_TO_BACKUP
@@ -262,7 +276,7 @@ APPLESCRIPTDIR="$WORKING_DIR"
 
 
 ### trapping
-trap_function_exit_middle() { delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; open -g keepingyouawake:///deactivate; stty sane; unset SUDOPASSWORD; unset USE_PASSWORD; }
+trap_function_exit_middle() { delete_tmp_backup_script_fifo1; delete_tmp_backup_script_fifo2; open -g keepingyouawake:///deactivate; stty sane; env_stop_sudo; unset SUDOPASSWORD; unset USE_PASSWORD; }
 "${ENV_SET_TRAP_SIG[@]}"
 "${ENV_SET_TRAP_EXIT[@]}"
 
@@ -1078,7 +1092,7 @@ EOF
                 # deleting backup folder on desktop
                 echo ''
                 echo "deleting backup folder on desktop..."
-                if [[ -e "$DESTINATION" ]]
+                if [[ -e "$DESTINATION" ]] && [[ "$DELETE_BACKUP_DESKTOP_FOLDER" != "no" ]]
                 then
                     #:
                     sudo rm -rf "$DESTINATION"
@@ -1252,9 +1266,10 @@ EOF
 			env_deactivating_caffeinate
             
             echo ''
-            echo "done ;)"
+            echo "backup done ;)"
             echo ''
             
+            kill 0
             exit
         
         else

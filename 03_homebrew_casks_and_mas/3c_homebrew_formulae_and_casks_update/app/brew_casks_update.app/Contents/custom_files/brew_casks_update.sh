@@ -24,27 +24,44 @@ eval "$(typeset -f env_get_shell_specific_variables)" && env_get_shell_specific_
 ### asking password upfront
 ###
 
-if [[ -e /tmp/tmp_backup_script_fifo2 ]]
+env_check_keychain_for_password_entry
+if [[ "$SUDO_ENTRY_IN_KEYCHAIN" == "yes" ]]
 then
-    delete_tmp_backup_script_fifo2() {
-        if [[ -e "/tmp/tmp_backup_script_fifo2" ]]
+    :
+else
+    if [[ "$SUDOPASSWORD" == "" ]]
+    then
+        if [[ -e /tmp/tmp_backup_script_fifo2 ]]
         then
-            rm "/tmp/tmp_backup_script_fifo2"
+            delete_tmp_backup_script_fifo2() {
+                if [[ -e "/tmp/tmp_backup_script_fifo2" ]]
+                then
+                    rm "/tmp/tmp_backup_script_fifo2"
+                else
+                    :
+                fi
+            }
+            unset SUDOPASSWORD
+            SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo2" | head -n 1)
+            USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+            delete_tmp_backup_script_fifo2
+            #set +a
         else
-            :
+            env_enter_sudo_password
         fi
-    }
-    unset SUDOPASSWORD
-    SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo2" | head -n 1)
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-    delete_tmp_backup_script_fifo2
-    set +a
+    else
+        :
+    fi
     env_temp_add_sudo_password_to_keychain
-    env_sudo_askpass
+fi
+env_check_for_sudo_askpass_file
+if [[ "$SUDO_ASKPASS_FILE" == "yes" ]]
+then
+    :
 else
     env_start_sudo_askpass
 fi
-
+env_sudo_askpass
 
 
 ###
@@ -417,8 +434,15 @@ formulae_install_updates_parallel() {
                 if [[ "$FORMULA" =~ "^python@3.*" ]]
                 then
                     FORMULA_CLEANUP_NEEDED="no"
-                    script -q /dev/null brew uninstall "$FORMULA"
+                    script -q /dev/null brew uninstall --ignore-dependencies "$FORMULA"
                     script -q /dev/null brew install --formula python3
+                    # clean virtual python environments for latest version usage
+                    if [[ -e /Users/"$USER"/Library/Python ]]
+                    then
+                        rm -rf /Users/"$USER"/Library/Python
+                    else
+                        :
+                    fi
                 else
                     script -q /dev/null brew upgrade --formula "$FORMULA"
                     #brew upgrade --formula "$FORMULA"
