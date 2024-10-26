@@ -66,6 +66,15 @@ else
 fi
 
 
+### deleting virtual python environment
+if [[ -e /Users/"$USER"/Library/Python/"$SCRIPT_INSTALL_NAME" ]]
+then
+    rm -rf /Users/"$USER"/Library/Python/"$SCRIPT_INSTALL_NAME"
+else
+    :
+fi
+
+
 ### uninstalling hosts file generator
 if [[ -d "$PATH_TO_APPS"/hosts_file_generator ]]
 then

@@ -390,15 +390,18 @@ hosts_file_install_update() {
 
     ### script
 	# checking modification date of /etc/hosts
-    UPDATEEACHDAYS=4
-    if [[ "$(find /etc/* -name 'hosts' -maxdepth 0 -type f -mtime +"$UPDATEEACHDAYS"d | grep -x '/etc/hosts')" == "" ]]
-    then
-        echo "/etc/hosts was already updated in the last "$UPDATEEACHDAYS" days, no need to update, exiting..."
-        echo ''
-        exit
-    else
-        echo "/etc/hosts is older than "$UPDATEEACHDAYS" days, updating..."
-    fi
+	checking_hosts_modification_date(){
+        UPDATEEACHDAYS=4
+        if [[ "$(find /etc/* -name 'hosts' -maxdepth 0 -type f -mtime +"$UPDATEEACHDAYS"d | grep -x '/etc/hosts')" == "" ]]
+        then
+            echo "/etc/hosts was already updated in the last "$UPDATEEACHDAYS" days, no need to update, exiting..."
+            echo ''
+            exit
+        else
+            echo "/etc/hosts is older than "$UPDATEEACHDAYS" days, updating..."
+        fi
+    }
+    checking_hosts_modification_date
  
     # checking if online
     if [[ "$ONLINE_STATUS" == "online" ]]
