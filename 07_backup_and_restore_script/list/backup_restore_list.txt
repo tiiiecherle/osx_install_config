@@ -120,9 +120,9 @@ u	~/Library/Preferences/com.freemacsoft.AppCleaner.plist
 #u	~/Library/Preferences/com.rdutoit.backupList.plist
 
 # Bartender
-echo Bartender
+#echo Bartender
 #u	"$PATH_TO_APPS"/Bartender 3.app
-u	~/Library/Preferences/com.surteesstudios.Bartender.plist
+#u	~/Library/Preferences/com.surteesstudios.Bartender.plist
 
 # BetterTouchTool
 echo BetterTouchTool
@@ -343,6 +343,10 @@ u	~/Library/Preferences/com.Google.GoogleEarthPro.plist
 #u	"$PATH_TO_APPS"/iBackup.app
 #u	~/Library/Application Support/iBackup
 #u	~/Library/Preferences/ch.grapefruit.iBackup.plist
+
+# Ice
+echo Ice
+u	~/Library/Preferences/com.jordanbaird.Ice.plist
 
 # IINA
 echo IINA
