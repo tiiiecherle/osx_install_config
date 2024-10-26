@@ -50,7 +50,7 @@ done <<< "$(find "$SCRIPT_DIR" -mindepth 1 ! -path "*/*.app/*" -name "*.sh")"
 #export OPTION=RESTORE; time script -q ~/Desktop/backup_restore_log.txt "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
 
 # this needs tee in the backup script which does not capture the output format, so e.g. you couldn`t see the download progress of casks
-export OPTION=BACKUP; time "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
+export OPTION=BACKUP; export DELETE_BACKUP_DESKTOP_FOLDER=yes; time "$SCRIPT_DIR"/backup_restore_script/backup_restore_script_mac.sh
 
 echo ''
 
