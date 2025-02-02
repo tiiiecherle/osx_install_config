@@ -55,6 +55,21 @@ else
 fi
 env_sudo_askpass
 
+# needed for backup encryption
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    SUDOPASSWORD=$(echo "/usr/bin/security find-generic-password -s 'command_line' -a '${USER}' -w")
+    if [[ "$SUDOPASSWORD" == "" ]]
+    then
+        echo "SUDOPASSWORD not set for encryption, exiting..."
+        exit
+    else
+        :
+    fi
+else
+    :
+fi
+
 
 ###
 ### functions
@@ -1079,13 +1094,12 @@ EOF
                 # compressing and moving backup
                 #echo ''
                 echo "compressing backup..."
-            
+
                 # checking and defining some variables
             	#echo "TARGZSAVEDIR is "$TARGZGPGZSAVEDIR""
                 #echo "APPLESCRIPTDIR is "$APPLESCRIPTDIR""
                 DESKTOPBACKUPFOLDER="$DESTINATION"
                 #echo "DESKTOPBACKUPFOLDER is "$DESKTOPBACKUPFOLDER""
-                
                 . "$WORKING_DIR"/backup_restore_script/compress_and_move_backup.sh
                 wait
                 

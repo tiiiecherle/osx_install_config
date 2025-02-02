@@ -16,7 +16,7 @@ appcleaner
 bartender
 bbedit
 bettertouchtool
-brackets
+#brackets
 burn
 coconutbattery
 commander-one
@@ -44,12 +44,12 @@ jitsi-meet
 keepingyouawake
 keka
 linphone
-liteicon
+#liteicon
 macdown
 macpass
 #macs-fan-control
 microsoft-teams
-mysides
+#mysides
 namechanger
 nextcloud
 ondesoft-audiobook-converter

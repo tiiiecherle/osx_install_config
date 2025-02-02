@@ -31,28 +31,78 @@ fi
 
 
 
+####
+#### asking password upfront
+####
+#
+#if [[ -e /tmp/tmp_backup_script_fifo1 ]]
+#then
+#    delete_tmp_backup_script_fifo1() {
+#        if [[ -e "/tmp/tmp_backup_script_fifo1" ]]
+#        then
+#            rm "/tmp/tmp_backup_script_fifo1"
+#        else
+#            :
+#        fi
+#    }
+#    unset SUDOPASSWORD
+#    SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo1" | head -n 1)
+#    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+#    delete_tmp_backup_script_fifo1
+#    set +a
+#    env_sudo
+#else
+#    env_enter_sudo_password
+#fi
+
 ###
 ### asking password upfront
 ###
 
-if [[ -e /tmp/tmp_backup_script_fifo1 ]]
+env_check_keychain_for_password_entry
+if [[ "$SUDO_ENTRY_IN_KEYCHAIN" == "yes" ]]
 then
-    delete_tmp_backup_script_fifo1() {
-        if [[ -e "/tmp/tmp_backup_script_fifo1" ]]
-        then
-            rm "/tmp/tmp_backup_script_fifo1"
-        else
-            :
-        fi
-    }
-    unset SUDOPASSWORD
-    SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo1" | head -n 1)
-    USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
-    delete_tmp_backup_script_fifo1
-    set +a
-    env_sudo
+    :
 else
-    env_enter_sudo_password
+    if [[ "$SUDOPASSWORD" == "" ]]
+    then
+        if [[ -e /tmp/tmp_backup_script_fifo1 ]]
+        then
+            unset SUDOPASSWORD
+            SUDOPASSWORD=$(cat "/tmp/tmp_backup_script_fifo1" | head -n 1)
+            USE_PASSWORD='builtin printf '"$SUDOPASSWORD\n"''
+            delete_tmp_backup_script_fifo1
+            #set +a
+        else
+            env_enter_sudo_password
+        fi
+    else
+        :
+    fi
+    env_temp_add_sudo_password_to_keychain
+fi
+env_check_for_sudo_askpass_file
+if [[ "$SUDO_ASKPASS_FILE" == "yes" ]]
+then
+    :
+else
+    env_start_sudo_askpass
+fi
+env_sudo_askpass
+
+# needed for backup encryption
+if [[ "$SUDOPASSWORD" == "" ]]
+then
+    SUDOPASSWORD=$(echo "/usr/bin/security find-generic-password -s 'command_line' -a '${USER}' -w")
+    if [[ "$SUDOPASSWORD" == "" ]]
+    then
+        echo "SUDOPASSWORD not set for encryption, exiting..."
+        exit
+    else
+        :
+    fi
+else
+    :
 fi
 
 

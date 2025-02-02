@@ -1492,7 +1492,8 @@ env_enter_sudo_password_to_keychain() {
                 break
             else
                 #echo "Sorry, try again."
-                SUDOPASSWORD_CORRECT="no"env_use_password
+                SUDOPASSWORD_CORRECT="no"
+                env_use_password
                 unset SUDOPASSWORD
                 unset USE_PASSWORD
             fi
